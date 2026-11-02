@@ -235,7 +235,6 @@ namespace CMiX.Studio.Avalonia.ViewModels
                     // nothing when this list is empty.
                     var compositions = projectModel.CompositionManager.ManagerData.Items
                         .Cast<CompositionModel>()
-                        .Select(m => ControlCloner.CloneWithNewGuids(m))
                         .ToList();
 
                     return (Project: projectModel, Compositions: compositions);

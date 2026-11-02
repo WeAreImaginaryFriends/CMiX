@@ -309,7 +309,7 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
         }
 
         // An open loads every composition of the file in file order. Each one keeps its own layer
-        // and gets new ids of its own. The composition that was selected at save time is selected
+        // and the id it has in the file. The composition that was selected at save time is selected
         // again.
         [AvaloniaFact]
         public async Task OpenProject_WithThreeCompositions_OpensEachOneAndRestoresTheSavedSelection()
@@ -341,12 +341,11 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
                     Assert.Equal("Layer" + suffixes[i], layer.PrefabService.Name.Value);
                 }
 
-                // Each composition goes through its own clone, so no two share an id and none
-                // keeps the id it has in the file.
+                // The file is loaded as it is, so every composition keeps the id it has in the file.
                 var loadedIDs = compositions.Select(composition => composition.ID).ToList();
                 Assert.DoesNotContain(Guid.Empty, loadedIDs);
                 Assert.Equal(3, loadedIDs.Distinct().Count());
-                Assert.Empty(loadedIDs.Intersect(savedIDs));
+                Assert.Equal(savedIDs, loadedIDs);
 
                 Assert.Same(compositions[1], compositionManager.SelectedItem);
                 Assert.Equal(1, compositionManager.ManagerData.SelectedIndex);
