@@ -98,6 +98,17 @@
         </Style>
     </ControlTheme>
 
+    <ControlTheme x:Key="{x:Type ui:ButtonMomentary}"
+        BasedOn="{StaticResource {x:Type Button}}"
+        TargetType="ui:ButtonMomentary">
+        <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+        </Style>
+        <Style Selector="^:held /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+        </Style>
+    </ControlTheme>
+
     <ControlTheme x:Key="ToggleButtonColor" TargetType="ToggleButton">
         <Setter Property="Template">
             <ControlTemplate>
