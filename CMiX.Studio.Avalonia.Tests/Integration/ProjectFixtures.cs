@@ -48,24 +48,22 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
             ProjectSerializer.Save(ProjectModelBuilder.Build(viewModel.Project), path);
         }
 
-        // Saves a project with a name and a model; modelPath must be an existing file.
-        public static void WriteProjectWithNameAndModel(string path, string projectName, string modelPath)
+        // Saves a project with a name.
+        public static void WriteProjectWithName(string path, string projectName)
         {
             var (_, _, viewModel) = TestServiceProviderFactory.ShowMainWindow();
 
             viewModel.Project.PrefabService.Name.Value = projectName;
-            viewModel.Project.Model.SetAssetFromPath(modelPath);
             TestServiceProviderFactory.Pump();
 
             ProjectSerializer.Save(ProjectModelBuilder.Build(viewModel.Project), path);
         }
 
-        // Saves a project with a model and a material with an image texture; both paths must be existing files.
-        public static void WriteProjectWithModelAndImage(string path, string modelPath, string imagePath)
+        // Saves a project with a material with an image texture; the path must be an existing file.
+        public static void WriteProjectWithImage(string path, string imagePath)
         {
             var (_, _, viewModel) = TestServiceProviderFactory.ShowMainWindow();
 
-            viewModel.Project.Model.SetAssetFromPath(modelPath);
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
             var composition = (Composition)viewModel.Project.CompositionManager.SelectedItem;
             composition.LayerManager.AddItem(typeof(Layer));

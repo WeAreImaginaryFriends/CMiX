@@ -266,17 +266,14 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
             }
         }
 
-        // File > New gives the output mappings, the project name and the project model the values
+        // File > New gives the output mappings and the project name the values
         // of a new project. The master beat keeps its tempo, and the undo stack stays empty.
         [AvaloniaFact]
-        public async Task NewProject_ResetsTheOutputMappingsTheNameAndTheModel()
+        public async Task NewProject_ResetsTheOutputMappingsAndTheName()
         {
             var path = Path.Combine(Path.GetTempPath(), $"cmix-openproject-{Guid.NewGuid():N}.cmix");
-            var modelPath = Path.Combine(Path.GetTempPath(), $"cmix-model-{Guid.NewGuid():N}.obj");
             try
             {
-                // The model selector makes an asset only for a file that exists.
-                File.WriteAllText(modelPath, string.Empty);
                 ProjectFixtures.WriteProjectWithRenamedOutputMappings(path);
 
                 var (provider, _, viewModel) = TestServiceProviderFactory.ShowMainWindow();
@@ -287,13 +284,11 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
                 await viewModel.MainMenu.OpenProjectFromPath(path);
                 TestServiceProviderFactory.Pump();
                 project.PrefabService.Name.Value = "Saved Project";
-                project.Model.SetAssetFromPath(modelPath);
                 project.MasterBeat.Period.Value = 437.5f;
                 TestServiceProviderFactory.Pump();
 
                 Assert.Equal("LeftWall", slots[3].Name.Value);
                 Assert.Equal("Saved Project", project.PrefabService.Name.Value);
-                Assert.IsType<Geometry>(project.Model.Asset);
                 var period = project.MasterBeat.Period.Value;
 
                 viewModel.MainMenu.NewProjectCommand.Execute(null);
@@ -303,8 +298,6 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
                 Assert.Equal(1920, slots[3].Resolution.X.Value);
                 Assert.Equal(1080, slots[3].Resolution.Y.Value);
                 Assert.Null(project.PrefabService.Name.Value);
-                Assert.Equal(string.Empty, project.Model.FilePath.Value);
-                Assert.Null(project.Model.Asset);
                 Assert.Equal(period, project.MasterBeat.Period.Value);
                 Assert.False(undoManager.CanUndo);
                 Assert.False(undoManager.CanRedo);
@@ -312,7 +305,6 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
             finally
             {
                 if (File.Exists(path)) File.Delete(path);
-                if (File.Exists(modelPath)) File.Delete(modelPath);
             }
         }
 
@@ -365,38 +357,28 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
             }
         }
 
-        // The project name and the project model are not part of a composition. An open restores
-        // them from the file too.
+        // The project name is not part of a composition. An open restores it from the file too.
         [AvaloniaFact]
-        public async Task OpenProject_RestoresTheProjectNameAndTheProjectModel()
+        public async Task OpenProject_RestoresTheProjectName()
         {
             const string projectName = "Saved Project";
             var path = Path.Combine(Path.GetTempPath(), $"cmix-openproject-{Guid.NewGuid():N}.cmix");
-            var modelPath = Path.Combine(Path.GetTempPath(), $"cmix-model-{Guid.NewGuid():N}.obj");
             try
             {
-                // The model selector makes an asset only for a file that exists.
-                File.WriteAllText(modelPath, string.Empty);
-                ProjectFixtures.WriteProjectWithNameAndModel(path, projectName, modelPath);
+                ProjectFixtures.WriteProjectWithName(path, projectName);
 
                 var (_, _, viewModel) = TestServiceProviderFactory.ShowMainWindow();
                 var project = viewModel.Project;
                 Assert.NotEqual(projectName, project.PrefabService.Name.Value);
-                Assert.NotEqual(modelPath, project.Model.FilePath.Value);
-                Assert.Null(project.Model.Asset);
 
                 await viewModel.MainMenu.OpenProjectFromPath(path);
                 TestServiceProviderFactory.Pump();
 
                 Assert.Equal(projectName, project.PrefabService.Name.Value);
-                Assert.Equal(modelPath, project.Model.FilePath.Value);
-                var geometry = Assert.IsType<Geometry>(project.Model.Asset);
-                Assert.Equal(modelPath, geometry.FilePath);
             }
             finally
             {
                 if (File.Exists(path)) File.Delete(path);
-                if (File.Exists(modelPath)) File.Delete(modelPath);
             }
         }
 
@@ -410,20 +392,17 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
             var rootB = Path.Combine(Path.GetTempPath(), $"cmix-tree-b-{Guid.NewGuid():N}");
             try
             {
-                var modelPathA = Path.Combine(rootA, "VJ", "textures", "model.obj");
                 var imagePathA = Path.Combine(rootA, "VJ", "textures", "foo.png");
                 var projectPathA = Path.Combine(rootA, "VJ", "compositions", "bar.cmix");
-                Directory.CreateDirectory(Path.GetDirectoryName(modelPathA)!);
+                Directory.CreateDirectory(Path.GetDirectoryName(imagePathA)!);
                 Directory.CreateDirectory(Path.GetDirectoryName(projectPathA)!);
-                // The asset selectors make an asset only for a file that exists.
-                File.WriteAllText(modelPathA, string.Empty);
+                // The asset selector makes an asset only for a file that exists.
                 File.WriteAllText(imagePathA, string.Empty);
-                ProjectFixtures.WriteProjectWithModelAndImage(projectPathA, modelPathA, imagePathA);
+                ProjectFixtures.WriteProjectWithImage(projectPathA, imagePathA);
 
                 // In the JSON text each backslash of the path is escaped.
                 var json = File.ReadAllText(projectPathA);
                 Assert.Contains(@"..\\textures\\foo.png", json);
-                Assert.Contains(@"..\\textures\\model.obj", json);
 
                 foreach (var file in Directory.GetFiles(Path.Combine(rootA, "VJ"), "*", SearchOption.AllDirectories))
                 {
@@ -437,8 +416,6 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
                 TestServiceProviderFactory.Pump();
 
                 var project = viewModel.Project;
-                Assert.Equal(Path.Combine(rootB, "VJ", "textures", "model.obj"), project.Model.FilePath.Value);
-                Assert.IsType<Geometry>(project.Model.Asset);
 
                 var composition = (Composition)Assert.Single(project.CompositionManager.ManagerData.Items);
                 var layer = (Layer)Assert.Single(composition.LayerManager.ManagerData.Items);

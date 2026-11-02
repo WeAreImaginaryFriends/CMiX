@@ -5,6 +5,7 @@ using CMiX.Core.Compositing;
 using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Persistence;
 using CMiX.Core.Rendering;
+using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Texturing.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -40,6 +41,22 @@ namespace CMiX.Core.Tests
             var loaded = ProjectSerializer.Load(path);
 
             Assert.Equal(OutputMappingManager.SlotCount, loaded.OutputMappingManager.Items.Count);
+        }
+
+        // A project used to have a 3D model. A file from that time still loads, and the key is ignored.
+        [Fact]
+        public void Load_FileWithTheRemovedProjectModel_StillLoads()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var path = Path.Combine(_directory, "old-model.cmix");
+            ProjectSerializer.Save(BuildMinimalProjectModel(provider), path);
+            var root = JsonNode.Parse(File.ReadAllText(path))!;
+            root["Model"] = JsonNode.Parse("{\"ID\":\"00000000-0000-0000-0000-000000000000\",\"FilePath\":{\"ID\":\"00000000-0000-0000-0000-000000000000\",\"Value\":\"C:\\\\old\\\\model.obj\"}}");
+            File.WriteAllText(path, root.ToJsonString());
+
+            var loaded = ProjectSerializer.Load(path);
+
+            Assert.Single(loaded.CompositionManager.ManagerData.Items);
         }
 
         // A file saved with the old $type RedisAddressModulatorModel still loads and gives a RedisFloatModulator.
@@ -112,17 +129,69 @@ namespace CMiX.Core.Tests
             Assert.Throws<JsonException>(() => ProjectSerializer.Load(path));
         }
 
+        // A project whose one asset is an image texture on an entity of a layer.
         private static ProjectModel BuildModelWithAssetPath(string assetPath)
         {
-            var model = BuildMinimalProjectModel(TestServiceProviderFactory.Create());
-            model.Model = new AssetSelectorModel { FilePath = new GenericValueModel<string>(assetPath) };
-            return model;
+            var project = TestServiceProviderFactory.Create().GetRequiredService<Project>();
+            project.CompositionManager.AddItem(typeof(Composition));
+            var composition = (Composition)project.CompositionManager.SelectedItem;
+            composition.LayerManager.AddItem(typeof(Layer));
+            var layer = (Layer)composition.LayerManager.SelectedItem;
+            layer.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (Entity)layer.ModelEntityManager.SelectedItem;
+            var textureManager = entity.Material.DiffuseTexture.TextureManager;
+            textureManager.AddItem(typeof(Image));
+            ((Image)textureManager.SelectedItem).AssetSelector.FilePath.Value = assetPath;
+            return (ProjectModel)project.ToModel();
         }
 
         private static string ReadSavedAssetPath(string projectPath)
         {
-            using var doc = JsonDocument.Parse(File.ReadAllText(projectPath));
-            return doc.RootElement.GetProperty("Model").GetProperty("FilePath").GetProperty("Value").GetString();
+            var node = FindFilePath(JsonNode.Parse(File.ReadAllText(projectPath)));
+            return node["Value"].GetValue<string>();
+        }
+
+        private static JsonNode FindFilePath(JsonNode node)
+        {
+            switch (node)
+            {
+                case JsonObject obj:
+                    if (obj["AssetSelector"]?["FilePath"] is JsonObject filePath)
+                        return filePath;
+                    foreach (var pair in obj)
+                        if (pair.Value != null && FindFilePath(pair.Value) is { } found)
+                            return found;
+                    break;
+                case JsonArray array:
+                    foreach (var item in array)
+                        if (item != null && FindFilePath(item) is { } foundInItem)
+                            return foundInItem;
+                    break;
+            }
+            return null;
+        }
+
+        // The asset path of the first image in a loaded model.
+        private static string LoadedAssetPath(object model)
+        {
+            if (model is ImageModel image)
+                return image.AssetSelector.FilePath.Value;
+            if (model is string || model == null)
+                return null;
+
+            if (model is System.Collections.IEnumerable items)
+            {
+                foreach (var item in items)
+                    if (LoadedAssetPath(item) is { } fromItem)
+                        return fromItem;
+                return null;
+            }
+
+            foreach (var property in model.GetType().GetProperties())
+                if (property.GetIndexParameters().Length == 0 && !property.PropertyType.IsValueType
+                    && LoadedAssetPath(property.GetValue(model)) is { } fromProperty)
+                    return fromProperty;
+            return null;
         }
 
         // A drive root that is not the drive of the temp folder.
@@ -173,7 +242,7 @@ namespace CMiX.Core.Tests
 
             var loaded = ProjectSerializer.Load(target);
 
-            Assert.Equal(Path.Combine(_directory, "Other", "VJ", "textures", "foo.jpg"), loaded.Model.FilePath.Value);
+            Assert.Equal(Path.Combine(_directory, "Other", "VJ", "textures", "foo.jpg"), LoadedAssetPath(loaded));
         }
 
         [Fact]
@@ -187,7 +256,7 @@ namespace CMiX.Core.Tests
 
             var loaded = ProjectSerializer.Load(path);
 
-            Assert.Equal(assetPath, loaded.Model.FilePath.Value);
+            Assert.Equal(assetPath, LoadedAssetPath(loaded));
         }
 
         [Fact]
@@ -200,7 +269,7 @@ namespace CMiX.Core.Tests
             var loaded = ProjectSerializer.Load(path);
 
             Assert.Equal(string.Empty, ReadSavedAssetPath(path));
-            Assert.Equal(string.Empty, loaded.Model.FilePath.Value);
+            Assert.Equal(string.Empty, LoadedAssetPath(loaded));
         }
 
         [Fact]

@@ -17,7 +17,6 @@ namespace CMiX.Core.Compositing
         public MasterBeatModel MasterBeat { get; set; } = new();
         public OutputMappingManagerModel OutputMappingManager { get; set; } = new();
         public PrefabManagerModel RedisAddressManager { get; set; } = new();
-        public AssetSelectorModel Model { get; set; } = new();
 
     }
 }
