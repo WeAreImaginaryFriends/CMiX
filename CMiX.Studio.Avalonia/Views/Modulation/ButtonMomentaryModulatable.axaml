@@ -1,0 +1,27 @@
+<Modulation:UserControlModulatable
+    x:Class="CMiX.Studio.Avalonia.Views.Modulation.ButtonMomentaryModulatable"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
+    x:Name="buttonMomentaryModulatable">
+
+    <!-- The caption space of a value row, empty: the button takes the value column. -->
+    <ui:ContentCaptioned>
+        <DockPanel>
+
+            <Modulation:ButtonModulatorAssign
+                DockPanel.Dock="Right"
+                ModulatorManager="{Binding ModulatorManager, ElementName=buttonMomentaryModulatable}" />
+
+            <ui:ButtonMomentary
+                Content="{Binding Caption, ElementName=buttonMomentaryModulatable, Mode=OneWay}"
+                Value="{Binding Value, Mode=TwoWay}"
+                IsHitTestVisible="{Binding !IsModulated}"
+                ResetCommand="{Binding ResetCommand}"
+                ui:PositionedControl.Position="{Binding (ui:PositionedControl.Position), ElementName=buttonMomentaryModulatable}" />
+
+        </DockPanel>
+    </ui:ContentCaptioned>
+
+</Modulation:UserControlModulatable>

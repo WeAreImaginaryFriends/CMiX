@@ -35,6 +35,9 @@ namespace CMiX.Studio.Avalonia.Tests
         private static ToggleButtonCMiX PlayToggle(Views.VideoPlayer view) =>
             view.GetVisualDescendants().OfType<ToggleButtonCMiX>().Single(t => (t.Content as string) == "Play");
 
+        private static ButtonMomentary DoSeekButton(Views.VideoPlayer view) =>
+            view.GetVisualDescendants().OfType<ButtonMomentary>().Single();
+
         [AvaloniaFact]
         public void PlayToggle_HasAModulatorAssignButtonAtItsRight()
         {
@@ -82,8 +85,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (_, view) = Show();
             var play = PlayToggle(view);
-            var doSeek = view.GetVisualDescendants().OfType<Button>()
-                .Single(b => b is not ToggleButton && (b.Content as string) == "Do Seek");
+            var doSeek = DoSeekButton(view);
             var seekFrame = view.GetVisualDescendants().OfType<Border>()
                 .First(b => b.Name == "mainBorder" && b.FindAncestorOfType<DragValue>() != null);
 
@@ -99,8 +101,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (_, view) = Show();
             var play = PlayToggle(view);
-            var doSeek = view.GetVisualDescendants().OfType<Button>()
-                .Single(b => b is not ToggleButton && (b.Content as string) == "Do Seek");
+            var doSeek = DoSeekButton(view);
 
             Assert.Equal(ControlPosition.Top, PositionedControl.GetPosition(play));
             Assert.Equal(ControlPosition.Bottom, PositionedControl.GetPosition(doSeek));
@@ -124,14 +125,32 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void DoSeek_IsAStandaloneButton()
+        public void DoSeek_HasAModulatorAssignButtonAtItsRight()
         {
-            var (_, view) = Show();
+            var (player, view) = Show();
 
-            var doSeek = view.GetVisualDescendants().OfType<Button>()
-                .Single(b => b is not ToggleButton && (b.Content as string) == "Do Seek");
+            var doSeek = DoSeekButton(view);
 
-            Assert.IsNotType<ButtonModulatorAssign>(doSeek.GetVisualParent());
+            var assign = view.GetVisualDescendants().OfType<ButtonModulatorAssign>()
+                .Single(a => ReferenceEquals(a.GetVisualParent(), doSeek.GetVisualParent()));
+            Assert.Same(player.ModulatorManager, assign.ModulatorManager);
+            Assert.True(assign.TranslatePoint(new Point(0, 0), view)!.Value.X > doSeek.TranslatePoint(new Point(0, 0), view)!.Value.X);
+        }
+
+        [AvaloniaFact]
+        public void DoSeek_IgnoresPressesWhileAModulatorIsBound()
+        {
+            var (player, view) = Show();
+            player.ModulatorManager.AddItem(typeof(LFOModulator));
+            var lfo = (LFOModulator)player.ModulatorManager.ManagerData.Items[0];
+            var gate = lfo.Outputs.Single(o => o is ModulatorOutput<bool>);
+            var doSeek = DoSeekButton(view);
+            Assert.True(doSeek.IsHitTestVisible);
+
+            player.DoSeek.SetModulatorCommand.Execute(new ModulatorOutputSelection(lfo, gate));
+            TestServiceProviderFactory.Pump();
+
+            Assert.False(doSeek.IsHitTestVisible);
         }
 
         [AvaloniaFact]

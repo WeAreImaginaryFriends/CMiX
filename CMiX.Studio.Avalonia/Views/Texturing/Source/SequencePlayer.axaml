@@ -24,16 +24,10 @@
               DataContext="{Binding Looping}"
               ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=sequencePlayer}" />
 
-          <ui:ContentCaptioned x:Name="doSeekRow">
-              <DockPanel>
-                  <Border DockPanel.Dock="Right" Width="{DynamicResource ControlHeightMD}" />
-                  <Button
-                      Content="Do Seek"
-                      Command="{Binding DoSeek.ClickCommand}"
-                      Theme="{StaticResource ButtonInlineRight}"
-                      ui:PositionedControl.Position="{Binding (ui:PositionedControl.Position), ElementName=doSeekRow}" />
-              </DockPanel>
-          </ui:ContentCaptioned>
+          <Modulation:ButtonMomentaryModulatable
+              Caption="Do Seek"
+              DataContext="{Binding DoSeek}"
+              ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=sequencePlayer}" />
 
       </ui:StackPanelPositioned>
 
