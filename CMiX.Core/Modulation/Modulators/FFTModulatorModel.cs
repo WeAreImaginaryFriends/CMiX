@@ -11,9 +11,9 @@ namespace CMiX.Core.Modulation.Modulators
         public Guid ID { get; set; } = Guid.NewGuid();
         public PrefabServiceModel PrefabService { get; set; } = new();
         public GenericValueModel<int> TrackIndex { get; set; } = new(0);
-        public GenericValueModel<float> Bass { get; set; } = new(1.0f);
-        public GenericValueModel<float> LowerMid { get; set; } = new(1.0f);
-        public GenericValueModel<float> HigherMid { get; set; } = new(1.0f);
-        public GenericValueModel<float> High { get; set; } = new(1.0f);
+        public FloatRangeModel BassRange { get; set; } = new(0.0f, 1.0f);
+        public FloatRangeModel LowerMidRange { get; set; } = new(0.0f, 1.0f);
+        public FloatRangeModel HigherMidRange { get; set; } = new(0.0f, 1.0f);
+        public FloatRangeModel HighRange { get; set; } = new(0.0f, 1.0f);
     }
 }

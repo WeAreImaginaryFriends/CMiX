@@ -122,5 +122,24 @@ namespace CMiX.Core.Tests
             Assert.NotEqual(modulator.Range.ID, copyModulator.Range.ID);
             Assert.NotEqual(modulator.Range.Maximum.ID, copyModulator.Range.Maximum.ID);
         }
+
+        [Fact]
+        public void Clone_AnFFTModulator_KeepsTheRangesWithNewIDs()
+        {
+            var (_, compositions, composition) = NewComposition();
+            composition.ModifierManager.AddItem(typeof(AlphaModifier));
+            var modifier = (Modifier)composition.ModifierManager.SelectedItem;
+            modifier.ModulatorManager.AddItem(typeof(FFTModulator));
+            var modulator = (FFTModulator)modifier.ModulatorManager.SelectedItem;
+            modulator.LowerMidRange.Maximum.Value = 0.5f;
+
+            var copy = (Composition)compositions.DuplicateItem(composition);
+            var copyModulator = (FFTModulator)((Modifier)copy.ModifierManager.ManagerData.Items.First()).ModulatorManager.ManagerData.Items.First();
+
+            Assert.Equal(0.5f, copyModulator.LowerMidRange.Maximum.Value);
+            Assert.NotEqual(modulator.ID, copyModulator.ID);
+            Assert.NotEqual(modulator.LowerMidRange.ID, copyModulator.LowerMidRange.ID);
+            Assert.NotEqual(modulator.LowerMidRange.Maximum.ID, copyModulator.LowerMidRange.Maximum.ID);
+        }
     }
 }
