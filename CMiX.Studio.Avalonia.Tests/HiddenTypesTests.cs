@@ -47,6 +47,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Contains(typeof(RedisFloatModulator), offered);
             Assert.Contains(typeof(RedisBoolModulator), offered);
+            Assert.Contains(typeof(RedisIntModulator), offered);
             Assert.Contains(typeof(RandomModulator), offered);
         }
 

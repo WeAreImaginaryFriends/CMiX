@@ -88,6 +88,25 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void AnIntAddressedOutput_BoundToSeekTarget_ShowsItsAddressAndIsAssigned()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var player = (SequencePlayer)provider.GetRequiredService<ControlFactory>().Create(typeof(SequencePlayer));
+            player.ModulatorManager.AddItem(typeof(RedisIntModulator));
+            var modulator = player.ModulatorManager.ManagerData.Items.OfType<RedisIntModulator>().Single();
+            modulator.Registry.AddressManager.AddItem(typeof(RedisAddress));
+            var address = (RedisAddress)modulator.Registry.AddressManager.SelectedItem;
+            address.Value = "cmix:seek";
+            modulator.SelectedAddress = address;
+            Bind(player.SeekTarget, modulator, "Value");
+
+            var rows = ModulatorOutputChoice.Build(Selections(modulator), player.SeekTarget);
+
+            Assert.EndsWith(" cmix:seek", rows[2].Label);
+            Assert.True(rows[2].IsAssigned);
+        }
+
+        [AvaloniaFact]
         public void AnAddressedOutput_WithoutASelection_ShowsValueInTheLabel()
         {
             var (blur, _, _) = CreateBlurWithModulators();
