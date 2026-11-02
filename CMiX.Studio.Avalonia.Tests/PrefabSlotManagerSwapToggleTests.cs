@@ -185,6 +185,20 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void AfterAPickWithEnter_TheFocusGoesBackToTheToggle()
+        {
+            var (view, _, popup, list) = ShowWithOpenPopup(3);
+            var top = TopLevel.GetTopLevel(list)!;
+            Assert.True(top.FocusManager!.GetFocusedElement() is Visual { } before && before.IsAttachedToVisualTree());
+
+            top.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(popup.IsOpen);
+            Assert.Same(SwapToggle(view), top.FocusManager!.GetFocusedElement());
+        }
+
+        [AvaloniaFact]
         public void ThePopup_OpensAgainAfterAPick_WithoutAFilter()
         {
             var (view, _, popup, list) = ShowWithOpenPopup(3);
