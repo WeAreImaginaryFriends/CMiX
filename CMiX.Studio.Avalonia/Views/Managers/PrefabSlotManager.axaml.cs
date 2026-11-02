@@ -49,15 +49,6 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             set => SetValue(MinItemCountProperty, value);
         }
 
-        // True gives the list of the swap toggle a search field. False, the default, shows the plain list.
-        public static readonly StyledProperty<bool> IsSearchableProperty =
-            AvaloniaProperty.Register<PrefabSlotManager, bool>(nameof(IsSearchable));
-        public bool IsSearchable
-        {
-            get => GetValue(IsSearchableProperty);
-            set => SetValue(IsSearchableProperty, value);
-        }
-
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);

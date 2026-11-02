@@ -2,7 +2,9 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -87,7 +89,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ByDefault_ThePopupShowsThePlainListWithoutASearchField()
+        public void ThePopup_ShowsTheListWithASearchField()
         {
             var (view, repository, provider) = Show();
             repository.Add(provider.GetRequiredService<ControlFactory>().Create(typeof(Entity)));
@@ -97,24 +99,37 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             var popup = view.GetLogicalDescendants().OfType<Popup>().Single();
-            Assert.True(popup.Child!.GetVisualDescendants().OfType<ItemPickerList>().Single().IsVisible);
-            Assert.False(popup.Child!.GetVisualDescendants().OfType<SearchableItemPickerList>().Single().IsVisible);
+            var list = popup.Child!.GetVisualDescendants().OfType<SearchableItemPickerList>().Single();
+            Assert.True(list.IsVisible);
+            Assert.Single(popup.Child!.GetVisualDescendants().OfType<ItemPickerList>());
         }
 
+
+        // The user's keys go to the window, the popup, and the field that has the focus in it.
         [AvaloniaFact]
-        public void WhenSearchable_ThePopupShowsTheListWithASearchField()
+        public void InTheOpenPopup_TheArrowKeysMoveTheHighlight()
         {
             var (view, repository, provider) = Show();
-            view.IsSearchable = true;
-            repository.Add(provider.GetRequiredService<ControlFactory>().Create(typeof(Entity)));
+            var factory = provider.GetRequiredService<ControlFactory>();
+            for (var i = 0; i < 5; i++)
+                repository.Add(factory.Create(typeof(Entity)));
             Dispatcher.UIThread.RunJobs();
 
             SwapToggle(view).IsChecked = true;
             Dispatcher.UIThread.RunJobs();
 
             var popup = view.GetLogicalDescendants().OfType<Popup>().Single();
-            Assert.True(popup.Child!.GetVisualDescendants().OfType<SearchableItemPickerList>().Single().IsVisible);
-            Assert.False(popup.Child!.GetVisualDescendants().OfType<ItemPickerList>().First().IsVisible);
+            var list = popup.Child!.GetVisualDescendants().OfType<SearchableItemPickerList>().Single();
+            var window = (Window)view.GetVisualRoot()!;
+            var focused = TopLevel.GetTopLevel(list)!.FocusManager!.GetFocusedElement();
+            var host = TopLevel.GetTopLevel(list)!;
+
+            host.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(
+                list.HighlightedIndex == 1,
+                $"Index {list.HighlightedIndex}. Focus: {focused?.GetType().Name}. Host: {host.GetType().Name}. Window is host: {ReferenceEquals(window, host)}.");
         }
 
         [AvaloniaFact]

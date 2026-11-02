@@ -15,7 +15,6 @@
         <DockPanel>
             <Managers:PrefabSlotManager
                 Margin="8"
-                IsSearchable="True"
                 MinItemCount="3"
                 RowMenu="Slot"
                 DataContext="{Binding CameraManager}"

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -300,6 +301,61 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(origin.Y >= 0 && origin.Y + icon.Bounds.Height <= box.Bounds.Height);
             Assert.True(box.Padding.Left >= origin.X + icon.Bounds.Width, "The text would start under the icon.");
             Assert.False(icon.IsHitTestVisible);
+        }
+
+        // The keys go through the window, so the text box sees them as a user's keys, with its own handling first.
+        [AvaloniaFact]
+        public void RealKeys_AfterTypingText_MoveTheHighlightBothWays()
+        {
+            object? picked = null;
+            var (window, list, items) = Show(item => picked = item);
+            window.KeyTextInput("c");
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(new[] { "Cube", "Camera Rig", "Cylinder" }, Rows(list));
+
+            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+            Assert.Equal(1, list.HighlightedIndex);
+
+            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+            Assert.Equal(2, list.HighlightedIndex);
+
+            window.KeyPressQwerty(PhysicalKey.ArrowUp, RawInputModifiers.None);
+            Assert.Equal(1, list.HighlightedIndex);
+
+            window.KeyPressQwerty(PhysicalKey.ArrowUp, RawInputModifiers.None);
+            Assert.Equal(0, list.HighlightedIndex);
+
+            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+            window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            Assert.Same(items[1], picked);
+        }
+
+        [AvaloniaFact]
+        public void RealKeys_AfterTypingLongerText_StillMoveTheHighlight()
+        {
+            var (window, list, _) = Show();
+            window.KeyTextInput("cy");
+            Dispatcher.UIThread.RunJobs();
+
+            window.KeyPressQwerty(PhysicalKey.ArrowUp, RawInputModifiers.None);
+            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+
+            Assert.Equal(0, list.HighlightedIndex);
+            Assert.Equal(new[] { "Cylinder" }, Rows(list));
+        }
+
+        [AvaloniaFact]
+        public void RealKeys_UpAndDown_DoNotMoveTheCaretOfTheField()
+        {
+            var (window, list, _) = Show();
+            window.KeyTextInput("ca");
+            Dispatcher.UIThread.RunJobs();
+            var caret = Search(list).CaretIndex;
+
+            window.KeyPressQwerty(PhysicalKey.ArrowUp, RawInputModifiers.None);
+            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+
+            Assert.Equal(caret, Search(list).CaretIndex);
         }
 
         [AvaloniaFact]
