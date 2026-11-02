@@ -30,6 +30,13 @@ namespace CMiX.UI.Controls.Collection
         {
             InitializeComponent();
             PART_Search.KeyDown += OnSearchKeyDown;
+
+            // The mouse moves the highlight inside the list. Enter then picks the row under it.
+            PART_List.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == ItemPickerList.HighlightedItemProperty)
+                    HighlightedIndex = e.NewValue == null ? -1 : Matches.IndexOf(e.NewValue);
+            };
         }
 
         public static readonly StyledProperty<string> SearchTextProperty =

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -342,6 +343,56 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(0, list.HighlightedIndex);
             Assert.Equal(new[] { "Cylinder" }, Rows(list));
+        }
+
+        private static Button RowButton(SearchableItemPickerList list, int index) =>
+            list.GetVisualDescendants().OfType<Button>().ElementAt(index);
+
+        private static Color BackgroundOf(Button row)
+        {
+            var border = row.GetVisualDescendants().OfType<Border>().First(b => b.Name == "border");
+            return (border.Background as ISolidColorBrush)?.Color ?? Colors.Transparent;
+        }
+
+        private static void MouseOver(Window window, Button row)
+        {
+            window.MouseMove(row.TranslatePoint(new Point(10, 10), window)!.Value);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        [AvaloniaFact]
+        public void TheMouse_MovesTheHighlightToTheRowUnderIt_AndEnterPicksIt()
+        {
+            object? picked = null;
+            var (window, list, items) = Show(item => picked = item);
+
+            MouseOver(window, RowButton(list, 3));
+
+            Assert.Equal(3, list.HighlightedIndex);
+            Assert.Equal("Cylinder", (string)Assert.Single(HighlightedRows(list)).Content!);
+
+            window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            Assert.Same(items[3], picked);
+        }
+
+        [AvaloniaFact]
+        public void AStillPointer_DoesNotLightASecondRow_WhenTheKeysMoveTheHighlight()
+        {
+            var (window, list, _) = Show();
+            MouseOver(window, RowButton(list, 0));
+
+            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            var underPointer = RowButton(list, 0);
+            var plain = RowButton(list, 4);
+            var highlighted = Assert.Single(HighlightedRows(list));
+
+            Assert.True(underPointer.IsPointerOver);
+            Assert.Equal("Sphere", (string)highlighted.Content!);
+            Assert.Equal(BackgroundOf(plain), BackgroundOf(underPointer));
+            Assert.NotEqual(BackgroundOf(plain), BackgroundOf(highlighted));
         }
 
         [AvaloniaFact]

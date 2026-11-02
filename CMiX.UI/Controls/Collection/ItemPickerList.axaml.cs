@@ -46,6 +46,9 @@ namespace CMiX.UI.Controls.Collection
             row.Bind(Button.CommandProperty, new Binding(nameof(ItemCommand)) { Source = this });
             row.Classes.Set("highlighted", ReferenceEquals(item, HighlightedItem));
 
+            // Only a real move of the mouse counts. A row that scrolls under a still pointer does not take the highlight.
+            row.PointerMoved += (_, _) => HighlightedItem = item;
+
             if (string.IsNullOrEmpty(TextPath))
                 row.Content = item.ToString();
             else
