@@ -148,6 +148,23 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
         }
 
         [AvaloniaFact]
+        public void ControlShiftZ_IsAlsoRedo()
+        {
+            var setup = Show();
+            var items = setup.Layer.ModelEntityManager.ManagerData.Items;
+            PickWithSearch(setup, "tor");
+
+            setup.Window.KeyPressQwerty(PhysicalKey.Z, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+            Assert.DoesNotContain(setup.Entity, items);
+
+            setup.Window.KeyPressQwerty(PhysicalKey.Z, RawInputModifiers.Control | RawInputModifiers.Shift);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Contains(setup.Entity, items);
+        }
+
+        [AvaloniaFact]
         public void WithANeighbourInTheSlot_SearchEnterUndoRedo_PutsTheEntityBack()
         {
             var setup = Show(neighbour: true);
