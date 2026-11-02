@@ -26,10 +26,6 @@ namespace CMiX.Core
         public static readonly Guid ProjectPrefabServiceName = Guid.Parse("11223344-5566-7788-99AA-BBCCDDEEFF5C");
         public static readonly Guid ProjectPrefabServiceVisibility = Guid.Parse("11223344-5566-7788-99AA-BBCCDDEEFF5E");
 
-        // Project.Model.FilePath, fixed the same way - created directly at Project startup, not
-        // announced through MessageAddItem, so both sides must agree on this ID up front.
-        public static readonly Guid ProjectModelFilePath = Guid.Parse("11223344-5566-7788-99AA-BBCCDDEEFF5F");
-
         // The list of Redis addresses of the project. It is created at Project startup, so both
         // sides must agree on this ID up front.
         public static readonly Guid RedisAddressManager = Guid.Parse("11223344-5566-7788-99AA-BBCCDDEEFF61");

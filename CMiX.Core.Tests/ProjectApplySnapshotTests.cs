@@ -1,12 +1,11 @@
 using CMiX.Core.Compositing;
-using CMiX.Core.Prefabs;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CMiX.Core.Tests
 {
-    // Project.Open applies the model of a saved project to an empty project.
-    public class ProjectOpenTests
+    // ApplySnapshot applies the model of a saved project to a project.
+    public class ProjectApplySnapshotTests
     {
         private static Project NewProject() => TestServiceProviderFactory.Create().GetRequiredService<Project>();
 
@@ -21,91 +20,83 @@ namespace CMiX.Core.Tests
             return project;
         }
 
-        private static (ProjectModel Model, List<CompositionModel> Compositions) Save(Project project)
-        {
-            var model = (ProjectModel)project.ToModel();
-            var compositions = model.CompositionManager.ManagerData.Items
-                .Cast<CompositionModel>()
-                .Select(composition => ControlCloner.CloneWithNewGuids(composition))
-                .ToList();
-            return (model, compositions);
-        }
+        private static ProjectModel Save(Project project) => (ProjectModel)project.ToModel();
 
         private static List<string> Names(Project project) =>
             project.CompositionManager.ManagerData.Items.Cast<Composition>().Select(c => c.PrefabService.Name.Value).ToList();
 
         [Fact]
-        public void Open_AddsTheCompositionsInFileOrder()
+        public void ApplySnapshot_AddsTheCompositionsInFileOrder()
         {
-            var (model, compositions) = Save(ProjectWithThreeCompositions());
+            var model = Save(ProjectWithThreeCompositions());
             var target = NewProject();
 
-            target.Open(model, compositions);
+            target.ApplySnapshot(model);
 
             Assert.Equal(new List<string> { "A", "B", "C" }, Names(target));
         }
 
         [Fact]
-        public void Open_SelectsTheCompositionThatWasSelectedInTheFile()
+        public void ApplySnapshot_SelectsTheCompositionThatWasSelectedInTheFile()
         {
             var source = ProjectWithThreeCompositions();
             source.CompositionManager.ManagerData.SelectAt(1);
-            var (model, compositions) = Save(source);
+            var model = Save(source);
             var target = NewProject();
 
-            target.Open(model, compositions);
+            target.ApplySnapshot(model);
 
             Assert.Equal(1, target.CompositionManager.ManagerData.SelectedIndex);
             Assert.Same(target.CompositionManager.ManagerData.Items[1], target.CompositionManager.SelectedItem);
         }
 
         [Fact]
-        public void Open_WhenTheFileHasNoSelection_LeavesTheLastCompositionSelected()
+        public void ApplySnapshot_WhenTheFileHasNoSelection_LeavesNothingSelected()
         {
             var source = ProjectWithThreeCompositions();
             source.CompositionManager.ManagerData.ClearSelection();
-            var (model, compositions) = Save(source);
+            var model = Save(source);
             var target = NewProject();
 
-            target.Open(model, compositions);
+            target.ApplySnapshot(model);
 
-            Assert.Equal(2, target.CompositionManager.ManagerData.SelectedIndex);
+            Assert.Equal(-1, target.CompositionManager.ManagerData.SelectedIndex);
         }
 
         [Fact]
-        public void Open_WhenTheSavedIndexIsOutsideTheList_LeavesTheLastCompositionSelected()
+        public void ApplySnapshot_WhenTheSavedIndexIsOutsideTheList_LeavesNothingSelected()
         {
-            var (model, compositions) = Save(ProjectWithThreeCompositions());
+            var model = Save(ProjectWithThreeCompositions());
             model.CompositionManager.ManagerData.SelectedIndex = 7;
             var target = NewProject();
 
-            target.Open(model, compositions);
+            target.ApplySnapshot(model);
 
-            Assert.Equal(2, target.CompositionManager.ManagerData.SelectedIndex);
+            Assert.Equal(-1, target.CompositionManager.ManagerData.SelectedIndex);
         }
 
         [Fact]
-        public void Open_RestoresTheMasterBeatAndTheNameOfTheFile()
+        public void ApplySnapshot_RestoresTheMasterBeatAndTheNameOfTheFile()
         {
             var source = NewProject();
             source.MasterBeat.Period.Value = 437.5f;
             source.PrefabService.Name.Value = "Saved project";
-            var (model, compositions) = Save(source);
+            var model = Save(source);
             var target = NewProject();
 
-            target.Open(model, compositions);
+            target.ApplySnapshot(model);
 
             Assert.Equal(437.5f, target.MasterBeat.Period.Value);
             Assert.Equal("Saved project", target.PrefabService.Name.Value);
         }
 
         [Fact]
-        public void Open_OfAProjectWithoutCompositions_LeavesNothingSelected()
+        public void ApplySnapshot_OfAProjectWithoutCompositions_LeavesNothingSelected()
         {
-            var (model, compositions) = Save(NewProject());
+            var model = Save(NewProject());
             var target = NewProject();
 
-            target.Open(model, compositions);
+            target.ApplySnapshot(model);
 
             Assert.Empty(target.CompositionManager.ManagerData.Items);
             Assert.Null(target.CompositionManager.SelectedItem);

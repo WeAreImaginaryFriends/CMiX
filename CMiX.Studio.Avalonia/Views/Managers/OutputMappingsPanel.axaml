@@ -2,15 +2,9 @@
     x:Class="CMiX.Studio.Avalonia.Views.Managers.OutputMappingsPanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
-    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
 
     <StackPanel Margin="8" Spacing="{DynamicResource SpacingMD}">
-
-        <Views:AssetPathSelector
-            DataContext="{Binding $parent[Window].DataContext.Project.Model}"
-            ItemsSource="{Binding AssetRepository.Geometries}"
-            SelectedItem="{Binding Asset}" />
 
         <ListBox
             ItemsSource="{Binding Items}"

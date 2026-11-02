@@ -189,6 +189,14 @@
             <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
         </Style>
 
+        <!-- The row that Enter picks in a list that has the keyboard focus elsewhere. It looks like a hovered row. -->
+        <Style Selector="^.highlighted">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        </Style>
+        <Style Selector="^.highlighted /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+        </Style>
+
         <Style Selector="^:disabled /template/ Border#border">
             <Setter Property="Opacity" Value="0.5" />
         </Style>

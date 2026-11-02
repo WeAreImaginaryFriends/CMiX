@@ -30,6 +30,9 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             prefabListBox.ContainerPrepared += (_, e) => PrefabRowMenu.AttachTo(e.Container, RowMenu);
         }
 
+        // An item of the repository was picked in the list of the swap toggle. The popup closes.
+        private void OnSwapListPicked(object? sender, System.EventArgs e) => SwapToggle.IsChecked = false;
+
         // The menu of the rows. None, the default, gives them no menu.
         public static readonly StyledProperty<RowMenuKind> RowMenuProperty =
             AvaloniaProperty.Register<PrefabSlotManager, RowMenuKind>(nameof(RowMenu));

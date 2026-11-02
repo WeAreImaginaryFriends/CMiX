@@ -82,18 +82,11 @@
                 Placement="BottomEdgeAlignedLeft"
                 VerticalOffset="-1">
                 <ui:DropdownFrame>
-                    <ItemsControl ItemsSource="{Binding ItemsSource, ElementName=prefabSlotManager}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Button
-                                    Margin="2"
-                                    Command="{Binding DataContext.AddExistingItemCommand, ElementName=prefabSlotManager}"
-                                    CommandParameter="{Binding}"
-                                    Content="{Binding PrefabService.Name.Value}"
-                                    Theme="{DynamicResource ButtonItem}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <ui:SearchableItemPickerList
+                        Picked="OnSwapListPicked"
+                        ItemCommand="{Binding DataContext.AddExistingItemCommand, ElementName=prefabSlotManager}"
+                        ItemsSource="{Binding ItemsSource, ElementName=prefabSlotManager}"
+                        TextPath="PrefabService.Name.Value" />
                 </ui:DropdownFrame>
             </Popup>
 
