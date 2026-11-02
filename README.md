@@ -65,7 +65,7 @@ The Settings tab holds the list of Redis addresses of the project. Click an addr
 
 The Redis Float modulator selects one address of the list in its combo box. It has one float output, `Value`. Assign a value to it in the same way as to any other modulator output. The row of the assign menu shows the address text, or `Value` when the modulator selects nothing. A change of the selection keeps the assignments. The Reset menu of the combo box clears the selection. When you delete the selected address, the selection clears and the values bound to the modulator go back to normal in the same undo step.
 
-Each Redis Float modulator has one gain with a start value of 1. The vvvv side multiplies the Redis value of the selected address by the gain. The gain stays when you select another address.
+Each Redis Float modulator has one range with the start values 0 and 1. The vvvv side maps the Redis value of the selected address into the range. The range stays when you select another address.
 
 The Redis Bool modulator selects an address in the same way. It has one bool output, `Value`, for a toggle such as the Play of a player. It has no gain. The vvvv side decides how the Redis value becomes a bool.
 
