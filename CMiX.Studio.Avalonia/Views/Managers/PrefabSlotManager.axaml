@@ -82,10 +82,18 @@
                 Placement="BottomEdgeAlignedLeft"
                 VerticalOffset="-1">
                 <ui:DropdownFrame>
-                    <ui:ItemPickerList
-                        ItemCommand="{Binding DataContext.AddExistingItemCommand, ElementName=prefabSlotManager}"
-                        ItemsSource="{Binding ItemsSource, ElementName=prefabSlotManager}"
-                        TextPath="PrefabService.Name.Value" />
+                    <Panel>
+                        <ui:ItemPickerList
+                            IsVisible="{Binding !IsSearchable, ElementName=prefabSlotManager}"
+                            ItemCommand="{Binding DataContext.AddExistingItemCommand, ElementName=prefabSlotManager}"
+                            ItemsSource="{Binding ItemsSource, ElementName=prefabSlotManager}"
+                            TextPath="PrefabService.Name.Value" />
+                        <ui:SearchableItemPickerList
+                            IsVisible="{Binding IsSearchable, ElementName=prefabSlotManager}"
+                            ItemCommand="{Binding DataContext.AddExistingItemCommand, ElementName=prefabSlotManager}"
+                            ItemsSource="{Binding ItemsSource, ElementName=prefabSlotManager}"
+                            TextPath="PrefabService.Name.Value" />
+                    </Panel>
                 </ui:DropdownFrame>
             </Popup>
 

@@ -11,6 +11,7 @@ using CMiX.Core.Compositing;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Studio.Avalonia.Views.Managers;
+using CMiX.UI.Controls.Collection;
 using CMiX.UI.Controls.Parts;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -83,6 +84,37 @@ namespace CMiX.Studio.Avalonia.Tests
             var scroll = popup.Child!.GetVisualDescendants().OfType<ScrollViewer>().Single(s => s.Name == "PART_Scroll");
             Assert.True(scroll.Extent.Height > scroll.Viewport.Height);
             Assert.True(scroll.Viewport.Height <= scroll.MaxHeight);
+        }
+
+        [AvaloniaFact]
+        public void ByDefault_ThePopupShowsThePlainListWithoutASearchField()
+        {
+            var (view, repository, provider) = Show();
+            repository.Add(provider.GetRequiredService<ControlFactory>().Create(typeof(Entity)));
+            Dispatcher.UIThread.RunJobs();
+
+            SwapToggle(view).IsChecked = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var popup = view.GetLogicalDescendants().OfType<Popup>().Single();
+            Assert.True(popup.Child!.GetVisualDescendants().OfType<ItemPickerList>().Single().IsVisible);
+            Assert.False(popup.Child!.GetVisualDescendants().OfType<SearchableItemPickerList>().Single().IsVisible);
+        }
+
+        [AvaloniaFact]
+        public void WhenSearchable_ThePopupShowsTheListWithASearchField()
+        {
+            var (view, repository, provider) = Show();
+            view.IsSearchable = true;
+            repository.Add(provider.GetRequiredService<ControlFactory>().Create(typeof(Entity)));
+            Dispatcher.UIThread.RunJobs();
+
+            SwapToggle(view).IsChecked = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var popup = view.GetLogicalDescendants().OfType<Popup>().Single();
+            Assert.True(popup.Child!.GetVisualDescendants().OfType<SearchableItemPickerList>().Single().IsVisible);
+            Assert.False(popup.Child!.GetVisualDescendants().OfType<ItemPickerList>().First().IsVisible);
         }
 
         [AvaloniaFact]
