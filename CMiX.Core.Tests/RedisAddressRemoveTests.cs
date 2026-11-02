@@ -39,6 +39,12 @@ namespace CMiX.Core.Tests
             return manager.ManagerData.Items.OfType<RedisBoolModulator>().Single();
         }
 
+        private static RedisIntModulator AddIntModulator(PrefabManager manager)
+        {
+            manager.AddItem(typeof(RedisIntModulator));
+            return manager.ManagerData.Items.OfType<RedisIntModulator>().Single();
+        }
+
         // Selects the address on the modulator and binds the value to its output.
         private static void Bind(IModulatorBindable bindable, RedisModulatorBase modulator, RedisAddress address)
         {
@@ -100,6 +106,22 @@ namespace CMiX.Core.Tests
 
             Assert.Null(player.Playing.ModulatorID);
             Assert.False(player.Playing.IsModulated);
+            Assert.Null(modulator.SelectedAddress);
+        }
+
+        [Fact]
+        public void RemoveAddress_TheSelectedAddressOfAnIntModulator_TakesSeekTargetBackToNormal()
+        {
+            var player = (SequencePlayer)_provider.GetRequiredService<ControlFactory>().Create(typeof(SequencePlayer));
+            var modulator = AddIntModulator(player.ModulatorManager);
+            var address = AddAddress("cmix:a");
+            Bind(player.SeekTarget, modulator, address);
+            Assert.True(player.SeekTarget.IsModulated);
+
+            Registry.RemoveAddress(address);
+
+            Assert.Null(player.SeekTarget.ModulatorID);
+            Assert.False(player.SeekTarget.IsModulated);
             Assert.Null(modulator.SelectedAddress);
         }
 
