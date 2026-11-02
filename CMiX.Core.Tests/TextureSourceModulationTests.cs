@@ -59,14 +59,39 @@ namespace CMiX.Core.Tests
         }
 
         [Theory]
-        [InlineData(typeof(VideoPlayer), 2)]
-        [InlineData(typeof(SequencePlayer), 3)]
-        public void Players_ModulateTheirPlayLoopAndSeekValues(Type type, int count)
+        [InlineData(typeof(VideoPlayer), 3)]
+        [InlineData(typeof(SequencePlayer), 4)]
+        public void Players_ModulateTheirPlayLoopSeekAndDoSeekValues(Type type, int count)
         {
             var player = (TextureSourceBase)Create(type);
 
             Assert.Equal(count, player.Modulators.Bindables.Count);
             Assert.Contains(player.Modulators.Bindables, b => b is ModulatableValue<int>);
+            Assert.Contains(player.Modulators.Bindables, b => b is ModulatableValue<bool>);
+        }
+
+        [Fact]
+        public void VideoPlayer_KeepsTheDoSeekValueThroughTheModel()
+        {
+            var player = (VideoPlayer)Create(typeof(VideoPlayer));
+            player.DoSeek.Value = true;
+
+            var copy = (VideoPlayer)Create(typeof(VideoPlayer));
+            copy.FromModel(player.ToModel());
+
+            Assert.True(copy.DoSeek.Value);
+        }
+
+        [Fact]
+        public void SequencePlayer_KeepsTheDoSeekValueThroughTheModel()
+        {
+            var player = (SequencePlayer)Create(typeof(SequencePlayer));
+            player.DoSeek.Value = true;
+
+            var copy = (SequencePlayer)Create(typeof(SequencePlayer));
+            copy.FromModel(player.ToModel());
+
+            Assert.True(copy.DoSeek.Value);
         }
 
         [Fact]

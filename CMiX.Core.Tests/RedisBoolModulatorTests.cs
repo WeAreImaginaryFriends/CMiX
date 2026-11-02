@@ -101,6 +101,15 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
+        public void CanBind_TheDoSeekOfAVideoPlayer_IsTrue()
+        {
+            var player = (VideoPlayer)_provider.GetRequiredService<ControlFactory>().Create(typeof(VideoPlayer));
+            var modulator = NewModulator();
+
+            Assert.True(((IModulatorBindable)player.DoSeek).CanBind(modulator.Outputs.Single()));
+        }
+
+        [Fact]
         public void CanBind_TheStrengthOfABlur_IsFalse()
         {
             var blur = (Blur)_provider.GetRequiredService<ControlFactory>().Create(typeof(Blur));

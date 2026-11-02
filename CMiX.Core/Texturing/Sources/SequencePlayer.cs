@@ -19,7 +19,7 @@ namespace CMiX.Core.Texturing.Sources
                               ModulatableValue<bool> playing,
                               GenericValue<float> fps,
                               ModulatableValue<bool> looping,
-                              CMiXButton doSeek,
+                              ModulatableValue<bool> doSeek,
                               AssetSelector assetSelector)
             : base(prefabService, textureModifierManager, modulatorManager, useCompositionResolution)
         {
@@ -31,10 +31,10 @@ namespace CMiX.Core.Texturing.Sources
             DoSeek = doSeek;
             AssetSelector = assetSelector;
 
-            Modulators.Add(Playing, Looping, SeekTarget);
+            Modulators.Add(Playing, Looping, SeekTarget, DoSeek);
         }
 
-        public CMiXButton DoSeek { get; set; }
+        public ModulatableValue<bool> DoSeek { get; set; }
         public ModulatableValue<int> SeekTarget { get; set; }
         public ModulatableValue<bool> Playing { get; set; }
         public GenericValue<float> FPS { get; set; }
@@ -46,7 +46,7 @@ namespace CMiX.Core.Texturing.Sources
         {
             var model = new SequencePlayerModel
             {
-                DoSeek = (ButtonModel)DoSeek.ToModel(),
+                DoSeek = (ModulatableValueModel<bool>)DoSeek.ToModel(),
                 SeekTarget = (ModulatableValueModel<int>)SeekTarget.ToModel(),
                 Playing = (ModulatableValueModel<bool>)Playing.ToModel(),
                 FPS = (GenericValueModel<float>)FPS.ToModel(),

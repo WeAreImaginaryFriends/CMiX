@@ -11,7 +11,7 @@ namespace CMiX.Core.Texturing.Sources
     public record SequencePlayerModel : IPrefabModel, ITextureSourceModel
     {
         public Guid ID { get; set; } = Guid.NewGuid();
-        public ButtonModel DoSeek { get; set; } = new();
+        public ModulatableValueModel<bool> DoSeek { get; set; } = ModulatableValueModel<bool>.Of("", false);
         public PrefabServiceModel PrefabService { get; set; } = new();
         public ModulatableValueModel<int> SeekTarget { get; set; } = ModulatableValueModel<int>.Of("", 0);
         public ModulatableValueModel<bool> Playing { get; set; } = ModulatableValueModel<bool>.Of("", true);

@@ -1,4 +1,7 @@
-﻿using CMiX.Core.Assets;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using CMiX.Core.Assets;
+using CMiX.Core.Persistence;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Texturing.Sources;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +22,7 @@ namespace CMiX.Core.Tests
             Assert.Equal(60f, player.FPS.Value);
             Assert.True(player.Looping.Value);
             Assert.True(player.Playing.Value);
+            Assert.False(player.DoSeek.Value);
             Assert.IsAssignableFrom<IAssetTextureSource>(player);
         }
 
@@ -49,6 +53,20 @@ namespace CMiX.Core.Tests
             Assert.Equal(360, loaded.Resolution.Y.Value);
             var sequence = Assert.IsType<ImageSequence>(loaded.AssetSelector.Asset);
             Assert.Equal(temp.Path, sequence.FilePath);
+        }
+
+        [Fact]
+        public void FromModel_OfAnOldFileWithAButtonDoSeek_LoadsAFalseValueWithTheID()
+        {
+            var id = new Guid("5a1d3c2e-7b4f-4e8a-9c61-2f0d8e4b7a93");
+            var node = JsonSerializer.SerializeToNode(new SequencePlayerModel(), ProjectSerializer.Options)!;
+            node["DoSeek"] = new JsonObject { ["ID"] = id.ToString() };
+
+            var loaded = JsonSerializer.Deserialize<SequencePlayerModel>(node, ProjectSerializer.Options)!;
+
+            Assert.Equal(id, loaded.DoSeek.ID);
+            Assert.False(loaded.DoSeek.Value.Value);
+            Assert.Null(loaded.DoSeek.ModulatorID.Value);
         }
     }
 }
