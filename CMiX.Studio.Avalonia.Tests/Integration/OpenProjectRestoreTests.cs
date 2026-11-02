@@ -11,7 +11,7 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
         private static string NewPath() => Path.Combine(Path.GetTempPath(), $"cmix-openrestore-{Guid.NewGuid():N}.cmix");
 
         [AvaloniaFact]
-        public async Task OpenProject_SavedWithNoSelection_LeavesTheLastCompositionSelected()
+        public async Task OpenProject_SavedWithNoSelection_LeavesNothingSelected()
         {
             var path = NewPath();
             try
@@ -29,7 +29,7 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
 
                 var compositions = opening.Project.CompositionManager;
                 Assert.Equal(3, compositions.ManagerData.Items.Count);
-                Assert.Same(compositions.ManagerData.Items[2], compositions.SelectedItem);
+                Assert.Null(compositions.SelectedItem);
             }
             finally
             {

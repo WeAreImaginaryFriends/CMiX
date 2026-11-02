@@ -34,22 +34,17 @@ namespace CMiX.Core.Tests
             var repository = provider.GetRequiredService<ControlRepository>();
             var undoManager = provider.GetRequiredService<UndoManager>();
 
-            var compositions = model.CompositionManager.ManagerData.Items
-                .Cast<CompositionModel>()
-                .Select(composition => ControlCloner.CloneWithNewGuids(composition))
-                .ToList();
-
             undoManager.SuppressUndo();
             try
             {
-                project.Open(model, compositions);
+                project.ApplySnapshot(model);
             }
             finally
             {
                 undoManager.ResumeUndo();
             }
 
-            Assert.Equal(compositions.Count, project.CompositionManager.ManagerData.Items.Count);
+            Assert.Equal(model.CompositionManager.ManagerData.Items.Count, project.CompositionManager.ManagerData.Items.Count);
             foreach (var composition in project.CompositionManager.ManagerData.Items)
                 Assert.Same(composition, repository.GetControl(composition.ID));
 

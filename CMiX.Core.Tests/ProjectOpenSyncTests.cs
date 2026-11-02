@@ -1,7 +1,6 @@
 using CMiX.Core.Animations;
 using CMiX.Core.Compositing;
 using CMiX.Core.Networking;
-using CMiX.Core.Prefabs;
 using CMiX.Core.Undo;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -17,6 +16,7 @@ namespace CMiX.Core.Tests
             public Project Project { get; }
             public UndoManager UndoManager { get; }
             public SyncPeer Peer { get; }
+            public ProjectSyncTarget Target { get; }
 
             public JoinedPeer(InMemorySyncStore store, string name, bool isWriter)
             {
@@ -24,8 +24,8 @@ namespace CMiX.Core.Tests
                 Project = provider.GetRequiredService<Project>();
                 UndoManager = provider.GetRequiredService<UndoManager>();
                 var messenger = provider.GetRequiredService<ControlMessenger>();
-                var target = new ProjectSyncTarget(Project, messenger, UndoManager);
-                Peer = CreatePeer(target, store, messenger, isWriter);
+                Target = new ProjectSyncTarget(Project, messenger, UndoManager);
+                Peer = CreatePeer(Target, store, messenger, isWriter);
                 messenger.Register(Peer);
                 Peer.Start(Options(name), autoJoin: true);
             }
@@ -51,23 +51,11 @@ namespace CMiX.Core.Tests
             return (ProjectModel)source.ToModel();
         }
 
-        // Applies a file the way the studio does: the compositions are clones with new ids.
-        private static void Open(JoinedPeer studio, ProjectModel model)
+        // Opens a file the way the studio does: the file is applied as one project, then pushed.
+        private static async Task Open(JoinedPeer studio, ProjectModel model)
         {
-            var compositions = model.CompositionManager.ManagerData.Items
-                .Cast<CompositionModel>()
-                .Select(composition => ControlCloner.CloneWithNewGuids(composition))
-                .ToList();
-
-            studio.UndoManager.SuppressUndo();
-            try
-            {
-                studio.Project.Open(model, compositions);
-            }
-            finally
-            {
-                studio.UndoManager.ResumeUndo();
-            }
+            studio.Target.ApplySnapshot(model);
+            await studio.Peer.PushAsync();
         }
 
         [Fact]
@@ -79,7 +67,7 @@ namespace CMiX.Core.Tests
             using var engine = new JoinedPeer(store, "engine", isWriter: false);
             await WaitUntilAsync(() => engine.Peer.IsJoined);
 
-            Open(studio, SavedProject());
+            await Open(studio, SavedProject());
 
             var expected = ProjectStateHash.Compute(studio.Project);
             await WaitUntilAsync(

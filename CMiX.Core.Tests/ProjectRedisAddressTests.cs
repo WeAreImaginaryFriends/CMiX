@@ -51,19 +51,6 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void Open_SendsAnAddForEachAddress()
-        {
-            var model = ModelWithAddresses("cmix:a", "cmix:b");
-            var (project, _, sender) = NewRecordedProject();
-
-            project.Open(model, new List<CompositionModel>());
-
-            var adds = sender.Sent.OfType<MessageAddItem>().ToList();
-            Assert.Equal(model.RedisAddressManager.ManagerData.Items.Select(i => i.ID), adds.Select(a => a.Model.ID));
-            Assert.All(adds, a => Assert.Equal(ManagerIDs.RedisAddressManager, a.ID));
-        }
-
-        [Fact]
         public void ApplyingASnapshot_SendsNothing()
         {
             var model = ModelWithAddresses("cmix:a");
@@ -86,7 +73,7 @@ namespace CMiX.Core.Tests
 
             ProjectSerializer.Save((ProjectModel)source.ToModel(), path);
             var target = NewProject();
-            target.Open(ProjectSerializer.Load(path), new List<CompositionModel>());
+            target.ApplySnapshot(ProjectSerializer.Load(path));
 
             Assert.Equal(new[] { "cmix:a", "cmix:b" }, Addresses(target));
             Assert.Equal(source.RedisAddressRegistry.Addresses.Select(a => a.ID),
@@ -98,7 +85,7 @@ namespace CMiX.Core.Tests
         {
             var project = NewProject();
 
-            project.Open(new ProjectModel(), new List<CompositionModel>());
+            project.ApplySnapshot(new ProjectModel());
 
             Assert.Equal(ManagerIDs.RedisAddressManager, project.RedisAddressRegistry.AddressManager.ManagerData.ID);
             Assert.Empty(Addresses(project));
