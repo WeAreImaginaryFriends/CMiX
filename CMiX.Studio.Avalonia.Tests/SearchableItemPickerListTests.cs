@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -168,6 +169,137 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(string.Empty, Search(list).Text);
             Assert.Equal(Names, Rows(list));
+        }
+
+        private static Button[] HighlightedRows(SearchableItemPickerList list) =>
+            list.GetVisualDescendants().OfType<Button>().Where(row => row.Classes.Contains("highlighted")).ToArray();
+
+        [AvaloniaFact]
+        public void ByDefault_TheFirstRowIsHighlighted()
+        {
+            var (_, list, _) = Show();
+
+            Assert.Equal(0, list.HighlightedIndex);
+            Assert.Equal("Cube", (string)Assert.Single(HighlightedRows(list)).Content!);
+        }
+
+        [AvaloniaFact]
+        public void Down_MovesTheHighlight_AndEnterPicksThatRow()
+        {
+            object? picked = null;
+            var (_, list, items) = Show(item => picked = item);
+
+            Press(Search(list), Key.Down);
+            Press(Search(list), Key.Down);
+
+            Assert.Equal("Sphere", (string)Assert.Single(HighlightedRows(list)).Content!);
+
+            Press(Search(list), Key.Enter);
+
+            Assert.Same(items[2], picked);
+        }
+
+        [AvaloniaFact]
+        public void Up_MovesTheHighlightBack()
+        {
+            var (_, list, _) = Show();
+
+            Press(Search(list), Key.Down);
+            Press(Search(list), Key.Down);
+            Press(Search(list), Key.Up);
+
+            Assert.Equal(1, list.HighlightedIndex);
+        }
+
+        [AvaloniaFact]
+        public void TheHighlight_StopsAtTheFirstAndTheLastRow()
+        {
+            var (_, list, _) = Show();
+
+            Press(Search(list), Key.Up);
+            Assert.Equal(0, list.HighlightedIndex);
+
+            for (var i = 0; i < 20; i++)
+                Press(Search(list), Key.Down);
+            Assert.Equal(Names.Length - 1, list.HighlightedIndex);
+        }
+
+        [AvaloniaFact]
+        public void Down_MovesInsideTheRowsThatMatch()
+        {
+            object? picked = null;
+            var (_, list, items) = Show(item => picked = item);
+            Type(list, "c");
+
+            Press(Search(list), Key.Down);
+            Press(Search(list), Key.Enter);
+
+            Assert.Equal(new[] { "Cube", "Camera Rig", "Cylinder" }, Rows(list));
+            Assert.Same(items[1], picked);
+        }
+
+        [AvaloniaFact]
+        public void TypingAgain_PutsTheHighlightOnTheFirstRow()
+        {
+            var (_, list, _) = Show();
+            Press(Search(list), Key.Down);
+            Press(Search(list), Key.Down);
+
+            Type(list, "c");
+
+            Assert.Equal(0, list.HighlightedIndex);
+            Assert.Equal("Cube", (string)Assert.Single(HighlightedRows(list)).Content!);
+        }
+
+        [AvaloniaFact]
+        public void WithoutAMatch_ThereIsNoHighlight_AndTheKeysDoNothing()
+        {
+            object? picked = null;
+            var (_, list, _) = Show(item => picked = item);
+            Type(list, "zzz");
+
+            Press(Search(list), Key.Down);
+            Press(Search(list), Key.Enter);
+
+            Assert.Equal(-1, list.HighlightedIndex);
+            Assert.Empty(HighlightedRows(list));
+            Assert.Null(picked);
+        }
+
+        [AvaloniaFact]
+        public void TheHighlightedRow_IsScrolledIntoView()
+        {
+            var items = new ObservableCollection<Item>(Enumerable.Range(1, 40).Select(i => new Item($"Entity {i}")));
+            var list = new SearchableItemPickerList { ItemsSource = items, TextPath = nameof(Item.Name), Width = 200 };
+            new Window { Content = list, Width = 400, Height = 800 }.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            for (var i = 0; i < 15; i++)
+                Press(Search(list), Key.Down);
+            Dispatcher.UIThread.RunJobs();
+
+            var scroll = list.GetVisualDescendants().OfType<ScrollViewer>().Single(s => s.Name == "PART_Scroll");
+            var row = Assert.Single(HighlightedRows(list));
+            var top = row.TranslatePoint(new Point(0, 0), scroll)!.Value.Y;
+
+            Assert.Equal("Entity 16", (string)row.Content!);
+            Assert.True(top >= -0.5 && top + row.Bounds.Height <= scroll.Viewport.Height + 0.5, $"The row is at {top} in a viewport of {scroll.Viewport.Height}.");
+        }
+
+        [AvaloniaFact]
+        public void TheSearchIcon_IsInsideTheField_AndTheTextStartsAfterIt()
+        {
+            var (_, list, _) = Show();
+            var box = Search(list);
+            var icon = list.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>().Single(i => i.Name == "PART_SearchIcon");
+
+            var origin = icon.TranslatePoint(new Point(0, 0), box)!.Value;
+
+            Assert.Equal("Search", icon.IconKey);
+            Assert.True(origin.X >= 0 && origin.X + icon.Bounds.Width <= box.Bounds.Width);
+            Assert.True(origin.Y >= 0 && origin.Y + icon.Bounds.Height <= box.Bounds.Height);
+            Assert.True(box.Padding.Left >= origin.X + icon.Bounds.Width, "The text would start under the icon.");
+            Assert.False(icon.IsHitTestVisible);
         }
 
         [AvaloniaFact]
