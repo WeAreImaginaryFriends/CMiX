@@ -27,7 +27,7 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
             PrefabSlotManager Slot,
             UndoManager Undo);
 
-        private static Setup Show()
+        private static Setup Show(bool neighbour = false, bool fromRepositoryTab = false)
         {
             var (provider, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
 
@@ -36,12 +36,22 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
 
             composition.LayerManager.AddItem(typeof(Layer));
             var first = (Layer)composition.LayerManager.SelectedItem;
-            first.ModelEntityManager.AddItem(typeof(Entity));
-            var entity = (Entity)first.ModelEntityManager.SelectedItem;
+
+            // The entity lives in a slot of another layer, or in the entities of the repository tab.
+            var holder = fromRepositoryTab ? viewModel.EntityManager : first.ModelEntityManager;
+            holder.AddItem(typeof(Entity));
+            var entity = (Entity)holder.SelectedItem;
             entity.PrefabService.Name.Value = "Torus";
 
             composition.LayerManager.AddItem(typeof(Layer));
             var second = (Layer)composition.LayerManager.SelectedItem;
+
+            // A slot that already holds an entity, as a project in use does.
+            if (neighbour)
+            {
+                second.ModelEntityManager.AddItem(typeof(Entity));
+                ((Entity)second.ModelEntityManager.SelectedItem).PrefabService.Name.Value = "Cube";
+            }
 
             var tabControl = TestServiceProviderFactory.MainTabControl(window);
             tabControl.SelectedItem = tabControl.Items.OfType<TabItem>().Single(tab => tab.Content is Views.MainWindowLayersTab);
@@ -114,6 +124,73 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
             TestServiceProviderFactory.Pump();
 
             Assert.Equal(1, Rows(setup));
+        }
+
+        [AvaloniaFact]
+        public void SearchEnterUndoRedo_PutsTheEntityBack()
+        {
+            var setup = Show();
+            var items = setup.Layer.ModelEntityManager.ManagerData.Items;
+
+            PickWithSearch(setup, "tor");
+            Assert.Contains(setup.Entity, items);
+
+            setup.Window.KeyPressQwerty(PhysicalKey.Z, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+            Assert.DoesNotContain(setup.Entity, items);
+
+            Assert.True(setup.Undo.CanRedo, "The redo stack is empty after the undo.");
+
+            setup.Window.KeyPressQwerty(PhysicalKey.Y, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Contains(setup.Entity, items);
+        }
+
+        [AvaloniaFact]
+        public void WithANeighbourInTheSlot_SearchEnterUndoRedo_PutsTheEntityBack()
+        {
+            var setup = Show(neighbour: true);
+            var items = setup.Layer.ModelEntityManager.ManagerData.Items;
+            Assert.Single(items);
+
+            PickWithSearch(setup, "tor");
+            Assert.Equal(2, items.Count);
+
+            setup.Window.KeyPressQwerty(PhysicalKey.Z, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+            Assert.Single(items);
+            Assert.True(setup.Undo.CanRedo, "The redo stack was emptied by something after the undo.");
+
+            setup.Window.KeyPressQwerty(PhysicalKey.Y, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Equal(2, items.Count);
+            Assert.Contains(setup.Entity, items);
+        }
+
+        [AvaloniaFact]
+        public void AnEntityOfTheRepositoryTab_SearchEnterUndoRedo_PutsTheEntityBack()
+        {
+            var setup = Show(neighbour: true, fromRepositoryTab: true);
+            var items = setup.Layer.ModelEntityManager.ManagerData.Items;
+
+            PickWithSearch(setup, "tor");
+            Assert.Equal(2, items.Count);
+            Assert.Equal(2, Rows(setup));
+
+            setup.Window.KeyPressQwerty(PhysicalKey.Z, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+            Assert.Single(items);
+            Assert.Equal(1, Rows(setup));
+            Assert.True(setup.Undo.CanRedo, "The redo stack was emptied by something after the undo.");
+
+            setup.Window.KeyPressQwerty(PhysicalKey.Y, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Equal(2, items.Count);
+            Assert.Equal(2, Rows(setup));
+            Assert.Contains(setup.Entity, items);
         }
 
         [AvaloniaFact]

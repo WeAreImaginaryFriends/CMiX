@@ -60,6 +60,21 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
+        public void AddFromTheRepository_ThenUndo_ThenRedo_PutsTheItemBack()
+        {
+            var (undo, slot, shared) = Setup();
+            slot.AddExistingItem(shared);
+
+            undo.Undo();
+            Assert.DoesNotContain(shared, slot.ManagerData.Items);
+            Assert.True(undo.CanRedo);
+
+            undo.Redo();
+
+            Assert.Contains(shared, slot.ManagerData.Items);
+        }
+
+        [Fact]
         public void AddFromTheRepository_ThenUndo_TakesTheItemOutAgain()
         {
             var (undo, slot, shared) = Setup();
