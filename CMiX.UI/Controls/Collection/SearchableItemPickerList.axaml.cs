@@ -31,6 +31,9 @@ namespace CMiX.UI.Controls.Collection
             InitializeComponent();
             PART_Search.KeyDown += OnSearchKeyDown;
 
+            // A click on a row is a pick of the whole control.
+            PART_List.Picked += (_, _) => RaisePicked();
+
             // The mouse moves the highlight inside the list. Enter then picks the row under it.
             PART_List.PropertyChanged += (_, e) =>
             {
@@ -149,6 +152,7 @@ namespace CMiX.UI.Controls.Collection
                     if (picked != null && ItemCommand?.CanExecute(picked) == true)
                     {
                         ItemCommand.Execute(picked);
+                        RaisePicked();
                         e.Handled = true;
                     }
                     break;

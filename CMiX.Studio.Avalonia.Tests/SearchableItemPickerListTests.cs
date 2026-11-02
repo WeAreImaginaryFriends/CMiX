@@ -354,6 +354,16 @@ namespace CMiX.Studio.Avalonia.Tests
             return (border.Background as ISolidColorBrush)?.Color ?? Colors.Transparent;
         }
 
+        // The pointer moves onto the row, then the left button goes down and up, as the user does it.
+        private static void Click(Window window, Button row)
+        {
+            var point = row.TranslatePoint(new Point(10, 10), window)!.Value;
+            window.MouseMove(point);
+            window.MouseDown(point, MouseButton.Left);
+            window.MouseUp(point, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+        }
+
         private static void MouseOver(Window window, Button row)
         {
             window.MouseMove(row.TranslatePoint(new Point(10, 10), window)!.Value);
@@ -393,6 +403,43 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal("Sphere", (string)highlighted.Content!);
             Assert.Equal(BackgroundOf(plain), BackgroundOf(underPointer));
             Assert.NotEqual(BackgroundOf(plain), BackgroundOf(highlighted));
+        }
+
+        [AvaloniaFact]
+        public void Enter_RunsTheCommandAndThenRaisesPicked()
+        {
+            var order = new List<string>();
+            var (_, list, _) = Show(_ => order.Add("command"));
+            list.Picked += (_, _) => order.Add("picked");
+
+            Press(Search(list), Key.Enter);
+
+            Assert.Equal(new[] { "command", "picked" }, order);
+        }
+
+        [AvaloniaFact]
+        public void Enter_WithoutAMatch_DoesNotRaisePicked()
+        {
+            var picks = 0;
+            var (_, list, _) = Show(_ => { });
+            list.Picked += (_, _) => picks++;
+            Type(list, "zzz");
+
+            Press(Search(list), Key.Enter);
+
+            Assert.Equal(0, picks);
+        }
+
+        [AvaloniaFact]
+        public void AClickOnARow_RunsTheCommandAndThenRaisesPicked()
+        {
+            var order = new List<string>();
+            var (window, list, _) = Show(_ => order.Add("command"));
+            list.Picked += (_, _) => order.Add("picked");
+
+            Click(window, RowButton(list, 1));
+
+            Assert.Equal(new[] { "command", "picked" }, order);
         }
 
         [AvaloniaFact]

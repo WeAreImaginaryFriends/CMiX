@@ -83,6 +83,7 @@
                 VerticalOffset="-1">
                 <ui:DropdownFrame>
                     <ui:SearchableItemPickerList
+                        Picked="OnSwapListPicked"
                         ItemCommand="{Binding DataContext.AddExistingItemCommand, ElementName=prefabSlotManager}"
                         ItemsSource="{Binding ItemsSource, ElementName=prefabSlotManager}"
                         TextPath="PrefabService.Name.Value" />

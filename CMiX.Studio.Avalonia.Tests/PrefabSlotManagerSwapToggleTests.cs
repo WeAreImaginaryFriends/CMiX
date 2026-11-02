@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -130,6 +131,72 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(
                 list.HighlightedIndex == 1,
                 $"Index {list.HighlightedIndex}. Focus: {focused?.GetType().Name}. Host: {host.GetType().Name}. Window is host: {ReferenceEquals(window, host)}.");
+        }
+
+        private static (PrefabSlotManager View, PrefabManager Manager, Popup Popup, SearchableItemPickerList List) ShowWithOpenPopup(int repositoryItems)
+        {
+            var (view, repository, provider) = Show();
+            var factory = provider.GetRequiredService<ControlFactory>();
+            for (var i = 0; i < repositoryItems; i++)
+                repository.Add(factory.Create(typeof(Entity)));
+            Dispatcher.UIThread.RunJobs();
+
+            SwapToggle(view).IsChecked = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var popup = view.GetLogicalDescendants().OfType<Popup>().Single();
+            var list = popup.Child!.GetVisualDescendants().OfType<SearchableItemPickerList>().Single();
+            return (view, (PrefabManager)view.DataContext!, popup, list);
+        }
+
+        [AvaloniaFact]
+        public void EnterInTheOpenPopup_AddsTheHighlightedItem_AndClosesThePopup()
+        {
+            var (view, manager, popup, list) = ShowWithOpenPopup(3);
+            Assert.True(popup.IsOpen);
+            Assert.Empty(manager.ManagerData.Items);
+
+            TopLevel.GetTopLevel(list)!.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+            TopLevel.GetTopLevel(list)!.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Single(manager.ManagerData.Items);
+            Assert.Equal(((PrefabSlotManager)view).ItemsSource.Cast<object>().ElementAt(1), manager.ManagerData.Items[0]);
+            Assert.False(popup.IsOpen);
+            Assert.False(SwapToggle(view).IsChecked);
+        }
+
+        [AvaloniaFact]
+        public void AClickOnARowInTheOpenPopup_AddsTheItem_AndClosesThePopup()
+        {
+            var (view, manager, popup, list) = ShowWithOpenPopup(3);
+
+            var window = (Window)TopLevel.GetTopLevel(list)!;
+            var row = list.GetVisualDescendants().OfType<Button>().ElementAt(2);
+            var point = row.TranslatePoint(new Point(10, 10), window)!.Value;
+            window.MouseMove(point);
+            window.MouseDown(point, MouseButton.Left);
+            window.MouseUp(point, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Single(manager.ManagerData.Items);
+            Assert.False(popup.IsOpen);
+            Assert.False(SwapToggle(view).IsChecked);
+        }
+
+        [AvaloniaFact]
+        public void ThePopup_OpensAgainAfterAPick_WithoutAFilter()
+        {
+            var (view, _, popup, list) = ShowWithOpenPopup(3);
+            TopLevel.GetTopLevel(list)!.KeyTextInput("e");
+            TopLevel.GetTopLevel(list)!.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            SwapToggle(view).IsChecked = true;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(popup.IsOpen);
+            Assert.Equal(string.Empty, list.SearchText);
         }
 
         [AvaloniaFact]

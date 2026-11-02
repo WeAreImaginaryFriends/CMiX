@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2017-2026 CloneProduction Shanghai Company Limited and CMiX contributors
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+using System;
 using System.Collections;
 using System.Windows.Input;
 using Avalonia;
@@ -38,5 +39,10 @@ namespace CMiX.UI.Controls.Collection
             get => GetValue(TextPathProperty);
             set => SetValue(TextPathProperty, value);
         }
+
+        // Raised after ItemCommand ran for an item, by a click or by Enter. The host can close its popup then.
+        public event EventHandler? Picked;
+
+        protected void RaisePicked() => Picked?.Invoke(this, EventArgs.Empty);
     }
 }
