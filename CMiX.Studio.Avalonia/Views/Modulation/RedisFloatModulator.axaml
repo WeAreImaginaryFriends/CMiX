@@ -20,11 +20,14 @@
             </ui:ComboBoxCaptioned.ItemTemplate>
         </ui:ComboBoxCaptioned>
 
-        <ui:DragValue
-            Caption="Gain"
-            Minimum="0.0"
-            ResetCommand="{Binding Gain.ResetCommand}"
-            Value="{Binding Gain.Value}" />
+        <ui:RangeValue
+            DataContext="{Binding Range}"
+            LeftValue="{Binding Minimum.Value}"
+            LeftCaption="Min"
+            LeftResetCommand="{Binding Minimum.ResetCommand}"
+            RightCaption="Max"
+            RightResetCommand="{Binding Maximum.ResetCommand}"
+            RightValue="{Binding Maximum.Value}"/>
 
     </StackPanel>
 </UserControl>

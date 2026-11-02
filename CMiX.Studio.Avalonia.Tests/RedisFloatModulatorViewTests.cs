@@ -16,7 +16,7 @@ using ViewRedisFloatModulator = CMiX.Studio.Avalonia.Views.RedisFloatModulator;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // The address combo box and the gain of a RedisFloatModulator in the window.
+    // The address combo box and the range of a RedisFloatModulator in the window.
     public class RedisFloatModulatorViewTests
     {
         private readonly IServiceProvider _provider = TestServiceProviderFactory.Create();
@@ -49,8 +49,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static ComboBoxCaptioned AddressBox(Control view) =>
             view.GetVisualDescendants().OfType<ComboBoxCaptioned>().Single(combo => combo.Caption == "Address");
 
-        private static DragValue GainValue(Control view) =>
-            view.GetVisualDescendants().OfType<DragValue>().Single(drag => drag.Caption == "Gain");
+        private static RangeValue RangeOf(Control view) => view.GetVisualDescendants().OfType<RangeValue>().Single();
 
         [AvaloniaFact]
         public void Show_TheAddressBox_ListsTheAddressesOfTheProject()
@@ -108,14 +107,27 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Value_TheGainDragValue_ChangesTheGain()
+        public void LeftValue_TheRangeValue_ChangesTheMinimum()
         {
             var modulator = NewModulator();
             var view = Show(modulator);
 
-            GainValue(view).Value = 3.0;
+            RangeOf(view).LeftValue = -2.0;
+            Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal(3.0f, modulator.Gain.Value);
+            Assert.Equal(-2.0f, modulator.Range.Minimum.Value);
+        }
+
+        [AvaloniaFact]
+        public void RightValue_TheRangeValue_ChangesTheMaximum()
+        {
+            var modulator = NewModulator();
+            var view = Show(modulator);
+
+            RangeOf(view).RightValue = 3.0;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(3.0f, modulator.Range.Maximum.Value);
         }
 
         [AvaloniaFact]

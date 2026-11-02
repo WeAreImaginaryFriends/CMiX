@@ -7,17 +7,17 @@ using CMiX.Core.Prefabs;
 
 namespace CMiX.Core.Modulation.Modulators
 {
-    // One Redis address of the project as a float output, times a gain.
+    // One Redis address of the project as a float output, mapped into a range.
     public class RedisFloatModulator : RedisModulatorBase
     {
         public RedisFloatModulator(PrefabService prefabService, RedisAddressRegistry registry,
-                                   GenericValue<Guid?> selectedAddressID, GenericValue<float> gain)
+                                   GenericValue<Guid?> selectedAddressID, FloatRange range)
             : base(prefabService, registry, selectedAddressID)
         {
-            Gain = gain;
+            Range = range;
         }
 
-        public GenericValue<float> Gain { get; set; }
+        public FloatRange Range { get; set; }
 
         protected override IModulatorOutput Output =>
             new AddressedOutput<float>(OutputName, SelectedAddress?.Value ?? OutputName);
@@ -27,7 +27,7 @@ namespace CMiX.Core.Modulation.Modulators
             ID = ID,
             PrefabService = (PrefabServiceModel)PrefabService.ToModel(),
             SelectedAddressID = (GenericValueModel<Guid?>)SelectedAddressID.ToModel(),
-            Gain = (GenericValueModel<float>)Gain.ToModel()
+            Range = (FloatRangeModel)Range.ToModel()
         };
 
         public override void FromModel(IControlModel model)
@@ -36,7 +36,7 @@ namespace CMiX.Core.Modulation.Modulators
             ID = m.ID;
             PrefabService.FromModel(m.PrefabService);
             SelectedAddressID.FromModel(m.SelectedAddressID);
-            Gain.FromModel(m.Gain);
+            Range.FromModel(m.Range);
         }
     }
 }
