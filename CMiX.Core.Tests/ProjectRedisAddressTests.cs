@@ -1,7 +1,10 @@
 using System.Collections.Specialized;
 using CMiX.Core.Animations;
 using CMiX.Core.Compositing;
+using CMiX.Core.Networking;
+using CMiX.Core.Networking.Messages;
 using CMiX.Core.Persistence;
+using CMiX.Core.Prefabs.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -26,6 +29,52 @@ namespace CMiX.Core.Tests
 
         private static IEnumerable<string> Addresses(Project project) =>
             project.RedisAddressRegistry.Addresses.Select(address => address.Value);
+
+        // A project and the messages it sends from now on.
+        private static (Project Project, ControlMessenger Messenger, RecordingMessageSender Sender) NewRecordedProject()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var messenger = provider.GetRequiredService<ControlMessenger>();
+            var sender = new RecordingMessageSender();
+            messenger.Register(sender);
+            var project = provider.GetRequiredService<Project>();
+            sender.Sent.Clear();
+            return (project, messenger, sender);
+        }
+
+        private static ProjectModel ModelWithAddresses(params string[] texts)
+        {
+            var source = NewProject();
+            foreach (var text in texts)
+                AddAddress(source, text);
+            return (ProjectModel)source.ToModel();
+        }
+
+        [Fact]
+        public void Open_SendsAnAddForEachAddress()
+        {
+            var model = ModelWithAddresses("cmix:a", "cmix:b");
+            var (project, _, sender) = NewRecordedProject();
+
+            project.Open(model, new List<CompositionModel>());
+
+            var adds = sender.Sent.OfType<MessageAddItem>().ToList();
+            Assert.Equal(model.RedisAddressManager.ManagerData.Items.Select(i => i.ID), adds.Select(a => a.Model.ID));
+            Assert.All(adds, a => Assert.Equal(ManagerIDs.RedisAddressManager, a.ID));
+        }
+
+        [Fact]
+        public void ApplyingASnapshot_SendsNothing()
+        {
+            var model = ModelWithAddresses("cmix:a");
+            var (project, messenger, sender) = NewRecordedProject();
+            messenger.IsSendingBlocked = true;
+
+            project.ApplySnapshot(model);
+
+            Assert.Empty(sender.Sent);
+            Assert.Equal(new[] { "cmix:a" }, Addresses(project));
+        }
 
         [Fact]
         public void SaveThenLoad_KeepsTheAddressesAndTheirIDs()

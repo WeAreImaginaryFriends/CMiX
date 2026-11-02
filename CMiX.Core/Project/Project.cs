@@ -127,13 +127,16 @@ namespace CMiX.Core.Compositing
                 Model.FromModel(model.Model);
         }
 
-        // A project file without addresses carries a default model, which must not replace the fixed ID.
+        // Adds the addresses through the manager, as for the compositions, so that every peer gets
+        // a message for each address. A file without addresses has no model and changes nothing.
         private void LoadAddresses(PrefabManagerModel model)
         {
             if (model == null) return;
 
-            LoadManager(RedisAddressRegistry.AddressManager, model);
-            RedisAddressRegistry.AddressManager.ManagerData.ID = ManagerIDs.RedisAddressManager;
+            var manager = RedisAddressRegistry.AddressManager;
+            foreach (var item in model.ManagerData.Items)
+                manager.AddItemFromModel(item);
+            manager.SelectAt(model.ManagerData.SelectedIndex);
         }
 
         // FromModel only adds items, so clear first to make this a real replacement.
