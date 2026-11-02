@@ -67,7 +67,7 @@ The Redis Float modulator selects one address of the list in its combo box. It h
 
 Each Redis Float modulator has one range with the start values 0 and 1. The vvvv side maps the Redis value of the selected address into the range. The range stays when you select another address.
 
-The Redis Bool modulator selects an address in the same way. It has one bool output, `Value`, for a toggle such as the Play of a player. It has no gain. The vvvv side decides how the Redis value becomes a bool.
+The Redis Bool modulator selects an address in the same way. It has one bool output, `Value`, for a bool such as the Play or the Do Seek of a player. It has no gain. The vvvv side decides how the Redis value becomes a bool.
 
 The Redis Int modulator selects an address in the same way. It has one int output, `Value`, for a whole number such as the Seek Target of a player or the Count of a modifier. It has no gain. The vvvv side decides how the Redis value becomes an int.
 
