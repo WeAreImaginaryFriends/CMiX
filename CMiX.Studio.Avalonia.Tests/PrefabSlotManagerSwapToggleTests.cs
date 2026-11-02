@@ -68,6 +68,24 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void ALongRepository_ScrollsInThePopup()
+        {
+            var (view, repository, provider) = Show();
+            var factory = provider.GetRequiredService<ControlFactory>();
+            for (var i = 0; i < 40; i++)
+                repository.Add(factory.Create(typeof(Entity)));
+            Dispatcher.UIThread.RunJobs();
+
+            SwapToggle(view).IsChecked = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var popup = view.GetLogicalDescendants().OfType<Popup>().Single();
+            var scroll = popup.Child!.GetVisualDescendants().OfType<ScrollViewer>().Single(s => s.Name == "PART_Scroll");
+            Assert.True(scroll.Extent.Height > scroll.Viewport.Height);
+            Assert.True(scroll.Viewport.Height <= scroll.MaxHeight);
+        }
+
+        [AvaloniaFact]
         public void RepositoryWithoutItems_DisablesTheToggle()
         {
             var (view, _, _) = Show();

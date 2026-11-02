@@ -1,0 +1,28 @@
+<ui:ItemPickerBase
+    x:Class="CMiX.UI.Controls.Collection.ItemPickerList"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    x:Name="itemPickerList">
+
+    <!-- One row is a button of ControlHeightMD and a space of 4. The wheel moves by whole rows and the list
+         is as high as ComboBoxVisibleItems rows, so a long list scrolls instead of leaving the screen. -->
+    <ScrollViewer
+        x:Name="PART_Scroll"
+        HorizontalScrollBarVisibility="Hidden"
+        VerticalScrollBarVisibility="Hidden"
+        ui:ScrollStep.ItemHeight="{DynamicResource ControlHeightMD}"
+        ui:ScrollStep.ItemSpacing="4"
+        ui:ScrollStep.VisibleItemCount="{DynamicResource ComboBoxVisibleItems}">
+
+        <ItemsControl x:Name="PART_Items" ItemsSource="{Binding ItemsSource, ElementName=itemPickerList}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Spacing="4" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+
+    </ScrollViewer>
+
+</ui:ItemPickerBase>
