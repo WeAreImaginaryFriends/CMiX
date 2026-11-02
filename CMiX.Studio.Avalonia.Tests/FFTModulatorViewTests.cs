@@ -42,7 +42,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var view = Show(NewModulator());
 
             Assert.Equal(4, RangeValues(view).Count);
-            Assert.Equal(4, view.GetVisualDescendants().OfType<ContentCaptioned>().Count());
+            // Four band captions and the caption of the track index.
+            Assert.Equal(5, view.GetVisualDescendants().OfType<ContentCaptioned>().Count());
         }
 
         [AvaloniaFact]
