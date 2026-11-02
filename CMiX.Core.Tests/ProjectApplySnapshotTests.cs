@@ -1,12 +1,11 @@
 using CMiX.Core.Compositing;
-using CMiX.Core.Prefabs;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CMiX.Core.Tests
 {
     // ApplySnapshot applies the model of a saved project to a project.
-    public class ProjectOpenTests
+    public class ProjectApplySnapshotTests
     {
         private static Project NewProject() => TestServiceProviderFactory.Create().GetRequiredService<Project>();
 

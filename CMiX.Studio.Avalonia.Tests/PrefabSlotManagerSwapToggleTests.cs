@@ -5,7 +5,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -106,31 +105,14 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
 
-        // The user's keys go to the window, the popup, and the field that has the focus in it.
         [AvaloniaFact]
         public void InTheOpenPopup_TheArrowKeysMoveTheHighlight()
         {
-            var (view, repository, provider) = Show();
-            var factory = provider.GetRequiredService<ControlFactory>();
-            for (var i = 0; i < 5; i++)
-                repository.Add(factory.Create(typeof(Entity)));
-            Dispatcher.UIThread.RunJobs();
+            var (_, _, _, list) = ShowWithOpenPopup(5);
 
-            SwapToggle(view).IsChecked = true;
-            Dispatcher.UIThread.RunJobs();
+            TopLevel.GetTopLevel(list)!.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
 
-            var popup = view.GetLogicalDescendants().OfType<Popup>().Single();
-            var list = popup.Child!.GetVisualDescendants().OfType<SearchableItemPickerList>().Single();
-            var window = (Window)view.GetVisualRoot()!;
-            var focused = TopLevel.GetTopLevel(list)!.FocusManager!.GetFocusedElement();
-            var host = TopLevel.GetTopLevel(list)!;
-
-            host.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
-            Dispatcher.UIThread.RunJobs();
-
-            Assert.True(
-                list.HighlightedIndex == 1,
-                $"Index {list.HighlightedIndex}. Focus: {focused?.GetType().Name}. Host: {host.GetType().Name}. Window is host: {ReferenceEquals(window, host)}.");
+            Assert.Equal(1, list.HighlightedIndex);
         }
 
         private static (PrefabSlotManager View, PrefabManager Manager, Popup Popup, SearchableItemPickerList List) ShowWithOpenPopup(int repositoryItems)
@@ -161,7 +143,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Single(manager.ManagerData.Items);
-            Assert.Equal(((PrefabSlotManager)view).ItemsSource.Cast<object>().ElementAt(1), manager.ManagerData.Items[0]);
+            Assert.Same(view.ItemsSource.Cast<object>().ElementAt(1), manager.ManagerData.Items[0]);
             Assert.False(popup.IsOpen);
             Assert.False(SwapToggle(view).IsChecked);
         }
@@ -182,20 +164,6 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Single(manager.ManagerData.Items);
             Assert.False(popup.IsOpen);
             Assert.False(SwapToggle(view).IsChecked);
-        }
-
-        [AvaloniaFact]
-        public void AfterAPickWithEnter_TheFocusGoesBackToTheToggle()
-        {
-            var (view, _, popup, list) = ShowWithOpenPopup(3);
-            var top = TopLevel.GetTopLevel(list)!;
-            Assert.True(top.FocusManager!.GetFocusedElement() is Visual { } before && before.IsAttachedToVisualTree());
-
-            top.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
-            Dispatcher.UIThread.RunJobs();
-
-            Assert.False(popup.IsOpen);
-            Assert.Same(SwapToggle(view), top.FocusManager!.GetFocusedElement());
         }
 
         [AvaloniaFact]

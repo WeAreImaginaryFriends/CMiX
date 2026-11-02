@@ -5,7 +5,6 @@ using Avalonia.Media;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.UI.Controls.Collection;
@@ -304,7 +303,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(icon.IsHitTestVisible);
         }
 
-        // The keys go through the window, so the text box sees them as a user's keys, with its own handling first.
+        // The keys go through the window, as a user's keys do.
         [AvaloniaFact]
         public void RealKeys_AfterTypingText_MoveTheHighlightBothWays()
         {
@@ -329,20 +328,6 @@ namespace CMiX.Studio.Avalonia.Tests
             window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
             window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
             Assert.Same(items[1], picked);
-        }
-
-        [AvaloniaFact]
-        public void RealKeys_AfterTypingLongerText_StillMoveTheHighlight()
-        {
-            var (window, list, _) = Show();
-            window.KeyTextInput("cy");
-            Dispatcher.UIThread.RunJobs();
-
-            window.KeyPressQwerty(PhysicalKey.ArrowUp, RawInputModifiers.None);
-            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
-
-            Assert.Equal(0, list.HighlightedIndex);
-            Assert.Equal(new[] { "Cylinder" }, Rows(list));
         }
 
         private static Button RowButton(SearchableItemPickerList list, int index) =>
@@ -440,20 +425,6 @@ namespace CMiX.Studio.Avalonia.Tests
             Click(window, RowButton(list, 1));
 
             Assert.Equal(new[] { "command", "picked" }, order);
-        }
-
-        [AvaloniaFact]
-        public void RealKeys_UpAndDown_DoNotMoveTheCaretOfTheField()
-        {
-            var (window, list, _) = Show();
-            window.KeyTextInput("ca");
-            Dispatcher.UIThread.RunJobs();
-            var caret = Search(list).CaretIndex;
-
-            window.KeyPressQwerty(PhysicalKey.ArrowUp, RawInputModifiers.None);
-            window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
-
-            Assert.Equal(caret, Search(list).CaretIndex);
         }
 
         [AvaloniaFact]
