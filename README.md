@@ -73,6 +73,10 @@ The Redis Int modulator selects an address in the same way. It has one int outpu
 
 The list has a fixed manager ID, `ManagerIDs.RedisAddressManager`. The vvvv side creates the list at startup with this ID.
 
+## FFT modulator
+
+The FFT modulator reads one track of the FFT signal. The track index selects the track. It has four float outputs, `Bass`, `LowerMid`, `HigherMid` and `High`. Each band has one range with the start values 0 and 1. The vvvv side maps the band value of the track into the range of the band.
+
 ## Hidden types
 
 A class with the attribute `[HiddenInMenu]` is not in the add menus. A saved project can still hold it, and it still works. To show the class again, remove the attribute.
