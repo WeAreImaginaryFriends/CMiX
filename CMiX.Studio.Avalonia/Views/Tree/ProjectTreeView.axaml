@@ -47,10 +47,8 @@
                         Spacing="{DynamicResource SpacingSM}"
                         IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}">
 
-                        <ToggleButton
-                            IsChecked="{Binding Item.PrefabService.Visibility.Value}"
-                            Theme="{DynamicResource ToggleButtonVisibility}" />
-
+                        <!-- The mask toggle (a composition and a layer only), then the visibility toggle on the far right,
+                             as in the rows of the lists. -->
                         <ContentControl Content="{Binding Item}">
                             <ContentControl.DataTemplates>
                                 <DataTemplate DataType="{x:Type Compositing:Composition}">
@@ -70,6 +68,10 @@
                                 </DataTemplate>
                             </ContentControl.DataTemplates>
                         </ContentControl>
+
+                        <ToggleButton
+                            IsChecked="{Binding Item.PrefabService.Visibility.Value}"
+                            Theme="{DynamicResource ToggleButtonVisibility}" />
 
                     </StackPanel>
 

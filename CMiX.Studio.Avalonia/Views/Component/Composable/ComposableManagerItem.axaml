@@ -17,14 +17,15 @@
                 Orientation="Horizontal"
                 Spacing="{DynamicResource SpacingSM}">
 
-                <ToggleButton
-                    IsChecked="{Binding PrefabService.Visibility.Value}"
-                    Theme="{DynamicResource ToggleButtonVisibility}" />
-
+                <!-- The mask toggle, then the visibility toggle on the far right. Every row has them in this order. -->
                 <ToggleButton
                     IsChecked="{Binding Mask.IsMask.Value}"
                     Theme="{DynamicResource ToggleButtonMask}"
                     ToolTip.Tip="Mask" />
+
+                <ToggleButton
+                    IsChecked="{Binding PrefabService.Visibility.Value}"
+                    Theme="{DynamicResource ToggleButtonVisibility}" />
 
             </StackPanel>
 

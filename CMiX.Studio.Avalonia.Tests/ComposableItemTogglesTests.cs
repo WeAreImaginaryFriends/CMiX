@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
@@ -24,6 +25,24 @@ namespace CMiX.Studio.Avalonia.Tests
             var visible = row.GetVisualDescendants().OfType<ToggleButton>().Where(toggle => toggle.IsEffectivelyVisible).ToList();
 
             Assert.Equal(2, visible.Count);
+        }
+
+        [AvaloniaFact]
+        public void TheVisibilityToggle_IsOnTheFarRight_AndTheMaskToggleIsLeftOfIt()
+        {
+            var layer = TestServiceProviderFactory.Create().GetRequiredService<ControlFactory>().Create(typeof(Layer));
+            var row = new Views.ComposableManagerItem { DataContext = layer };
+            var window = new Window { Content = row, Width = 400, Height = 60 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            var toggles = row.GetVisualDescendants().OfType<ToggleButton>().Where(toggle => toggle.IsEffectivelyVisible).ToList();
+            var visibility = toggles.Single(toggle => ReferenceEquals(toggle.Theme, Application.Current!.FindResource("ToggleButtonVisibility")));
+            var mask = toggles.Single(toggle => ReferenceEquals(toggle.Theme, Application.Current!.FindResource("ToggleButtonMask")));
+
+            var visibilityLeft = visibility.TranslatePoint(new Point(0, 0), window)!.Value.X;
+            var maskLeft = mask.TranslatePoint(new Point(0, 0), window)!.Value.X;
+            Assert.True(maskLeft + mask.Bounds.Width <= visibilityLeft, "The mask toggle is not left of the visibility toggle.");
         }
     }
 }

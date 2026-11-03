@@ -316,6 +316,46 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(2, TogglesOf(screen.RowOf(screen.Tree.Roots[0].Children[0])).Count);
         }
 
+        private static ToggleButton ToggleWithTheme(TreeViewItem row, string themeKey) =>
+            TogglesOf(row).Single(toggle => ReferenceEquals(toggle.Theme, Application.Current!.FindResource(themeKey)));
+
+        private static double RightEdge(Screen screen, Control control) =>
+            control.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X + control.Bounds.Width;
+
+        [AvaloniaFact]
+        public void TheVisibilityToggle_IsOnTheFarRight_AndTheMaskToggleIsLeftOfIt()
+        {
+            var screen = Show();
+
+            foreach (var node in new[] { screen.Tree.Roots[0], screen.Tree.Roots[0].Children[0] })
+            {
+                var row = screen.RowOf(node);
+                var visibility = ToggleWithTheme(row, "ToggleButtonVisibility");
+                var mask = ToggleWithTheme(row, "ToggleButtonMask");
+
+                Assert.True(RightEdge(screen, mask) <= visibility.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X,
+                    $"The mask toggle of {node.Header} is not left of the visibility toggle.");
+            }
+        }
+
+        [AvaloniaFact]
+        public void TheVisibilityToggleOfEveryRow_HasTheSameRightEdge()
+        {
+            var screen = Show();
+            screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
+            Dispatcher.UIThread.RunJobs();
+            screen.Window.UpdateLayout();
+            var composition = screen.Tree.Roots[0];
+            var layer = composition.Children[0];
+            var entity = layer.Children[0].Children[0];
+
+            var edges = new[] { composition, layer, entity }
+                .Select(node => RightEdge(screen, ToggleWithTheme(screen.RowOf(node), "ToggleButtonVisibility")))
+                .ToList();
+
+            Assert.All(edges, edge => Assert.Equal(edges[0], edge));
+        }
+
         [AvaloniaFact]
         public void AnEntityRow_HasTheVisibilityToggleOnly_AndAGroupRowHasNone()
         {
@@ -330,18 +370,19 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaTheory]
-        [InlineData(0)]
-        [InlineData(1)]
-        public void TheToggles_ChangeTheVisibilityAndTheMaskOfTheComposition(int toggleIndex)
+        [InlineData("ToggleButtonVisibility")]
+        [InlineData("ToggleButtonMask")]
+        public void TheToggles_ChangeTheVisibilityAndTheMaskOfTheComposition(string themeKey)
         {
             var screen = Show();
-            var toggle = TogglesOf(screen.RowOf(screen.Tree.Roots[0]))[toggleIndex];
-            var before = toggleIndex == 0 ? screen.A.PrefabService.Visibility.Value : screen.A.Mask.IsMask.Value;
+            var visibility = themeKey == "ToggleButtonVisibility";
+            var toggle = ToggleWithTheme(screen.RowOf(screen.Tree.Roots[0]), themeKey);
+            var before = visibility ? screen.A.PrefabService.Visibility.Value : screen.A.Mask.IsMask.Value;
 
             toggle.IsChecked = !before;
             Dispatcher.UIThread.RunJobs();
 
-            var after = toggleIndex == 0 ? screen.A.PrefabService.Visibility.Value : screen.A.Mask.IsMask.Value;
+            var after = visibility ? screen.A.PrefabService.Visibility.Value : screen.A.Mask.IsMask.Value;
             Assert.Equal(!before, after);
         }
 
