@@ -78,9 +78,20 @@ namespace CMiX.UI.Controls.String
                 item.IsSelected = true;
         }
 
+        // Only a double tap on the text starts the edit mode. A double tap on the rest of the row is for the row:
+        // a row of a tree expands, a row of a list does nothing. A double tap on the text, or in the input while it is edited
+        // (to select a word), is taken here, so the row does not see it.
         private void TextBoxEditable_DoubleTapped(object? sender, TappedEventArgs e)
         {
-            OnSwitchToEditingMode();
+            if (ReferenceEquals(e.Source, TextDisplay))
+            {
+                OnSwitchToEditingMode();
+                e.Handled = true;
+            }
+            else if (e.Source is Visual source && (ReferenceEquals(source, InputValue) || InputValue.IsVisualAncestorOf(source)))
+            {
+                e.Handled = true;
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

@@ -9,10 +9,14 @@
         Background="Transparent">
 
         <!-- The TextBox has a 1 border, so its padding is 3,1. The text then starts at the same place as in the TextBlock (4,0). -->
+        <!-- Only as wide as its text: a double tap on the text starts the edit mode, a double tap on the rest of the row does not.
+             The least width keeps an empty name easy to hit. -->
         <TextBlock
             x:Name="TextDisplay"
+            MinWidth="{DynamicResource ControlHeightMD}"
             Padding="4,0"
-            HorizontalAlignment="Stretch"
+            Background="Transparent"
+            HorizontalAlignment="Left"
             VerticalAlignment="Center"
             Foreground="{Binding Foreground, ElementName=editableTextBox}"
             Text="{Binding Text, ElementName=editableTextBox}" />

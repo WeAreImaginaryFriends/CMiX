@@ -74,9 +74,10 @@ namespace CMiX.UI.Tests
         public void ContextRequest_AfterADoubleClickEditMode_OpensNoMenu()
         {
             var (window, row, box, input) = Show();
-            var pressed = new PointerPressedEventArgs(box, new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true), window, new Point(5, 5), 1,
+            var text = box.GetVisualDescendants().OfType<TextBlock>().Single(block => block.Name == "TextDisplay");
+            var pressed = new PointerPressedEventArgs(text, new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true), window, new Point(5, 5), 1,
                 new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed), KeyModifiers.None);
-            box.RaiseEvent(new TappedEventArgs(InputElement.DoubleTappedEvent, pressed));
+            text.RaiseEvent(new TappedEventArgs(InputElement.DoubleTappedEvent, pressed));
             Dispatcher.UIThread.RunJobs();
             Assert.True(input.IsVisible);
 
