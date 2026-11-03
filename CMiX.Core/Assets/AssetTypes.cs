@@ -38,6 +38,11 @@ namespace CMiX.Core.Assets
             return Extensions.TryGetValue(extension, out kind);
         }
 
+        // True when the folder holds at least one image file. Sub folders are not searched.
+        public static bool ContainsImages(string folder) =>
+            Directory.Exists(folder)
+            && Directory.EnumerateFiles(folder).Any(file => TryResolve(file, out var kind) && kind == AssetKind.Image);
+
         public static IReadOnlyList<string> AllExtensions => Extensions.Keys.ToArray();
     }
 }
