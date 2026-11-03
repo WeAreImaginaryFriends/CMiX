@@ -1,15 +1,26 @@
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Avalonia.Xaml.Interactivity;
 using CMiX.Core;
 using CMiX.Core.Assets;
 using CMiX.Core.Compositing;
+using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Behaviors;
+using CMiX.Studio.Avalonia.Views;
+using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using FullscreenQuad = CMiX.Core.Compositing.FullscreenQuad;
 using Image = CMiX.Core.Texturing.Sources.Image;
+using Layer = CMiX.Core.Compositing.Layer;
+using SequencePlayer = CMiX.Core.Texturing.Sources.SequencePlayer;
+using VideoPlayer = CMiX.Core.Texturing.Sources.VideoPlayer;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
@@ -62,6 +73,22 @@ namespace CMiX.Studio.Avalonia.Tests
         public void TheBehavior_AcceptsFilesAndFoldersByDefault()
         {
             Assert.Equal(FileDropMode.FilesAndFolders, new EntityDropBehavior().Mode);
+        }
+
+        [AvaloniaFact]
+        public void TheEntityList_OfALayer_HasTheDropBehaviorOnItsManager()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var layer = (Layer)provider.GetRequiredService<ControlFactory>().Create(typeof(Layer));
+            var tab = new LayerEntityTab { DataContext = layer };
+            var window = new Window { Content = tab, Width = 500, Height = 900 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            var slot = tab.GetVisualDescendants().OfType<PrefabSlotManager>().First();
+            var behavior = Assert.Single(Interaction.GetBehaviors(slot).OfType<EntityDropBehavior>());
+
+            Assert.Same(layer.ModelEntityManager, behavior.PrefabManager);
         }
 
         [AvaloniaFact]

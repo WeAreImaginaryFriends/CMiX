@@ -9,7 +9,8 @@
     xmlns:Lights="clr-namespace:CMiX.Core.Rendering.Lights;assembly=CMiX.Core"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
-    xmlns:Managers="clr-namespace:CMiX.Studio.Avalonia.Views.Managers"  
+    xmlns:Managers="clr-namespace:CMiX.Studio.Avalonia.Views.Managers"
+    xmlns:Behaviors="clr-namespace:CMiX.Studio.Avalonia.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     d:DesignWidth="400"
     d:DesignHeight="600">
@@ -28,6 +29,10 @@
                 DataContext="{Binding ModelEntityManager}"
                 DockPanel.Dock="Top"
                 ItemsSource="{Binding ControlRepository.ModelEntities}">
+
+                <i:Interaction.Behaviors>
+                    <Behaviors:EntityDropBehavior PrefabManager="{Binding}" />
+                </i:Interaction.Behaviors>
 
                 <Managers:PrefabSlotManager.SelectionPanel>
                     <ui:PopupButton Caption="Add Entity">
