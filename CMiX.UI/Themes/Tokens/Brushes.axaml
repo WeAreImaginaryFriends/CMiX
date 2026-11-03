@@ -45,6 +45,8 @@
     <SolidColorBrush x:Key="StateHoverBrush" Color="{DynamicResource Grey700}" />
     <SolidColorBrush x:Key="StatePressedBrush" Color="{DynamicResource Grey100}" />
     <SolidColorBrush x:Key="RowHoverBrush" Color="{DynamicResource Grey500}" />
+    <SolidColorBrush x:Key="RowStripeABrush" Color="{DynamicResource RowStripeA}" />
+    <SolidColorBrush x:Key="RowStripeBBrush" Color="{DynamicResource RowStripeB}" />
 
     <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource Text}" />
     <SolidColorBrush x:Key="ActiveForegroundBrush" Color="{DynamicResource ActiveText}" />
