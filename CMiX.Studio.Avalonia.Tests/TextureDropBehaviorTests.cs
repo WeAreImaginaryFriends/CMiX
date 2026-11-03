@@ -1,7 +1,10 @@
 using Avalonia.Headless.XUnit;
+using CMiX.Core.Assets;
 using CMiX.Core.Prefabs.Managers;
+using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Behaviors;
+using CMiX.UI.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Image = CMiX.Core.Texturing.Sources.Image;
@@ -75,6 +78,56 @@ namespace CMiX.Studio.Avalonia.Tests
             undo.Undo();
 
             Assert.Single(textures.ManagerData.Items);
+        }
+
+        private string NewFolder(string name, params string[] files)
+        {
+            var folder = System.IO.Path.Combine(_folder, name);
+            Directory.CreateDirectory(folder);
+            foreach (var file in files)
+                File.WriteAllText(System.IO.Path.Combine(folder, file), "x");
+            return folder;
+        }
+
+        [AvaloniaFact]
+        public void TheBehavior_AcceptsFilesAndFoldersByDefault()
+        {
+            Assert.Equal(FileDropMode.FilesAndFolders, new TextureDropBehavior().Mode);
+        }
+
+        [AvaloniaFact]
+        public void ADroppedFolderWithImages_BecomesASequencePlayerThatPointsToTheFolder()
+        {
+            var (textures, _, dropper) = Show();
+            var folder = NewFolder("frames", "frame_0001.png", "frame_0002.png");
+
+            dropper.Drop(new[] { folder });
+
+            var player = Assert.IsType<SequencePlayer>(Assert.Single(textures.ManagerData.Items));
+            Assert.Equal(folder, player.AssetSelector.Asset.FilePath);
+            Assert.IsType<ImageSequence>(player.AssetSelector.Asset);
+        }
+
+        [AvaloniaFact]
+        public void ADroppedFolderWithoutImages_AddsNothing()
+        {
+            var (textures, _, dropper) = Show();
+
+            dropper.Drop(new[] { NewFolder("docs", "notes.txt") });
+
+            Assert.Empty(textures.ManagerData.Items);
+        }
+
+        [AvaloniaFact]
+        public void ADroppedFolderWithImages_IsOneUndoStep()
+        {
+            var (textures, undo, dropper) = Show();
+            undo.Clear();
+
+            dropper.Drop(new[] { NewFolder("frames", "frame_0001.png") });
+            undo.Undo();
+
+            Assert.Empty(textures.ManagerData.Items);
         }
 
         [AvaloniaFact]

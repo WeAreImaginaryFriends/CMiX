@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Avalonia;
 using CMiX.Core.Assets;
 using CMiX.Core.Prefabs.Managers;
@@ -12,8 +13,14 @@ using CMiX.UI.Behaviors;
 namespace CMiX.Studio.Avalonia.Behaviors
 {
     // Files dropped on the control become textures of the prefab manager.
+    // A folder with images becomes an image sequence.
     public class TextureDropBehavior : FileDropBehavior
     {
+        static TextureDropBehavior()
+        {
+            ModeProperty.OverrideDefaultValue<TextureDropBehavior>(FileDropMode.FilesAndFolders);
+        }
+
         public static readonly StyledProperty<PrefabManager> PrefabManagerProperty =
             AvaloniaProperty.Register<TextureDropBehavior, PrefabManager>(nameof(PrefabManager));
 
@@ -32,6 +39,17 @@ namespace CMiX.Studio.Avalonia.Behaviors
 
             foreach (var file in paths)
             {
+                if (Directory.Exists(file))
+                {
+                    if (AssetTypes.ContainsImages(file))
+                        PrefabManager.AddItem(typeof(SequencePlayer), item =>
+                        {
+                            if (item is IAssetTextureSource source)
+                                source.AssetSelector.SetAssetFromPath(file);
+                        });
+                    continue;
+                }
+
                 if (!AssetTypes.TryResolve(file, out var kind))
                     continue;
 
