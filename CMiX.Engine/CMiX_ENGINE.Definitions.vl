@@ -36576,7 +36576,7 @@
                       <Choice Kind="TypeFlag" Name="Float32" />
                     </p:TypeAnnotation>
                   </Pad>
-                  <Pad Id="UuhWtqm5yULOFFYnxDrv7B" Comment="Enabled" Bounds="651,360,35,35" ShowValueBox="true" isIOBox="true" Value="False">
+                  <Pad Id="UuhWtqm5yULOFFYnxDrv7B" Comment="Enabled" Bounds="651,360,35,35" ShowValueBox="true" isIOBox="true" Value="True">
                     <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                       <Choice Kind="ImmutableTypeFlag" Name="Boolean" />
                     </p:TypeAnnotation>
@@ -36772,7 +36772,7 @@
                 <Pin Id="JxaWULUx3EfNgPWrwZcPia" Name="Output" Kind="StateOutputPin" />
                 <Patch Id="FQTT1hUMlE0MVljoOW73wd" ManuallySortedPins="true">
                   <Patch Id="AWNMAT3cw7NOFh9jVc5o9r" Name="Create" ManuallySortedPins="true" />
-                  <Patch Id="Ky8XmSm9dfcPSsFR14TGse" Name="Update" ParticipatingElements="Djl6AXS0t9yOHiUyUBRBti,C1wwBVKUQm0PWXC5ipVzRk,O9CN5J76DDDNARcXtLjIIn" ManuallySortedPins="true">
+                  <Patch Id="Ky8XmSm9dfcPSsFR14TGse" Name="Update" ParticipatingElements="Djl6AXS0t9yOHiUyUBRBti,C1wwBVKUQm0PWXC5ipVzRk,O9CN5J76DDDNARcXtLjIIn,M3Z2Zf5WdndPOidmkrLTRy" ManuallySortedPins="true">
                     <Pin Id="ACsKoIDqRI4OeKgmAO0Jxg" Name="Input 1" Kind="InputPin" />
                     <Pin Id="CMvLArwzhmDPHh6vm7oDp7" Name="Input 2" Kind="InputPin" />
                     <Pin Id="UfSnKBclW3oNFEx5MHvYCL" Name="Input 3" Kind="InputPin" />
@@ -36868,13 +36868,18 @@
                     <Pin Id="IeQVaXhG3itMxuvqZozHrK" Name="Enabled" Kind="InputPin" DefaultValue="True" />
                     <Pin Id="QLSezWuLVJ8N27xXBoZj6D" Name="Output" Kind="OutputPin" />
                   </Node>
-                  <Pad Id="UuDbaSs18a3QAxTu53WcRc" Comment="Enabled" Bounds="255,360,35,35" ShowValueBox="true" isIOBox="true" Value="False">
+                  <Pad Id="UuDbaSs18a3QAxTu53WcRc" Comment="Enabled" Bounds="255,360,35,35" ShowValueBox="true" isIOBox="true" Value="True">
                     <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                       <Choice Kind="ImmutableTypeFlag" Name="Boolean" />
                     </p:TypeAnnotation>
                     <p:ValueBoxSettings>
                       <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Toggle</p:buttonmode>
                     </p:ValueBoxSettings>
+                  </Pad>
+                  <Pad Id="Kh8imRXIvIJMAKmAJ6A1f2" Comment="Alpha" Bounds="197,340,35,15" ShowValueBox="true" isIOBox="true" Value="1">
+                    <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
+                      <Choice Kind="TypeFlag" Name="Float32" />
+                    </p:TypeAnnotation>
                   </Pad>
                 </Patch>
                 <Pin Id="SgfcTOQSmmROdrOnyfdxZs" Name="Node Context" Kind="InputPin" IsHidden="true" />
@@ -36914,15 +36919,6 @@
                 <Pin Id="TLXdkpZAOlsO4pwPZs4Tfq" Name="Arg 3" Kind="InputPin" />
                 <Pin Id="DkSRWgDuIzROEgA3Rxd0o4" Name="Input" Kind="InputPin" />
               </Node>
-              <Pad Id="C5rRUxk3cg2NIhkqryqY8m" Bounds="82,263,351,19" ShowValueBox="true" isIOBox="true" Value="can't use blend transparency because of Z sorting problem">
-                <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
-                  <Choice Kind="TypeFlag" Name="String" />
-                </p:TypeAnnotation>
-                <p:ValueBoxSettings>
-                  <p:fontsize p:Type="Int32">9</p:fontsize>
-                  <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
-                </p:ValueBoxSettings>
-              </Pad>
             </Canvas>
             <Patch Id="VL9N5QeYGZ8P9GE31KHu2v" Name="Create" ParticipatingElements="UDSKdnJBEqnOhPszLCcVed" />
             <Patch Id="M8fJoGvNT4nL7r6HpP3gg7" Name="Update" />
@@ -37029,6 +37025,7 @@
             <Link Id="C1wwBVKUQm0PWXC5ipVzRk" Ids="QLSezWuLVJ8N27xXBoZj6D,AX2djrMn2lXOcmrkSjQwZe" />
             <Link Id="O9CN5J76DDDNARcXtLjIIn" Ids="UuDbaSs18a3QAxTu53WcRc,IeQVaXhG3itMxuvqZozHrK" />
             <Link Id="FwMjkRo5wrINd1BYTrV3ps" Ids="UuhWtqm5yULOFFYnxDrv7B,CvB4vBFFMFSNYbuqZGCfmW" />
+            <Link Id="M3Z2Zf5WdndPOidmkrLTRy" Ids="Kh8imRXIvIJMAKmAJ6A1f2,RafznxZAkhEOmeqJZ5FcLf" />
           </Patch>
         </Node>
         <Canvas Id="OCdTlAzywZTO44ybZlNeDW" Name="Modifiers" Position="45,77" />
