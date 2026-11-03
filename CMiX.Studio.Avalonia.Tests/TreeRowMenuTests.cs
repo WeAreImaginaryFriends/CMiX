@@ -37,9 +37,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             foreach (var screen in screens)
             {
-                foreach (var row in screen.View.GetVisualDescendants().OfType<TreeViewItem>())
-                    row.ContextMenu?.Close();
-
+                screen.TreeView.ContextMenu?.Close();
                 screen.Window.Close();
             }
         }
@@ -68,7 +66,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 var row = RowOf(node);
                 row.RaiseEvent(new ContextRequestedEventArgs { Source = row });
                 Dispatcher.UIThread.RunJobs();
-                return row.ContextMenu;
+                return TreeView.ContextMenu;
             }
 
             public static List<string> Headers(ContextMenu menu) =>
@@ -147,6 +145,63 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.True(menu.IsOpen);
             Assert.Equal(screen.B.PrefabService.Name.Value, Screen.Headers(menu)[0]);
+        }
+
+        // The menu of a row must be the menu of that row, whatever rows were clicked before and whatever rows are above it.
+        [AvaloniaFact]
+        public void ARightClickOnAGroupAfterARightClickOnItsComposition_OpensTheMenuOfTheGroup()
+        {
+            var screen = Show();
+            screen.OpenMenu(screen.Tree.Roots[0]);
+            screen.OpenMenu(screen.LayerNodeOfA(0));
+
+            var entities = Screen.Headers(screen.OpenMenu(screen.Group(0, "Entities"))!);
+            var cameras = Screen.Headers(screen.OpenMenu(screen.Group(0, "Cameras"))!);
+            var lights = Screen.Headers(screen.OpenMenu(screen.Group(0, "Lights"))!);
+
+            Assert.Equal(new[] { "Entities", "-", "Add Entity", "Add Fullscreen Quad", "Add Text" }, entities);
+            Assert.Equal(new[] { "Cameras", "-", "Add Camera" }, cameras);
+            Assert.Equal(new[] { "Lights", "-", "Add Light" }, lights);
+        }
+
+        [AvaloniaFact]
+        public void ARightClickOnAnEntityAfterARightClickOnItsGroup_OpensTheMenuOfTheEntityWithNoAddRow()
+        {
+            var screen = Show();
+            screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            Dispatcher.UIThread.RunJobs();
+            var entityNode = screen.Group(0, "Entities").Children[0];
+            screen.OpenMenu(screen.Tree.Roots[0]);
+            screen.OpenMenu(screen.Group(0, "Entities"));
+
+            var headers = Screen.Headers(screen.OpenMenu(entityNode)!);
+
+            Assert.Equal(new[] { "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
+                headers.Skip(2));
+            Assert.DoesNotContain(headers, header => header.StartsWith("Add"));
+        }
+
+        [AvaloniaTheory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void EveryRightClick_OpensExactlyOneMenu_WhateverWasClickedBefore(int rounds)
+        {
+            var screen = Show();
+            screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            Dispatcher.UIThread.RunJobs();
+            var order = new[] { screen.Tree.Roots[0], screen.LayerNodeOfA(0), screen.Group(0, "Entities"), screen.Group(0, "Entities").Children[0] };
+
+            for (var round = 0; round < rounds; round++)
+                foreach (var node in order)
+                {
+                    var menu = screen.OpenMenu(node)!;
+
+                    Assert.True(menu.IsOpen);
+                    Assert.Equal(node.Header, Screen.Headers(menu)[0]);
+                }
+
+            Assert.All(screen.View.GetVisualDescendants().OfType<TreeViewItem>(), row => Assert.Null(row.ContextMenu));
         }
 
         [AvaloniaFact]
@@ -358,7 +413,7 @@ namespace CMiX.Studio.Avalonia.Tests
             input.RaiseEvent(new ContextRequestedEventArgs { Source = input });
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Null(row.ContextMenu);
+            Assert.Null(screen.TreeView.ContextMenu);
         }
 
         [AvaloniaFact]
@@ -375,13 +430,13 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(IsRenaming(box));
-            Assert.Null(row.ContextMenu);
+            Assert.Null(screen.TreeView.ContextMenu);
 
             screen.Window.MouseDown(point, MouseButton.Right);
             screen.Window.MouseUp(point, MouseButton.Right);
             Dispatcher.UIThread.RunJobs();
 
-            Assert.True(row.ContextMenu?.IsOpen);
+            Assert.True(screen.TreeView.ContextMenu?.IsOpen);
         }
 
         [AvaloniaFact]

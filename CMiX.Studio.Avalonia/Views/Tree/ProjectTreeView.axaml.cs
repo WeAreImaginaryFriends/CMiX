@@ -57,15 +57,19 @@ namespace CMiX.Studio.Avalonia.Views
         // does not open on that event, so it is opened here.
         // The tree listens in the bubble phase, as the menu of a row of a list does. A name that is being edited
         // blocks the request in the tunnel phase (ContextMenuGuard), so a right click during a rename opens no menu.
+        // The menu belongs to the tree and no row holds one. A row with a menu would open it for the right clicks on its
+        // children too, because a request goes up through every parent row.
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
         {
+            treeView.ContextMenu?.Close();
+
             var item = ItemOf(e.Source);
             var menu = item?.DataContext is TreeNode node ? CreateMenu(item, node) : null;
-            if (menu == null || item == null)
+            treeView.ContextMenu = menu;
+            if (menu == null)
                 return;
 
-            item.ContextMenu = menu;
-            menu.Open(item);
+            menu.Open(treeView);
             e.Handled = true;
         }
 
