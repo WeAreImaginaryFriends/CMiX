@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,6 +13,7 @@ using CMiX.Core.Rendering.Lights;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
+using CMiX.UI.Controls.String;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Camera = CMiX.Core.Rendering.Cameras.Camera;
@@ -26,8 +28,22 @@ using TextEntity = CMiX.Core.Compositing.TextEntity;
 namespace CMiX.Studio.Avalonia.Tests
 {
     // The menu of a row of the project tree: the rows of the menus of the lists, and the rows that add.
-    public class TreeRowMenuTests
+    public class TreeRowMenuTests : IDisposable
     {
+        private readonly List<Screen> screens = new();
+
+        // The menus and the windows of a test are closed, so an open popup never reaches the next test.
+        public void Dispose()
+        {
+            foreach (var screen in screens)
+            {
+                foreach (var row in screen.View.GetVisualDescendants().OfType<TreeViewItem>())
+                    row.ContextMenu?.Close();
+
+                screen.Window.Close();
+            }
+        }
+
         private sealed class Screen
         {
             public Window Window { get; init; } = null!;
@@ -77,7 +93,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         // A holds two layers, B holds one.
-        private static Screen Show()
+        private Screen Show()
         {
             var provider = TestServiceProviderFactory.Create();
             var project = provider.GetRequiredService<Project>();
@@ -94,7 +110,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var window = new Window { Content = view, Width = 400, Height = 900 };
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            return new Screen { Window = window, View = view, Tree = tree, Project = project, A = a, B = b };
+            var screen = new Screen { Window = window, View = view, Tree = tree, Project = project, A = a, B = b };
+            screens.Add(screen);
+            return screen;
         }
 
         [AvaloniaFact]
@@ -309,6 +327,61 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Null(screen.TreeView.ContextMenu);
             Assert.All(screen.View.GetVisualDescendants().OfType<TreeViewItem>(), row => Assert.Null(row.ContextMenu));
+        }
+
+        private static bool IsRenaming(TextBoxEditable box) =>
+            box.GetVisualDescendants().OfType<TextBox>().Any(input => input.IsVisible);
+
+        // A double click on the name starts the rename.
+        private static (TextBoxEditable Box, Point Point) StartRename(Screen screen, TreeNode node)
+        {
+            var box = screen.RowOf(node).GetVisualDescendants().OfType<TextBoxEditable>().First();
+            var point = box.TranslatePoint(new Point(10, box.Bounds.Height / 2), screen.Window)!.Value;
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            return (box, point);
+        }
+
+        [AvaloniaFact]
+        public void AContextRequestWhileTheNameIsEdited_OpensNoMenu()
+        {
+            var screen = Show();
+            var node = screen.LayerNodeOfA(0);
+            var (box, _) = StartRename(screen, node);
+            Assert.True(IsRenaming(box));
+
+            var row = screen.RowOf(node);
+            var input = box.GetVisualDescendants().OfType<TextBox>().First(textBox => textBox.IsVisible);
+            input.RaiseEvent(new ContextRequestedEventArgs { Source = input });
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Null(row.ContextMenu);
+        }
+
+        [AvaloniaFact]
+        public void ARightClickDuringARename_EndsTheRenameAndOpensNoMenu_AndTheNextOneOpensTheMenu()
+        {
+            var screen = Show();
+            var node = screen.LayerNodeOfA(0);
+            var row = screen.RowOf(node);
+            var (box, point) = StartRename(screen, node);
+            Assert.True(IsRenaming(box));
+
+            screen.Window.MouseDown(point, MouseButton.Right);
+            screen.Window.MouseUp(point, MouseButton.Right);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(IsRenaming(box));
+            Assert.Null(row.ContextMenu);
+
+            screen.Window.MouseDown(point, MouseButton.Right);
+            screen.Window.MouseUp(point, MouseButton.Right);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(row.ContextMenu?.IsOpen);
         }
 
         [AvaloniaFact]

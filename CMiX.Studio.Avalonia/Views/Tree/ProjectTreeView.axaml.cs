@@ -50,11 +50,13 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(DragDrop.DragOverEvent, OnDragOver);
             treeView.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
             treeView.AddHandler(DragDrop.DropEvent, OnDrop);
-            treeView.AddHandler(ContextRequestedEvent, OnContextRequested, RoutingStrategies.Tunnel);
+            treeView.AddHandler(ContextRequestedEvent, OnContextRequested, RoutingStrategies.Bubble);
         }
 
         // The menu of the row under the pointer, built and opened when it is asked for. A menu that is set during the event
         // does not open on that event, so it is opened here.
+        // The tree listens in the bubble phase, as the menu of a row of a list does. A name that is being edited
+        // blocks the request in the tunnel phase (ContextMenuGuard), so a right click during a rename opens no menu.
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
         {
             var item = ItemOf(e.Source);

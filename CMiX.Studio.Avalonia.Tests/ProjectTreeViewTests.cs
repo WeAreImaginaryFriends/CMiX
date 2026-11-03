@@ -51,6 +51,12 @@ namespace CMiX.Studio.Avalonia.Tests
             {
                 var data = new DataObject();
                 data.Set(ProjectTreeView.NodeFormat, source);
+
+                // The hit test of the window reads the last rendered scene. After a change of the rows it must be rendered first.
+                Window.UpdateLayout();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                Dispatcher.UIThread.RunJobs();
+
                 var point = PointIn(target, fraction);
                 var effects = DragDropEffects.Move;
                 Window.DragDrop(point, RawDragEventType.DragEnter, data, effects);
@@ -177,6 +183,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             screen.Project.CompositionManager.AddItem(typeof(Composition));
             Dispatcher.UIThread.RunJobs();
+            screen.Window.UpdateLayout();
             var last = screen.Tree.Roots[2];
 
             // The first composition over the last one: a real move in both halves.
