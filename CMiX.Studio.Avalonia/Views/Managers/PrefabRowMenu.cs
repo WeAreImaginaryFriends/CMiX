@@ -81,7 +81,7 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         private ContextMenu BuildFor(RowMenuKind kind)
         {
             foreach (var add in _adds)
-                _builder.Action(add.Id, add.Header, () => Dispatcher.UIThread.Post(add.Execute));
+                Add(add);
 
             if (kind == RowMenuKind.Group)
                 return Build();
@@ -109,6 +109,26 @@ namespace CMiX.Studio.Avalonia.Views.Managers
                     break;
             }
             return Build();
+        }
+
+        // A row that adds, or a submenu of such rows. Posted so the popup closes before the bound list changes.
+        private void Add(RowMenuAdd add)
+        {
+            if (add.Children is not { Count: > 0 } children)
+            {
+                _builder.Action(add.Id, add.Header, () => Dispatcher.UIThread.Post(() => add.Execute?.Invoke()));
+                return;
+            }
+
+            var submenu = new MenuItem { Header = add.Header };
+            foreach (var child in children)
+            {
+                var row = new MenuItem { Header = child.Header };
+                row.Click += (_, _) => Dispatcher.UIThread.Post(() => child.Execute?.Invoke());
+                submenu.Items.Add(row);
+            }
+
+            _builder.Action(add.Id, submenu);
         }
 
         private void Duplicate() => Row(DuplicateId, "Duplicate", (manager, item) => manager.DuplicateItem(item));
