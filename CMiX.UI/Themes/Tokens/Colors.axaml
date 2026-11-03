@@ -18,6 +18,15 @@
 
     <Color x:Key="AccentHighlight">#FF91ACD7</Color>
 
+    <!-- The colors of the modulator assign button, one pair for each ModulatorCategory.
+         The name is Modulator + category + (Highlight when the modulator is hovered).
+         A new category needs two colors here and two brushes in Brushes.axaml. -->
+    <Color x:Key="ModulatorUnassigned">#FF606065</Color>
+    <Color x:Key="ModulatorInternal">#FF5680C2</Color>
+    <Color x:Key="ModulatorInternalHighlight">#FF91ACD7</Color>
+    <Color x:Key="ModulatorExternal">#FFC28A56</Color>
+    <Color x:Key="ModulatorExternalHighlight">#FFD7B091</Color>
+
     <Color x:Key="Text">#FFE0E0E0</Color>
     <Color x:Key="ActiveText">#FFFFFFFF</Color>
 

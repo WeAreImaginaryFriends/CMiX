@@ -8,6 +8,13 @@
     <SolidColorBrush x:Key="AccentInactiveBrush" Color="{DynamicResource AccentSecondary}" />
     <SolidColorBrush x:Key="AccentHighlightBrush" Color="{DynamicResource AccentHighlight}" />
 
+    <!-- The modulator assign button. The studio finds these by name: Modulator + category + (Highlight) + Brush. -->
+    <SolidColorBrush x:Key="ModulatorUnassignedBrush" Color="{DynamicResource ModulatorUnassigned}" />
+    <SolidColorBrush x:Key="ModulatorInternalBrush" Color="{DynamicResource ModulatorInternal}" />
+    <SolidColorBrush x:Key="ModulatorInternalHighlightBrush" Color="{DynamicResource ModulatorInternalHighlight}" />
+    <SolidColorBrush x:Key="ModulatorExternalBrush" Color="{DynamicResource ModulatorExternal}" />
+    <SolidColorBrush x:Key="ModulatorExternalHighlightBrush" Color="{DynamicResource ModulatorExternalHighlight}" />
+
     <SolidColorBrush x:Key="PanelBackground" Opacity="0.3" Color="Black" />
     <SolidColorBrush x:Key="PanelBorderBackground" Opacity="0.4" Color="Black" />
     <SolidColorBrush x:Key="ListBoxBackground" Opacity="0.4" Color="Black" />
