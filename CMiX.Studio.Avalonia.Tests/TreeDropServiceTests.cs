@@ -182,8 +182,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Contains($"\"{scene.NodeA.Header}\"", text);
             Assert.Contains($"\"{scene.NodeB.Header}\"", text);
             Assert.Contains(entity.PrefabService.Name.Value, text);
-            Assert.DoesNotContain('–', text);
-            Assert.DoesNotContain('—', text);
+            Assert.DoesNotContain((char)0x2013, text);
+            Assert.DoesNotContain((char)0x2014, text);
         }
 
         [Fact]
