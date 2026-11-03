@@ -14,6 +14,10 @@ namespace CMiX.UI.Controls.Parts
     // The frame of every popup and menu: shadow, rounded translucent panel and padding.
     public class PopupFrame : ContentControl
     {
+        // The room around the visible panel, for the shadow. The popup is this much larger than the panel on every side.
+        // A popup that is placed by hand adds it to its offsets to place the panel, not the popup.
+        public static readonly Thickness ShadowMargin = new(8);
+
         public static readonly StyledProperty<bool> CentersOnPointerProperty =
             AvaloniaProperty.Register<PopupFrame, bool>(nameof(CentersOnPointer));
         public bool CentersOnPointer

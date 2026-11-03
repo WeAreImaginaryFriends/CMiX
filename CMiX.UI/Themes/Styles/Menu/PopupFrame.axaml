@@ -9,7 +9,7 @@
                 <Border
                     Background="Transparent"
                     Effect="{DynamicResource DropShadowWindow}"
-                    Padding="8">
+                    Padding="{x:Static ui:PopupFrame.ShadowMargin}">
 
                     <Panel MinWidth="{TemplateBinding PanelMinWidth}">
                         <Border
