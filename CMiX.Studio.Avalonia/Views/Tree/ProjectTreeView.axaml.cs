@@ -10,7 +10,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
-using HanumanInstitute.MvvmDialogs;
 using CompositionModel = CMiX.Core.Compositing.Composition;
 
 namespace CMiX.Studio.Avalonia.Views
@@ -26,7 +25,6 @@ namespace CMiX.Studio.Avalonia.Views
         private const string DropAfter = ":dropafter";
         private const string DropInside = ":dropinside";
 
-        private readonly TreeDropService dropService = new();
         private TreeNode? pressedNode;
         private Point pressPoint;
         private TreeViewItem? marked;
@@ -98,7 +96,7 @@ namespace CMiX.Studio.Avalonia.Views
             e.Handled = true;
 
             var (source, item, target, position) = Read(e);
-            if (source == null || item == null || target == null || !dropService.CanDrop(source, target, position))
+            if (DataContext is not ProjectTree tree || source == null || item == null || target == null || !tree.CanDrop(source, target, position))
             {
                 Mark(null, null);
                 return;
@@ -116,16 +114,10 @@ namespace CMiX.Studio.Avalonia.Views
             Mark(null, null);
 
             var (source, _, target, position) = Read(e);
-            if (source == null || target == null)
+            if (DataContext is not ProjectTree tree || source == null || target == null)
                 return;
 
-            var outcome = dropService.Drop(source, target, position);
-            if (outcome.Moved || outcome.Blocking.Count == 0)
-                return;
-
-            var dialogService = App.DialogService;
-            if (dialogService != null && DataContext is ProjectTree tree)
-                await dialogService.ShowMessageBoxAsync(tree, dropService.DescribeBlock(source, target, outcome.Blocking), "Move Layer");
+            await tree.DropAsync(source, target, position);
         }
 
         // The dragged node, the row under the pointer, its node, and the place in the row.

@@ -67,6 +67,7 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<MainMenu>();
                 serviceCollection.AddSingleton<UnsavedChanges>();
                 serviceCollection.AddSingleton<IUnsavedChangesPrompt, UnsavedChangesPrompt>();
+                serviceCollection.AddSingleton<IMoveBlockedNotice, MoveBlockedNotice>();
                 serviceCollection.AddSingleton<IDialogService>(provider => new DialogService(
                     new MainWindowDialogManager(new Services.EmptyViewLocator(), new DialogFactory().AddMessageBox()),
                     viewModelFactory: type => provider.GetService(type)));

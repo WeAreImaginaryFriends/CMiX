@@ -28,6 +28,8 @@ namespace CMiX.Studio.Avalonia.Tests
             serviceCollection.AddSingleton<UnsavedChanges>();
             serviceCollection.AddSingleton<FakeUnsavedChangesPrompt>();
             serviceCollection.AddSingleton<IUnsavedChangesPrompt>(provider => provider.GetRequiredService<FakeUnsavedChangesPrompt>());
+            serviceCollection.AddSingleton<FakeMoveBlockedNotice>();
+            serviceCollection.AddSingleton<IMoveBlockedNotice>(provider => provider.GetRequiredService<FakeMoveBlockedNotice>());
             serviceCollection.AddSingleton<IDialogService>(provider => new DialogService(
                 new MainWindowDialogManager(new EmptyViewLocator(), new DialogFactory().AddMessageBox()),
                 viewModelFactory: type => provider.GetService(type)));

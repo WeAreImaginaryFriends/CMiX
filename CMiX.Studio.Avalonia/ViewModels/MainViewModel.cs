@@ -9,6 +9,7 @@ using CMiX.Core.Networking;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -31,7 +32,8 @@ namespace CMiX.Studio.Avalonia.ViewModels
                              MainWindowController mainWindowController,
                              MainMenu mainMenu,
                              ControlActivationService activationService,
-                             UndoManager undoManager)
+                             UndoManager undoManager,
+                             IMoveBlockedNotice moveBlockedNotice)
         {
             _undoManager = undoManager;
             TextureManager = SetupManager(textureManager, ManagerIDs.TextureManager);
@@ -42,7 +44,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ColorPaletteManager = SetupManager(colorPaletteManager, ManagerIDs.ColorPaletteManager);
 
             Project = project;
-            ProjectTree = new ProjectTree(project, undoManager);
+            ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice);
             Sync = sync;
             MainWindowController = mainWindowController;
             AssetManager = assetManager;

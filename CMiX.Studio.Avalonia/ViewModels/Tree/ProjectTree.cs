@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using CMiX.Core.Compositing;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CMiX.Studio.Avalonia.ViewModels.Tree
@@ -16,17 +18,33 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     public sealed class ProjectTree : ObservableObject, IDisposable
     {
         private readonly UndoManager undoManager;
+        private readonly IMoveBlockedNotice? notice;
+        private readonly TreeDropService dropService = new();
         private readonly TreeNode root;
         private TreeNode? selectedNode;
         private bool selecting;
 
-        public ProjectTree(Project project, UndoManager undoManager)
+        public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null)
         {
             this.undoManager = undoManager;
+            this.notice = notice;
             root = new TreeNode(this, null, null, null, "Project", project.CompositionManager);
         }
 
         public ObservableCollection<TreeNode> Roots => root.Children;
+
+        public bool CanDrop(TreeNode source, TreeNode target, DropPosition position) =>
+            dropService.CanDrop(source, target, position);
+
+        // Drops the node. A move that shared items block leaves everything as it is and tells the user why.
+        public async Task DropAsync(TreeNode source, TreeNode target, DropPosition position)
+        {
+            var outcome = dropService.Drop(source, target, position);
+            if (outcome.Moved || outcome.Blocking.Count == 0 || notice == null)
+                return;
+
+            await notice.ShowAsync(dropService.DescribeBlock(source, target, outcome.Blocking));
+        }
 
         public TreeNode? SelectedNode
         {
