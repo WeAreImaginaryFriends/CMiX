@@ -36,8 +36,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public bool CanDrop(TreeNode source, TreeNode target, DropPosition position) =>
             dropService.CanDrop(source, target, position);
 
-        public DropPosition PositionFor(TreeNode source, TreeNode target, double fraction) =>
-            dropService.PositionFor(source, target, fraction);
+        public DropPlace? Locate(TreeNode source, TreeNode hovered, double fraction) =>
+            dropService.Locate(source, hovered, fraction);
 
         // Drops the node. A move that shared items block leaves everything as it is and tells the user why.
         public async Task DropAsync(TreeNode source, TreeNode target, DropPosition position)

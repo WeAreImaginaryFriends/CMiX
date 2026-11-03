@@ -17,6 +17,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         Inside
     }
 
+    // The row that takes a drop, and where the drop goes in relation to it.
+    public sealed record DropPlace(TreeNode Target, DropPosition Position);
+
     // What a drop did. Blocking lists the items that stopped a move of a layer.
     public sealed record DropOutcome(bool Moved, IReadOnlyList<IPrefab> Blocking)
     {
@@ -28,16 +31,52 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     // A layer can also go to the layer list of another composition, if no item of it is shared with a layer that stays.
     public sealed class TreeDropService
     {
-        // The place of a drop on a row. The fraction is the height of the pointer on the row, from 0 at the top to 1 at the bottom.
-        // A layer over a composition goes inside it, wherever the pointer is on the row.
-        // Every other drop goes before the row in its top half, and after the row in its bottom half.
-        public DropPosition PositionFor(TreeNode source, TreeNode target, double fraction)
+        // Where a drop lands when the pointer is over a row. The fraction is the height of the pointer on that row,
+        // from 0 at the top to 1 at the bottom. The result is null when no drop is offered at this place.
+        //
+        // The row that takes the drop is the hovered row, or the first parent row that can take the dragged node.
+        // A row with rows under it is one block, so the drop is offered only at the two ends of the block:
+        // before it, in the top half of its own row, and after it, in the bottom half of the last visible row of the block.
+        // A row without rows under it has both halves. A layer over a composition goes inside it, wherever the pointer is on the row.
+        public DropPlace? Locate(TreeNode source, TreeNode hovered, double fraction)
         {
-            if (source.Item is Layer && target.Item is Composition)
-                return DropPosition.Inside;
+            if (source.Item == null || source.Owner == null || hovered.IsOrIsUnder(source))
+                return null;
 
-            return fraction < 0.5 ? DropPosition.Before : DropPosition.After;
+            var target = hovered;
+            while (target != null && !TakesDropOf(source, target))
+                target = target.Parent;
+
+            if (target == null)
+                return null;
+
+            if (ReferenceEquals(hovered, target))
+            {
+                if (source.Item is Layer && target.Item is Composition)
+                    return new DropPlace(target, DropPosition.Inside);
+
+                if (fraction < 0.5)
+                    return new DropPlace(target, DropPosition.Before);
+
+                return ReferenceEquals(LastVisible(target), target) ? new DropPlace(target, DropPosition.After) : null;
+            }
+
+            return ReferenceEquals(LastVisible(target), hovered) && fraction >= 0.5 ? new DropPlace(target, DropPosition.After) : null;
         }
+
+        // True when the node is a row that the dragged node can go before, after, or (a layer on a composition) inside.
+        private static bool TakesDropOf(TreeNode source, TreeNode target)
+        {
+            if (target.Item == null || target.Owner == null || target.IsOrIsUnder(source))
+                return false;
+
+            return ReferenceEquals(source.Owner, target.Owner)
+                || (source.Item is Layer && (target.Item is Layer || target.Item is Composition));
+        }
+
+        // The last row that is shown in the block of a node: itself when it is collapsed or has no children.
+        private static TreeNode LastVisible(TreeNode node) =>
+            node.IsExpanded && node.Children.Count > 0 ? LastVisible(node.Children[^1]) : node;
 
         // True when the drop is possible by type and place. A move that shared items block is still possible here,
         // so the user can drop it and read the reason.
