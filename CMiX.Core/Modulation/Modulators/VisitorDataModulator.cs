@@ -6,6 +6,7 @@ using CMiX.Core.Prefabs;
 
 namespace CMiX.Core.Modulation.Modulators
 {
+    [ModulatorCategory(ModulatorCategory.External)]
     public class VisitorDataModulator : ModulatorBase
     {
         public VisitorDataModulator(PrefabService prefabService, 

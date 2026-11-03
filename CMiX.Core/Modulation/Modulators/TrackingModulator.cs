@@ -6,6 +6,7 @@ using CMiX.Core.Prefabs;
 
 namespace CMiX.Core.Modulation.Modulators
 {
+    [ModulatorCategory(ModulatorCategory.External)]
     public class TrackingModulator : ModulatorBase
     {
         public TrackingModulator(PrefabService prefabService, 

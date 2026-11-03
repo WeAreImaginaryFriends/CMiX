@@ -8,6 +8,7 @@ using CMiX.Core.Prefabs;
 namespace CMiX.Core.Modulation.Modulators
 {
     // A modulator that selects one Redis address of the project and gives it as one output.
+    [ModulatorCategory(ModulatorCategory.External)]
     public abstract class RedisModulatorBase : ModulatorBase, INotifyOutputRemoved
     {
         protected const string OutputName = "Value";

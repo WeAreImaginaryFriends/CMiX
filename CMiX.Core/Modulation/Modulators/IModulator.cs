@@ -12,5 +12,8 @@ namespace CMiX.Core.Modulation.Modulators
         bool IsExpanded { get; set; }
 
         IReadOnlyList<IModulatorOutput> Outputs { get; }
+
+        // Read from the ModulatorCategory attribute of the type.
+        ModulatorCategory Category => ModulatorCategoryAttribute.Of(GetType());
     }
 }
