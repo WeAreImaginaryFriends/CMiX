@@ -89,6 +89,18 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
+        public void InFilesAndFoldersMode_FilesAndFoldersAreReported()
+        {
+            var (window, target, drop) = Show(FileDropMode.FilesAndFolders);
+            IReadOnlyList<string>? received = null;
+            drop.PathsDropped += (s, e) => received = e.Paths;
+
+            Drag(window, target, RawDragEventType.Drop, FakeStorageItem.Drag(window, _file, _subFolder));
+
+            Assert.Equal(new[] { _file, _subFolder }, received!);
+        }
+
+        [AvaloniaFact]
         public void ADropWithoutFiles_IsIgnored()
         {
             var (window, target, drop) = Show(FileDropMode.Files);

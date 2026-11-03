@@ -13,11 +13,12 @@ using Avalonia.Xaml.Interactivity;
 
 namespace CMiX.UI.Behaviors
 {
-    // What a drop accepts: the files of the drag, or the folders of the drag.
+    // What a drop accepts: the files of the drag, the folders of the drag, or both.
     public enum FileDropMode
     {
         Files,
-        Folders
+        Folders,
+        FilesAndFolders
     }
 
     public class PathsDroppedEventArgs : EventArgs
@@ -88,15 +89,22 @@ namespace CMiX.UI.Behaviors
             e.Handled = true;
         }
 
+        private static bool Accepts(FileDropMode mode, string path) => mode switch
+        {
+            FileDropMode.Folders => Directory.Exists(path),
+            FileDropMode.FilesAndFolders => File.Exists(path) || Directory.Exists(path),
+            _ => File.Exists(path)
+        };
+
         private void OnDrop(object? sender, DragEventArgs e)
         {
             if (!e.Data.Contains(DataFormats.Files))
                 return;
 
-            var folders = Mode == FileDropMode.Folders;
+            var mode = Mode;
             var paths = (e.Data.GetFiles() ?? Enumerable.Empty<IStorageItem>())
                 .Select(item => item.TryGetLocalPath())
-                .Where(path => path != null && (folders ? Directory.Exists(path) : File.Exists(path)))
+                .Where(path => path != null && Accepts(mode, path))
                 .Select(path => path!)
                 .ToList();
             if (paths.Count == 0)
