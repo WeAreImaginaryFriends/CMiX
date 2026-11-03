@@ -337,35 +337,112 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Contains(":dropinside", screen.RowOf(screen.Tree.Roots[1]).Classes);
         }
 
+        private static TextBoxEditable NameBoxOf(TreeViewItem row) =>
+            row.GetVisualDescendants().OfType<TextBoxEditable>().First();
+
+        private static bool IsRenaming(TextBoxEditable box) =>
+            box.GetVisualDescendants().OfType<TextBox>().Any(input => input.IsVisible);
+
+        // A point in the name box of a row, to the right of the text of the name.
+        private static Point AwayFromTheName(Screen screen, TreeViewItem row)
+        {
+            var box = NameBoxOf(row);
+            return box.TranslatePoint(new Point(box.Bounds.Width - 12, box.Bounds.Height / 2), screen.Window)!.Value;
+        }
+
+        private static void DoubleClick(Screen screen, Point point)
+        {
+            // The hit test of the window reads the last rendered scene.
+            screen.Window.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        [AvaloniaTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ADoubleClickAwayFromTheName_ExpandsOrCollapsesTheRow_AndStartsNoRename(bool expanded)
+        {
+            var screen = Show();
+            var node = screen.Tree.Roots[0];
+            node.IsExpanded = expanded;
+            Dispatcher.UIThread.RunJobs();
+            var row = screen.RowOf(node);
+
+            DoubleClick(screen, AwayFromTheName(screen, row));
+
+            Assert.Equal(!expanded, row.IsExpanded);
+            Assert.Equal(!expanded, node.IsExpanded);
+            Assert.False(IsRenaming(NameBoxOf(row)));
+        }
+
         [AvaloniaFact]
-        public void ADoubleClickOnARow_DoesNotExpandOrCollapseIt()
+        public void ADoubleClickOnTheIconOfARow_ExpandsOrCollapsesTheRow()
         {
             var screen = Show();
             var node = screen.Tree.Roots[0];
             var row = screen.RowOf(node);
-            var point = screen.PointIn(node, 0.5);
-            var expanded = row.IsExpanded;
+            var icon = row.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>().First();
+            var point = icon.TranslatePoint(new Point(icon.Bounds.Width / 2, icon.Bounds.Height / 2), screen.Window)!.Value;
 
-            screen.Window.MouseDown(point, MouseButton.Left);
-            screen.Window.MouseUp(point, MouseButton.Left);
-            screen.Window.MouseDown(point, MouseButton.Left);
-            screen.Window.MouseUp(point, MouseButton.Left);
-            Dispatcher.UIThread.RunJobs();
+            DoubleClick(screen, point);
 
-            Assert.Equal(expanded, row.IsExpanded);
-            Assert.Equal(expanded, node.IsExpanded);
+            Assert.False(row.IsExpanded);
         }
 
-        private static TextBoxEditable NameBoxOf(TreeViewItem row) =>
-            row.GetVisualDescendants().OfType<TextBoxEditable>().First();
-
-        private static void DoubleClick(Screen screen, Point point)
+        [AvaloniaFact]
+        public void ADoubleClickAwayFromTheName_OfARowWithoutChildren_DoesNothing()
         {
-            screen.Window.MouseDown(point, MouseButton.Left);
-            screen.Window.MouseUp(point, MouseButton.Left);
-            screen.Window.MouseDown(point, MouseButton.Left);
-            screen.Window.MouseUp(point, MouseButton.Left);
+            var screen = Show();
+            screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
+            var entityNode = screen.Tree.Roots[0].Children[0].Children[0].Children[0];
+            var entityRow = screen.RowOf(entityNode);
+            var before = entityNode.IsExpanded;
+
+            DoubleClick(screen, AwayFromTheName(screen, entityRow));
+
+            Assert.False(IsRenaming(NameBoxOf(entityRow)));
+            Assert.Equal(before, entityNode.IsExpanded);
+            Assert.True(screen.RowOf(screen.Tree.Roots[0]).IsExpanded);
+        }
+
+        [AvaloniaFact]
+        public void ADoubleClickOnAToggle_DoesNotExpandOrCollapseTheRow()
+        {
+            var screen = Show();
+            var node = screen.Tree.Roots[0];
+            var row = screen.RowOf(node);
+            var visibility = ToggleWithTheme(row, "ToggleButtonVisibility");
+            var before = screen.A.PrefabService.Visibility.Value;
+            var point = visibility.TranslatePoint(new Point(visibility.Bounds.Width / 2, visibility.Bounds.Height / 2), screen.Window)!.Value;
+
+            DoubleClick(screen, point);
+
+            Assert.True(row.IsExpanded);
+            Assert.Equal(before, screen.A.PrefabService.Visibility.Value);
+        }
+
+        [AvaloniaFact]
+        public void ADoubleClickInTheInputWhileRenaming_KeepsTheRenameAndTheRow()
+        {
+            var screen = Show();
+            var node = screen.Tree.Roots[0];
+            var row = screen.RowOf(node);
+            var box = NameBoxOf(row);
+            DoubleClick(screen, box.TranslatePoint(new Point(10, box.Bounds.Height / 2), screen.Window)!.Value);
+            Assert.True(IsRenaming(box));
+
+            DoubleClick(screen, box.TranslatePoint(new Point(box.Bounds.Width - 12, box.Bounds.Height / 2), screen.Window)!.Value);
+
+            Assert.True(IsRenaming(box));
+            Assert.True(row.IsExpanded);
         }
 
         [AvaloniaTheory]

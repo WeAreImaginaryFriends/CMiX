@@ -45,6 +45,20 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
             treeView.AddHandler(DragDrop.DropEvent, OnDrop);
             treeView.AddHandler(ContextRequestedEvent, OnContextRequested, RoutingStrategies.Bubble);
+            treeView.AddHandler(DoubleTappedEvent, OnDoubleTapped, RoutingStrategies.Bubble);
+        }
+
+        // A double tap on a row, away from its name, expands or collapses the row. The name takes its own double tap (it starts
+        // the rename and handles the tap), so that tap never comes here. A toggle or an input keeps its double tap too.
+        // TreeViewItem does this by itself for the part PART_HeaderPresenter. The template has no such part (see ProjectTree.axaml),
+        // so the tree does it here, and only where it is wanted.
+        private void OnDoubleTapped(object? sender, TappedEventArgs e)
+        {
+            if (IsEditor(e.Source) || ItemOf(e.Source)?.DataContext is not TreeNode { Children.Count: > 0 } node)
+                return;
+
+            node.IsExpanded = !node.IsExpanded;
+            e.Handled = true;
         }
 
         // The menu of the row under the pointer, built and opened when it is asked for. A menu that is set during the event
