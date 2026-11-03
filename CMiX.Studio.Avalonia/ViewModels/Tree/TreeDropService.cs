@@ -28,6 +28,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     // A layer can also go to the layer list of another composition, if no item of it is shared with a layer that stays.
     public sealed class TreeDropService
     {
+        // The place of a drop on a row. The fraction is the height of the pointer on the row, from 0 at the top to 1 at the bottom.
+        // A layer over a composition goes inside it, wherever the pointer is on the row.
+        // Every other drop goes before the row in its top half, and after the row in its bottom half.
+        public DropPosition PositionFor(TreeNode source, TreeNode target, double fraction)
+        {
+            if (source.Item is Layer && target.Item is Composition)
+                return DropPosition.Inside;
+
+            return fraction < 0.5 ? DropPosition.Before : DropPosition.After;
+        }
+
         // True when the drop is possible by type and place. A move that shared items block is still possible here,
         // so the user can drop it and read the reason.
         public bool CanDrop(TreeNode source, TreeNode target, DropPosition position) =>

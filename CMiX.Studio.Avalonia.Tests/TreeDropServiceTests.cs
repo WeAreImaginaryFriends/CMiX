@@ -186,6 +186,30 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.DoesNotContain((char)0x2014, text);
         }
 
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(0.5)]
+        [InlineData(1.0)]
+        public void PositionFor_ALayerOverAComposition_IsInsideWhereverThePointerIs(double fraction)
+        {
+            var scene = CreateScene();
+
+            Assert.Equal(DropPosition.Inside, service.PositionFor(scene.LayerNodeOfA(0), scene.NodeB, fraction));
+        }
+
+        [Theory]
+        [InlineData(0.0, DropPosition.Before)]
+        [InlineData(0.49, DropPosition.Before)]
+        [InlineData(0.5, DropPosition.After)]
+        [InlineData(1.0, DropPosition.After)]
+        public void PositionFor_AnythingElse_IsBeforeInTheTopHalfAndAfterInTheBottomHalf(double fraction, DropPosition expected)
+        {
+            var scene = CreateScene();
+
+            Assert.Equal(expected, service.PositionFor(scene.NodeA, scene.NodeB, fraction));
+            Assert.Equal(expected, service.PositionFor(scene.LayerNodeOfA(0), scene.LayerNodeOfA(1), fraction));
+        }
+
         [Fact]
         public void CanDrop_ACompositionInsideAComposition_IsFalse()
         {
