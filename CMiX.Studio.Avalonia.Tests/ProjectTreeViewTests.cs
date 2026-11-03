@@ -12,6 +12,7 @@ using CMiX.Core.Prefabs;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
+using CMiX.UI.Controls.String;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Composition = CMiX.Core.Compositing.Composition;
@@ -41,7 +42,7 @@ namespace CMiX.Studio.Avalonia.Tests
             // A point in the header of a row, as a fraction of its height.
             public Point PointIn(TreeNode node, double fraction)
             {
-                var header = RowOf(node).GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_LayoutRoot");
+                var header = RowOf(node).GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
                 return header.TranslatePoint(new Point(header.Bounds.Width / 2, header.Bounds.Height * fraction), Window)!.Value;
             }
 
@@ -93,7 +94,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         private static Border HeaderOf(TreeViewItem row) =>
-            row.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_LayoutRoot");
+            row.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
 
         // The toggles of a row, without the chevron and without the toggles of its children.
         private static List<ToggleButton> TogglesOf(TreeViewItem row) =>
@@ -209,6 +210,56 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(expanded, row.IsExpanded);
             Assert.Equal(expanded, node.IsExpanded);
+        }
+
+        private static TextBoxEditable NameBoxOf(TreeViewItem row) =>
+            row.GetVisualDescendants().OfType<TextBoxEditable>().First();
+
+        private static void DoubleClick(Screen screen, Point point)
+        {
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        [AvaloniaTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ADoubleClickOnTheName_StartsTheRenameAndKeepsTheRowAsItWas(bool expanded)
+        {
+            var screen = Show();
+            var node = screen.Tree.Roots[0];
+            node.IsExpanded = expanded;
+            Dispatcher.UIThread.RunJobs();
+            var row = screen.RowOf(node);
+            var box = NameBoxOf(row);
+            var point = box.TranslatePoint(new Point(10, box.Bounds.Height / 2), screen.Window)!.Value;
+
+            DoubleClick(screen, point);
+
+            Assert.Equal(expanded, row.IsExpanded);
+            Assert.Equal(expanded, node.IsExpanded);
+            Assert.Contains(box.GetVisualDescendants().OfType<TextBox>(), input => input.IsVisible);
+        }
+
+        [AvaloniaFact]
+        public void TheNameBox_FillsTheRowBetweenTheIconAndTheToggles()
+        {
+            var screen = Show();
+            var row = screen.RowOf(screen.Tree.Roots[0]);
+            var content = row.GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "RowContent");
+            var box = NameBoxOf(row);
+            var toggles = TogglesOf(row);
+
+            var boxLeft = box.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X;
+            var boxRight = boxLeft + box.Bounds.Width;
+            var togglesLeft = toggles.Min(toggle => toggle.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X);
+
+            // The box reaches the toggles: only the margin of the toggles is between them.
+            Assert.True(togglesLeft - boxRight <= 4, $"The name box ends {togglesLeft - boxRight} px before the toggles.");
+            Assert.True(box.Bounds.Width > content.Bounds.Width / 2, "The name box is less than half of the row.");
         }
 
         [AvaloniaFact]

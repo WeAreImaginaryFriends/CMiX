@@ -73,15 +73,19 @@
 
                     </StackPanel>
 
-                    <ui:TextBoxEditable
-                        Text="{Binding Item.PrefabService.Name.Value, Mode=TwoWay}"
-                        IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <!-- The last child of the dock panel: the name takes all the room between the icon and the toggles,
+                         as the name of a row of a list does. A group has a text, an item has a name that can be edited. -->
+                    <Panel>
+                        <ui:TextBoxEditable
+                            Text="{Binding Item.PrefabService.Name.Value, Mode=TwoWay}"
+                            IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
-                    <TextBlock
-                        Margin="4,0"
-                        VerticalAlignment="Center"
-                        Text="{Binding Header}"
-                        IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNull}}" />
+                        <TextBlock
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            Text="{Binding Header}"
+                            IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNull}}" />
+                    </Panel>
 
                 </DockPanel>
 

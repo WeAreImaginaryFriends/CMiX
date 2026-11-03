@@ -201,7 +201,7 @@ namespace CMiX.Studio.Avalonia.Views
             if (item == null || target == null)
                 return (source, item, target, DropPosition.After);
 
-            var header = item.GetVisualDescendants().OfType<Border>().FirstOrDefault(border => border.Name == "PART_LayoutRoot");
+            var header = item.GetVisualDescendants().OfType<Border>().FirstOrDefault(border => border.Name == "RowBorder");
             var fraction = header == null || header.Bounds.Height <= 0
                 ? 0.5
                 : e.GetPosition(header).Y / header.Bounds.Height;
