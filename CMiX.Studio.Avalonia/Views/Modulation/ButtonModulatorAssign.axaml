@@ -36,9 +36,6 @@
                 <MultiBinding Converter="{StaticResource ModulatorStateToBrush}">
                     <Binding Path="BoundModulator" />
                     <Binding Path="BoundModulator.IsHovered" />
-                    <Binding Source="{StaticResource Grey700Brush}" />
-                    <Binding Source="{StaticResource AccentBrush}" />
-                    <Binding Source="{StaticResource AccentHighlightBrush}" />
                 </MultiBinding>
             </Ellipse.Fill>
         </Ellipse>
