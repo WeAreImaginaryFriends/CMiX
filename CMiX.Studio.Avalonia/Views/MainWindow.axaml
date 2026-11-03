@@ -15,7 +15,7 @@
     xmlns:Windows="clr-namespace:CMiX.Studio.Avalonia.Views.Windows"
 
     Title="CMiX"
-    Width="450"
+    Width="810"
     Height="1000"
     Background="{DynamicResource Grey100Brush}"
     ExtendClientAreaChromeHints="NoChrome"
@@ -75,9 +75,21 @@
 
         </Border>
 
+        <Grid ColumnDefinitions="350,Auto,*" DockPanel.Dock="Top">
+
+        <Border Grid.Column="0" Padding="8,8,0,8">
+            <Views:ProjectTreeView DataContext="{Binding ProjectTree}" />
+        </Border>
+
+        <GridSplitter
+            Grid.Column="1"
+            Width="{DynamicResource SplitterSize}"
+            Background="Transparent"
+            ResizeDirection="Columns" />
+
         <TabControl
+            Grid.Column="2"
             VerticalAlignment="Stretch"
-            DockPanel.Dock="Top"
             Theme="{StaticResource TabControlMain}">
 
             <TabItem Theme="{StaticResource TabItemHorizontal}">
@@ -269,6 +281,8 @@
             </TabItem>
 
         </TabControl>
+
+        </Grid>
     </DockPanel>
 
 </Window>

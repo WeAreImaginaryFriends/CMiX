@@ -9,6 +9,7 @@ using CMiX.Core.Networking;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CMiX.Studio.Avalonia.ViewModels
@@ -41,6 +42,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ColorPaletteManager = SetupManager(colorPaletteManager, ManagerIDs.ColorPaletteManager);
 
             Project = project;
+            ProjectTree = new ProjectTree(project, undoManager);
             Sync = sync;
             MainWindowController = mainWindowController;
             AssetManager = assetManager;
@@ -103,6 +105,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
         // same as the manager relative ControlRepository paths the tabs use.
         public ControlRepository ControlRepository { get; set; }
         public Project Project { get; set; }
+        public ProjectTree ProjectTree { get; }
         public AssetManager AssetManager { get; set; }
         public MainMenu MainMenu { get; set; }
         public MainWindowController MainWindowController { get; set; }
