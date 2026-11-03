@@ -107,6 +107,23 @@ namespace CMiX.Core.Compositing
             LoadManager(LightManager, m.LightManager);
         }
 
+        // The entities, cameras and lights of this layer that a layer of otherLayers also holds.
+        public IReadOnlyList<IPrefab> GetSharedItems(IEnumerable<Layer> otherLayers)
+        {
+            var others = otherLayers.Where(other => !ReferenceEquals(other, this)).ToList();
+
+            return new[] { ModelEntityManager, CameraManager, LightManager }
+                .SelectMany(manager => manager.ManagerData.Items)
+                .OfType<IPrefab>()
+                .Where(item => others.Any(other => other.Holds(item)))
+                .ToList();
+        }
+
+        private bool Holds(IControl item) =>
+            ModelEntityManager.ManagerData.Items.Contains(item)
+            || CameraManager.ManagerData.Items.Contains(item)
+            || LightManager.ManagerData.Items.Contains(item);
+
         public void Dispose() => DisposeAll(ModelEntityManager, CameraManager, LightManager, TextureModifierManager, ModifierManager);
     }
 }
