@@ -47,7 +47,7 @@
             <ControlTemplate>
                 <!-- The marks of a drag are drawn over the whole item: the row and the rows under it. -->
                 <Panel>
-                <StackPanel Spacing="{DynamicResource SpacingXXS}">
+                <StackPanel>
                     <Border
                         Name="RowBorder"
                         Height="{DynamicResource ControlHeightMD}"
@@ -79,10 +79,16 @@
                         </Panel>
                     </Border>
                     <!-- The same animation as the expanders. The panel owns the IsVisible of the presenter. -->
+                    <!-- The space between the row and its first child is inside the panel. A closed panel has no height, so
+                         a closed row is followed by the same space as an open row: every row is one row height plus one space
+                         from the next, whatever is open. The stripes behind the tree (RowStripes) need this. -->
                     <ui:CollapsePanel Name="PART_Collapse" IsExpanded="{TemplateBinding IsExpanded}">
-                        <ItemsPresenter
-                            Name="PART_ItemsPresenter"
-                            ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        <StackPanel Spacing="{DynamicResource SpacingXXS}">
+                            <Border />
+                            <ItemsPresenter
+                                Name="PART_ItemsPresenter"
+                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        </StackPanel>
                     </ui:CollapsePanel>
                 </StackPanel>
                 <Border

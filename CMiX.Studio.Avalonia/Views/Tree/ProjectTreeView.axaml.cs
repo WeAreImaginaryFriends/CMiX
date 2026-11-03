@@ -37,6 +37,9 @@ namespace CMiX.Studio.Avalonia.Views
         {
             InitializeComponent();
 
+            // The bands start at the top of the rows, which is the panel of the items of the tree.
+            treeView.Loaded += (_, _) => stripes.Rows = treeView.ItemsPanelRoot;
+
             DragDrop.SetAllowDrop(treeView, true);
             treeView.AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
             treeView.AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Tunnel);

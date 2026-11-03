@@ -16,6 +16,16 @@
         DockPanel.Dock="Bottom"
         Padding="4" />
 
+    <!-- The stripes are behind the tree, in the same cell, and follow its rows. -->
+    <Grid>
+
+    <ui:RowStripes
+        x:Name="stripes"
+        FirstBrush="{DynamicResource RowStripeABrush}"
+        RowHeight="{DynamicResource ControlHeightMD}"
+        RowSpacing="{DynamicResource SpacingXXS}"
+        SecondBrush="{DynamicResource RowStripeBBrush}" />
+
     <TreeView
         x:Name="treeView"
         Margin="8,8,0,8"
@@ -105,6 +115,8 @@
         </TreeView.DataTemplates>
 
     </TreeView>
+
+    </Grid>
 
     </DockPanel>
 
