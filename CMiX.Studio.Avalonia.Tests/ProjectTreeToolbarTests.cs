@@ -11,6 +11,7 @@ using CMiX.Core.Prefabs;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
+using CMiX.UI.Controls.Parts;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Camera = CMiX.Core.Rendering.Cameras.Camera;
@@ -272,10 +273,10 @@ namespace CMiX.Studio.Avalonia.Tests
             }
         }
 
-        private Screen Show()
+        private Screen Show(double leftRoom = 0)
         {
             var scene = CreateScene();
-            var view = new ProjectTreeView { DataContext = scene.Tree };
+            var view = new ProjectTreeView { DataContext = scene.Tree, Margin = new Thickness(leftRoom, 0, 0, 0) };
             var window = new Window { Content = view, Width = 400, Height = 900 };
             windows.Add(window);
             window.Show();
@@ -352,6 +353,53 @@ namespace CMiX.Studio.Avalonia.Tests
             var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
             Assert.Equal(new[] { layer.Header, "-", "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, headers);
             Assert.Empty(screen.Scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
+        }
+
+        [AvaloniaFact]
+        public void TheMenuOfAdd_StandsOnTheButton_EightPixelsOverItsTopLeftCorner()
+        {
+            // The room on the left keeps the popup inside the window of the test. A real popup is a window of its own.
+            var screen = Show(leftRoom: 100);
+            screen.Scene.Tree.SelectedNode = screen.Scene.LayerNodeOfA(0);
+            var button = screen.ButtonOf("AddButton");
+
+            screen.Click(button);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+
+            var menu = button.ContextMenu!;
+            var frame = menu.GetVisualDescendants().OfType<PopupFrame>().First();
+            var frameTopLeft = frame.TranslatePoint(new Point(0, 0), screen.Window)!.Value;
+            var buttonTopLeft = button.TranslatePoint(new Point(0, 0), screen.Window)!.Value;
+
+            // The frame is larger than the panel by the margin of the shadow.
+            var panelLeft = frameTopLeft.X + PopupFrame.ShadowMargin.Left;
+            var panelBottom = frameTopLeft.Y + frame.Bounds.Height - PopupFrame.ShadowMargin.Bottom;
+            Assert.InRange(panelLeft, buttonTopLeft.X - 0.5, buttonTopLeft.X + 0.5);
+            Assert.InRange(panelBottom, buttonTopLeft.Y - 8.5, buttonTopLeft.Y - 7.5);
+        }
+
+        [AvaloniaFact]
+        public void TheMenuOfAdd_StaysOverTheButton_WhateverTheNumberOfRows()
+        {
+            var screen = Show(leftRoom: 100);
+            var button = screen.ButtonOf("AddButton");
+            var buttonTop = button.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
+
+            foreach (var node in new[] { screen.Scene.Group(0, "Entities"), screen.Scene.LayerNodeOfA(0) })
+            {
+                screen.Scene.Tree.SelectedNode = node;
+                screen.Click(button);
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                Dispatcher.UIThread.RunJobs();
+
+                var frame = button.ContextMenu!.GetVisualDescendants().OfType<PopupFrame>().First();
+                var panelBottom = frame.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y + frame.Bounds.Height - PopupFrame.ShadowMargin.Bottom;
+                Assert.InRange(panelBottom, buttonTop - 8.5, buttonTop - 7.5);
+
+                button.ContextMenu.Close();
+                Dispatcher.UIThread.RunJobs();
+            }
         }
 
         [AvaloniaFact]
