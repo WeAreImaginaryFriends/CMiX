@@ -5,10 +5,20 @@
     xmlns:sys="using:System"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     xmlns:Compositing="clr-namespace:CMiX.Core.Compositing;assembly=CMiX.Core"
-    xmlns:Tree="clr-namespace:CMiX.Studio.Avalonia.ViewModels.Tree">
+    xmlns:Tree="clr-namespace:CMiX.Studio.Avalonia.ViewModels.Tree"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
+
+    <!-- The toolbar is at the bottom, as the toolbar of the lists of compositions and layers. -->
+    <DockPanel>
+
+    <Views:ProjectTreeToolbar
+        Background="{DynamicResource Grey300Brush}"
+        DockPanel.Dock="Bottom"
+        Padding="4" />
 
     <TreeView
         x:Name="treeView"
+        Margin="8,8,0,8"
         Background="Transparent"
         BorderThickness="0"
         ItemsSource="{Binding Roots}"
@@ -95,5 +105,7 @@
         </TreeView.DataTemplates>
 
     </TreeView>
+
+    </DockPanel>
 
 </UserControl>

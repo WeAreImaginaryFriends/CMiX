@@ -10,16 +10,10 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using CMiX.Core.Prefabs.Managers;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Managers;
-using CameraModel = CMiX.Core.Rendering.Cameras.Camera;
 using CompositionModel = CMiX.Core.Compositing.Composition;
-using EntityModel = CMiX.Core.Compositing.Entity;
-using FullscreenQuadModel = CMiX.Core.Compositing.FullscreenQuad;
 using LayerModel = CMiX.Core.Compositing.Layer;
-using LightModel = CMiX.Core.Rendering.Lights.LightEntity;
-using TextEntityModel = CMiX.Core.Compositing.TextEntity;
 
 namespace CMiX.Studio.Avalonia.Views
 {
@@ -64,7 +58,7 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.ContextMenu?.Close();
 
             var item = ItemOf(e.Source);
-            var menu = item?.DataContext is TreeNode node ? CreateMenu(item, node) : null;
+            var menu = item?.DataContext is TreeNode node && DataContext is ProjectTree tree ? CreateMenu(item, node, tree) : null;
             treeView.ContextMenu = menu;
             if (menu == null)
                 return;
@@ -73,9 +67,9 @@ namespace CMiX.Studio.Avalonia.Views
             e.Handled = true;
         }
 
-        private static ContextMenu? CreateMenu(TreeViewItem row, TreeNode node)
+        private static ContextMenu? CreateMenu(TreeViewItem row, TreeNode node, ProjectTree tree)
         {
-            var adds = AddsFor(node);
+            var adds = tree.GetAdds(node).ToRows();
             var kind = node.Item == null ? RowMenuKind.Group
                 : node.Item is CompositionModel or LayerModel ? RowMenuKind.Composable
                 : RowMenuKind.Slot;
@@ -90,50 +84,6 @@ namespace CMiX.Studio.Avalonia.Views
                 adds,
                 () => node.Header);
         }
-
-        // What the menu of a row can add: a layer to a composition, an item of any kind to a layer,
-        // and an item to a group of a layer.
-        private static IReadOnlyList<RowMenuAdd> AddsFor(TreeNode node)
-        {
-            if (node.Item is CompositionModel && node.ChildManager is { } layers)
-                return new[] { Add("row.add-layer", "Add Layer", layers, typeof(LayerModel)) };
-
-            // The panel of a layer: the entities, then the camera and the light.
-            if (node.Item is LayerModel own)
-                return new[]
-                {
-                    new RowMenuAdd("row.add", "Add", Children: new[]
-                    {
-                        Add("row.add-entity", "Entity", own.ModelEntityManager, typeof(EntityModel)),
-                        Add("row.add-fullscreen-quad", "Fullscreen Quad", own.ModelEntityManager, typeof(FullscreenQuadModel)),
-                        Add("row.add-text-entity", "Text", own.ModelEntityManager, typeof(TextEntityModel)),
-                        Add("row.add-camera", "Camera", own.CameraManager, typeof(CameraModel)),
-                        Add("row.add-light", "Light", own.LightManager, typeof(LightModel))
-                    })
-                };
-
-            if (node.Item != null || node.ChildManager is not { } list || node.Parent?.Item is not LayerModel layer)
-                return Array.Empty<RowMenuAdd>();
-
-            if (ReferenceEquals(list, layer.ModelEntityManager))
-                return new[]
-                {
-                    Add("row.add-entity", "Add Entity", list, typeof(EntityModel)),
-                    Add("row.add-fullscreen-quad", "Add Fullscreen Quad", list, typeof(FullscreenQuadModel)),
-                    Add("row.add-text-entity", "Add Text", list, typeof(TextEntityModel))
-                };
-
-            if (ReferenceEquals(list, layer.CameraManager))
-                return new[] { Add("row.add-camera", "Add Camera", list, typeof(CameraModel)) };
-
-            if (ReferenceEquals(list, layer.LightManager))
-                return new[] { Add("row.add-light", "Add Light", list, typeof(LightModel)) };
-
-            return Array.Empty<RowMenuAdd>();
-        }
-
-        private static RowMenuAdd Add(string id, string header, PrefabManager list, Type type) =>
-            new(id, header, () => list.AddItem(type));
 
         private static TreeViewItem? ItemOf(object? source)
         {

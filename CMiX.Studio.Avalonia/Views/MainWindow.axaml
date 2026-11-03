@@ -78,7 +78,7 @@
         <!-- The tree and the tabs have the same width. -->
         <Grid ColumnDefinitions="*,Auto,*" DockPanel.Dock="Top">
 
-        <Border Grid.Column="0" Padding="8,8,0,8">
+        <Border Grid.Column="0">
             <Views:ProjectTreeView DataContext="{Binding ProjectTree}" />
         </Border>
 
