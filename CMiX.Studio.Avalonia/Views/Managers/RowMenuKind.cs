@@ -12,6 +12,8 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         // The list of all the items of the project: a row has no place to move to, and it is deleted from every list.
         Repository,
         // A row of the layer list or the composition list: it moves and is deleted like a slot row.
-        Composable
+        Composable,
+        // A group row of the project tree: it has no item, so its menu only adds items.
+        Group
     }
 }

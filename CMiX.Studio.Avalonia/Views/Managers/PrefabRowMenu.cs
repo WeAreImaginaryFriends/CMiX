@@ -33,15 +33,20 @@ namespace CMiX.Studio.Avalonia.Views.Managers
 
         private readonly Control _row;
         private readonly Func<TextBoxEditable?> _nameBox;
+        private readonly Func<(PrefabManager Manager, IControl Item)?> _target;
+        private readonly IReadOnlyList<RowMenuAdd> _adds;
         private readonly TitledContextMenu _builder;
         private readonly List<MenuItem> _towardsTheStart = new();
         private readonly List<MenuItem> _towardsTheEnd = new();
 
-        private PrefabRowMenu(Control row,Func<TextBoxEditable?> nameBox)
+        private PrefabRowMenu(Control row, Func<TextBoxEditable?> nameBox, Func<(PrefabManager Manager, IControl Item)?> target,
+                              IReadOnlyList<RowMenuAdd> adds, Func<string>? title)
         {
             _row = row;
             _nameBox = nameBox;
-            _builder = new TitledContextMenu(row, () => (row.DataContext as IPrefab)?.PrefabService.Name.Value?.Trim() ?? string.Empty, DuplicateId);
+            _target = target;
+            _adds = adds;
+            _builder = new TitledContextMenu(row, title ?? (() => (row.DataContext as IPrefab)?.PrefabService.Name.Value?.Trim() ?? string.Empty), DuplicateId);
         }
 
         // Gives a row of a list the menu of the kind of the list. The menu is built once the row is in the window,
@@ -54,13 +59,36 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             nameBox ??= () => row.GetVisualDescendants().OfType<TextBoxEditable>().FirstOrDefault();
 
             if (row.IsAttachedToVisualTree())
-                row.ContextMenu = new PrefabRowMenu(row, nameBox).BuildFor(kind);
+                row.ContextMenu = new PrefabRowMenu(row, nameBox, () => ListTarget(row), Array.Empty<RowMenuAdd>(), null).BuildFor(kind);
             else
-                row.AttachedToVisualTree += (_, _) => row.ContextMenu ??= new PrefabRowMenu(row, nameBox).BuildFor(kind);
+                row.AttachedToVisualTree += (_, _) => row.ContextMenu ??= new PrefabRowMenu(row, nameBox, () => ListTarget(row), Array.Empty<RowMenuAdd>(), null).BuildFor(kind);
+        }
+
+        // Makes the menu of a row that is not in a list box, such as a row of the project tree. The target says which item
+        // the menu acts on, and in which list it is. The adds are the rows at the top. The title is the first line of the menu.
+        public static ContextMenu Create(Control row, RowMenuKind kind, Func<(PrefabManager Manager, IControl Item)?> target,
+                                         IReadOnlyList<RowMenuAdd> adds, Func<string> title, Func<TextBoxEditable?>? nameBox = null)
+        {
+            nameBox ??= () => row.GetVisualDescendants().OfType<TextBoxEditable>().FirstOrDefault();
+            var builder = new PrefabRowMenu(row, nameBox, target, adds, title);
+            var menu = builder.BuildFor(kind);
+
+            // The caller opens the menu in code, which does not raise Opening, and builds a new menu for each opening.
+            builder.RefreshMoveRows();
+            return menu;
         }
 
         private ContextMenu BuildFor(RowMenuKind kind)
         {
+            foreach (var add in _adds)
+                _builder.Action(add.Id, add.Header, () => Dispatcher.UIThread.Post(add.Execute));
+
+            if (kind == RowMenuKind.Group)
+                return Build();
+
+            if (_adds.Count > 0)
+                Line();
+
             Duplicate();
             Rename();
             Line();
@@ -120,10 +148,13 @@ namespace CMiX.Studio.Avalonia.Views.Managers
                 Dispatcher.UIThread.Post(() => action(target.Manager, target.Item));
             });
 
-        private (PrefabManager Manager, IControl Item)? Target() =>
-            _row.DataContext is IControl item && _row.FindAncestorOfType<ListBox>()?.DataContext is PrefabManager manager
+        // The item of a row of a list box, and the manager of the list box.
+        private static (PrefabManager Manager, IControl Item)? ListTarget(Control row) =>
+            row.DataContext is IControl item && row.FindAncestorOfType<ListBox>()?.DataContext is PrefabManager manager
                 ? (manager, item)
                 : null;
+
+        private (PrefabManager Manager, IControl Item)? Target() => _target();
 
         private static void MoveBy(PrefabManager manager, IControl item, int step)
         {
