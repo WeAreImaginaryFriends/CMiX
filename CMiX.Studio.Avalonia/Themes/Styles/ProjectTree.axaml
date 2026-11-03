@@ -1,0 +1,101 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
+
+    <!-- The tree of the project. A row looks like a row of a list: transparent, grey when the pointer
+         is over it, blue when it is selected. A child is indented by its level.
+         The classes dropbefore, dropafter and dropinside mark the place of a drag. -->
+    <converters:MarginMultiplierConverter x:Key="TreeLevelIndent" Indent="16" Left="True" />
+
+    <ControlTheme x:Key="TreeChevronToggle" TargetType="ToggleButton">
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent">
+                    <Path
+                        Name="Chevron"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Data="M 0 0 L 4 4 L 0 8"
+                        RenderTransformOrigin="40%,50%"
+                        Stroke="{DynamicResource ForegroundBrush}"
+                        StrokeThickness="1.5" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:checked /template/ Path#Chevron">
+            <Setter Property="RenderTransform" Value="rotate(90deg)" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="TreeViewItemCMiX" TargetType="TreeViewItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel>
+                    <Border
+                        Name="PART_LayoutRoot"
+                        MinHeight="{DynamicResource ControlHeightMD}"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        BorderThickness="0,2"
+                        CornerRadius="{DynamicResource CornerRadiusAll}"
+                        TextElement.Foreground="{DynamicResource ForegroundBrush}">
+                        <Grid
+                            Name="PART_Header"
+                            Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeLevelIndent}}"
+                            ColumnDefinitions="16,*">
+                            <ToggleButton
+                                Name="PART_ExpandCollapseChevron"
+                                Grid.Column="0"
+                                IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                Theme="{StaticResource TreeChevronToggle}" />
+                            <ContentPresenter
+                                Name="PART_HeaderPresenter"
+                                Grid.Column="1"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                        </Grid>
+                    </Border>
+                    <ItemsPresenter
+                        Name="PART_ItemsPresenter"
+                        IsVisible="{TemplateBinding IsExpanded}"
+                        ItemsPanel="{TemplateBinding ItemsPanel}" />
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover:not(:selected) /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+        </Style>
+        <Style Selector="^:selected /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
+        </Style>
+        <Style Selector="^:selected:pointerover /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+        </Style>
+        <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="^:dropbefore /template/ Border#PART_LayoutRoot">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="0,2,0,0" />
+        </Style>
+        <Style Selector="^:dropafter /template/ Border#PART_LayoutRoot">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+        </Style>
+        <Style Selector="^:dropinside /template/ Border#PART_LayoutRoot">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

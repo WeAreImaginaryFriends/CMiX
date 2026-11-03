@@ -10,6 +10,7 @@
                 <ResourceInclude Source="avares://CMiX.Studio.Avalonia/Themes/Styles/TypeWriter.axaml" />
                 <ResourceInclude Source="avares://CMiX.Studio.Avalonia/Themes/Styles/StatusIndicators.axaml" />
                 <ResourceInclude Source="avares://CMiX.Studio.Avalonia/Themes/Styles/EntityModifiersSection.axaml" />
+                <ResourceInclude Source="avares://CMiX.Studio.Avalonia/Themes/Styles/ProjectTree.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

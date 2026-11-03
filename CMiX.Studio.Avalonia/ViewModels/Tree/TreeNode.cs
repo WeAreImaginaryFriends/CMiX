@@ -10,6 +10,8 @@ using CMiX.Core;
 using CMiX.Core.Compositing;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
+using CMiX.Core.Rendering.Cameras;
+using CMiX.Core.Rendering.Lights;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CMiX.Studio.Avalonia.ViewModels.Tree
@@ -28,6 +30,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             Owner = owner;
             Item = item;
             this.header = header;
+            IconKey = IconFor(item, header);
 
             if (item is IPrefab prefab)
             {
@@ -53,6 +56,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         }
 
         public TreeNode? Parent { get; }
+        public string IconKey { get; }
         public IControl? Item { get; }
         public PrefabManager? Owner { get; }
         public PrefabManager? ChildManager { get; }
@@ -71,6 +75,18 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                     return true;
             return false;
         }
+
+        private static string IconFor(IControl? item, string header) => item switch
+        {
+            Composition => "Composition",
+            Layer => "LayerScene",
+            FullscreenQuad => "FullscreenQuad",
+            TextEntity => "TextIcon",
+            Camera => "Camera",
+            LightEntity => "MeshLight",
+            null => header switch { "Cameras" => "Camera", "Lights" => "MeshLight", _ => "Geometry" },
+            _ => "Geometry"
+        };
 
         private TreeNode CreateItemNode(IControl item) =>
             new(tree, this, ChildManager, item, string.Empty, null);
