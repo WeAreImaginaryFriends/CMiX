@@ -8,6 +8,7 @@ using CMiX.Core.Assets;
 using CMiX.Core.Compositing;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
+using CMiX.Core.Texturing;
 using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Behaviors;
@@ -65,9 +66,9 @@ namespace CMiX.Studio.Avalonia.Tests
             return (entities, undo, new Dropper { PrefabManager = entities });
         }
 
-        private static IAssetTextureSource TextureOf(FullscreenQuad quad) =>
+        private static IAssetTextureSource TextureOf(ITexturable textured) =>
             Assert.IsAssignableFrom<IAssetTextureSource>(
-                Assert.Single(quad.Texture.DiffuseTexture.TextureManager.ManagerData.Items));
+                Assert.Single(textured.Texture.DiffuseTexture.TextureManager.ManagerData.Items));
 
         [AvaloniaFact]
         public void TheBehavior_AcceptsFilesAndFoldersByDefault()
@@ -116,29 +117,29 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedImage_BecomesAQuadWithAnImage()
+        public void ADroppedImage_BecomesAnEntityWithAnImage()
         {
             var (entities, _, dropper) = Show();
             var path = NewFile("one.png");
 
             dropper.Drop(new[] { path });
 
-            var quad = Assert.IsType<FullscreenQuad>(Assert.Single(entities.ManagerData.Items));
-            var source = TextureOf(quad);
+            var entity = Assert.IsType<Entity>(Assert.Single(entities.ManagerData.Items));
+            var source = TextureOf(entity);
             Assert.IsType<Image>(source);
             Assert.Equal(path, source.AssetSelector.Asset.FilePath);
         }
 
         [AvaloniaFact]
-        public void ADroppedVideo_BecomesAQuadWithAVideoPlayer()
+        public void ADroppedVideo_BecomesAnEntityWithAVideoPlayer()
         {
             var (entities, _, dropper) = Show();
             var path = NewFile("clip.mp4");
 
             dropper.Drop(new[] { path });
 
-            var quad = Assert.IsType<FullscreenQuad>(Assert.Single(entities.ManagerData.Items));
-            var source = TextureOf(quad);
+            var entity = Assert.IsType<Entity>(Assert.Single(entities.ManagerData.Items));
+            var source = TextureOf(entity);
             Assert.IsType<VideoPlayer>(source);
             Assert.Equal(path, source.AssetSelector.Asset.FilePath);
         }
@@ -168,12 +169,24 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedQuad_IsOneUndoStep()
+        public void ADroppedImage_IsOneUndoStep()
         {
             var (entities, undo, dropper) = Show();
             undo.Clear();
 
             dropper.Drop(new[] { NewFile("one.png") });
+            undo.Undo();
+
+            Assert.Empty(entities.ManagerData.Items);
+        }
+
+        [AvaloniaFact]
+        public void ADroppedFolderWithImages_IsOneUndoStep()
+        {
+            var (entities, undo, dropper) = Show();
+            undo.Clear();
+
+            dropper.Drop(new[] { NewFolder("frames", "frame_0001.png") });
             undo.Undo();
 
             Assert.Empty(entities.ManagerData.Items);

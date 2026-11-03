@@ -9,13 +9,15 @@ using CMiX.Core;
 using CMiX.Core.Assets;
 using CMiX.Core.Compositing;
 using CMiX.Core.Prefabs.Managers;
+using CMiX.Core.Texturing;
 using CMiX.Core.Texturing.Sources;
 using CMiX.UI.Behaviors;
 
 namespace CMiX.Studio.Avalonia.Behaviors
 {
     // Files and folders dropped on the control become entities of the prefab manager.
-    // A folder with images, an image or a video gives a FullscreenQuad with that texture.
+    // A folder with images gives a FullscreenQuad with an image sequence.
+    // An image or a video gives an Entity with that texture.
     // A geometry file gives an Entity with that mesh.
     public class EntityDropBehavior : FileDropBehavior
     {
@@ -45,7 +47,7 @@ namespace CMiX.Studio.Avalonia.Behaviors
                 if (Directory.Exists(path))
                 {
                     if (AssetTypes.ContainsImages(path))
-                        AddQuad(typeof(SequencePlayer), path);
+                        AddTextured(typeof(FullscreenQuad), typeof(SequencePlayer), path);
                     continue;
                 }
 
@@ -55,10 +57,10 @@ namespace CMiX.Studio.Avalonia.Behaviors
                 switch (kind)
                 {
                     case AssetKind.Image:
-                        AddQuad(typeof(CMiX.Core.Texturing.Sources.Image), path);
+                        AddTextured(typeof(Entity), typeof(CMiX.Core.Texturing.Sources.Image), path);
                         break;
                     case AssetKind.Video:
-                        AddQuad(typeof(VideoPlayer), path);
+                        AddTextured(typeof(Entity), typeof(VideoPlayer), path);
                         break;
                     case AssetKind.Geometry:
                         AddEntity(path);
@@ -67,13 +69,13 @@ namespace CMiX.Studio.Avalonia.Behaviors
             }
         }
 
-        // The quad and its texture are one undo step.
-        private void AddQuad(Type textureType, string path)
+        // The item and its texture are one undo step.
+        private void AddTextured(Type itemType, Type textureType, string path)
         {
-            PrefabManager.AddItem(typeof(FullscreenQuad), item =>
+            PrefabManager.AddItem(itemType, item =>
             {
-                var quad = (FullscreenQuad)item;
-                quad.Texture.DiffuseTexture.TextureManager.AddItem(textureType, texture =>
+                var textured = (ITexturable)item;
+                textured.Texture.DiffuseTexture.TextureManager.AddItem(textureType, texture =>
                 {
                     if (texture is IAssetTextureSource source)
                         source.AssetSelector.SetAssetFromPath(path);
