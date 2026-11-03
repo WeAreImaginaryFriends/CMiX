@@ -85,11 +85,26 @@ namespace CMiX.Studio.Avalonia.Views
                 () => node.Header);
         }
 
-        // What the menu of a row can add: a layer to a composition, and an item to a group of a layer.
+        // What the menu of a row can add: a layer to a composition, an item of any kind to a layer,
+        // and an item to a group of a layer.
         private static IReadOnlyList<RowMenuAdd> AddsFor(TreeNode node)
         {
             if (node.Item is CompositionModel && node.ChildManager is { } layers)
                 return new[] { Add("row.add-layer", "Add Layer", layers, typeof(LayerModel)) };
+
+            // The panel of a layer: the entities, then the camera and the light.
+            if (node.Item is LayerModel own)
+                return new[]
+                {
+                    new RowMenuAdd("row.add", "Add", Children: new[]
+                    {
+                        Add("row.add-entity", "Entity", own.ModelEntityManager, typeof(EntityModel)),
+                        Add("row.add-fullscreen-quad", "Fullscreen Quad", own.ModelEntityManager, typeof(FullscreenQuadModel)),
+                        Add("row.add-text-entity", "Text", own.ModelEntityManager, typeof(TextEntityModel)),
+                        Add("row.add-camera", "Camera", own.CameraManager, typeof(CameraModel)),
+                        Add("row.add-light", "Light", own.LightManager, typeof(LightModel))
+                    })
+                };
 
             if (node.Item != null || node.ChildManager is not { } list || node.Parent?.Item is not LayerModel layer)
                 return Array.Empty<RowMenuAdd>();
@@ -168,13 +183,18 @@ namespace CMiX.Studio.Avalonia.Views
             e.Handled = true;
 
             var (source, item, target, position) = Read(e);
+
+            // A node of the tree always shows the move cursor. The cursor for a drop that is not possible is a red icon,
+            // which does not fit the look of the app. The mark tells where a drop works: no mark, no move.
+            if (source != null)
+                e.DragEffects = DragDropEffects.Move;
+
             if (DataContext is not ProjectTree tree || source == null || item == null || target == null || !tree.CanDrop(source, target, position))
             {
                 Mark(null, null);
                 return;
             }
 
-            e.DragEffects = DragDropEffects.Move;
             Mark(item, position);
         }
 

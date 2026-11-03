@@ -33,6 +33,17 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void TheTreeAndTheTabs_HaveExactlyTheSameWidth()
+        {
+            var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
+            var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            var columns = tree.GetVisualAncestors().OfType<Grid>().First(grid => grid.ColumnDefinitions.Count == 3).ColumnDefinitions;
+
+            Assert.True(columns[0].ActualWidth > 0);
+            Assert.Equal(columns[0].ActualWidth, columns[2].ActualWidth);
+        }
+
+        [AvaloniaFact]
         public void TheTabs_KeepTheirWidthOfBefore()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();

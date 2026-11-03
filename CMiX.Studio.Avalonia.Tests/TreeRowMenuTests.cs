@@ -58,6 +58,16 @@ namespace CMiX.Studio.Avalonia.Tests
             public static List<string> Headers(ContextMenu menu) =>
                 menu.Items.OfType<MenuItem>().Where(item => item.IsVisible).Select(item => item.Header?.ToString() ?? string.Empty).ToList();
 
+            public static MenuItem Submenu(ContextMenu menu, string header) =>
+                menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, header));
+
+            public static void ClickSub(ContextMenu menu, string header, string subHeader)
+            {
+                Submenu(menu, header).Items.OfType<MenuItem>().Single(item => Equals(item.Header, subHeader))
+                    .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                Dispatcher.UIThread.RunJobs();
+            }
+
             public static void Click(ContextMenu menu, string header)
             {
                 menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, header))
@@ -133,14 +143,44 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ALayerMenu_HasTheRowsOfTheLayerList_AndNoAddRow()
+        public void ALayerMenu_StartsWithTheAddSubmenuThenHasTheRowsOfTheLayerList()
         {
             var screen = Show();
 
             var headers = Screen.Headers(screen.OpenMenu(screen.LayerNodeOfA(0))!);
 
-            Assert.Equal(new[] { "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
+            Assert.Equal(new[] { "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
                 headers.Skip(2));
+        }
+
+        [AvaloniaFact]
+        public void TheAddSubmenuOfALayer_OffersEntitiesCameraAndLight()
+        {
+            var screen = Show();
+
+            var add = Screen.Submenu(screen.OpenMenu(screen.LayerNodeOfA(0))!, "Add");
+
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" },
+                add.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()));
+        }
+
+        [AvaloniaFact]
+        public void TheAddSubmenuOfALayer_AddsEachKindToTheRightListOfThatLayer()
+        {
+            var screen = Show();
+            var layer = screen.LayerOfA(1);
+            var node = screen.LayerNodeOfA(1);
+
+            foreach (var header in new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" })
+                Screen.ClickSub(screen.OpenMenu(node)!, "Add", header);
+
+            Assert.Collection(layer.ModelEntityManager.ManagerData.Items,
+                item => Assert.IsType<Entity>(item),
+                item => Assert.IsType<FullscreenQuad>(item),
+                item => Assert.IsType<TextEntity>(item));
+            Assert.IsType<Camera>(Assert.Single(layer.CameraManager.ManagerData.Items));
+            Assert.IsType<LightEntity>(Assert.Single(layer.LightManager.ManagerData.Items));
+            Assert.Empty(screen.LayerOfA(0).ModelEntityManager.ManagerData.Items);
         }
 
         [AvaloniaFact]

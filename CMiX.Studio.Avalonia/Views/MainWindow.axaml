@@ -15,7 +15,7 @@
     xmlns:Windows="clr-namespace:CMiX.Studio.Avalonia.Views.Windows"
 
     Title="CMiX"
-    Width="810"
+    Width="908"
     Height="1000"
     Background="{DynamicResource Grey100Brush}"
     ExtendClientAreaChromeHints="NoChrome"
@@ -75,7 +75,8 @@
 
         </Border>
 
-        <Grid ColumnDefinitions="350,Auto,*" DockPanel.Dock="Top">
+        <!-- The tree and the tabs have the same width. -->
+        <Grid ColumnDefinitions="*,Auto,*" DockPanel.Dock="Top">
 
         <Border Grid.Column="0" Padding="8,8,0,8">
             <Views:ProjectTreeView DataContext="{Binding ProjectTree}" />

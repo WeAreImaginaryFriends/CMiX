@@ -5,6 +5,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core;
@@ -174,10 +175,14 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ACompositionOverACompositionRow_ShowsTheDropInTheHalfUnderThePointer(double fraction, string expected)
         {
             var screen = Show();
+            screen.Project.CompositionManager.AddItem(typeof(Composition));
+            Dispatcher.UIThread.RunJobs();
+            var last = screen.Tree.Roots[2];
 
-            screen.Drag(screen.Tree.Roots[0], screen.Tree.Roots[1], fraction, RawDragEventType.DragOver);
+            // The first composition over the last one: a real move in both halves.
+            screen.Drag(screen.Tree.Roots[0], last, fraction, RawDragEventType.DragOver);
 
-            Assert.Contains(expected, screen.RowOf(screen.Tree.Roots[1]).Classes);
+            Assert.Contains(expected, screen.RowOf(last).Classes);
         }
 
         [AvaloniaTheory]
@@ -380,6 +385,50 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Drag(layerNode, screen.Tree.Roots[1], 0.5, RawDragEventType.DragOver);
 
             Assert.Contains(":dropinside", screen.RowOf(screen.Tree.Roots[1]).Classes);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.1)]
+        [InlineData(0.9)]
+        public void ADragOverTheItemItself_MarksNothing(double fraction)
+        {
+            var screen = Show();
+            var node = screen.Tree.Roots[0];
+
+            screen.Drag(node, node, fraction, RawDragEventType.DragOver);
+
+            Assert.DoesNotContain(":dropbefore", screen.RowOf(node).Classes);
+            Assert.DoesNotContain(":dropafter", screen.RowOf(node).Classes);
+            Assert.DoesNotContain(":dropinside", screen.RowOf(node).Classes);
+        }
+
+        [AvaloniaFact]
+        public void ADragOverThePlaceWhereTheItemAlreadyIs_MarksNothing()
+        {
+            var screen = Show();
+            var next = screen.Tree.Roots[1];
+
+            // The first composition before the second one: the same place.
+            screen.Drag(screen.Tree.Roots[0], next, 0.1, RawDragEventType.DragOver);
+
+            Assert.DoesNotContain(":dropbefore", screen.RowOf(next).Classes);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.5, true)]
+        [InlineData(0.1, false)]
+        public void ADragOfANodeOfTheTree_ShowsTheMoveCursorAndNeverTheCursorForNotAllowed(double fraction, bool allowed)
+        {
+            var screen = Show();
+            var effects = new List<DragDropEffects>();
+            screen.Window.AddHandler(DragDrop.DragOverEvent, (_, e) => effects.Add(e.DragEffects), RoutingStrategies.Bubble, handledEventsToo: true);
+            var source = screen.Tree.Roots[0];
+            var target = allowed ? screen.Tree.Roots[1] : source;
+
+            screen.Drag(source, target, fraction, RawDragEventType.DragOver);
+
+            Assert.NotEmpty(effects);
+            Assert.All(effects, effect => Assert.Equal(DragDropEffects.Move, effect));
         }
 
         [AvaloniaFact]
