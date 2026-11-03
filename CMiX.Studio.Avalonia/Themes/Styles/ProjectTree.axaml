@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
 
     <!-- The tree of the project. A row is as high as the rows of the other lists: one control height,
@@ -89,10 +90,12 @@
                                 IsVisible="False" />
                         </Panel>
                     </Border>
-                    <ItemsPresenter
-                        Name="PART_ItemsPresenter"
-                        IsVisible="{TemplateBinding IsExpanded}"
-                        ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    <!-- The same animation as the expanders. The panel owns the IsVisible of the presenter. -->
+                    <ui:CollapsePanel Name="PART_Collapse" IsExpanded="{TemplateBinding IsExpanded}">
+                        <ItemsPresenter
+                            Name="PART_ItemsPresenter"
+                            ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    </ui:CollapsePanel>
                 </StackPanel>
             </ControlTemplate>
         </Setter>
@@ -111,7 +114,7 @@
             <Setter Property="IsVisible" Value="False" />
         </Style>
         <!-- An empty list of children takes no room, and adds no space below the row. -->
-        <Style Selector="^:empty /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Style Selector="^:empty /template/ ui|CollapsePanel#PART_Collapse">
             <Setter Property="IsVisible" Value="False" />
         </Style>
 
