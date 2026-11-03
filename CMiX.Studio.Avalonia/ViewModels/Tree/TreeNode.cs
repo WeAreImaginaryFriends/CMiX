@@ -119,6 +119,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                     InsertChildren(0, ChildManager!.ManagerData.Items);
                     break;
             }
+
+            tree.ListChanged();
         }
 
         private void InsertChildren(int index, System.Collections.Generic.IEnumerable<IControl> items)
