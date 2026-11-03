@@ -97,7 +97,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The toggles of a row, without the chevron and without the toggles of its children.
         private static List<ToggleButton> TogglesOf(TreeViewItem row) =>
-            row.GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "PART_Header")
+            row.GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "RowContent")
                 .GetVisualDescendants().OfType<ToggleButton>()
                 .Where(toggle => toggle.Name != "PART_ExpandCollapseChevron" && toggle.IsEffectivelyVisible).ToList();
 
@@ -133,6 +133,101 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(before, nodes.Select(node => HeaderOf(screen.RowOf(node)).TranslatePoint(new Point(0, 0), screen.Window)));
             Assert.Equal(heightsBefore, nodes.Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height));
+        }
+
+        [AvaloniaFact]
+        public void TwoRowsNextToEachOther_AreOnePixelApart()
+        {
+            var screen = Show();
+            var spacing = Convert.ToDouble(Application.Current!.FindResource("SpacingXXS"));
+            var layerNode = screen.Tree.Roots[0].Children[0];
+            var firstGroup = HeaderOf(screen.RowOf(layerNode.Children[0]));
+            var secondGroup = HeaderOf(screen.RowOf(layerNode.Children[1]));
+
+            var gap = secondGroup.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y
+                - (firstGroup.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y + firstGroup.Bounds.Height);
+
+            Assert.Equal(1, spacing);
+            Assert.Equal(spacing, gap);
+        }
+
+        [AvaloniaFact]
+        public void AChildRow_IsOnePixelBelowItsParentRow()
+        {
+            var screen = Show();
+            var spacing = Convert.ToDouble(Application.Current!.FindResource("SpacingXXS"));
+            var parent = HeaderOf(screen.RowOf(screen.Tree.Roots[0]));
+            var child = HeaderOf(screen.RowOf(screen.Tree.Roots[0].Children[0]));
+
+            var gap = child.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y
+                - (parent.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y + parent.Bounds.Height);
+
+            Assert.Equal(spacing, gap);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.05, ":dropbefore")]
+        [InlineData(0.4, ":dropbefore")]
+        [InlineData(0.6, ":dropafter")]
+        [InlineData(0.95, ":dropafter")]
+        public void ACompositionOverACompositionRow_ShowsTheDropInTheHalfUnderThePointer(double fraction, string expected)
+        {
+            var screen = Show();
+
+            screen.Drag(screen.Tree.Roots[0], screen.Tree.Roots[1], fraction, RawDragEventType.DragOver);
+
+            Assert.Contains(expected, screen.RowOf(screen.Tree.Roots[1]).Classes);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.05)]
+        [InlineData(0.5)]
+        [InlineData(0.95)]
+        public void ALayerOverACompositionRow_ShowsTheDropInsideWhereverThePointerIs(double fraction)
+        {
+            var screen = Show();
+
+            screen.Drag(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction, RawDragEventType.DragOver);
+
+            Assert.Contains(":dropinside", screen.RowOf(screen.Tree.Roots[1]).Classes);
+        }
+
+        [AvaloniaFact]
+        public void ADoubleClickOnARow_DoesNotExpandOrCollapseIt()
+        {
+            var screen = Show();
+            var node = screen.Tree.Roots[0];
+            var row = screen.RowOf(node);
+            var point = screen.PointIn(node, 0.5);
+            var expanded = row.IsExpanded;
+
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(expanded, row.IsExpanded);
+            Assert.Equal(expanded, node.IsExpanded);
+        }
+
+        [AvaloniaFact]
+        public void TheChevron_ExpandsAndCollapsesTheRow()
+        {
+            var screen = Show();
+            var node = screen.Tree.Roots[0];
+            var row = screen.RowOf(node);
+            var chevron = row.GetVisualDescendants().OfType<ToggleButton>().First(toggle => toggle.Name == "PART_ExpandCollapseChevron");
+
+            chevron.IsChecked = false;
+            Dispatcher.UIThread.RunJobs();
+            Assert.False(row.IsExpanded);
+            Assert.False(node.IsExpanded);
+
+            chevron.IsChecked = true;
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(row.IsExpanded);
+            Assert.True(node.IsExpanded);
         }
 
         [AvaloniaFact]

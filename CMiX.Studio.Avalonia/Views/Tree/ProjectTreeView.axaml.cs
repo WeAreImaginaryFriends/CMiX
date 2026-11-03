@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -9,8 +10,16 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using CMiX.Core.Prefabs.Managers;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
+using CMiX.Studio.Avalonia.Views.Managers;
+using CameraModel = CMiX.Core.Rendering.Cameras.Camera;
 using CompositionModel = CMiX.Core.Compositing.Composition;
+using EntityModel = CMiX.Core.Compositing.Entity;
+using FullscreenQuadModel = CMiX.Core.Compositing.FullscreenQuad;
+using LayerModel = CMiX.Core.Compositing.Layer;
+using LightModel = CMiX.Core.Rendering.Lights.LightEntity;
+using TextEntityModel = CMiX.Core.Compositing.TextEntity;
 
 namespace CMiX.Studio.Avalonia.Views
 {
@@ -28,6 +37,7 @@ namespace CMiX.Studio.Avalonia.Views
         private TreeNode? pressedNode;
         private Point pressPoint;
         private TreeViewItem? marked;
+        private DropPosition? markedPosition;
 
         public ProjectTreeView()
         {
@@ -40,7 +50,69 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(DragDrop.DragOverEvent, OnDragOver);
             treeView.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
             treeView.AddHandler(DragDrop.DropEvent, OnDrop);
+            treeView.AddHandler(ContextRequestedEvent, OnContextRequested, RoutingStrategies.Tunnel);
         }
+
+        // The menu of the row under the pointer, built and opened when it is asked for. A menu that is set during the event
+        // does not open on that event, so it is opened here.
+        private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
+        {
+            var item = ItemOf(e.Source);
+            var menu = item?.DataContext is TreeNode node ? CreateMenu(item, node) : null;
+            if (menu == null || item == null)
+                return;
+
+            item.ContextMenu = menu;
+            menu.Open(item);
+            e.Handled = true;
+        }
+
+        private static ContextMenu? CreateMenu(TreeViewItem row, TreeNode node)
+        {
+            var adds = AddsFor(node);
+            var kind = node.Item == null ? RowMenuKind.Group
+                : node.Item is CompositionModel or LayerModel ? RowMenuKind.Composable
+                : RowMenuKind.Slot;
+
+            if (kind == RowMenuKind.Group && adds.Count == 0)
+                return null;
+
+            return PrefabRowMenu.Create(
+                row,
+                kind,
+                () => node.Owner != null && node.Item != null ? (node.Owner, node.Item) : null,
+                adds,
+                () => node.Header);
+        }
+
+        // What the menu of a row can add: a layer to a composition, and an item to a group of a layer.
+        private static IReadOnlyList<RowMenuAdd> AddsFor(TreeNode node)
+        {
+            if (node.Item is CompositionModel && node.ChildManager is { } layers)
+                return new[] { Add("row.add-layer", "Add Layer", layers, typeof(LayerModel)) };
+
+            if (node.Item != null || node.ChildManager is not { } list || node.Parent?.Item is not LayerModel layer)
+                return Array.Empty<RowMenuAdd>();
+
+            if (ReferenceEquals(list, layer.ModelEntityManager))
+                return new[]
+                {
+                    Add("row.add-entity", "Add Entity", list, typeof(EntityModel)),
+                    Add("row.add-fullscreen-quad", "Add Fullscreen Quad", list, typeof(FullscreenQuadModel)),
+                    Add("row.add-text-entity", "Add Text", list, typeof(TextEntityModel))
+                };
+
+            if (ReferenceEquals(list, layer.CameraManager))
+                return new[] { Add("row.add-camera", "Add Camera", list, typeof(CameraModel)) };
+
+            if (ReferenceEquals(list, layer.LightManager))
+                return new[] { Add("row.add-light", "Add Light", list, typeof(LightModel)) };
+
+            return Array.Empty<RowMenuAdd>();
+        }
+
+        private static RowMenuAdd Add(string id, string header, PrefabManager list, Type type) =>
+            new(id, header, () => list.AddItem(type));
 
         private static TreeViewItem? ItemOf(object? source)
         {
@@ -134,12 +206,14 @@ namespace CMiX.Studio.Avalonia.Views
                 ? 0.5
                 : e.GetPosition(header).Y / header.Bounds.Height;
 
-            // A composition has a middle part that takes a layer inside it. Other rows split in two.
-            var position = target.Item is CompositionModel
-                ? fraction < 0.25 ? DropPosition.Before : fraction > 0.75 ? DropPosition.After : DropPosition.Inside
-                : fraction < 0.5 ? DropPosition.Before : DropPosition.After;
+            // The pointer is in the space between two rows, not on a row: the drop stays where it was.
+            if ((fraction < 0 || fraction > 1) && marked != null && marked.DataContext is TreeNode markedNode && markedPosition != null)
+                return (source, marked, markedNode, markedPosition.Value);
 
-            return (source, item, target, position);
+            if (DataContext is not ProjectTree tree || source == null)
+                return (source, item, target, DropPosition.After);
+
+            return (source, item, target, tree.PositionFor(source, target, fraction));
         }
 
         private void Mark(TreeViewItem? item, DropPosition? position)
@@ -153,6 +227,7 @@ namespace CMiX.Studio.Avalonia.Views
             }
 
             marked = item;
+            markedPosition = position;
             if (item == null || position == null)
                 return;
 

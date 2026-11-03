@@ -3,7 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
 
-    <!-- The tree of the project. A row is as high as the rows of the other lists: one control height.
+    <!-- The tree of the project. A row is as high as the rows of the other lists: one control height,
+         with the space SpacingXXS between two rows.
          It is transparent, grey when the pointer is over the row itself (not over its children), and blue
          when it is selected. A child is indented by its level.
          The classes dropbefore, dropafter and dropinside show the place of a drag. The marks are drawn
@@ -36,9 +37,14 @@
     <ControlTheme x:Key="TreeViewItemCMiX" TargetType="TreeViewItem">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="0" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Spacing="{DynamicResource SpacingXXS}" />
+            </ItemsPanelTemplate>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
-                <StackPanel>
+                <StackPanel Spacing="{DynamicResource SpacingXXS}">
                     <Border
                         Name="PART_LayoutRoot"
                         Height="{DynamicResource ControlHeightMD}"
@@ -47,8 +53,10 @@
                         CornerRadius="{DynamicResource CornerRadiusAll}"
                         TextElement.Foreground="{DynamicResource ForegroundBrush}">
                         <Panel>
+                            <!-- Not named PART_Header: TreeViewItem expands on a double tap of the part with that name,
+                                 and a double tap on a row renames it. Only the chevron expands a row. -->
                             <Grid
-                                Name="PART_Header"
+                                Name="RowContent"
                                 Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeLevelIndent}}"
                                 ColumnDefinitions="16,*">
                                 <ToggleButton
@@ -99,6 +107,10 @@
             <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
         </Style>
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <!-- An empty list of children takes no room, and adds no space below the row. -->
+        <Style Selector="^:empty /template/ ItemsPresenter#PART_ItemsPresenter">
             <Setter Property="IsVisible" Value="False" />
         </Style>
 
