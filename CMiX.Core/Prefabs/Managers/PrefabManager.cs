@@ -234,6 +234,36 @@ namespace CMiX.Core.Prefabs.Managers
             Run(new MoveItemUndoCommand(_sync, oldIndex, newIndex));
         }
 
+        // Moves an item from the source list into this list at an index, as one undo step that peers also see.
+        // An item that cannot move stays in the source list, and the items that block it are returned.
+        public IReadOnlyList<IPrefab> MoveItemToManager(IControl item, PrefabManager source, int index)
+        {
+            if (item == null || source == null || ReferenceEquals(source, this) || UndoManager?.IsApplying == true
+                || !source.ManagerData.Items.Contains(item))
+                return Array.Empty<IPrefab>();
+
+            if (item is IMoveRestricted restricted)
+            {
+                var blocking = restricted.GetItemsBlockingMove(source.ManagerData.Items);
+                if (blocking.Count > 0)
+                    return blocking;
+            }
+
+            UndoManager?.BeginCapture();
+            try
+            {
+                // The item enters this list before it leaves the source, so it is never orphaned.
+                Run(new AddItemUndoCommand(_sync, item, Math.Clamp(index, 0, ManagerData.Items.Count)));
+                source.RemoveItem(item);
+            }
+            finally
+            {
+                UndoManager?.EndCapture();
+            }
+
+            return Array.Empty<IPrefab>();
+        }
+
         private void Run(IUndoCommand command)
         {
             command.Execute();

@@ -11,7 +11,7 @@ using static CMiX.Core.ControlExtensions;
 
 namespace CMiX.Core.Compositing
 {
-    public partial class Layer : ObservableObject, IControl, IPrefab, ITextureModifiable, IModifiable, IHasCompositionID, IDisposable, IComposable
+    public partial class Layer : ObservableObject, IControl, IPrefab, ITextureModifiable, IModifiable, IHasCompositionID, IMoveRestricted, IDisposable, IComposable
     {
         public Layer(PrefabService prefabService,
                      CompositingSettings compositingSettings,
@@ -118,6 +118,10 @@ namespace CMiX.Core.Compositing
                 .Where(item => others.Any(other => other.Holds(item)))
                 .ToList();
         }
+
+        // A layer cannot leave its composition while another layer there holds the same items.
+        public IReadOnlyList<IPrefab> GetItemsBlockingMove(IEnumerable<IControl> siblings) =>
+            GetSharedItems(siblings.OfType<Layer>());
 
         private bool Holds(IControl item) =>
             ModelEntityManager.ManagerData.Items.Contains(item)
