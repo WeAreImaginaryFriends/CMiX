@@ -45,6 +45,8 @@
         </Setter>
         <Setter Property="Template">
             <ControlTemplate>
+                <!-- The marks of a drag are drawn over the whole item: the row and the rows under it. -->
+                <Panel>
                 <StackPanel Spacing="{DynamicResource SpacingXXS}">
                     <Border
                         Name="RowBorder"
@@ -74,20 +76,6 @@
                                     Content="{TemplateBinding Header}"
                                     ContentTemplate="{TemplateBinding HeaderTemplate}" />
                             </Grid>
-                            <Border
-                                Name="DropLine"
-                                Height="{DynamicResource SplitterIndicatorSize}"
-                                VerticalAlignment="Top"
-                                Background="{DynamicResource AccentBrush}"
-                                IsHitTestVisible="False"
-                                IsVisible="False" />
-                            <Border
-                                Name="DropFrame"
-                                BorderBrush="{DynamicResource AccentBrush}"
-                                BorderThickness="2"
-                                CornerRadius="{DynamicResource CornerRadiusAll}"
-                                IsHitTestVisible="False"
-                                IsVisible="False" />
                         </Panel>
                     </Border>
                     <!-- The same animation as the expanders. The panel owns the IsVisible of the presenter. -->
@@ -97,6 +85,21 @@
                             ItemsPanel="{TemplateBinding ItemsPanel}" />
                     </ui:CollapsePanel>
                 </StackPanel>
+                <Border
+                    Name="DropLine"
+                    Height="{DynamicResource SplitterIndicatorSize}"
+                    VerticalAlignment="Top"
+                    Background="{DynamicResource AccentBrush}"
+                    IsHitTestVisible="False"
+                    IsVisible="False" />
+                <Border
+                    Name="DropFrame"
+                    BorderBrush="{DynamicResource AccentBrush}"
+                    BorderThickness="2"
+                    CornerRadius="{DynamicResource CornerRadiusAll}"
+                    IsHitTestVisible="False"
+                    IsVisible="False" />
+                </Panel>
             </ControlTemplate>
         </Setter>
 

@@ -173,23 +173,155 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(spacing, gap);
         }
 
-        [AvaloniaTheory]
-        [InlineData(0.05, ":dropbefore")]
-        [InlineData(0.4, ":dropbefore")]
-        [InlineData(0.6, ":dropafter")]
-        [InlineData(0.95, ":dropafter")]
-        public void ACompositionOverACompositionRow_ShowsTheDropInTheHalfUnderThePointer(double fraction, string expected)
+        private static TreeNode LastVisibleOf(TreeNode node) =>
+            node.IsExpanded && node.Children.Count > 0 ? LastVisibleOf(node.Children[^1]) : node;
+
+        // The own mark line of an item: the last one in the tree order, because the rows under the item come before it.
+        private static Border DropLineOf(TreeViewItem row) =>
+            row.GetVisualDescendants().OfType<Border>().Last(border => border.Name == "DropLine");
+
+        private static double Top(Screen screen, Control control) => control.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
+
+        // Three compositions. The last one holds a layer, so its block is the composition, the layer and the three groups of the layer.
+        private static Screen ShowWithABlock()
         {
             var screen = Show();
             screen.Project.CompositionManager.AddItem(typeof(Composition));
+            ((Composition)screen.Project.CompositionManager.ManagerData.Items[2]).LayerManager.AddItem(typeof(Layer));
             Dispatcher.UIThread.RunJobs();
             screen.Window.UpdateLayout();
+            return screen;
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.05)]
+        [InlineData(0.4)]
+        public void ACompositionOverTheTopHalfOfACompositionRow_ShowsTheDropBefore(double fraction)
+        {
+            var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
 
-            // The first composition over the last one: a real move in both halves.
             screen.Drag(screen.Tree.Roots[0], last, fraction, RawDragEventType.DragOver);
 
-            Assert.Contains(expected, screen.RowOf(last).Classes);
+            Assert.Contains(":dropbefore", screen.RowOf(last).Classes);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.6)]
+        [InlineData(0.95)]
+        public void ACompositionOverTheBottomHalfOfTheLastRowOfABlock_ShowsTheDropAfterTheWholeBlock(double fraction)
+        {
+            var screen = ShowWithABlock();
+            var last = screen.Tree.Roots[2];
+            var lastRow = LastVisibleOf(last);
+            Assert.NotSame(last, lastRow);
+
+            screen.Drag(screen.Tree.Roots[0], lastRow, fraction, RawDragEventType.DragOver);
+
+            Assert.Contains(":dropafter", screen.RowOf(last).Classes);
+            Assert.DoesNotContain(":dropafter", screen.RowOf(lastRow).Classes);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.6)]
+        [InlineData(0.95)]
+        public void ACompositionOverTheBottomHalfOfAnExpandedCompositionRow_ShowsNothing(double fraction)
+        {
+            var screen = ShowWithABlock();
+            var last = screen.Tree.Roots[2];
+
+            screen.Drag(screen.Tree.Roots[0], last, fraction, RawDragEventType.DragOver);
+
+            Assert.DoesNotContain(":dropbefore", screen.RowOf(last).Classes);
+            Assert.DoesNotContain(":dropafter", screen.RowOf(last).Classes);
+            Assert.DoesNotContain(":dropinside", screen.RowOf(last).Classes);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.1)]
+        [InlineData(0.9)]
+        public void ACompositionOverAMiddleRowOfABlock_ShowsNothing(double fraction)
+        {
+            var screen = ShowWithABlock();
+            var last = screen.Tree.Roots[2];
+
+            screen.Drag(screen.Tree.Roots[0], last.Children[0], fraction, RawDragEventType.DragOver);
+
+            Assert.DoesNotContain(":dropbefore", screen.RowOf(last).Classes);
+            Assert.DoesNotContain(":dropafter", screen.RowOf(last).Classes);
+        }
+
+        [AvaloniaFact]
+        public void ACollapsedCompositionRow_HasBothHalves()
+        {
+            var screen = ShowWithABlock();
+            var last = screen.Tree.Roots[2];
+            last.IsExpanded = false;
+            Dispatcher.UIThread.RunJobs();
+            screen.Window.UpdateLayout();
+
+            screen.Drag(screen.Tree.Roots[0], last, 0.9, RawDragEventType.DragOver);
+
+            Assert.Contains(":dropafter", screen.RowOf(last).Classes);
+        }
+
+        [AvaloniaFact]
+        public void TheAfterBar_IsDrawnUnderTheLastRowOfTheBlock()
+        {
+            var screen = ShowWithABlock();
+            var last = screen.Tree.Roots[2];
+            var lastRow = LastVisibleOf(last);
+
+            screen.Drag(screen.Tree.Roots[0], lastRow, 0.9, RawDragEventType.DragOver);
+
+            var item = screen.RowOf(last);
+            var line = DropLineOf(item);
+            var lastRowHeader = HeaderOf(screen.RowOf(lastRow));
+            Assert.True(line.IsVisible);
+            Assert.InRange(Top(screen, line) + line.Bounds.Height, Top(screen, item) + item.Bounds.Height - 0.5, Top(screen, item) + item.Bounds.Height + 0.5);
+            Assert.True(Top(screen, line) + line.Bounds.Height >= Top(screen, lastRowHeader) + lastRowHeader.Bounds.Height - 0.5,
+                "The bar is above the bottom of the last row of the block.");
+        }
+
+        [AvaloniaFact]
+        public void TheBeforeBar_IsDrawnAtTheTopOfTheBlock()
+        {
+            var screen = ShowWithABlock();
+            var last = screen.Tree.Roots[2];
+
+            screen.Drag(screen.Tree.Roots[0], last, 0.2, RawDragEventType.DragOver);
+
+            var item = screen.RowOf(last);
+            var line = DropLineOf(item);
+            Assert.True(line.IsVisible);
+            Assert.InRange(Top(screen, line), Top(screen, item) - 0.5, Top(screen, item) + 0.5);
+        }
+
+        [AvaloniaFact]
+        public void ALayerOverTheBottomHalfOfTheLastRowOfAnotherLayer_ShowsTheDropAfterThatLayer()
+        {
+            var screen = Show();
+            var first = screen.Tree.Roots[0].Children[0];
+            var second = screen.Tree.Roots[0].Children[1];
+            var lastRow = LastVisibleOf(second);
+            Assert.NotSame(second, lastRow);
+
+            screen.Drag(first, lastRow, 0.9, RawDragEventType.DragOver);
+
+            Assert.Contains(":dropafter", screen.RowOf(second).Classes);
+        }
+
+        [AvaloniaFact]
+        public void ALayerOverAMiddleRowOfAnotherLayer_ShowsNothing()
+        {
+            var screen = Show();
+            var first = screen.Tree.Roots[0].Children[0];
+            var second = screen.Tree.Roots[0].Children[1];
+
+            screen.Drag(first, second.Children[0], 0.9, RawDragEventType.DragOver);
+
+            Assert.DoesNotContain(":dropafter", screen.RowOf(second).Classes);
+            Assert.DoesNotContain(":dropbefore", screen.RowOf(second).Classes);
         }
 
         [AvaloniaTheory]
@@ -414,11 +546,12 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
             var row = screen.RowOf(screen.Tree.Roots[1]);
+            var lastRow = LastVisibleOf(screen.Tree.Roots[1]);
 
-            screen.Drag(screen.Tree.Roots[0], screen.Tree.Roots[1], 0.9, RawDragEventType.DragOver);
+            screen.Drag(screen.Tree.Roots[0], lastRow, 0.9, RawDragEventType.DragOver);
             Assert.Contains(":dropafter", row.Classes);
 
-            screen.Window.DragDrop(screen.PointIn(screen.Tree.Roots[1], 0.9), RawDragEventType.DragLeave,
+            screen.Window.DragDrop(screen.PointIn(lastRow, 0.9), RawDragEventType.DragLeave,
                 new DataObject(), DragDropEffects.Move);
             Dispatcher.UIThread.RunJobs();
             Assert.DoesNotContain(":dropafter", row.Classes);
@@ -493,13 +626,13 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnTheLowerPartOfACompositionRow_ReordersTheCompositions()
+        public void ADropOnTheBottomHalfOfTheLastRowOfACompositionBlock_ReordersTheCompositions()
         {
             var screen = Show();
             var nodeA = screen.Tree.Roots[0];
             var nodeB = screen.Tree.Roots[1];
 
-            screen.Drag(nodeA, nodeB, 0.9, RawDragEventType.Drop);
+            screen.Drag(nodeA, LastVisibleOf(nodeB), 0.9, RawDragEventType.Drop);
 
             Assert.Equal(new IControl[] { screen.B, screen.A }, screen.Project.CompositionManager.ManagerData.Items);
             Assert.DoesNotContain(":dropafter", screen.RowOf(nodeB).Classes);

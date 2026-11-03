@@ -195,7 +195,8 @@ namespace CMiX.Studio.Avalonia.Views
             if (source != null)
                 e.DragEffects = DragDropEffects.Move;
 
-            if (DataContext is not ProjectTree tree || source == null || item == null || target == null || !tree.CanDrop(source, target, position))
+            if (DataContext is not ProjectTree tree || source == null || item == null || target == null || position == null
+                || !tree.CanDrop(source, target, position.Value))
             {
                 Mark(null, null);
                 return;
@@ -212,22 +213,22 @@ namespace CMiX.Studio.Avalonia.Views
             Mark(null, null);
 
             var (source, _, target, position) = Read(e);
-            if (DataContext is not ProjectTree tree || source == null || target == null)
+            if (DataContext is not ProjectTree tree || source == null || target == null || position == null)
                 return;
 
-            await tree.DropAsync(source, target, position);
+            await tree.DropAsync(source, target, position.Value);
         }
 
-        // The dragged node, the row under the pointer, its node, and the place in the row.
-        private (TreeNode? Source, TreeViewItem? Item, TreeNode? Target, DropPosition Position) Read(DragEventArgs e)
+        // The dragged node, the item that takes the drop, its node, and the place of the drop. The item that takes the drop
+        // is the row under the pointer or one of its parents (see ProjectTree.Locate). It has no place when no drop is offered here.
+        private (TreeNode? Source, TreeViewItem? Item, TreeNode? Target, DropPosition? Position) Read(DragEventArgs e)
         {
             var source = e.Data.Get(NodeFormat) as TreeNode;
-            var item = ItemOf(e.Source);
-            var target = item?.DataContext as TreeNode;
-            if (item == null || target == null)
-                return (source, item, target, DropPosition.After);
+            var hoveredItem = ItemOf(e.Source);
+            if (source == null || hoveredItem?.DataContext is not TreeNode hovered || DataContext is not ProjectTree tree)
+                return (source, null, null, null);
 
-            var header = item.GetVisualDescendants().OfType<Border>().FirstOrDefault(border => border.Name == "RowBorder");
+            var header = hoveredItem.GetVisualDescendants().OfType<Border>().FirstOrDefault(border => border.Name == "RowBorder");
             var fraction = header == null || header.Bounds.Height <= 0
                 ? 0.5
                 : e.GetPosition(header).Y / header.Bounds.Height;
@@ -236,10 +237,20 @@ namespace CMiX.Studio.Avalonia.Views
             if ((fraction < 0 || fraction > 1) && marked != null && marked.DataContext is TreeNode markedNode && markedPosition != null)
                 return (source, marked, markedNode, markedPosition.Value);
 
-            if (DataContext is not ProjectTree tree || source == null)
-                return (source, item, target, DropPosition.After);
+            if (tree.Locate(source, hovered, fraction) is not { } place)
+                return (source, null, null, null);
 
-            return (source, item, target, tree.PositionFor(source, target, fraction));
+            return (source, ItemOfNode(hoveredItem, place.Target), place.Target, place.Position);
+        }
+
+        // The item of a node: the item of the row under the pointer, or the first of its parent items that has the node.
+        private static TreeViewItem? ItemOfNode(TreeViewItem from, TreeNode node)
+        {
+            for (var item = from; item != null; item = item.GetVisualAncestors().OfType<TreeViewItem>().FirstOrDefault())
+                if (ReferenceEquals(item.DataContext, node))
+                    return item;
+
+            return null;
         }
 
         private void Mark(TreeViewItem? item, DropPosition? position)
