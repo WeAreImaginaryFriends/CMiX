@@ -88,6 +88,45 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public void CanDrop_WhereTheItemAlreadyIs_IsFalse()
+        {
+            var scene = CreateScene();
+
+            // The first layer before the second layer, or after itself, or before itself: the same place.
+            Assert.False(service.CanDrop(scene.LayerNodeOfA(0), scene.LayerNodeOfA(1), DropPosition.Before));
+            Assert.False(service.CanDrop(scene.LayerNodeOfA(1), scene.LayerNodeOfA(0), DropPosition.After));
+            Assert.False(service.CanDrop(scene.LayerNodeOfA(0), scene.LayerNodeOfA(0), DropPosition.Before));
+            Assert.False(service.CanDrop(scene.LayerNodeOfA(0), scene.LayerNodeOfA(0), DropPosition.After));
+        }
+
+        [Fact]
+        public void CanDrop_ToAnotherPlace_IsTrue()
+        {
+            var scene = CreateScene();
+
+            Assert.True(service.CanDrop(scene.LayerNodeOfA(0), scene.LayerNodeOfA(1), DropPosition.After));
+            Assert.True(service.CanDrop(scene.LayerNodeOfA(1), scene.LayerNodeOfA(0), DropPosition.Before));
+        }
+
+        [Fact]
+        public void CanDrop_ALayerInsideItsOwnComposition_IsTrueOnlyWhileItIsNotTheLastLayer()
+        {
+            var scene = CreateScene();
+
+            Assert.True(service.CanDrop(scene.LayerNodeOfA(0), scene.NodeA, DropPosition.Inside));
+            Assert.False(service.CanDrop(scene.LayerNodeOfA(1), scene.NodeA, DropPosition.Inside));
+        }
+
+        [Fact]
+        public void CanDrop_ALayerToAnotherComposition_IsTrueEvenAtTheSameIndex()
+        {
+            var scene = CreateScene();
+
+            Assert.True(service.CanDrop(scene.LayerNodeOfA(0), scene.NodeB, DropPosition.Inside));
+            Assert.True(service.CanDrop(scene.LayerNodeOfA(0), scene.LayerNodeOfB(0), DropPosition.Before));
+        }
+
+        [Fact]
         public void Drop_AnEntityBeforeAnotherEntity_ReordersTheGroup()
         {
             var scene = CreateScene();

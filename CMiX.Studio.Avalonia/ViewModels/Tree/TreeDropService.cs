@@ -55,12 +55,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             var owner = source.Owner!;
             if (ReferenceEquals(list, owner))
             {
-                var oldIndex = list.ManagerData.Items.IndexOf(item);
-                var newIndex = index > oldIndex ? index - 1 : index;
-                if (newIndex == oldIndex)
-                    return DropOutcome.None;
-
-                list.MoveItem(oldIndex, newIndex);
+                list.MoveItem(list.ManagerData.Items.IndexOf(item), NewIndex(source, list, index));
                 return new DropOutcome(true, new List<IPrefab>());
             }
 
@@ -92,25 +87,41 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (target.IsOrIsUnder(source))
                 return null;
 
+            (PrefabManager List, int Index)? place;
             if (position == DropPosition.Inside)
             {
                 // Only a composition takes a layer inside it, at the end.
-                if (target.Item is Composition && source.Item is Layer && target.ChildManager != null)
-                    return (target.ChildManager, target.ChildManager.ManagerData.Items.Count);
+                if (target.Item is not Composition || source.Item is not Layer || target.ChildManager == null)
+                    return null;
 
-                return null;
+                place = (target.ChildManager, target.ChildManager.ManagerData.Items.Count);
+            }
+            else
+            {
+                if (target.Item == null || target.Owner == null)
+                    return null;
+
+                var sameList = ReferenceEquals(source.Owner, target.Owner);
+                var layerToLayerList = source.Item is Layer && target.Item is Layer;
+                if (!sameList && !layerToLayerList)
+                    return null;
+
+                var index = target.Owner.ManagerData.Items.IndexOf(target.Item) + (position == DropPosition.After ? 1 : 0);
+                place = (target.Owner, index);
             }
 
-            if (target.Item == null || target.Owner == null)
+            // A drop that leaves the item where it is changes nothing, so it is not a drop.
+            if (ReferenceEquals(place.Value.List, source.Owner) && NewIndex(source, place.Value.List, place.Value.Index) == place.Value.List.ManagerData.Items.IndexOf(source.Item))
                 return null;
 
-            var sameList = ReferenceEquals(source.Owner, target.Owner);
-            var layerToLayerList = source.Item is Layer && target.Item is Layer;
-            if (!sameList && !layerToLayerList)
-                return null;
+            return place;
+        }
 
-            var index = target.Owner.ManagerData.Items.IndexOf(target.Item) + (position == DropPosition.After ? 1 : 0);
-            return (target.Owner, index);
+        // The index of the item in its own list after it moves to the place with that index, counted before the move.
+        private static int NewIndex(TreeNode source, PrefabManager list, int index)
+        {
+            var oldIndex = list.ManagerData.Items.IndexOf(source.Item!);
+            return index > oldIndex ? index - 1 : index;
         }
     }
 }
