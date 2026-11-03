@@ -4,9 +4,12 @@
     xmlns:sys="using:System"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
 
+    <!-- A row of a context menu. A row with children opens a submenu: its panel is a PopupFrame like the panel of the menu,
+         and its rows have this theme too. -->
     <ControlTheme x:Key="MenuItemContext" TargetType="MenuItem">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Height" Value="{DynamicResource ControlHeightMD}" />
+        <Setter Property="ItemContainerTheme" Value="{DynamicResource MenuItemContext}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Border
@@ -47,20 +50,14 @@
                             IsLightDismissEnabled="False"
                             IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
                             Placement="RightEdgeAlignedTop">
-                            <Border
-                                Margin="8"
-                                Background="{DynamicResource Grey400Brush}"
-                                BorderBrush="{DynamicResource Grey600Brush}"
-                                BorderThickness="1"
-                                BoxShadow="0 0 8 0 #80000000"
-                                CornerRadius="{DynamicResource CornerRadiusAll}">
+                            <ui:PopupFrame PanelMinWidth="{DynamicResource PopupMinWidth}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                     <ItemsPresenter
                                         Name="PART_ItemsPresenter"
                                         Grid.IsSharedSizeScope="True"
                                         ItemsPanel="{TemplateBinding ItemsPanel}" />
                                 </ScrollViewer>
-                            </Border>
+                            </ui:PopupFrame>
                         </Popup>
                     </Grid>
                 </Border>
