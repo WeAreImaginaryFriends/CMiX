@@ -12,7 +12,8 @@ namespace CMiX.Core.Processors
     // CompositionIds holds the visible compositions of the project, in the order of the list.
     // ProjectId is the ID of the project in the repository.
     // SelectedCompositionId is the ID of the selected composition, or an empty ID when none is selected.
-    // GetItemIds gives what one layer draws: its visible entities, then its cameras, then its lights.
+    // GetItemIds gives what one layer draws: its visible entities, then its lights.
+    // GetCameraIds gives the visible cameras of one layer. A camera is rendered apart from the items.
     // GetVisibleIds gives the visible items of any list, in the order of the list.
     // GetTextureSourceIds gives the visible texture sources of one composition, in the order of the repository.
     // A list is built again only after the list or a visibility changed.
@@ -45,8 +46,11 @@ namespace CMiX.Core.Processors
 
             return layerItems
                 .GetValue(layer, _ => new LayerItems())
-                .Get(items.GetVisibleIds(layer.ModelEntityManager), items.GetVisibleIds(layer.CameraManager), items.GetVisibleIds(layer.LightManager));
+                .Get(items.GetVisibleIds(layer.ModelEntityManager), items.GetVisibleIds(layer.LightManager));
         }
+
+        public IReadOnlyList<Guid> GetCameraIds(Layer layer) =>
+            layer == null ? Array.Empty<Guid>() : items.GetVisibleIds(layer.CameraManager);
 
         public IReadOnlyList<Guid> GetVisibleIds(PrefabManager manager) => items.GetVisibleIds(manager);
 
@@ -60,17 +64,15 @@ namespace CMiX.Core.Processors
         private sealed class LayerItems
         {
             private IReadOnlyList<Guid> entities;
-            private IReadOnlyList<Guid> cameras;
             private IReadOnlyList<Guid> lights;
             private Guid[] ids = Array.Empty<Guid>();
 
-            public IReadOnlyList<Guid> Get(IReadOnlyList<Guid> entities, IReadOnlyList<Guid> cameras, IReadOnlyList<Guid> lights)
+            public IReadOnlyList<Guid> Get(IReadOnlyList<Guid> entities, IReadOnlyList<Guid> lights)
             {
-                if (!ReferenceEquals(this.entities, entities) || !ReferenceEquals(this.cameras, cameras) || !ReferenceEquals(this.lights, lights))
+                if (!ReferenceEquals(this.entities, entities) || !ReferenceEquals(this.lights, lights))
                 {
-                    ids = entities.Concat(cameras).Concat(lights).ToArray();
+                    ids = entities.Concat(lights).ToArray();
                     this.entities = entities;
-                    this.cameras = cameras;
                     this.lights = lights;
                 }
 

@@ -32,7 +32,7 @@ namespace CMiX.Core.Tests
         private static List<IControl> Layers(Composition composition) => composition.LayerManager.ManagerData.Items.ToList();
 
         [Fact]
-        public void GetItemIds_ALayer_ListsEntitiesThenCamerasThenLights()
+        public void GetItemIds_ALayer_ListsEntitiesThenLights()
         {
             var (processor, project) = Create();
             var composition = AddComposition(project, 1);
@@ -41,11 +41,49 @@ namespace CMiX.Core.Tests
             layer.CameraManager.AddItem(typeof(Camera));
             layer.ModelEntityManager.AddItem(typeof(Entity));
             var expected = layer.ModelEntityManager.ManagerData.Items
-                .Concat(layer.CameraManager.ManagerData.Items)
                 .Concat(layer.LightManager.ManagerData.Items)
                 .Select(item => item.ID);
 
             Assert.Equal(expected, processor.GetItemIds(layer));
+        }
+
+        [Fact]
+        public void GetCameraIds_ALayer_ListsTheCamerasOnly()
+        {
+            var (processor, project) = Create();
+            var composition = AddComposition(project, 1);
+            var layer = (Layer)Layers(composition)[0];
+            layer.ModelEntityManager.AddItem(typeof(Entity));
+            layer.CameraManager.AddItem(typeof(Camera));
+            layer.CameraManager.AddItem(typeof(Camera));
+
+            Assert.Equal(layer.CameraManager.ManagerData.Items.Select(item => item.ID), processor.GetCameraIds(layer));
+        }
+
+        [Fact]
+        public void GetCameraIds_AHiddenCamera_LeavesTheListAndComesBack()
+        {
+            var (processor, project) = Create();
+            var composition = AddComposition(project, 1);
+            var layer = (Layer)Layers(composition)[0];
+            layer.CameraManager.AddItem(typeof(Camera));
+            layer.CameraManager.AddItem(typeof(Camera));
+            var cameras = layer.CameraManager.ManagerData.Items.ToList();
+            var hidden = (IPrefab)cameras[0];
+
+            hidden.PrefabService.Visibility.Value = true;
+            Assert.Equal(new[] { cameras[1].ID }, processor.GetCameraIds(layer));
+
+            hidden.PrefabService.Visibility.Value = false;
+            Assert.Equal(cameras.Select(camera => camera.ID), processor.GetCameraIds(layer));
+        }
+
+        [Fact]
+        public void GetCameraIds_ANullLayer_IsEmpty()
+        {
+            var (processor, _) = Create();
+
+            Assert.Empty(processor.GetCameraIds(null));
         }
 
         [Fact]
