@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -89,6 +90,101 @@ namespace CMiX.Studio.Avalonia.Tests
             var rows = screen.View.GetVisualDescendants().OfType<TreeViewItem>().Count();
 
             Assert.Equal(screen.Tree.Roots.Sum(CountNodes), rows);
+        }
+
+        private static Border HeaderOf(TreeViewItem row) =>
+            row.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_LayoutRoot");
+
+        // The toggles of a row, without the chevron and without the toggles of its children.
+        private static List<ToggleButton> TogglesOf(TreeViewItem row) =>
+            row.GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "PART_Header")
+                .GetVisualDescendants().OfType<ToggleButton>()
+                .Where(toggle => toggle.Name != "PART_ExpandCollapseChevron" && toggle.IsEffectivelyVisible).ToList();
+
+        private static IEnumerable<TreeNode> AllNodes(IEnumerable<TreeNode> nodes) =>
+            nodes.SelectMany(node => new[] { node }.Concat(AllNodes(node.Children)));
+
+        [AvaloniaFact]
+        public void EveryRow_HasTheHeightOfARowOfTheOtherLists()
+        {
+            var screen = Show();
+            screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
+            Dispatcher.UIThread.RunJobs();
+            var expected = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
+
+            var heights = AllNodes(screen.Tree.Roots).Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height).ToList();
+
+            Assert.NotEmpty(heights);
+            Assert.All(heights, height => Assert.Equal(expected, height));
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.1)]
+        [InlineData(0.5)]
+        [InlineData(0.9)]
+        public void ADragOverARow_MovesNoRow(double fraction)
+        {
+            var screen = Show();
+            var nodes = AllNodes(screen.Tree.Roots).ToList();
+            var before = nodes.Select(node => HeaderOf(screen.RowOf(node)).TranslatePoint(new Point(0, 0), screen.Window)).ToList();
+            var heightsBefore = nodes.Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height).ToList();
+
+            screen.Drag(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction, RawDragEventType.DragOver);
+
+            Assert.Equal(before, nodes.Select(node => HeaderOf(screen.RowOf(node)).TranslatePoint(new Point(0, 0), screen.Window)));
+            Assert.Equal(heightsBefore, nodes.Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height));
+        }
+
+        [AvaloniaFact]
+        public void ThePointerOverARow_HighlightsOnlyThatRowAndNotItsParent()
+        {
+            var screen = Show();
+            var composition = screen.Tree.Roots[0];
+            var layer = composition.Children[0];
+
+            screen.Window.MouseMove(screen.PointIn(layer, 0.5));
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(HeaderOf(screen.RowOf(layer)).IsPointerOver);
+            Assert.False(HeaderOf(screen.RowOf(composition)).IsPointerOver);
+        }
+
+        [AvaloniaFact]
+        public void ACompositionRowAndALayerRow_HaveTheVisibilityToggleAndTheMaskToggle()
+        {
+            var screen = Show();
+
+            Assert.Equal(2, TogglesOf(screen.RowOf(screen.Tree.Roots[0])).Count);
+            Assert.Equal(2, TogglesOf(screen.RowOf(screen.Tree.Roots[0].Children[0])).Count);
+        }
+
+        [AvaloniaFact]
+        public void AnEntityRow_HasTheVisibilityToggleOnly_AndAGroupRowHasNone()
+        {
+            var screen = Show();
+            screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
+            Dispatcher.UIThread.RunJobs();
+            var layerNode = screen.Tree.Roots[0].Children[0];
+            var group = layerNode.Children[0];
+
+            Assert.Single(TogglesOf(screen.RowOf(group.Children[0])));
+            Assert.Empty(TogglesOf(screen.RowOf(group)));
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void TheToggles_ChangeTheVisibilityAndTheMaskOfTheComposition(int toggleIndex)
+        {
+            var screen = Show();
+            var toggle = TogglesOf(screen.RowOf(screen.Tree.Roots[0]))[toggleIndex];
+            var before = toggleIndex == 0 ? screen.A.PrefabService.Visibility.Value : screen.A.Mask.IsMask.Value;
+
+            toggle.IsChecked = !before;
+            Dispatcher.UIThread.RunJobs();
+
+            var after = toggleIndex == 0 ? screen.A.PrefabService.Visibility.Value : screen.A.Mask.IsMask.Value;
+            Assert.Equal(!before, after);
         }
 
         [AvaloniaFact]
