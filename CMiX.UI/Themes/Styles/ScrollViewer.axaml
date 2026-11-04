@@ -113,7 +113,7 @@
 
         <!--  ScrollBar Thumb, the part that can be dragged up/down or left/right  -->
         <Style Selector="^ /template/ Thumb#thumb">
-            <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
+            <Setter Property="Background" Value="{DynamicResource Grey500Brush}" />
             <Setter Property="Template">
                 <ControlTemplate>
                     <Border

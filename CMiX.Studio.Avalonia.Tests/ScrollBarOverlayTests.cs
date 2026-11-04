@@ -94,6 +94,27 @@ namespace CMiX.Studio.Avalonia.Tests
             window.Close();
         }
 
+        [AvaloniaFact]
+        public void TheThumbOfTheBar_IsDarkerThanItWas_AndUsesAColorOfTheTheme()
+        {
+            var list = new ListBox { Width = 200, Height = 96 };
+            for (var i = 0; i < 20; i++)
+                list.Items.Add(new Border { Height = 24 });
+            var window = new Window { Content = list, Width = 300, Height = 200 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+
+            var thumb = list.GetVisualDescendants().OfType<Thumb>().First(t => t.Name == "thumb");
+            var idle = Assert.IsAssignableFrom<global::Avalonia.Media.ISolidColorBrush>(thumb.Background).Color;
+            var grey500 = Assert.IsAssignableFrom<global::Avalonia.Media.ISolidColorBrush>(Application.Current!.FindResource("Grey500Brush")).Color;
+            var before = Assert.IsAssignableFrom<global::Avalonia.Media.ISolidColorBrush>(Application.Current!.FindResource("StateIdleBrush")).Color;
+
+            Assert.Equal(grey500, idle);
+            Assert.True(idle.R + idle.G + idle.B < before.R + before.G + before.B, "The thumb is not darker than before.");
+            window.Close();
+        }
+
         // The tree with a composition and the number of layers: many layers need a bar.
         private static (double RowWidth, bool BarShown) FirstRowOfTheTree(int layers)
         {
