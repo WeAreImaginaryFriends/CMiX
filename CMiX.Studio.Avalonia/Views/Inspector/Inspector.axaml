@@ -7,6 +7,8 @@
     xmlns:Compositing="clr-namespace:CMiX.Core.Compositing;assembly=CMiX.Core"
     xmlns:Cameras="clr-namespace:CMiX.Core.Rendering.Cameras;assembly=CMiX.Core"
     xmlns:Lights="clr-namespace:CMiX.Core.Rendering.Lights;assembly=CMiX.Core"
+    xmlns:Filters="clr-namespace:CMiX.Core.Texturing.Filters;assembly=CMiX.Core"
+    xmlns:Managers="clr-namespace:CMiX.Studio.Avalonia.Views.Managers"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
     xmlns:Tree="clr-namespace:CMiX.Studio.Avalonia.ViewModels.Tree"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -82,6 +84,30 @@
 
                     <DataTemplate DataType="{x:Type Tree:LightsGroup}">
                         <Views:LayerLightTab DataContext="{Binding Layer}" />
+                    </DataTemplate>
+
+                    <!-- The groups of any item: the same panels as in the editors, for the list of the group. The panel that adds an item lists
+                         what can be added to the owner, so it takes the type of the owner from the group. -->
+                    <DataTemplate DataType="{x:Type Tree:ModifiersGroup}">
+                        <Border Name="groupRoot">
+                            <Views:ModifierManager Caption="Add Modifier" Margin="8" DataContext="{Binding Manager}">
+                                <Views:ModifierManager.SelectionPanel>
+                                    <Managers:AutoSelectionPanel PanelOwner="{Binding DataContext.OwnerType, ElementName=groupRoot}" />
+                                </Views:ModifierManager.SelectionPanel>
+                            </Views:ModifierManager>
+                        </Border>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Tree:FiltersGroup}">
+                        <Views:ModifierManager Caption="Add Filter" Margin="8" DataContext="{Binding Manager}">
+                            <Views:ModifierManager.SelectionPanel>
+                                <Managers:AutoSelectionPanel Interface="{x:Type Filters:ITextureFilter}" />
+                            </Views:ModifierManager.SelectionPanel>
+                        </Views:ModifierManager>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Tree:TexturesGroup}">
+                        <Views:DiffuseTexture DataContext="{Binding Owner.Texture.DiffuseTexture}" />
                     </DataTemplate>
 
                     <DataTemplate DataType="{x:Type Compositing:Entity}">

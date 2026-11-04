@@ -12,6 +12,7 @@ using CMiX.Core.Prefabs;
 using CMiX.Studio.Avalonia.ViewModels;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
+using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.Controls;
 using CMiX.UI.Panels;
 using CMiX.Core.Undo;
@@ -140,6 +141,130 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Same(screen.CompositionNode.Item, screen.Find<ComposableItemSettings>()!.DataContext);
             Assert.Equal("Composition", screen.HeaderIcon.IconKey);
             Assert.Equal(screen.CompositionNode.Header, screen.Title.Text);
+        }
+
+        // ---- the groups of textures, filters and modifiers, and the items in them ----
+
+        private static Entity EntityOf(Screen screen) => (Entity)screen.Layer.ModelEntityManager.ManagerData.Items[0];
+
+        [AvaloniaFact]
+        public void TheModifiersGroupOfAnEntity_ShowsTheListOfItsModifiers_WithTheModifiersOfThatEntity()
+        {
+            var screen = Show();
+            var entityNode = screen.Group("Entities").Children[0];
+
+            Select(screen, entityNode.Children.Single(group => group.Header == "Modifiers"));
+
+            var panel = Assert.IsType<ModifiersGroup>(screen.Editor.Content);
+            Assert.Same(EntityOf(screen), panel.Owner);
+            var manager = screen.Find<ModifierManager>()!;
+            Assert.Same(EntityOf(screen).ModifierManager, manager.DataContext);
+            Assert.Equal("Add Modifier", manager.Caption);
+
+            // The panel that adds an item lists what can be added to an entity.
+            var selection = (AutoSelectionPanel)manager.SelectionPanel;
+            Assert.Equal(typeof(Entity), selection.PanelOwner);
+        }
+
+        [AvaloniaFact]
+        public void TheFiltersGroupOfALayerAndOfAComposition_ShowTheListOfTheirFilters()
+        {
+            var screen = Show();
+
+            Select(screen, screen.LayerNode.Children.Single(group => group.Header == "Filters"));
+            var layerPanel = screen.Find<ModifierManager>()!;
+            Assert.Same(screen.Layer.TextureModifierManager, layerPanel.DataContext);
+            Assert.Equal("Add Filter", layerPanel.Caption);
+            Assert.Equal(typeof(CMiX.Core.Texturing.Filters.ITextureFilter), ((AutoSelectionPanel)layerPanel.SelectionPanel).Interface);
+
+            Select(screen, screen.CompositionNode.Children.Single(group => group.Header == "Filters"));
+            Assert.Same(((Composition)screen.CompositionNode.Item!).TextureModifierManager, screen.Find<ModifierManager>()!.DataContext);
+        }
+
+        [AvaloniaFact]
+        public void TheModifiersGroupOfALayerAndOfAComposition_ListWhatCanBeAddedToThem()
+        {
+            var screen = Show();
+
+            Select(screen, screen.LayerNode.Children.Single(group => group.Header == "Modifiers"));
+            Assert.Equal(typeof(Layer), ((AutoSelectionPanel)screen.Find<ModifierManager>()!.SelectionPanel).PanelOwner);
+
+            Select(screen, screen.CompositionNode.Children.Single(group => group.Header == "Modifiers"));
+            Assert.Equal(typeof(Composition), ((AutoSelectionPanel)screen.Find<ModifierManager>()!.SelectionPanel).PanelOwner);
+        }
+
+        [AvaloniaFact]
+        public void TheTexturesGroupOfAnEntity_ShowsItsDiffuseTexture()
+        {
+            var screen = Show();
+            var entityNode = screen.Group("Entities").Children[0];
+
+            Select(screen, entityNode.Children.Single(group => group.Header == "Textures"));
+
+            Assert.IsType<TexturesGroup>(screen.Editor.Content);
+            Assert.Same(EntityOf(screen).Texture.DiffuseTexture, screen.Find<DiffuseTexture>()!.DataContext);
+        }
+
+        [AvaloniaFact]
+        public void AModifierRow_ShowsTheEditorOfThatModifier()
+        {
+            var screen = Show();
+            EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
+            TestServiceProviderFactory.Pump();
+            var node = screen.Group("Entities").Children[0].Children.Single(group => group.Header == "Modifiers").Children[0];
+
+            Select(screen, node);
+
+            Assert.Same(node.Item, screen.Editor.Content);
+            Assert.Equal("Modifier", screen.HeaderIcon.IconKey);
+            Assert.Equal(node.Header, screen.Title.Text);
+            var editor = screen.Editor.GetVisualDescendants().OfType<Control>().First(control => control.GetType().Name == "TranslateModifier");
+            Assert.Same(node.Item, editor.DataContext);
+        }
+
+        [AvaloniaFact]
+        public void AFilterRow_ShowsTheEditorOfThatFilter()
+        {
+            var screen = Show();
+            screen.Layer.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
+            TestServiceProviderFactory.Pump();
+            var node = screen.LayerNode.Children.Single(group => group.Header == "Filters").Children[0];
+
+            Select(screen, node);
+
+            Assert.Same(node.Item, screen.Editor.Content);
+            Assert.Equal("Filter", screen.HeaderIcon.IconKey);
+            Assert.NotNull(screen.Editor.GetVisualDescendants().OfType<Control>().FirstOrDefault(control => control.GetType().Name == "Blur"));
+        }
+
+        [AvaloniaFact]
+        public void ATextureRow_ShowsTheEditorOfThatTexture()
+        {
+            var screen = Show();
+            EntityOf(screen).Texture.DiffuseTexture.TextureManager.AddItem(typeof(CMiX.Core.Texturing.Sources.Image));
+            TestServiceProviderFactory.Pump();
+            var node = screen.Group("Entities").Children[0].Children.Single(group => group.Header == "Textures").Children[0];
+
+            Select(screen, node);
+
+            Assert.Same(node.Item, screen.Editor.Content);
+            Assert.Equal("Texture", screen.HeaderIcon.IconKey);
+            Assert.NotNull(screen.Editor.GetVisualDescendants().OfType<Control>().FirstOrDefault(control => control.GetType().Name == "Image"));
+        }
+
+        [AvaloniaFact]
+        public void ASelectionInTheModifierListOfTheInspector_IsTheSelectionOfTheTree()
+        {
+            var screen = Show();
+            EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
+            EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.ScaleModifier));
+            TestServiceProviderFactory.Pump();
+            var modifiers = screen.Group("Entities").Children[0].Children.Single(group => group.Header == "Modifiers");
+
+            EntityOf(screen).ModifierManager.SelectAt(0);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Same(modifiers.Children[0], screen.Tree.SelectedNode);
         }
 
         [AvaloniaFact]
