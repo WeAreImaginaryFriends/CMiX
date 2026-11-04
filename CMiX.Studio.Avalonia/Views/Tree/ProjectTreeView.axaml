@@ -28,7 +28,8 @@
 
     <TreeView
         x:Name="treeView"
-        Margin="8,8,0,8"
+        Margin="8"
+        Padding="0"
         Background="Transparent"
         BorderThickness="0"
         ItemsSource="{Binding Roots}"
