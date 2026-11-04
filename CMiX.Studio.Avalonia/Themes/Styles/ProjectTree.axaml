@@ -8,7 +8,8 @@
          with the space SpacingXXS between two rows.
          It is transparent, grey when the pointer is over the row itself (not over its children), and blue
          when it is selected. A child is indented by its level.
-         The classes dropbefore, dropafter and dropinside show the place of a drag. The marks are drawn
+         The classes dropbefore and dropafter show the place of a drag between rows. The class droptarget shows the row
+         that takes a drop inside it: it looks as if the pointer was over it. The marks are drawn
          over the row and take no room, so the rows never move during a drag. -->
     <converters:MarginMultiplierConverter x:Key="TreeLevelIndent" Indent="16" Left="True" />
 
@@ -83,12 +84,28 @@
                          a closed row is followed by the same space as an open row: every row is one row height plus one space
                          from the next, whatever is open. The stripes behind the tree (RowStripes) need this. -->
                     <ui:CollapsePanel Name="PART_Collapse" IsExpanded="{TemplateBinding IsExpanded}">
-                        <StackPanel Spacing="{DynamicResource SpacingXXS}">
-                            <Border />
-                            <ItemsPresenter
-                                Name="PART_ItemsPresenter"
-                                ItemsPanel="{TemplateBinding ItemsPanel}" />
-                        </StackPanel>
+                        <Panel>
+                            <StackPanel Spacing="{DynamicResource SpacingXXS}">
+                                <Border />
+                                <ItemsPresenter
+                                    Name="PART_ItemsPresenter"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
+                            </StackPanel>
+                            <!-- The pipe: a line under the chevron, along the children of the row. It is drawn over the
+                                 children, so a hovered or selected child does not hide it. The margin is the indent of the
+                                 row, as for the chevron. The line is at the middle of the chevron: 2 for the padding of
+                                 the row and 8 for half of the chevron column. -->
+                            <Panel
+                                Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeLevelIndent}}"
+                                IsHitTestVisible="False">
+                                <Border
+                                    Name="Pipe"
+                                    Width="1"
+                                    Margin="10,4,0,4"
+                                    HorizontalAlignment="Left"
+                                    Background="{DynamicResource Grey500Brush}" />
+                            </Panel>
+                        </Panel>
                     </ui:CollapsePanel>
                 </StackPanel>
                 <Border
@@ -96,13 +113,6 @@
                     Height="{DynamicResource SplitterIndicatorSize}"
                     VerticalAlignment="Top"
                     Background="{DynamicResource AccentBrush}"
-                    IsHitTestVisible="False"
-                    IsVisible="False" />
-                <Border
-                    Name="DropFrame"
-                    BorderBrush="{DynamicResource AccentBrush}"
-                    BorderThickness="2"
-                    CornerRadius="{DynamicResource CornerRadiusAll}"
                     IsHitTestVisible="False"
                     IsVisible="False" />
                 </Panel>
@@ -119,6 +129,10 @@
         <Style Selector="^:selected /template/ Border#RowBorder:pointerover">
             <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
         </Style>
+        <!-- Files dragged over the tree: the row that takes them looks as if the pointer was over it. -->
+        <Style Selector="^:droptarget /template/ Border#RowBorder">
+            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+        </Style>
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
             <Setter Property="IsVisible" Value="False" />
         </Style>
@@ -134,9 +148,6 @@
         <Style Selector="^:dropafter /template/ Border#DropLine">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="VerticalAlignment" Value="Bottom" />
-        </Style>
-        <Style Selector="^:dropinside /template/ Border#DropFrame">
-            <Setter Property="IsVisible" Value="True" />
         </Style>
     </ControlTheme>
 
