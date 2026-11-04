@@ -20,7 +20,7 @@ namespace CMiX.UI.Tests
 
             var grid = (Grid)box.Content!;
             var block = box.GetVisualDescendants().OfType<TextBlock>().First(t => t.Name == "TextDisplay");
-            var shownOrigin = block.TranslatePoint(new Point(block.Padding.Left, 0), grid)!.Value;
+            var shownOrigin = block.TranslatePoint(new Point(block.Padding.Left, block.Padding.Top), grid)!.Value;
             var shown = new Rect(shownOrigin, new Size(block.Bounds.Width, block.Bounds.Height));
 
             box.IsEditing = true;

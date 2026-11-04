@@ -8,13 +8,15 @@
         Height="{DynamicResource ControlHeightMD}"
         Background="Transparent">
 
-        <!-- The TextBox has a 1 border, so its padding is 3,1. The text then starts at the same place as in the TextBlock (4,0). -->
+        <!-- The TextBox has a 1 border and the padding 3,1 (a ScrollViewer margin), so its text is 4,2 from its corner.
+             The TextBlock has the padding 4,2 to have the same box: both boxes are centered with the same numbers,
+             so the text does not move by a pixel when the edit mode starts. -->
         <!-- Only as wide as its text: a double tap on the text starts the edit mode, a double tap on the rest of the row does not.
              The least width keeps an empty name easy to hit. -->
         <TextBlock
             x:Name="TextDisplay"
             MinWidth="{DynamicResource ControlHeightMD}"
-            Padding="4,0"
+            Padding="4,2"
             Background="Transparent"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
@@ -31,6 +33,7 @@
             CaretBrush="{DynamicResource AccentInactiveBrush}"
             ContextFlyout="{x:Null}"
             Padding="3,1"
+            ScrollViewer.VerticalScrollBarVisibility="Disabled"
             Foreground="{DynamicResource ActiveForegroundBrush}"
             SelectionBrush="{DynamicResource AccentBrush}" />
     </Grid>
