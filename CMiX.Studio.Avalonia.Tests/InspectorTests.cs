@@ -13,6 +13,7 @@ using CMiX.Studio.Avalonia.ViewModels;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls;
+using CMiX.UI.Panels;
 using CMiX.Core.Undo;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -96,6 +97,25 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Contains("Composition", keys);
             Assert.Contains("LayerScene", keys);
             Assert.Contains("Geometry", keys);
+        }
+
+        // The title bar has the height of the headers of the panels under it (the headers of the expanders).
+        [AvaloniaFact]
+        public void TheHeader_HasTheHeightOfTheHeadersOfThePanels()
+        {
+            var screen = Show();
+            Select(screen, screen.CompositionNode);
+            var expander = screen.Editor.GetVisualDescendants().OfType<ExpanderIndented>().First();
+            var expanderHeader = expander.GetVisualDescendants().OfType<ToggleButton>().First();
+
+            var height = Convert.ToDouble(Application.Current!.FindResource("ControlHeightXL"));
+            Assert.Equal(height, screen.Header.Bounds.Height);
+            Assert.Equal(expanderHeader.Bounds.Height, screen.Header.Bounds.Height);
+
+            // The icon and the name are in the middle of the bar.
+            var icon = screen.HeaderIcon;
+            var iconMiddle = icon.TranslatePoint(new Point(0, icon.Bounds.Height / 2), screen.Header)!.Value.Y;
+            Assert.Equal(height / 2, iconMiddle, 1);
         }
 
         [AvaloniaFact]

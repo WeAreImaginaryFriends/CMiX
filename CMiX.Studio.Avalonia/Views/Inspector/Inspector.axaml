@@ -20,11 +20,12 @@
         <!-- The icon and the name of the selected node. -->
         <Border
             Name="header"
-            Padding="8,4"
+            Height="{DynamicResource ControlHeightXL}"
+            Padding="8,0"
             Background="{DynamicResource Grey200Brush}"
             DockPanel.Dock="Top"
             IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
-            <StackPanel Orientation="Horizontal" Spacing="{DynamicResource SpacingMD}">
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="{DynamicResource SpacingMD}">
                 <ui:AppIcon IconKey="{Binding SelectedNode.IconKey}" Size="{DynamicResource IconSizeXS}" />
                 <TextBlock Name="title" VerticalAlignment="Center" Text="{Binding SelectedNode.Header}" />
             </StackPanel>
