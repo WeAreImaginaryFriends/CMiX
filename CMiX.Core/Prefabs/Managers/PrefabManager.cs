@@ -53,7 +53,7 @@ namespace CMiX.Core.Prefabs.Managers
         public IManagerReorderService ManagerReorderService { get; }
 
         [ObservableProperty]
-        private bool isExpanded = false;
+        private bool isExpanded = true;
 
         public ManagerData ManagerData => Collection.ManagerData;
 

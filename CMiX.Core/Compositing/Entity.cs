@@ -58,19 +58,19 @@ namespace CMiX.Core.Compositing
         }
 
         [ObservableProperty]
-        private bool transformSRTIsExpanded = false;
+        private bool transformSRTIsExpanded = true;
 
         [ObservableProperty]
-        private bool modifierManagerIsExpanded = false;
+        private bool modifierManagerIsExpanded = true;
 
         [ObservableProperty]
-        private bool materialIsExpanded = false;
+        private bool materialIsExpanded = true;
 
         [ObservableProperty]
-        private bool colorPaletteManagerIsExpanded = false;
+        private bool colorPaletteManagerIsExpanded = true;
 
         [ObservableProperty]
-        private bool meshIsExpanded = false;
+        private bool meshIsExpanded = true;
 
         public IControlModel ToModel() => new EntityModel
         {

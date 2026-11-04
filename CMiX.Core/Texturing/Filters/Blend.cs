@@ -23,7 +23,7 @@ namespace CMiX.Core.Texturing.Filters
         public GenericValue<float> Opacity { get; set; }
 
         [ObservableProperty]
-        private bool isExpanded = false;
+        private bool isExpanded = true;
 
         public IControlModel ToModel() => new BlendModel
         {

@@ -37,7 +37,7 @@ namespace CMiX.Core.Texturing
         }
 
         [ObservableProperty]
-        private bool isExpanded = false;
+        private bool isExpanded = true;
 
         public IControlModel ToModel() => new DiffuseTextureModel
         {

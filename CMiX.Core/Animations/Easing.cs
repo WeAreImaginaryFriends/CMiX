@@ -23,7 +23,7 @@ namespace CMiX.Core.Animations
         public GenericValue<TweenerMode> Mode { get; set; }
 
         [ObservableProperty]
-        private bool isExpanded = false;
+        private bool isExpanded = true;
 
         public IControlModel ToModel() => new EasingModel
         {

@@ -23,7 +23,7 @@ namespace CMiX.Core.Transformation
 
 
         [ObservableProperty]
-        private bool isExpanded;
+        private bool isExpanded = true;
 
         public IControlModel ToModel() => new BillboardModifierModel
         {

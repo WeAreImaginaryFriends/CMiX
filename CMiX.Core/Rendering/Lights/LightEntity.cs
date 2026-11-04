@@ -42,7 +42,7 @@ namespace CMiX.Core.Rendering.Lights
         }
 
         [ObservableProperty]
-        private bool transformSRTIsExpanded = false;
+        private bool transformSRTIsExpanded = true;
 
         [ObservableProperty]
         private bool modifierManagerIsExpanded = true;

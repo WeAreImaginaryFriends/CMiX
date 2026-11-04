@@ -40,7 +40,7 @@ namespace CMiX.Core.Materials
         }
 
         [ObservableProperty]
-        private bool isExpanded = false;
+        private bool isExpanded = true;
 
         public IControlModel ToModel() => new MaterialModel
         {

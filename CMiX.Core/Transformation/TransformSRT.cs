@@ -27,7 +27,7 @@ namespace CMiX.Core.Transformation
         public Vector3 Rotation { get; set; }
 
         [ObservableProperty]
-        private bool isExpanded;
+        private bool isExpanded = true;
 
         public IControlModel ToModel() => new TransformSRTModel
         {

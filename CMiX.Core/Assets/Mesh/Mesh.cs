@@ -50,7 +50,7 @@ namespace CMiX.Core
         }
 
         [ObservableProperty]
-        private bool isExpanded = false;
+        private bool isExpanded = true;
 
         public Guid ID { get; set; } = Guid.NewGuid();
 

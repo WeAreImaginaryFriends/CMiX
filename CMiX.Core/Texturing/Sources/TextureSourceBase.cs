@@ -43,7 +43,7 @@ namespace CMiX.Core.Texturing.Sources
         }
 
         [ObservableProperty]
-        private bool isExpanded = false;
+        private bool isExpanded = true;
 
         public void Dispose() => DisposeAll(TextureModifierManager, Modulators);
 
