@@ -169,16 +169,28 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AGroup_ShowsItsNameAndTheHint_AndNoEditor()
+        public void AGroup_ShowsItsNameAndTheListPanelOfItsKind()
         {
             var screen = Show();
 
             Select(screen, screen.Group("Cameras"));
-
             Assert.True(screen.Header.IsVisible);
             Assert.Equal("Cameras", screen.Title.Text);
-            Assert.True(screen.Placeholder.IsEffectivelyVisible);
-            Assert.False(screen.Scroller.IsVisible);
+            Assert.False(screen.Placeholder.IsVisible);
+            Assert.True(screen.Scroller.IsVisible);
+            Assert.Same(screen.Layer, Assert.IsType<CamerasGroup>(screen.Editor.Content).Layer);
+            Assert.Same(screen.Layer, screen.Find<LayerCameraTab>()!.DataContext);
+            Assert.Null(screen.Find<LayerEntityTab>());
+
+            Select(screen, screen.Group("Entities"));
+            Assert.Equal("Entities", screen.Title.Text);
+            Assert.Same(screen.Layer, screen.Find<LayerEntityTab>()!.DataContext);
+            Assert.Null(screen.Find<LayerCameraTab>());
+
+            Select(screen, screen.Group("Lights"));
+            Assert.Equal("Lights", screen.Title.Text);
+            Assert.Same(screen.Layer, screen.Find<LayerLightTab>()!.DataContext);
+            Assert.Null(screen.Find<LayerEntityTab>());
         }
 
         [AvaloniaFact]
@@ -211,9 +223,10 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Layer.CameraManager.RemoveItem((IControl)camera.Item!);
             TestServiceProviderFactory.Pump();
 
-            Assert.Null(screen.Find<CameraView>());
+            // The selection falls back to the group of cameras, which shows the panel of the list.
             Assert.Equal("Cameras", screen.Title.Text);
-            Assert.True(screen.Placeholder.IsEffectivelyVisible);
+            Assert.IsType<CamerasGroup>(screen.Editor.Content);
+            Assert.NotNull(screen.Find<LayerCameraTab>());
         }
 
         [AvaloniaFact]
@@ -241,6 +254,9 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData("text")]
         [InlineData("camera")]
         [InlineData("light")]
+        [InlineData("entities group")]
+        [InlineData("cameras group")]
+        [InlineData("lights group")]
         public void EveryPanelOfAnEditor_IsOpen(string kind)
         {
             var screen = Show();
@@ -252,6 +268,9 @@ namespace CMiX.Studio.Avalonia.Tests
                 "quad" => screen.Group("Entities").Children[1],
                 "text" => screen.Group("Entities").Children[2],
                 "camera" => screen.Group("Cameras").Children[0],
+                "entities group" => screen.Group("Entities"),
+                "cameras group" => screen.Group("Cameras"),
+                "lights group" => screen.Group("Lights"),
                 _ => screen.Group("Lights").Children[0]
             };
 
@@ -317,7 +336,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.Pump();
 
             Assert.Equal("Cameras", screen.Title.Text);
-            Assert.Null(screen.Find<CameraView>());
+            Assert.IsType<CamerasGroup>(screen.Editor.Content);
         }
 
         [AvaloniaFact]

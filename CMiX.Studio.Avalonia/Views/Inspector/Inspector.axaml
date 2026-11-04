@@ -8,15 +8,16 @@
     xmlns:Cameras="clr-namespace:CMiX.Core.Rendering.Cameras;assembly=CMiX.Core"
     xmlns:Lights="clr-namespace:CMiX.Core.Rendering.Lights;assembly=CMiX.Core"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    xmlns:Tree="clr-namespace:CMiX.Studio.Avalonia.ViewModels.Tree"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     d:DesignWidth="400"
     d:DesignHeight="600">
 
-    <!-- The editor of the item that is selected in the project tree. The DataContext is the ProjectTree.
+    <!-- The editor of the row that is selected in the project tree. The DataContext is the ProjectTree.
          The editors are the views of the other tabs, so an item looks the same here and there. -->
     <DockPanel>
 
-        <!-- The icon and the name of the selected node. A group (Entities, Cameras, Lights) has a name and no editor. -->
+        <!-- The icon and the name of the selected node. -->
         <Border
             Name="header"
             Padding="8,4"
@@ -36,18 +37,18 @@
             VerticalAlignment="Top"
             Opacity="0.5"
             Text="Select an item in the tree"
-            IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNull}, FallbackValue=True}" />
+            IsVisible="{Binding SelectedNode.InspectorContent, Converter={x:Static ObjectConverters.IsNull}, FallbackValue=True}" />
 
         <ScrollViewer
             Name="scroller"
             VerticalScrollBarVisibility="Hidden"
-            IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+            IsVisible="{Binding SelectedNode.InspectorContent, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
 
             <i:Interaction.Behaviors>
                 <ui:ScrollViewerBehavior />
             </i:Interaction.Behaviors>
 
-            <ContentControl Name="editor" Content="{Binding SelectedNode.Item}">
+            <ContentControl Name="editor" Content="{Binding SelectedNode.InspectorContent}">
                 <ContentControl.DataTemplates>
 
                     <DataTemplate DataType="{x:Type Compositing:Composition}">
@@ -66,6 +67,20 @@
                             </Border>
                             <Views:LayerPostFXTab />
                         </StackPanel>
+                    </DataTemplate>
+
+                    <!-- A group row of a layer shows the panel of the old tab for that kind: the list of the items and the editor of the
+                         one that is chosen in it. The panels take the layer as their DataContext. -->
+                    <DataTemplate DataType="{x:Type Tree:EntitiesGroup}">
+                        <Views:LayerEntityTab DataContext="{Binding Layer}" />
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Tree:CamerasGroup}">
+                        <Views:LayerCameraTab DataContext="{Binding Layer}" />
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Tree:LightsGroup}">
+                        <Views:LayerLightTab DataContext="{Binding Layer}" />
                     </DataTemplate>
 
                     <DataTemplate DataType="{x:Type Compositing:Entity}">

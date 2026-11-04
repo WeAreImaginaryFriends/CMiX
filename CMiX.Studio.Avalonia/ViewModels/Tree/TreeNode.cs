@@ -38,6 +38,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 prefab.PrefabService.Name.PropertyChanged += OnNameChanged;
             }
 
+            // A group row of a layer has no item. The inspector shows the panel of the group.
+            if (item == null && parent?.Item is Layer owningLayer)
+                Group = TreeGroup.Of(owningLayer, childManager);
+
             ChildManager = childManager ?? (item is Composition composition ? composition.LayerManager : null);
             if (ChildManager != null)
             {
@@ -58,6 +62,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public TreeNode? Parent { get; }
         public string IconKey { get; }
         public IControl? Item { get; }
+        public TreeGroup? Group { get; }
+
+        // What the inspector shows for this row: the item, or the group of items of a layer.
+        public object? InspectorContent => (object?)Item ?? Group;
         public PrefabManager? Owner { get; }
         public PrefabManager? ChildManager { get; }
         public ObservableCollection<TreeNode> Children { get; } = new();
