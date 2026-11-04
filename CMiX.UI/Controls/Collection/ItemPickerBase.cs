@@ -40,6 +40,16 @@ namespace CMiX.UI.Controls.Collection
             set => SetValue(TextPathProperty, value);
         }
 
+        // The path of the icon key of an item. Empty, the default, gives rows with the text only.
+        public static readonly StyledProperty<string> IconPathProperty =
+            AvaloniaProperty.Register<ItemPickerBase, string>(nameof(IconPath), string.Empty);
+
+        public string IconPath
+        {
+            get => GetValue(IconPathProperty);
+            set => SetValue(IconPathProperty, value);
+        }
+
         // Raised after ItemCommand ran for an item, by a click or by Enter. The host can close its popup then.
         public event EventHandler? Picked;
 

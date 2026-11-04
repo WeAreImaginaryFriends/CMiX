@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.Data;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -52,11 +53,30 @@ namespace CMiX.UI.Controls.Collection
             // Only a real move of the mouse counts. A row that scrolls under a still pointer does not take the highlight.
             row.PointerMoved += (_, _) => HighlightedItem = item;
 
-            if (string.IsNullOrEmpty(TextPath))
-                row.Content = item.ToString();
-            else
-                row.Bind(ContentControl.ContentProperty, new Binding(TextPath) { Source = item });
+            if (string.IsNullOrEmpty(IconPath))
+            {
+                if (string.IsNullOrEmpty(TextPath))
+                    row.Content = item.ToString();
+                else
+                    row.Bind(ContentControl.ContentProperty, new Binding(TextPath) { Source = item });
 
+                return row;
+            }
+
+            // The icon, then the text. The icon has the size of the icons of the buttons.
+            var icon = new AppIcon { VerticalAlignment = VerticalAlignment.Center };
+            icon.Bind(AppIcon.IconKeyProperty, new Binding(IconPath) { Source = item });
+            if (this.TryFindResource("IconSizeXS", ActualThemeVariant, out var size) && size is double iconSize)
+                icon.Size = iconSize;
+
+            var text = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
+            if (string.IsNullOrEmpty(TextPath))
+                text.Text = item.ToString();
+            else
+                text.Bind(TextBlock.TextProperty, new Binding(TextPath) { Source = item });
+
+            var spacing = this.TryFindResource("SpacingMD", ActualThemeVariant, out var gap) && gap is double gapSize ? gapSize : 8;
+            row.Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = spacing, Children = { icon, text } };
             return row;
         }
 
