@@ -11,7 +11,7 @@ using static CMiX.Core.ControlExtensions;
 
 namespace CMiX.Core.Texturing.Filters
 {
-    public abstract partial class TextureFilterBase : ObservableObject, IPrefab, ITextureFilter, IHasCompositionID, IDisposable
+    public abstract partial class TextureFilterBase : ObservableObject, IPrefab, ITextureFilter, IModulatable, IHasCompositionID, IDisposable
     {
         protected TextureFilterBase(PrefabService prefabService, Blend blend, PrefabManager modulatorManager)
         {

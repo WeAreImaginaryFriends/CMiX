@@ -10,7 +10,7 @@ using static CMiX.Core.ControlExtensions;
 
 namespace CMiX.Core.Texturing.Sources
 {
-    public abstract partial class TextureSourceBase : ObservableObject, ITextureModifiable, IHasCompositionID, IDisposable
+    public abstract partial class TextureSourceBase : ObservableObject, ITextureModifiable, IModulatable, IHasCompositionID, IDisposable
     {
         protected TextureSourceBase(PrefabService prefabService,
                                     PrefabManager textureModifierManager,

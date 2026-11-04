@@ -10,7 +10,7 @@ using static CMiX.Core.ControlExtensions;
 
 namespace CMiX.Core.Modulation
 {
-    public abstract partial class Modifier : ObservableObject, IPrefab, IModifier, IHasCompositionID, IDisposable
+    public abstract partial class Modifier : ObservableObject, IPrefab, IModifier, IModulatable, IHasCompositionID, IDisposable
     {
         protected Modifier(PrefabService prefabService, PrefabManager modulatorManager, ControlRepository controlRepository, IEnumerable<IModulatorBindable> nestedBindables = null)
         {
