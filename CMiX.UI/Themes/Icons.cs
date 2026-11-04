@@ -49,6 +49,7 @@ namespace CMiX.UI.Themes
             { "ChevronRight", MaterialIconKind.ChevronRight },
             { "ChevronLeft", MaterialIconKind.ChevronLeft },
             { "Unlinked", MaterialIconKind.CircleMedium },
+            { "Search", MaterialIconKind.Magnify },
         };
 
         public static IReadOnlyDictionary<string, MaterialIconKind> Kinds => _kinds;

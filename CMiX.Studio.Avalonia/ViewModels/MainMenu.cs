@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -13,6 +12,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CMiX.Core;
 using CMiX.Core.Compositing;
+using CMiX.Core.Networking;
 using CMiX.Core.Persistence;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
@@ -28,8 +28,11 @@ namespace CMiX.Studio.Avalonia.ViewModels
     public partial class MainMenu : ObservableRecipient, IControl
     {
         public MainMenu(Project project, ControlFactory controlFactory, UndoManager undoManager, IDialogService dialogService,
-                        UnsavedChanges unsavedChanges, IUnsavedChangesPrompt unsavedChangesPrompt)
+                        UnsavedChanges unsavedChanges, IUnsavedChangesPrompt unsavedChangesPrompt,
+                        ISyncTarget syncTarget, SyncPeer sync)
         {
+            _syncTarget = syncTarget;
+            _sync = sync;
             _dialogService = dialogService;
             _unsavedChanges = unsavedChanges;
             _unsavedChangesPrompt = unsavedChangesPrompt;
@@ -54,6 +57,8 @@ namespace CMiX.Studio.Avalonia.ViewModels
         }
 
         private readonly UndoManager _undoManager;
+        private readonly ISyncTarget _syncTarget;
+        private readonly SyncPeer _sync;
         private readonly IDialogService _dialogService;
         private readonly UnsavedChanges _unsavedChanges;
         private readonly IUnsavedChangesPrompt _unsavedChangesPrompt;
@@ -226,20 +231,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
         {
             try
             {
-                var loaded = await Task.Run(() =>
-                {
-                    var projectModel = ProjectSerializer.Load(path);
-
-                    // Zero compositions is a valid, saveable project state (an empty document, the
-                    // same as any comparable creative tool), not an error - the loop below just adds
-                    // nothing when this list is empty.
-                    var compositions = projectModel.CompositionManager.ManagerData.Items
-                        .Cast<CompositionModel>()
-                        .Select(m => ControlCloner.CloneWithNewGuids(m))
-                        .ToList();
-
-                    return (Project: projectModel, Compositions: compositions);
-                });
+                var model = await Task.Run(() => ProjectSerializer.Load(path));
 
                 // Opening replaces the session rather than merging the file into it, so what was
                 // open is emptied here the way File > New empties it. The sweep only runs once the
@@ -247,28 +239,18 @@ namespace CMiX.Studio.Avalonia.ViewModels
                 // and reports over a window the user has not had emptied behind the dialog.
                 ResetSession();
 
-                // The load builds the graph through the very managers a user action goes through,
-                // so every add and every selection it makes would record a step on the stack the
-                // reset just emptied and a Ctrl+Z on a freshly opened file would step backwards
-                // into the load. Recording is off for the apply so those steps are never created
-                // at all, which is also why the reset stays outside: its own clear is what disposes
-                // the instances the replaced session's commands were still holding.
-                //
-                // Suppression counts, so the master beat restore in Project.Open, which suppresses and
-                // resumes around each of its own writes, nests inside this without reopening
-                // recording halfway through.
-                _undoManager.SuppressUndo();
-                try
-                {
-                    Project.Open(loaded.Project, loaded.Compositions);
-                }
-                finally
-                {
-                    _undoManager.ResumeUndo();
-                }
+                // The file is applied as one project, the way a peer applies a snapshot: no
+                // message goes out and no undo step is recorded. Every part of the project loads
+                // this way, so a new part needs no code here.
+                _syncTarget.ApplySnapshot(model);
 
                 FolderPath = path;
                 _unsavedChanges.MarkSaved();
+
+                // The peers get the whole project in one message. A peer that is not joined has
+                // nobody to tell, and it adopts the store state when it joins.
+                if (_sync.IsJoined && _sync.IsWriter)
+                    await _sync.PushAsync();
             }
             catch (Exception ex)
             {

@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using CMiX.Core.Animations;
 using CMiX.Core.Compositing;
+using CMiX.Core.Networking;
 using CMiX.Core.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -27,6 +28,39 @@ namespace CMiX.Core.Tests
         private static IEnumerable<string> Addresses(Project project) =>
             project.RedisAddressRegistry.Addresses.Select(address => address.Value);
 
+        // A project and the messages it sends from now on.
+        private static (Project Project, ControlMessenger Messenger, RecordingMessageSender Sender) NewRecordedProject()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var messenger = provider.GetRequiredService<ControlMessenger>();
+            var sender = new RecordingMessageSender();
+            messenger.Register(sender);
+            var project = provider.GetRequiredService<Project>();
+            sender.Sent.Clear();
+            return (project, messenger, sender);
+        }
+
+        private static ProjectModel ModelWithAddresses(params string[] texts)
+        {
+            var source = NewProject();
+            foreach (var text in texts)
+                AddAddress(source, text);
+            return (ProjectModel)source.ToModel();
+        }
+
+        [Fact]
+        public void ApplyingASnapshot_SendsNothing()
+        {
+            var model = ModelWithAddresses("cmix:a");
+            var (project, messenger, sender) = NewRecordedProject();
+            messenger.IsSendingBlocked = true;
+
+            project.ApplySnapshot(model);
+
+            Assert.Empty(sender.Sent);
+            Assert.Equal(new[] { "cmix:a" }, Addresses(project));
+        }
+
         [Fact]
         public void SaveThenLoad_KeepsTheAddressesAndTheirIDs()
         {
@@ -37,7 +71,7 @@ namespace CMiX.Core.Tests
 
             ProjectSerializer.Save((ProjectModel)source.ToModel(), path);
             var target = NewProject();
-            target.Open(ProjectSerializer.Load(path), new List<CompositionModel>());
+            target.ApplySnapshot(ProjectSerializer.Load(path));
 
             Assert.Equal(new[] { "cmix:a", "cmix:b" }, Addresses(target));
             Assert.Equal(source.RedisAddressRegistry.Addresses.Select(a => a.ID),
@@ -49,7 +83,7 @@ namespace CMiX.Core.Tests
         {
             var project = NewProject();
 
-            project.Open(new ProjectModel(), new List<CompositionModel>());
+            project.ApplySnapshot(new ProjectModel());
 
             Assert.Equal(ManagerIDs.RedisAddressManager, project.RedisAddressRegistry.AddressManager.ManagerData.ID);
             Assert.Empty(Addresses(project));

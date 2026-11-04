@@ -7,41 +7,57 @@
     d:DesignWidth="400">
 
     <StackPanel Spacing="{DynamicResource SpacingMD}">
-      
-      <ui:IntegerValue
-        Caption="Track Index"
-        Minimum="0"
-        Value="{Binding TrackIndex.Value}"
-        ResetCommand="{Binding TrackIndex.ResetCommand}" />
 
-      <ui:StackPanelPositioned Spacing="{DynamicResource SpacingXXS}">
+        <ui:IntegerValue
+            Caption="Track Index"
+            Minimum="0"
+            Value="{Binding TrackIndex.Value}"
+            ResetCommand="{Binding TrackIndex.ResetCommand}" />
 
-        <ui:DragValue
-          Caption="Bass"
-          Minimum="0.0"
-          Value="{Binding Bass.Value}"
-          ResetCommand="{Binding Bass.ResetCommand}"/>
+        <ui:ContentCaptioned Caption="Bass">
+            <ui:RangeValue
+                DataContext="{Binding BassRange}"
+                LeftValue="{Binding Minimum.Value}"
+                LeftCaption="Min"
+                LeftResetCommand="{Binding Minimum.ResetCommand}"
+                RightCaption="Max"
+                RightResetCommand="{Binding Maximum.ResetCommand}"
+                RightValue="{Binding Maximum.Value}"/>
+        </ui:ContentCaptioned>
 
-        <ui:DragValue
-          Caption="Lower Mid"
-          Minimum="0.0"
-          Value="{Binding LowerMid.Value}"
-          ResetCommand="{Binding LowerMid.ResetCommand}"/>
+        <ui:ContentCaptioned Caption="Lower Mid">
+            <ui:RangeValue
+                DataContext="{Binding LowerMidRange}"
+                LeftValue="{Binding Minimum.Value}"
+                LeftCaption="Min"
+                LeftResetCommand="{Binding Minimum.ResetCommand}"
+                RightCaption="Max"
+                RightResetCommand="{Binding Maximum.ResetCommand}"
+                RightValue="{Binding Maximum.Value}"/>
+        </ui:ContentCaptioned>
 
-        <ui:DragValue
-          Caption="Higher Mid"
-          Minimum="0.0"
-          Value="{Binding HigherMid.Value}"
-          ResetCommand="{Binding HigherMid.ResetCommand}"/>
+        <ui:ContentCaptioned Caption="Higher Mid">
+            <ui:RangeValue
+                DataContext="{Binding HigherMidRange}"
+                LeftValue="{Binding Minimum.Value}"
+                LeftCaption="Min"
+                LeftResetCommand="{Binding Minimum.ResetCommand}"
+                RightCaption="Max"
+                RightResetCommand="{Binding Maximum.ResetCommand}"
+                RightValue="{Binding Maximum.Value}"/>
+        </ui:ContentCaptioned>
 
-        <ui:DragValue
-          Caption="High"
-          Minimum="0.0"
-          Value="{Binding High.Value}"
-          ResetCommand="{Binding High.ResetCommand}"/>
-        
-    </ui:StackPanelPositioned>
-      
-  </StackPanel>
-  
+        <ui:ContentCaptioned Caption="High">
+            <ui:RangeValue
+                DataContext="{Binding HighRange}"
+                LeftValue="{Binding Minimum.Value}"
+                LeftCaption="Min"
+                LeftResetCommand="{Binding Minimum.ResetCommand}"
+                RightCaption="Max"
+                RightResetCommand="{Binding Maximum.ResetCommand}"
+                RightValue="{Binding Maximum.Value}"/>
+        </ui:ContentCaptioned>
+
+    </StackPanel>
+
 </UserControl>

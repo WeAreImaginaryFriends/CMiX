@@ -18,6 +18,12 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
+        public void AnIntOutput_IsAModulatorOutputOfInt()
+        {
+            Assert.IsAssignableFrom<ModulatorOutput<int>>(new AddressedOutput<int>("id", "cmix:value"));
+        }
+
+        [Fact]
         public void AFloatOutput_KeepsTheNameAndTheAddress()
         {
             var output = new AddressedOutput<float>("id", "cmix:value");
@@ -31,6 +37,16 @@ namespace CMiX.Core.Tests
         public void ABoolOutput_KeepsTheNameAndTheAddress()
         {
             var output = new AddressedOutput<bool>("id", "cmix:value");
+
+            Assert.Equal("id", output.Name);
+            Assert.Equal("cmix:value", output.Address);
+            Assert.Equal("cmix:value", ((IAddressedOutput)output).Address);
+        }
+
+        [Fact]
+        public void AnIntOutput_KeepsTheNameAndTheAddress()
+        {
+            var output = new AddressedOutput<int>("id", "cmix:value");
 
             Assert.Equal("id", output.Name);
             Assert.Equal("cmix:value", output.Address);

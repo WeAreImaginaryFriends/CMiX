@@ -77,12 +77,12 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void FFTModulator_ToModel_FromModel_RoundTripsTrackIndexAndBass()
+        public void FFTModulator_ToModel_FromModel_RoundTripsTrackIndexAndBassRange()
         {
             var provider = TestServiceProviderFactory.Create();
             var fftModulator = provider.GetRequiredService<FFTModulator>();
             fftModulator.TrackIndex.Value = 3;
-            fftModulator.Bass.Value = 0.25f;
+            fftModulator.BassRange.Maximum.Value = 0.25f;
 
             var model = fftModulator.ToModel();
 
@@ -91,7 +91,7 @@ namespace CMiX.Core.Tests
             reloaded.FromModel(model);
 
             Assert.Equal(3, reloaded.TrackIndex.Value);
-            Assert.Equal(0.25f, reloaded.Bass.Value);
+            Assert.Equal(0.25f, reloaded.BassRange.Maximum.Value);
         }
     }
 }

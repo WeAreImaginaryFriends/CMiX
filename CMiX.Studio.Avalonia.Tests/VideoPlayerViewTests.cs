@@ -24,7 +24,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             var play = view.GetVisualDescendants().OfType<CMiX.UI.Controls.Boolean.ToggleButtonCMiX>().Single(t => (t.Content as string) == "Play");
-            var doSeek = view.GetVisualDescendants().OfType<Button>().Single(b => b is not ToggleButton && (b.Content as string) == "Do Seek");
+            var doSeek = view.GetVisualDescendants().OfType<CMiX.UI.Controls.Boolean.ButtonMomentary>().Single();
             var pathSelector = view.GetVisualDescendants().OfType<AssetPathSelector>().Single();
 
             var playY = play.TranslatePoint(new Point(0, 0), view)!.Value.Y;

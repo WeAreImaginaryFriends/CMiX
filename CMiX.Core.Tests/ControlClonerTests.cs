@@ -99,7 +99,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void Clone_ARedisFloatModulator_KeepsTheSelectionAndTheGain()
+        public void Clone_ARedisFloatModulator_KeepsTheSelectionAndTheRange()
         {
             var (provider, compositions, composition) = NewComposition();
             var registry = provider.GetRequiredService<RedisAddressRegistry>();
@@ -111,15 +111,35 @@ namespace CMiX.Core.Tests
             modifier.ModulatorManager.AddItem(typeof(RedisFloatModulator));
             var modulator = (RedisFloatModulator)modifier.ModulatorManager.SelectedItem;
             modulator.SelectedAddress = address;
-            modulator.Gain.Value = 0.5f;
+            modulator.Range.Maximum.Value = 0.5f;
 
             var copy = (Composition)compositions.DuplicateItem(composition);
             var copyModulator = (RedisFloatModulator)((Modifier)copy.ModifierManager.ManagerData.Items.First()).ModulatorManager.ManagerData.Items.First();
 
             Assert.Same(address, copyModulator.SelectedAddress);
-            Assert.Equal(0.5f, copyModulator.Gain.Value);
+            Assert.Equal(0.5f, copyModulator.Range.Maximum.Value);
             Assert.NotEqual(modulator.ID, copyModulator.ID);
-            Assert.NotEqual(modulator.Gain.ID, copyModulator.Gain.ID);
+            Assert.NotEqual(modulator.Range.ID, copyModulator.Range.ID);
+            Assert.NotEqual(modulator.Range.Maximum.ID, copyModulator.Range.Maximum.ID);
+        }
+
+        [Fact]
+        public void Clone_AnFFTModulator_KeepsTheRangesWithNewIDs()
+        {
+            var (_, compositions, composition) = NewComposition();
+            composition.ModifierManager.AddItem(typeof(AlphaModifier));
+            var modifier = (Modifier)composition.ModifierManager.SelectedItem;
+            modifier.ModulatorManager.AddItem(typeof(FFTModulator));
+            var modulator = (FFTModulator)modifier.ModulatorManager.SelectedItem;
+            modulator.LowerMidRange.Maximum.Value = 0.5f;
+
+            var copy = (Composition)compositions.DuplicateItem(composition);
+            var copyModulator = (FFTModulator)((Modifier)copy.ModifierManager.ManagerData.Items.First()).ModulatorManager.ManagerData.Items.First();
+
+            Assert.Equal(0.5f, copyModulator.LowerMidRange.Maximum.Value);
+            Assert.NotEqual(modulator.ID, copyModulator.ID);
+            Assert.NotEqual(modulator.LowerMidRange.ID, copyModulator.LowerMidRange.ID);
+            Assert.NotEqual(modulator.LowerMidRange.Maximum.ID, copyModulator.LowerMidRange.Maximum.ID);
         }
     }
 }

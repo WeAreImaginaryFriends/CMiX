@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var viewsChecked = ForEachView((viewName, view) =>
             {
-                foreach (var editor in view.GetVisualDescendants().OfType<Control>().Where(c => c is SliderCMiX || c is DragValue || c is ToggleButtonCaptioned || c is ToggleButtonCMiX || c is ComboBoxCaptioned))
+                foreach (var editor in view.GetVisualDescendants().OfType<Control>().Where(c => c is SliderCMiX || c is DragValue || c is ToggleButtonCaptioned || c is ToggleButtonCMiX || c is ButtonMomentary || c is ComboBoxCaptioned))
                 {
                     editor.ApplyTemplate();     // a hidden editor builds its menu only when its template applies
                     if (!HasResetItem(editor) && !NoReset.Contains((viewName, Caption(editor))))

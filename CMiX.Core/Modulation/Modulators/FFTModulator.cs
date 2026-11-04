@@ -6,21 +6,22 @@ using CMiX.Core.Prefabs;
 
 namespace CMiX.Core.Modulation.Modulators
 {
+    // The four bands of one FFT track, each mapped into its own range.
     public class FFTModulator : ModulatorBase
     {
         public FFTModulator(PrefabService prefabService,
                             GenericValue<int> trackindex,
-                            GenericValue<float> bass,
-                            GenericValue<float> lowerMid,
-                            GenericValue<float> higherMid,
-                            GenericValue<float> high)
+                            FloatRange bassRange,
+                            FloatRange lowerMidRange,
+                            FloatRange higherMidRange,
+                            FloatRange highRange)
             : base(prefabService)
         {
             TrackIndex = trackindex;
-            Bass = bass;
-            LowerMid = lowerMid;
-            HigherMid = higherMid;
-            High = high;
+            BassRange = bassRange;
+            LowerMidRange = lowerMidRange;
+            HigherMidRange = higherMidRange;
+            HighRange = highRange;
         }
 
         public override IReadOnlyList<IModulatorOutput> Outputs { get; } = new IModulatorOutput[]
@@ -32,21 +33,20 @@ namespace CMiX.Core.Modulation.Modulators
         };
 
         public GenericValue<int> TrackIndex { get; set; }
-        public GenericValue<float> Bass { get; set; }
-        public GenericValue<float> LowerMid { get; set; }
-        public GenericValue<float> HigherMid { get; set; }
-        public GenericValue<float> High { get; set; }
-
+        public FloatRange BassRange { get; set; }
+        public FloatRange LowerMidRange { get; set; }
+        public FloatRange HigherMidRange { get; set; }
+        public FloatRange HighRange { get; set; }
 
         public override IControlModel ToModel() => new FFTModulatorModel
         {
             ID = ID,
             PrefabService = (PrefabServiceModel)PrefabService.ToModel(),
             TrackIndex = (GenericValueModel<int>)TrackIndex.ToModel(),
-            Bass = (GenericValueModel<float>)Bass.ToModel(),
-            LowerMid = (GenericValueModel<float>)LowerMid.ToModel(),
-            HigherMid = (GenericValueModel<float>)HigherMid.ToModel(),
-            High = (GenericValueModel<float>)High.ToModel()
+            BassRange = (FloatRangeModel)BassRange.ToModel(),
+            LowerMidRange = (FloatRangeModel)LowerMidRange.ToModel(),
+            HigherMidRange = (FloatRangeModel)HigherMidRange.ToModel(),
+            HighRange = (FloatRangeModel)HighRange.ToModel()
         };
 
         public override void FromModel(IControlModel model)
@@ -55,10 +55,10 @@ namespace CMiX.Core.Modulation.Modulators
             ID = m.ID;
             PrefabService.FromModel(m.PrefabService);
             TrackIndex.FromModel(m.TrackIndex);
-            Bass.FromModel(m.Bass);
-            LowerMid.FromModel(m.LowerMid);
-            HigherMid.FromModel(m.HigherMid);
-            High.FromModel(m.High);
+            BassRange.FromModel(m.BassRange);
+            LowerMidRange.FromModel(m.LowerMidRange);
+            HigherMidRange.FromModel(m.HigherMidRange);
+            HighRange.FromModel(m.HighRange);
         }
     }
 }

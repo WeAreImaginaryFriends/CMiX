@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -11,9 +12,11 @@ using CMiX.Studio.Avalonia.Views;
 using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.AttachedProperties;
 using CMiX.UI.Controls;
+using CMiX.UI.Controls.Boolean;
 using CMiX.UI.Panels;
 using CMiX.UI.Controls.Number;
 using CMiX.UI.Controls.Collection;
+using CMiX.UI.Tests.Support;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -22,7 +25,7 @@ namespace CMiX.Studio.Avalonia.Tests
     // The SequencePlayer view is the VideoPlayer view with a folder picker, an FPS value and a Loop toggle.
     public class SequencePlayerViewTests
     {
-        private static (CMiX.Core.Texturing.Sources.SequencePlayer Player, Views.SequencePlayer View) ShowSequencePlayerView()
+        private static (CMiX.Core.Texturing.Sources.SequencePlayer Player, Views.SequencePlayer View, Window Window) ShowSequencePlayerView()
         {
             var provider = TestServiceProviderFactory.Create();
             var player = (CMiX.Core.Texturing.Sources.SequencePlayer)provider.GetRequiredService<ControlFactory>()
@@ -32,13 +35,13 @@ namespace CMiX.Studio.Avalonia.Tests
             var window = new Window { Content = view, Width = 500, Height = 600 };
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            return (player, view);
+            return (player, view, window);
         }
 
         [AvaloniaFact]
         public void AssetPathSelector_SelectsAFolderFromTheImageSequences()
         {
-            var (player, view) = ShowSequencePlayerView();
+            var (player, view, _) = ShowSequencePlayerView();
 
             var pathSelector = view.GetVisualDescendants().OfType<AssetPathSelector>().Single();
 
@@ -50,7 +53,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void View_ShowsTheFpsValueAndThePlayAndLoopToggles()
         {
-            var (_, view) = ShowSequencePlayerView();
+            var (_, view, _) = ShowSequencePlayerView();
 
             Assert.Single(view.GetVisualDescendants().OfType<DragValue>(), v => v.Caption == "FPS");
 
@@ -59,13 +62,13 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Contains("Loop", toggleCaptions);
         }
 
-        private static Button DoSeekButton(Views.SequencePlayer view) =>
-            view.GetVisualDescendants().OfType<Button>().Single(b => b is not ToggleButton && (b.Content as string) == "Do Seek");
+        private static ButtonMomentary DoSeekButton(Views.SequencePlayer view) =>
+            view.GetVisualDescendants().OfType<ButtonMomentary>().Single();
 
         [AvaloniaFact]
         public void PlayLoopAndDoSeek_AreThreeRowsOfOnePanelAtTheTop()
         {
-            var (_, view) = ShowSequencePlayerView();
+            var (_, view, _) = ShowSequencePlayerView();
 
             var buttons = view.GetVisualDescendants().OfType<Button>().ToList();
             var play = buttons.Single(b => b is ToggleButton && (b.Content as string) == "Play");
@@ -83,20 +86,20 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void PlayLoopAndSeekFrame_EachHaveAModulatorAssignButton()
+        public void PlayLoopDoSeekAndSeekFrame_EachHaveAModulatorAssignButton()
         {
-            var (player, view) = ShowSequencePlayerView();
+            var (player, view, _) = ShowSequencePlayerView();
 
             var assigns = view.GetVisualDescendants().OfType<CMiX.Studio.Avalonia.Views.Modulation.ButtonModulatorAssign>().ToList();
 
-            Assert.Equal(3, assigns.Count);
+            Assert.Equal(4, assigns.Count);
             Assert.All(assigns, a => Assert.Same(player.ModulatorManager, a.ModulatorManager));
         }
 
         [AvaloniaFact]
         public void DoSeek_IsGreyAndTurnsAccentOnlyWhilePressed()
         {
-            var (_, view) = ShowSequencePlayerView();
+            var (_, view, _) = ShowSequencePlayerView();
             var doSeek = DoSeekButton(view);
             var border = doSeek.GetVisualDescendants().OfType<Border>().First(b => b.Name == "border");
             Color Current() => ((ISolidColorBrush)border.Background).Color;
@@ -112,6 +115,19 @@ namespace CMiX.Studio.Avalonia.Tests
             states.Set(":pressed", true);
             TestServiceProviderFactory.Pump();
             Assert.Equal(Brush("AccentBrush"), Current());
+        }
+
+        [AvaloniaFact]
+        public void DoSeek_HoldsTheValueWhilePressed()
+        {
+            var (player, view, window) = ShowSequencePlayerView();
+            var doSeek = DoSeekButton(view);
+
+            PointerInput.Press(window, doSeek, MouseButton.Left);
+            Assert.True(player.DoSeek.Value);
+
+            PointerInput.Release(window, doSeek, MouseButton.Left);
+            Assert.False(player.DoSeek.Value);
         }
 
         [AvaloniaFact]
