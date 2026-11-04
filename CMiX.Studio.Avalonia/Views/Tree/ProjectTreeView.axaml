@@ -21,6 +21,7 @@
 
     <ui:RowStripes
         x:Name="stripes"
+        Opacity="0.6"
         Brush="{DynamicResource PanelBackgroundLevel1Brush}"
         RowHeight="{DynamicResource ControlHeightMD}"
         RowSpacing="{DynamicResource SpacingXXS}" />

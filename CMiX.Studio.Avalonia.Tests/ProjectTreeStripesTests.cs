@@ -190,7 +190,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheStripes_UseAColorThatTheThemeHasAlready_AndHalfOfItForTheOtherBand()
+        public void TheStripes_UseAColorThatTheThemeHasAlready_AndEightyPercentOfItForTheOtherBand()
         {
             var screen = Show();
             var theme = (ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel1Brush")!;
@@ -198,7 +198,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var brush = Assert.IsAssignableFrom<ISolidColorBrush>(screen.Stripes.Brush);
 
             Assert.Equal(theme.Color, brush.Color);
-            Assert.Equal(0.5, screen.Stripes.AlternateOpacity);
+            Assert.Equal(0.8, screen.Stripes.AlternateOpacity);
+            // No theme color is darker than this one except the window itself, so the stripes are darker by their own opacity.
+            Assert.Equal(0.6, screen.Stripes.Opacity);
         }
 
         [AvaloniaTheory]

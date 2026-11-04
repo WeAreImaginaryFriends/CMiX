@@ -49,17 +49,17 @@ namespace CMiX.UI.Tests
 
             var bands = stripes.Bands();
 
-            Assert.Equal(0.5, bands[0].Opacity);
+            Assert.Equal(0.8, bands[0].Opacity);
             Assert.Equal(1, bands[1].Opacity);
-            Assert.Equal(0.5, bands[2].Opacity);
+            Assert.Equal(0.8, bands[2].Opacity);
             Assert.Equal(1, bands[3].Opacity);
         }
 
         [AvaloniaFact]
-        public void TheOtherBand_IsTheSameColorWithHalfOpacityByDefault_AndTheOpacityCanChange()
+        public void TheOtherBand_IsTheSameColorWithEightyPercentOpacityByDefault_AndTheOpacityCanChange()
         {
             var (_, stripes, _) = Show(rowsTop: 0);
-            Assert.Equal(0.5, stripes.AlternateOpacity);
+            Assert.Equal(0.8, stripes.AlternateOpacity);
 
             stripes.AlternateOpacity = 0.25;
 
@@ -109,6 +109,17 @@ namespace CMiX.UI.Tests
 
             Assert.Equal(0, bands[0].Band.Top);
             Assert.Equal(1, bands[0].Opacity);
+        }
+
+        [AvaloniaFact]
+        public void TheLastBand_GoesOverTheEdge_SoTheControlClipsItAndDrawsNothingOnItsNeighbors()
+        {
+            var (_, stripes, _) = Show(rowsTop: 10);
+
+            var bands = stripes.Bands();
+
+            Assert.True(bands[^1].Band.Bottom > stripes.Bounds.Height, "The test needs a band that is cut by the edge.");
+            Assert.True(stripes.ClipToBounds);
         }
 
         [AvaloniaFact]

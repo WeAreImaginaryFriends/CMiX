@@ -49,7 +49,7 @@ namespace CMiX.UI.Controls.Parts
         }
 
         public static readonly StyledProperty<double> AlternateOpacityProperty =
-            AvaloniaProperty.Register<RowStripes, double>(nameof(AlternateOpacity), 0.5);
+            AvaloniaProperty.Register<RowStripes, double>(nameof(AlternateOpacity), 0.8);
 
         // The opacity of the band of the second row, the fourth row, and so on.
         public double AlternateOpacity
@@ -78,6 +78,9 @@ namespace CMiX.UI.Controls.Parts
         public RowStripes()
         {
             IsHitTestVisible = false;
+
+            // The first and the last band are cut by the edges of the control. They must not be drawn over the neighbors.
+            ClipToBounds = true;
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
