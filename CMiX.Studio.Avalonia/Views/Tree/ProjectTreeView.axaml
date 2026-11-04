@@ -21,10 +21,9 @@
 
     <ui:RowStripes
         x:Name="stripes"
-        FirstBrush="{DynamicResource RowStripeABrush}"
+        Brush="{DynamicResource PanelBackgroundLevel1Brush}"
         RowHeight="{DynamicResource ControlHeightMD}"
-        RowSpacing="{DynamicResource SpacingXXS}"
-        SecondBrush="{DynamicResource RowStripeBBrush}" />
+        RowSpacing="{DynamicResource SpacingXXS}" />
 
     <TreeView
         x:Name="treeView"

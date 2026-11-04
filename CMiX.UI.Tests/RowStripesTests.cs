@@ -8,11 +8,10 @@ using Xunit;
 
 namespace CMiX.UI.Tests
 {
-    // The bands behind the rows: one row plus one space high, two brushes that alternate, started at the top of the rows.
+    // The bands behind the rows: one row plus one space high, one color that alternates between full and half opacity, started at the top of the rows.
     public class RowStripesTests
     {
-        private static readonly IBrush First = new SolidColorBrush(Colors.DarkGray);
-        private static readonly IBrush Second = new SolidColorBrush(Colors.Gray);
+        private static readonly IBrush Color = new SolidColorBrush(Colors.DarkGray);
 
         // 20 high rows with 5 between them: a pitch of 25. The rows start 10 below the top of the control.
         private static (Window Window, RowStripes Stripes, StackPanel Rows) Show(double rowsTop = 10, bool withRows = true)
@@ -21,7 +20,7 @@ namespace CMiX.UI.Tests
             for (var i = 0; i < 4; i++)
                 rows.Children.Add(new Border { Height = 20 });
 
-            var stripes = new RowStripes { RowHeight = 20, RowSpacing = 5, FirstBrush = First, SecondBrush = Second, Rows = withRows ? rows : null };
+            var stripes = new RowStripes { RowHeight = 20, RowSpacing = 5, Brush = Color, Rows = withRows ? rows : null };
             var window = new Window { Content = new Grid { Children = { stripes, rows } }, Width = 200, Height = 100 };
             window.Show();
             Dispatcher.UIThread.RunJobs();
@@ -44,16 +43,35 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheBands_AlternateTheBrushes_ThatOfTheFirstRowIsTheFirstBrush()
+        public void TheBands_AlternateFullAndHalfOpacity_TheBandOfTheFirstRowIsFull()
         {
             var (_, stripes, _) = Show(rowsTop: 10);
 
             var bands = stripes.Bands();
 
-            Assert.Same(Second, bands[0].Brush);
-            Assert.Same(First, bands[1].Brush);
-            Assert.Same(Second, bands[2].Brush);
-            Assert.Same(First, bands[3].Brush);
+            Assert.Equal(0.5, bands[0].Opacity);
+            Assert.Equal(1, bands[1].Opacity);
+            Assert.Equal(0.5, bands[2].Opacity);
+            Assert.Equal(1, bands[3].Opacity);
+        }
+
+        [AvaloniaFact]
+        public void TheOtherBand_IsTheSameColorWithHalfOpacityByDefault_AndTheOpacityCanChange()
+        {
+            var (_, stripes, _) = Show(rowsTop: 0);
+            Assert.Equal(0.5, stripes.AlternateOpacity);
+
+            stripes.AlternateOpacity = 0.25;
+
+            Assert.Equal(new[] { 1.0, 0.25 }, stripes.Bands().Take(2).Select(band => band.Opacity));
+        }
+
+        [AvaloniaFact]
+        public void TheControl_HasOneBrush()
+        {
+            var brushProperties = typeof(RowStripes).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly).Where(property => property.PropertyType == typeof(IBrush)).ToList();
+
+            Assert.Single(brushProperties);
         }
 
         [AvaloniaFact]
@@ -79,7 +97,7 @@ namespace CMiX.UI.Tests
 
             // The rows scrolled 17 up. The band of the first row is now at -7.
             var bands = stripes.Bands();
-            Assert.Contains(bands, band => band.Band.Top == -7 && ReferenceEquals(band.Brush, First));
+            Assert.Contains(bands, band => band.Band.Top == -7 && band.Opacity == 1);
         }
 
         [AvaloniaFact]
@@ -90,7 +108,7 @@ namespace CMiX.UI.Tests
             var bands = stripes.Bands();
 
             Assert.Equal(0, bands[0].Band.Top);
-            Assert.Same(First, bands[0].Brush);
+            Assert.Equal(1, bands[0].Opacity);
         }
 
         [AvaloniaFact]

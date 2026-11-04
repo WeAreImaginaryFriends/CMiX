@@ -94,12 +94,12 @@ namespace CMiX.Studio.Avalonia.Tests
         private static double WindowTop(Screen screen, Control control) => control.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
 
         // The band under a row: its brush, and the distance between the top of the row and the top of the band.
-        private static (IBrush? Brush, double Gap) BandUnder(Screen screen, TreeNode node)
+        private static (double Opacity, double Gap) BandUnder(Screen screen, TreeNode node)
         {
             var top = WindowTop(screen, screen.HeaderOf(node));
             var stripesTop = WindowTop(screen, screen.Stripes);
             var band = screen.Stripes.Bands().OrderBy(b => Math.Abs(stripesTop + b.Band.Top - top)).First();
-            return (band.Brush, stripesTop + band.Band.Top - top);
+            return (band.Opacity, stripesTop + band.Band.Top - top);
         }
 
         private static void AssertEveryRowIsOnABand_AndNextRowsOnOtherBands(Screen screen)
@@ -109,7 +109,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.All(bands, band => Assert.InRange(band.Gap, -0.5, 0.5));
             for (var i = 1; i < bands.Count; i++)
-                Assert.NotSame(bands[i - 1].Brush, bands[i].Brush);
+                Assert.NotEqual(bands[i - 1].Opacity, bands[i].Opacity);
         }
 
         [AvaloniaFact]
@@ -142,15 +142,15 @@ namespace CMiX.Studio.Avalonia.Tests
         public void OpeningOrClosingARow_DoesNotChangeTheBands()
         {
             var screen = Show();
-            var before = screen.Stripes.Bands().Select(band => (band.Band, band.Brush)).ToList();
+            var before = screen.Stripes.Bands().Select(band => (band.Band, band.Opacity)).ToList();
 
             screen.Tree.Roots[0].IsExpanded = false;
             Settle(screen.Window);
-            var closed = screen.Stripes.Bands().Select(band => (band.Band, band.Brush)).ToList();
+            var closed = screen.Stripes.Bands().Select(band => (band.Band, band.Opacity)).ToList();
 
             screen.Tree.Roots[0].IsExpanded = true;
             Settle(screen.Window);
-            var open = screen.Stripes.Bands().Select(band => (band.Band, band.Brush)).ToList();
+            var open = screen.Stripes.Bands().Select(band => (band.Band, band.Opacity)).ToList();
 
             Assert.Equal(before, closed);
             Assert.Equal(before, open);
@@ -190,15 +190,25 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTwoColors_AreVeryClose_ButNotTheSame()
+        public void TheStripes_UseAColorThatTheThemeHasAlready_AndHalfOfItForTheOtherBand()
         {
-            var first = (Color)Application.Current!.FindResource("RowStripeA")!;
-            var second = (Color)Application.Current!.FindResource("RowStripeB")!;
+            var screen = Show();
+            var theme = (ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel1Brush")!;
 
-            Assert.NotEqual(first, second);
-            Assert.InRange(Math.Abs(first.R - second.R), 1, 16);
-            Assert.InRange(Math.Abs(first.G - second.G), 1, 16);
-            Assert.InRange(Math.Abs(first.B - second.B), 1, 16);
+            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(screen.Stripes.Brush);
+
+            Assert.Equal(theme.Color, brush.Color);
+            Assert.Equal(0.5, screen.Stripes.AlternateOpacity);
+        }
+
+        [AvaloniaTheory]
+        [InlineData("RowStripeA")]
+        [InlineData("RowStripeB")]
+        [InlineData("RowStripeABrush")]
+        [InlineData("RowStripeBBrush")]
+        public void TheTheme_HasNoColorOnlyForTheStripes(string key)
+        {
+            Assert.False(Application.Current!.TryFindResource(key, out _));
         }
 
         [AvaloniaFact]
