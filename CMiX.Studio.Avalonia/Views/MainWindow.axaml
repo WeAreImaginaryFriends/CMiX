@@ -65,20 +65,18 @@
         </Border>
 
         <!-- The tree and the tabs have the same width. -->
-        <Grid ColumnDefinitions="*,Auto,*" DockPanel.Dock="Top">
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="240" Width="*" />
+                <ColumnDefinition MinWidth="240" Width="*" />
+            </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0">
             <Views:ProjectTreeView DataContext="{Binding ProjectTree}" />
         </Border>
 
-        <GridSplitter
-            Grid.Column="1"
-            Width="{DynamicResource SplitterSize}"
-            Background="Transparent"
-            ResizeDirection="Columns" />
-
         <!-- The right column holds the tabs and, under them, the master beat. The tree has the whole height of the left column. -->
-        <Grid Grid.Column="2" RowDefinitions="*,Auto">
+        <Grid Grid.Column="1" RowDefinitions="*,Auto">
 
         <TabControl
             Grid.Row="0"
@@ -287,6 +285,17 @@
         </Border>
 
         </Grid>
+
+        <!-- The splitter lies over the edge between the two columns, on top of them, so it takes no room: there is no gap between
+             the panels. It is in the left column, at its right edge, and moves that edge. 2 of its width are in the tree, where the
+             scroll bar of the tree ends, and 6 in the right column. -->
+        <GridSplitter
+            Grid.Column="0"
+            Width="{DynamicResource SplitterSize}"
+            Margin="0,0,-6,0"
+            HorizontalAlignment="Right"
+            ResizeDirection="Columns"
+            Theme="{StaticResource GridSplitterCMiX}" />
 
         </Grid>
     </DockPanel>

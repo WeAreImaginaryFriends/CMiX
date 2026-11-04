@@ -37,10 +37,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
             var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
-            var columns = tree.GetVisualAncestors().OfType<Grid>().First(grid => grid.ColumnDefinitions.Count == 3).ColumnDefinitions;
+            var columns = tree.GetVisualAncestors().OfType<Grid>().First(grid => grid.ColumnDefinitions.Count == 2).ColumnDefinitions;
 
             Assert.True(columns[0].ActualWidth > 0);
-            Assert.Equal(columns[0].ActualWidth, columns[2].ActualWidth);
+            Assert.Equal(columns[0].ActualWidth, columns[1].ActualWidth);
         }
 
         [AvaloniaFact]
