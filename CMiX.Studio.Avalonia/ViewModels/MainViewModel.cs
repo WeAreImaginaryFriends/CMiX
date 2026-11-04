@@ -108,6 +108,24 @@ namespace CMiX.Studio.Avalonia.ViewModels
         public ControlRepository ControlRepository { get; set; }
         public Project Project { get; set; }
         public ProjectTree ProjectTree { get; }
+
+        // What the left and the right panel of the window show. The user changes them in the combo box at the top of each panel.
+        // The tree can be on the left, on the right or on both sides.
+        public System.Collections.Generic.IReadOnlyList<PanelChoice> PanelChoices => PanelChoice.All;
+
+        private PanelChoice _leftPanel = PanelChoice.Tree;
+        public PanelChoice LeftPanel
+        {
+            get => _leftPanel;
+            set => SetProperty(ref _leftPanel, value);
+        }
+
+        private PanelChoice _rightPanel = PanelChoice.Tabs;
+        public PanelChoice RightPanel
+        {
+            get => _rightPanel;
+            set => SetProperty(ref _rightPanel, value);
+        }
         public AssetManager AssetManager { get; set; }
         public MainMenu MainMenu { get; set; }
         public MainWindowController MainWindowController { get; set; }
