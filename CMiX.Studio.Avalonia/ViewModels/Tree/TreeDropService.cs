@@ -28,6 +28,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
     // The rules for a drag in the project tree.
     // An item moves inside its own list, so a composition goes with compositions and an entity with entities.
+    // It can also go to a list of the same kind of another owner: an entity to another layer, a modifier to another entity,
+    // a filter, a texture or a modulator to another owner of the same kind of list.
     // A layer can also go to the layer list of another composition, if no item of it is shared with a layer that stays.
     public sealed class TreeDropService
     {
@@ -73,17 +75,18 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             // A group takes an item of the same kind from another layer, inside it.
             if (target.Item == null)
                 return target.ChildManager != null
-                    && SlotOfItem(source) != Slot.None
-                    && SlotOfGroup(target) == SlotOfItem(source)
+                    && KindOfItem(source) is { } kind
+                    && KindOfGroup(target) == kind
                     && !ReferenceEquals(target.ChildManager, source.Owner)
-                    && !target.ChildManager.ManagerData.Items.Contains(source.Item!);
+                    && !target.ChildManager.ManagerData.Items.Contains(source.Item!)
+                    && Accepts(source.Item!, target.Group);
 
             if (target.Owner == null)
                 return false;
 
             return ReferenceEquals(source.Owner, target.Owner)
                 || (source.Item is Layer && (target.Item is Layer || target.Item is Composition))
-                || CanMoveBetweenLayers(source, target);
+                || CanMoveBetweenLists(source, target);
         }
 
         // The kinds of list that a layer has for its items. An item moves between layers only into a list of its own kind.
@@ -105,17 +108,26 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private static Slot SlotOfItem(TreeNode item) =>
             item.Item != null && item.Parent?.Parent?.Item is Layer layer ? SlotOfList(layer, item.Owner) : Slot.None;
 
-        // The kind of list that a group row shows.
-        private static Slot SlotOfGroup(TreeNode group) =>
-            group.Item == null && group.Parent?.Item is Layer layer ? SlotOfList(layer, group.ChildManager) : Slot.None;
+        // The kind of a list is the type of its group: entities, cameras, lights, textures, filters, modifiers or modulators.
+        // An item moves between the lists of two owners only into a list of its own kind.
+        private static System.Type? KindOfItem(TreeNode item) =>
+            item.Item != null ? item.Parent?.Group?.GetType() : null;
 
-        // The item of one layer is in a list of the same kind as the row of another layer, and that list does not have it yet.
-        private static bool CanMoveBetweenLayers(TreeNode source, TreeNode target) =>
-            SlotOfItem(source) != Slot.None
-            && SlotOfItem(source) == SlotOfItem(target)
+        private static System.Type? KindOfGroup(TreeNode group) =>
+            group.Item == null ? group.Group?.GetType() : null;
+
+        // The list of the group can hold the item. A modifier goes only to an owner that can take it. The other kinds take any item of the kind.
+        private static bool Accepts(IControl item, TreeGroup? group) =>
+            group is not ModifiersGroup || AddableTypes.ForOwner(group.OwnerType).Contains(item.GetType());
+
+        // The item is in a list of the same kind as the row of another owner, and that list does not have it yet.
+        private static bool CanMoveBetweenLists(TreeNode source, TreeNode target) =>
+            KindOfItem(source) is { } kind
+            && kind == KindOfItem(target)
             && target.Owner != null
             && !ReferenceEquals(source.Owner, target.Owner)
-            && !target.Owner.ManagerData.Items.Contains(source.Item!);
+            && !target.Owner.ManagerData.Items.Contains(source.Item!)
+            && Accepts(source.Item!, target.Parent?.Group);
 
         private static TreeNode? CompositionOf(TreeNode node)
         {
@@ -133,6 +145,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 return false;
 
             var slot = SlotOfItem(source);
+            if (slot == Slot.None)
+                return false;
+
             return composition.LayerManager.ManagerData.Items.OfType<Layer>().Any(layer =>
                 !ReferenceEquals(layer, ownLayer)
                 && ListOf(layer, slot).ManagerData.Items.Contains(source.Item!));
@@ -233,7 +248,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
                 var sameList = ReferenceEquals(source.Owner, target.Owner);
                 var layerToLayerList = source.Item is Layer && target.Item is Layer;
-                if (!sameList && !layerToLayerList && !CanMoveBetweenLayers(source, target))
+                if (!sameList && !layerToLayerList && !CanMoveBetweenLists(source, target))
                     return null;
 
                 var index = target.Owner.ManagerData.Items.IndexOf(target.Item) + (position == DropPosition.After ? 1 : 0);

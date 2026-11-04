@@ -315,9 +315,8 @@ namespace CMiX.Studio.Avalonia.Tests
             modifier.Execute!();
             Assert.IsType<ScaleModifier>(Assert.Single(((Entity)entityNode.Item!).ModifierManager.ManagerData.Items));
         }
-
         [Fact]
-        public void TheModifiersOfAnEntity_CanBeReorderedInTheirOwnList_AndNotMovedElsewhere()
+        public void TheModifiersOfAnEntity_CanBeReordered_AndMovedToAnotherEntity()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -329,17 +328,102 @@ namespace CMiX.Studio.Avalonia.Tests
             second.ModifierManager.AddItem(typeof(TranslateModifier));
             var entities = Scene.Group(scene.LayerNode, "Entities");
             var modifiers = Scene.Group(entities.Children[0], "Modifiers");
-            var foreign = Scene.Group(entities.Children[1], "Modifiers").Children[0];
+            var foreignGroup = Scene.Group(entities.Children[1], "Modifiers");
             var service = new TreeDropService();
 
             Assert.True(service.CanDrop(modifiers.Children[1], modifiers.Children[0], DropPosition.Before));
-            Assert.False(service.CanDrop(modifiers.Children[0], foreign, DropPosition.Before));
-            Assert.False(service.CanDrop(modifiers.Children[0], Scene.Group(entities.Children[1], "Modifiers"), DropPosition.Inside));
-
             var moved = modifiers.Children[1].Item;
             service.Drop(modifiers.Children[1], modifiers.Children[0], DropPosition.Before);
-
             Assert.Same(moved, first.ModifierManager.ManagerData.Items[0]);
+
+            // To a row of the other entity, and inside its group.
+            Assert.True(service.CanDrop(modifiers.Children[0], foreignGroup.Children[0], DropPosition.After));
+            Assert.True(service.CanDrop(modifiers.Children[0], foreignGroup, DropPosition.Inside));
+            Assert.True(service.Drop(modifiers.Children[0], foreignGroup, DropPosition.Inside).Moved);
+            Assert.Single(first.ModifierManager.ManagerData.Items);
+            Assert.Same(moved, second.ModifierManager.ManagerData.Items[^1]);
         }
+
+        [Fact]
+        public void AnItem_MovesOnlyToAListOfItsOwnKind()
+        {
+            var scene = CreateScene();
+            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
+            scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
+            var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
+            entity.ModifierManager.AddItem(typeof(TranslateModifier));
+            var entityNode = Scene.Group(scene.LayerNode, "Entities").Children[0];
+            var modifier = Scene.Group(entityNode, "Modifiers").Children[0];
+            var filter = Scene.Group(scene.LayerNode, "Filters").Children[0];
+            var service = new TreeDropService();
+
+            // A modifier does not go to filters, and a filter does not go to modifiers.
+            Assert.False(service.CanDrop(modifier, Scene.Group(scene.LayerNode, "Filters"), DropPosition.Inside));
+            Assert.False(service.CanDrop(modifier, filter, DropPosition.After));
+            Assert.False(service.CanDrop(filter, Scene.Group(entityNode, "Modifiers"), DropPosition.Inside));
+            Assert.False(service.CanDrop(filter, modifier, DropPosition.After));
+        }
+
+        [Fact]
+        public void AFilter_MovesToAnotherLayerAndToAComposition()
+        {
+            var scene = CreateScene();
+            var other = (Layer)scene.Composition.LayerManager.ManagerData.Items[1];
+            scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
+            var filter = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
+            var service = new TreeDropService();
+            var otherFilters = Scene.Group(scene.CompositionNode.Children[1], "Filters");
+
+            Assert.True(service.CanDrop(Scene.Group(scene.LayerNode, "Filters").Children[0], otherFilters, DropPosition.Inside));
+            Assert.True(service.Drop(Scene.Group(scene.LayerNode, "Filters").Children[0], otherFilters, DropPosition.Inside).Moved);
+            Assert.Empty(scene.Layer.TextureModifierManager.ManagerData.Items);
+            Assert.Same(filter, Assert.Single(other.TextureModifierManager.ManagerData.Items));
+
+            var compositionFilters = Scene.Group(scene.CompositionNode, "Filters");
+            Assert.True(service.Drop(otherFilters.Children[0], compositionFilters, DropPosition.Inside).Moved);
+            Assert.Same(filter, Assert.Single(scene.Composition.TextureModifierManager.ManagerData.Items));
+        }
+
+        [Fact]
+        public void AModulator_MovesToTheModulatorsOfAnotherItem_AndAfterItsRows()
+        {
+            var scene = CreateScene();
+            scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
+            scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
+            var filters = Scene.Group(scene.LayerNode, "Filters");
+            var first = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
+            var second = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[1];
+            first.ModulatorManager.AddItem(typeof(LFOModulator));
+            first.ModulatorManager.AddItem(typeof(RandomModulator));
+            second.ModulatorManager.AddItem(typeof(LFOModulator));
+            var firstGroup = Scene.Group(filters.Children[0], "Modulators");
+            var secondGroup = Scene.Group(filters.Children[1], "Modulators");
+            var service = new TreeDropService();
+
+            // Inside the other group and next to its row.
+            Assert.True(service.CanDrop(firstGroup.Children[0], secondGroup, DropPosition.Inside));
+            Assert.True(service.CanDrop(firstGroup.Children[0], secondGroup.Children[0], DropPosition.Before));
+            Assert.False(service.CanDrop(firstGroup.Children[0], Scene.Group(scene.LayerNode, "Filters"), DropPosition.Inside));
+
+            var moved = firstGroup.Children[0].Item;
+            Assert.True(service.Drop(firstGroup.Children[0], secondGroup.Children[0], DropPosition.Before).Moved);
+            Assert.Same(moved, second.ModulatorManager.ManagerData.Items[0]);
+            Assert.Single(first.ModulatorManager.ManagerData.Items);
+        }
+
+        [Fact]
+        public void TheRowsOfAGroup_CanBeDragged_AndTheGroupsCannot()
+        {
+            var scene = CreateScene();
+            scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
+            var filter = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
+            filter.ModulatorManager.AddItem(typeof(LFOModulator));
+            var filterNode = Scene.Group(scene.LayerNode, "Filters").Children[0];
+
+            Assert.True(scene.Tree.CanDrag(filterNode));
+            Assert.True(scene.Tree.CanDrag(Scene.Group(filterNode, "Modulators").Children[0]));
+            Assert.False(scene.Tree.CanDrag(Scene.Group(filterNode, "Modulators")));
+        }
+
     }
 }
