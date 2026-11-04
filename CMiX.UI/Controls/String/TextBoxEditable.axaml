@@ -21,6 +21,8 @@
             Foreground="{Binding Foreground, ElementName=editableTextBox}"
             Text="{Binding Text, ElementName=editableTextBox}" />
 
+        <!-- The input has no binding to Text: it gets the text when the edit starts, and gives it back when the edit ends.
+             So the text of the owner never holds a half edited or an empty text. -->
         <TextBox
             x:Name="InputValue"
             HorizontalAlignment="Stretch"
@@ -30,8 +32,7 @@
             ContextFlyout="{x:Null}"
             Padding="3,1"
             Foreground="{DynamicResource ActiveForegroundBrush}"
-            SelectionBrush="{DynamicResource AccentBrush}"
-            Text="{Binding Text, ElementName=editableTextBox}" />
+            SelectionBrush="{DynamicResource AccentBrush}" />
     </Grid>
 
 </UserControl>

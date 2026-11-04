@@ -119,9 +119,13 @@ namespace CMiX.UI.Controls.String
             InputValue.SelectAll();
         }
 
+        // The edit ends with the text of the input. An empty text is not a name: the old text stays.
+        // Only the input that is shown holds a text to commit. A hidden input holds the text of the last edit.
         private void OnSwitchToNormalMode()
         {
-            Text = InputValue.Text ?? string.Empty;
+            if (InputValue.IsVisible && !string.IsNullOrWhiteSpace(InputValue.Text))
+                Text = InputValue.Text;
+
             SetInputVisible(false);
             UnhookTopLevelEvents();
             IsEditing = false;
