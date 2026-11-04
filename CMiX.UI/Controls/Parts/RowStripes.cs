@@ -7,8 +7,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.VisualTree;
-using System.Linq;
-using CMiX.UI.Panels;
 
 namespace CMiX.UI.Controls.Parts
 {
@@ -70,24 +68,11 @@ namespace CMiX.UI.Controls.Parts
             set => SetValue(RowsProperty, value);
         }
 
-        public static readonly StyledProperty<string?> RowNameProperty =
-            AvaloniaProperty.Register<RowStripes, string?>(nameof(RowName));
-
-        // The name of the control that is the row, inside the Rows panel. With a name, a band starts at the top of each real row
-        // and goes down to the top of the next one. The rows of a list are not one pitch apart on a screen with a scaling like 125%:
-        // every panel rounds its size to whole pixels, so a long list of rows drifts away from a pattern of one pitch.
-        // Without a name, the bands are a pattern of one pitch from the top of the Rows panel.
-        public string? RowName
-        {
-            get => GetValue(RowNameProperty);
-            set => SetValue(RowNameProperty, value);
-        }
-
-        private IReadOnlyList<(Rect Band, double Opacity)> lastBands = Array.Empty<(Rect, double)>();
+        private double lastOrigin = double.NaN;
 
         static RowStripes()
         {
-            AffectsRender<RowStripes>(RowHeightProperty, RowSpacingProperty, BrushProperty, AlternateOpacityProperty, RowsProperty, RowNameProperty);
+            AffectsRender<RowStripes>(RowHeightProperty, RowSpacingProperty, BrushProperty, AlternateOpacityProperty, RowsProperty);
         }
 
         public RowStripes()
@@ -110,14 +95,14 @@ namespace CMiX.UI.Controls.Parts
             base.OnDetachedFromVisualTree(e);
         }
 
-        // The rows move when the list scrolls, opens or closes, or the panel grows: the bands move with them.
+        // The rows move when the list scrolls or the panel grows: the bands move with them.
         private void OnLayoutUpdated(object? sender, EventArgs e)
         {
-            var bands = Bands();
-            if (bands.SequenceEqual(lastBands))
+            var origin = Origin();
+            if (origin.Equals(lastOrigin))
                 return;
 
-            lastBands = bands;
+            lastOrigin = origin;
             InvalidateVisual();
         }
 
@@ -132,83 +117,11 @@ namespace CMiX.UI.Controls.Parts
             if (pitch <= 0 || Bounds.Height <= 0)
                 return bands;
 
-            if (RealRowTops() is { Count: > 0 } tops)
-                return BandsOfRows(tops, pitch);
-
             var origin = Origin();
             for (var index = (int)Math.Floor(-origin / pitch); origin + index * pitch < Bounds.Height; index++)
-                bands.Add((new Rect(0, origin + index * pitch, Bounds.Width, pitch), OpacityOf(index)));
-
-            return bands;
-        }
-
-        // The first row, the third row and so on have the color as it is. The other rows have AlternateOpacity.
-        private double OpacityOf(int index) => ((index % 2) + 2) % 2 == 0 ? 1 : AlternateOpacity;
-
-        // The tops of the rows that are shown, from the top, in this control. Null when no row name is set.
-        private List<double>? RealRowTops()
-        {
-            if (string.IsNullOrEmpty(RowName) || Rows == null)
-                return null;
-
-            var tops = new List<double>();
-            foreach (var visual in Rows.GetVisualDescendants())
             {
-                if (visual is Control control && control.Name == RowName && control.IsEffectivelyVisible && !IsHiddenByAnimation(control)
-                    && control.TranslatePoint(new Point(0, 0), this) is { } point)
-                    tops.Add(point.Y);
-            }
-
-            tops.Sort();
-            return tops;
-        }
-
-        // A row inside a panel that opens or closes can lie below the part of the panel that is shown. It is not a row to see.
-        private bool IsHiddenByAnimation(Control row)
-        {
-            for (var panel = row.FindAncestorOfType<CollapsePanel>(); panel != null; panel = panel.FindAncestorOfType<CollapsePanel>())
-            {
-                if (ReferenceEquals(panel, Rows) || !Rows!.IsVisualAncestorOf(panel))
-                    break;
-
-                if (panel.Progress < 1 && row.TranslatePoint(new Point(0, 0), panel) is { } inPanel && inPanel.Y >= panel.Bounds.Height)
-                    return true;
-            }
-
-            return false;
-        }
-
-        // A band starts at the top of each row and goes down to the top of the next row, so the spacing between two rows belongs
-        // to the upper band. The last row has the nominal height. Above the first row and under the last row the bands go on with
-        // the nominal pitch. Only the bands that touch the control are made, but they keep their place in the pattern.
-        private IReadOnlyList<(Rect Band, double Opacity)> BandsOfRows(List<double> tops, double pitch)
-        {
-            var bands = new List<(Rect, double)>();
-            void Add(double top, double bottom, int index)
-            {
-                if (bottom > 0 && top < Bounds.Height)
-                    bands.Add((new Rect(0, top, Bounds.Width, bottom - top), OpacityOf(index)));
-            }
-
-            var above = new List<(Rect, double)>();
-            var aboveTop = tops[0];
-            for (var index = -1; aboveTop > 0; index--)
-            {
-                aboveTop -= pitch;
-                above.Add((new Rect(0, aboveTop, Bounds.Width, pitch), OpacityOf(index)));
-            }
-
-            above.Reverse();
-            bands.AddRange(above);
-
-            for (var i = 0; i < tops.Count; i++)
-                Add(tops[i], i + 1 < tops.Count ? tops[i + 1] : tops[i] + pitch, i);
-
-            var bottom = tops[^1] + pitch;
-            for (var index = tops.Count; bottom < Bounds.Height; index++)
-            {
-                bands.Add((new Rect(0, bottom, Bounds.Width, pitch), OpacityOf(index)));
-                bottom += pitch;
+                var first = ((index % 2) + 2) % 2 == 0;
+                bands.Add((new Rect(0, origin + index * pitch, Bounds.Width, pitch), first ? 1 : AlternateOpacity));
             }
 
             return bands;

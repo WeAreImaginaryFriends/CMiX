@@ -122,61 +122,6 @@ namespace CMiX.UI.Tests
             Assert.True(stripes.ClipToBounds);
         }
 
-        // Rows of different heights and spaces, as a screen with a scaling like 125% makes them: each band starts at its row.
-        [AvaloniaFact]
-        public void WithARowName_EachBandStartsAtTheTopOfItsRow_WhateverThePitch()
-        {
-            var heights = new[] { 20.0, 21.0, 20.0, 22.0, 20.0 };
-            var rows = new StackPanel { Margin = new Thickness(0, 6, 0, 0), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top };
-            var spaces = new[] { 5.0, 6.0, 5.0, 7.0, 5.0 };
-            for (var i = 0; i < heights.Length; i++)
-                rows.Children.Add(new Border { Name = "Row", Height = heights[i], Margin = new Thickness(0, 0, 0, spaces[i]) });
-
-            var stripes = new RowStripes { RowHeight = 20, RowSpacing = 5, Brush = Color, Rows = rows, RowName = "Row" };
-            var window = new Window { Content = new Grid { Children = { stripes, rows } }, Width = 200, Height = 300 };
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-
-            var bands = stripes.Bands();
-            var tops = rows.Children.Select(row => row.TranslatePoint(new Point(0, 0), stripes)!.Value.Y).ToList();
-
-            for (var i = 0; i < tops.Count; i++)
-            {
-                var band = bands.Single(b => Math.Abs(b.Band.Top - tops[i]) < 0.01);
-                Assert.Equal(i % 2 == 0 ? 1 : 0.8, band.Opacity);
-                if (i + 1 < tops.Count)
-                    Assert.Equal(tops[i + 1], band.Band.Bottom, 0.01);
-            }
-
-            // The bands go on above the first row, under the last row, and they do not leave a gap.
-            Assert.True(bands[0].Band.Top <= 0);
-            Assert.True(bands[^1].Band.Bottom >= stripes.Bounds.Height);
-            for (var i = 1; i < bands.Count; i++)
-                Assert.Equal(bands[i - 1].Band.Bottom, bands[i].Band.Top, 0.01);
-        }
-
-        [AvaloniaFact]
-        public void WithARowName_ARowThatIsNotShown_HasNoBand()
-        {
-            var rows = new StackPanel { VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top };
-            for (var i = 0; i < 4; i++)
-                rows.Children.Add(new Border { Name = "Row", Height = 20, Margin = new Thickness(0, 0, 0, 5) });
-            rows.Children[1].IsVisible = false;
-
-            var stripes = new RowStripes { RowHeight = 20, RowSpacing = 5, Brush = Color, Rows = rows, RowName = "Row" };
-            var window = new Window { Content = new Grid { Children = { stripes, rows } }, Width = 200, Height = 300 };
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-
-            // Three rows are shown: the second shown row is at 25 and has the other opacity, the third is at 50 and has the first.
-            var bands = stripes.Bands();
-            Assert.Equal(1, bands.Single(b => b.Band.Top == 0).Opacity);
-            Assert.Equal(0.8, bands.Single(b => b.Band.Top == 25).Opacity);
-            Assert.Equal(1, bands.Single(b => b.Band.Top == 50).Opacity);
-        }
-
         [AvaloniaFact]
         public void TheStripes_TakeNoPointerInput()
         {
