@@ -38,6 +38,7 @@ namespace CMiX.Studio.Avalonia.Themes
             Icons.Register("Camera", MaterialIconKind.Camera);
             Icons.Register("Beat", MaterialIconKind.Metronome);
             Icons.Register("TextIcon", MaterialIconKind.FormatText);
+            Icons.Register("Inspector", MaterialIconKind.TuneVariant);
         }
     }
 }

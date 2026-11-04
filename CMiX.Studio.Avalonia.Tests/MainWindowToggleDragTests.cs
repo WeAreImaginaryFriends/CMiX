@@ -201,7 +201,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             // The Composition tab shows the list of the compositions. A second composition gives a second button in it.
             screen.ViewModel.Project.CompositionManager.AddItem(typeof(Composition));
-            TestServiceProviderFactory.MainTabControl(screen.Window).SelectedIndex = 1;
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Composition");
             TestServiceProviderFactory.Pump();
             var listButtons = screen.ListButtons();
             Assert.True(listButtons.Count >= 2, "The test needs at least two visibility buttons in the lists.");

@@ -74,5 +74,15 @@ namespace CMiX.Studio.Avalonia.Tests
         // real window through its tabs needs to find first.
         public static TabControl MainTabControl(Views.MainWindow window) =>
             window.GetVisualDescendants().OfType<TabControl>().First();
+
+        // Shows the tab of the main window whose icon has this key, as the user does with a click on its header.
+        public static TabItem SelectMainTab(Views.MainWindow window, string iconKey)
+        {
+            var tabs = MainTabControl(window);
+            var tab = tabs.Items.OfType<TabItem>().Single(item => item.Header is CMiX.UI.Controls.AppIcon icon && icon.IconKey == iconKey);
+            tabs.SelectedItem = tab;
+            Pump();
+            return tab;
+        }
     }
 }

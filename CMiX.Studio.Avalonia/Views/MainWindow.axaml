@@ -100,6 +100,24 @@
 
             </TabItem>
 
+            <!-- The editor of the item that is selected in the tree. The tabs after it are the first way to edit, which stays for now. -->
+            <TabItem Theme="{StaticResource TabItemHorizontal}">
+
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="Inspector"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.HorizontalOffset="-10"
+                        ToolTip.Placement="Pointer"
+                        ToolTip.Tip="Inspector"
+                        ToolTip.VerticalOffset="10" />
+                </TabItem.Header>
+
+                <Views:Inspector DataContext="{Binding ProjectTree}" />
+
+            </TabItem>
+
             <TabItem Theme="{StaticResource TabItemHorizontal}">
 
                 <TabItem.Header>

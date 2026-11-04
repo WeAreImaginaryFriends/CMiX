@@ -48,7 +48,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
-            TestServiceProviderFactory.MainTabControl(window).SelectedIndex = 1;
+            TestServiceProviderFactory.SelectMainTab(window, "Composition");
             TestServiceProviderFactory.Pump();
 
             var settings = window.GetVisualDescendants().OfType<ComposableItemSettings>().ToList();
