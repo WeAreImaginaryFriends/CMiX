@@ -40,7 +40,23 @@ namespace CMiX.Core.Modulation
         public IEnumerable<RedisAddress> Addresses =>
             AddressManager.ManagerData.Items.OfType<RedisAddress>();
 
-        public void AddAddress() => InOneUndoStep(() => AddressManager.AddItem(typeof(RedisAddress)));
+        // A new address has a name, "Address.001" and so on, so that the list row has a text to edit.
+        public void AddAddress() => InOneUndoStep(() =>
+            AddressManager.AddItem(typeof(RedisAddress), item => ((RedisAddress)item).Value = NextName()));
+
+        // The first free name of the form "Address.001", as for the other items.
+        private string NextName()
+        {
+            var used = Addresses.Select(address => address.Value).ToHashSet();
+            for (var number = 1; ; number++)
+            {
+                var name = $"{DefaultName}.{number:000}";
+                if (!used.Contains(name))
+                    return name;
+            }
+        }
+
+        private const string DefaultName = "Address";
 
         // The modulators that select the address clear their selection in the same undo step as the removal.
         public void RemoveAddress(IControl address) => InOneUndoStep(() => AddressManager.RemoveItem(address));
