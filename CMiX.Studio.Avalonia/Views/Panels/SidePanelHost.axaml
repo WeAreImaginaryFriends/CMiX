@@ -16,12 +16,19 @@
             Padding="4"
             Background="{DynamicResource Grey100Brush}"
             DockPanel.Dock="Top">
-            <ComboBox
-                Name="picker"
-                HorizontalAlignment="Stretch"
-                DisplayMemberBinding="{Binding Name}"
-                ItemsSource="{Binding Choices, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}}"
-                SelectedItem="{Binding Choice, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}, Mode=TwoWay}" />
+            <!-- The same box as the combo boxes of the settings (ComboBoxCaptioned): one control height, a grey back with rounded corners. -->
+            <Border
+                Name="pickerBox"
+                Height="{DynamicResource ControlHeightMD}"
+                Background="{DynamicResource Grey500Brush}"
+                Classes="BorderMask">
+                <ComboBox
+                    Name="picker"
+                    HorizontalAlignment="Stretch"
+                    DisplayMemberBinding="{Binding Name}"
+                    ItemsSource="{Binding Choices, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}}"
+                    SelectedItem="{Binding Choice, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}, Mode=TwoWay}" />
+            </Border>
         </Border>
 
         <ContentControl

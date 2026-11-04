@@ -9,6 +9,7 @@ using CMiX.Studio.Avalonia.ViewModels;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls;
+using CMiX.UI.Controls.Enum;
 using Xunit;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
@@ -171,6 +172,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var item = tree.GetVisualDescendants().OfType<TreeViewItem>().First(row => ReferenceEquals(row.DataContext, layerNode));
             var row = item.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
             screen.Window.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
             var point = row.TranslatePoint(new Point(row.Bounds.Width * 0.5, row.Bounds.Height / 2), screen.Window)!.Value;
             screen.Window.MouseDown(point, MouseButton.Left);
             screen.Window.MouseUp(point, MouseButton.Left);
@@ -190,6 +193,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var item = tree.GetVisualDescendants().OfType<TreeViewItem>().First(row => ReferenceEquals(row.DataContext, layerNode));
             var row = item.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
             screen.Window.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
             var point = row.TranslatePoint(new Point(row.Bounds.Width * 0.5, row.Bounds.Height / 2), screen.Window)!.Value;
 
             screen.Window.MouseDown(point, MouseButton.Left);
@@ -207,6 +212,31 @@ namespace CMiX.Studio.Avalonia.Tests
             var tabs = TestServiceProviderFactory.MainTabControl(screen.Window);
 
             Assert.Equal(tree.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y, tabs.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y, 0.5);
+        }
+
+        // The picker must look like the other combo boxes of the app, so it is measured against one of them.
+        [AvaloniaFact]
+        public void ThePicker_HasTheHeightAndTheLookOfTheComboBoxesOfTheSettings()
+        {
+            var screen = Show();
+            var picker = Screen.PickerOf(screen.Left);
+            var pickerBox = screen.Left.GetVisualDescendants().OfType<Border>().First(border => border.Name == "pickerBox");
+
+            var reference = new ComboBoxCaptioned { Caption = "Reference", ItemsSource = new[] { "A", "B" }, Width = 300 };
+            var referenceWindow = new Window { Content = reference, Width = 400, Height = 100 };
+            referenceWindow.Show();
+            Dispatcher.UIThread.RunJobs();
+            var referenceCombo = reference.GetVisualDescendants().OfType<ComboBox>().First();
+            var referenceBox = reference.GetVisualDescendants().OfType<Border>().First(border => border.Name == "mainBorder");
+
+            var controlHeight = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
+            Assert.Equal(controlHeight, pickerBox.Bounds.Height);
+            Assert.Equal(referenceBox.Bounds.Height, pickerBox.Bounds.Height);
+            Assert.Equal(referenceCombo.Bounds.Height, picker.Bounds.Height);
+            Assert.Equal(referenceBox.Classes.Contains("BorderMask"), pickerBox.Classes.Contains("BorderMask"));
+            Assert.Equal(((global::Avalonia.Media.ISolidColorBrush)referenceBox.Background!).Color, ((global::Avalonia.Media.ISolidColorBrush)pickerBox.Background!).Color);
+            Assert.Same(referenceCombo.Theme, picker.Theme);
+            referenceWindow.Close();
         }
 
         [AvaloniaFact]
