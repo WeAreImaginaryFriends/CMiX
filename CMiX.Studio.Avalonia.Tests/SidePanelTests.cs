@@ -87,20 +87,42 @@ namespace CMiX.Studio.Avalonia.Tests
             {
                 var toggle = Screen.ToggleOf(host);
                 var controlHeight = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
-                Assert.Equal(controlHeight, toggle.Bounds.Width);
                 Assert.Equal(controlHeight, toggle.Bounds.Height);
+                Assert.True(toggle.Bounds.Width > controlHeight, "The button has the room for the icon and the chevron.");
 
                 var hostTop = host.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
                 var toggleTop = toggle.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
                 Assert.True(toggleTop - hostTop < 10, "The button is not at the top of the panel.");
 
-                var icon = toggle.GetVisualDescendants().OfType<AppIcon>().Single();
-                Assert.Equal(host.Choice!.IconKey, icon.IconKey);
+                var icon = toggle.GetVisualDescendants().OfType<AppIcon>().First(candidate => candidate.IconKey == host.Choice!.IconKey);
+
+                // A chevron at the right of the icon tells that the button opens a list.
+                var chevron = Assert.Single(toggle.GetVisualDescendants().OfType<Chevron>());
+                Assert.True(chevron.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X >= icon.TranslatePoint(new Point(icon.Bounds.Width, 0), screen.Window)!.Value.X);
+                Assert.Equal(180, chevron.OpenAngle);
+                Assert.False(chevron.IsOpen);
                 Assert.Empty(toggle.GetVisualDescendants().OfType<TextBlock>().Where(text => !string.IsNullOrEmpty(text.Text)));
             }
 
-            Assert.Equal("Tree", Screen.ToggleOf(screen.Left).GetVisualDescendants().OfType<AppIcon>().Single().IconKey);
-            Assert.Equal("Tabs", Screen.ToggleOf(screen.Right).GetVisualDescendants().OfType<AppIcon>().Single().IconKey);
+            Assert.Contains(Screen.ToggleOf(screen.Left).GetVisualDescendants().OfType<AppIcon>(), icon => icon.IconKey == "Tree");
+            Assert.Contains(Screen.ToggleOf(screen.Right).GetVisualDescendants().OfType<AppIcon>(), icon => icon.IconKey == "Tabs");
+        }
+
+        [AvaloniaFact]
+        public void TheChevron_TurnsWhenTheListIsOpen()
+        {
+            var screen = Show();
+            var toggle = Screen.ToggleOf(screen.Left);
+            var chevron = Assert.Single(toggle.GetVisualDescendants().OfType<Chevron>());
+            Assert.False(chevron.IsOpen);
+
+            toggle.IsChecked = true;
+            TestServiceProviderFactory.Pump();
+            Assert.True(chevron.IsOpen);
+
+            toggle.IsChecked = false;
+            TestServiceProviderFactory.Pump();
+            Assert.False(chevron.IsOpen);
         }
 
         [AvaloniaFact]
@@ -259,7 +281,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.ViewModel.RightPanel = PanelChoice.Tree;
             TestServiceProviderFactory.Pump();
-            Assert.Equal("Tree", Screen.ToggleOf(screen.Right).GetVisualDescendants().OfType<AppIcon>().Single().IconKey);
+            Assert.Contains(Screen.ToggleOf(screen.Right).GetVisualDescendants().OfType<AppIcon>(), icon => icon.IconKey == "Tree");
             Assert.Equal(2, screen.Trees.Count);
 
             Pick(screen, left: false, PanelChoice.Tabs);
