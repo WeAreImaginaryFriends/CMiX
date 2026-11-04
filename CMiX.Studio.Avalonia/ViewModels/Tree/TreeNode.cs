@@ -8,9 +8,13 @@ using System.ComponentModel;
 using System.Linq;
 using CMiX.Core;
 using CMiX.Core.Compositing;
+using CMiX.Core.Modifiers;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Rendering.Cameras;
+using CMiX.Core.Texturing;
+using CMiX.Core.Texturing.Filters;
+using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Rendering.Lights;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -38,9 +42,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 prefab.PrefabService.Name.PropertyChanged += OnNameChanged;
             }
 
-            // A group row of a layer has no item. The inspector shows the panel of the group.
-            if (item == null && parent?.Item is Layer owningLayer)
-                Group = TreeGroup.Of(owningLayer, childManager);
+            // A group row has no item. The inspector shows the panel of the group.
+            if (item == null)
+                Group = TreeGroup.For(parent?.Item, childManager);
 
             ChildManager = childManager ?? (item is Composition composition ? composition.LayerManager : null);
             if (ChildManager != null)
@@ -51,13 +55,35 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 ChildManager.ManagerData.Items.CollectionChanged += OnItemsChanged;
                 ChildManager.ManagerData.PropertyChanged += OnManagerDataChanged;
             }
-            else if (item is Layer layer)
-            {
-                Children.Add(new TreeNode(tree, this, null, null, "Entities", layer.ModelEntityManager));
-                Children.Add(new TreeNode(tree, this, null, null, "Cameras", layer.CameraManager));
-                Children.Add(new TreeNode(tree, this, null, null, "Lights", layer.LightManager));
-            }
+
+            // The groups come after the items of the node (the layers of a composition), so the place of an item in its list is its
+            // place in the children.
+            if (item != null)
+                AddGroups(item);
         }
+
+        // The lists that an item holds, as groups: the lists of a layer, then the textures, the filters and the modifiers.
+        private void AddGroups(IControl item)
+        {
+            if (item is Layer layer)
+            {
+                AddGroup("Entities", layer.ModelEntityManager);
+                AddGroup("Cameras", layer.CameraManager);
+                AddGroup("Lights", layer.LightManager);
+            }
+
+            if (item is ITexturable textured && textured.Texture?.DiffuseTexture?.TextureManager is { } textures)
+                AddGroup("Textures", textures);
+
+            if (item is ITextureModifiable filtered && filtered.TextureModifierManager is { } filters)
+                AddGroup("Filters", filters);
+
+            if (item is IModifiable modified && modified.ModifierManager is { } modifiers)
+                AddGroup("Modifiers", modifiers);
+        }
+
+        private void AddGroup(string header, PrefabManager list) =>
+            Children.Add(new TreeNode(tree, this, null, null, header, list));
 
         public TreeNode? Parent { get; }
         public string IconKey { get; }
@@ -92,7 +118,18 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             TextEntity => "TextIcon",
             Camera => "Camera",
             LightEntity => "MeshLight",
-            null => header switch { "Cameras" => "Camera", "Lights" => "MeshLight", _ => "Geometry" },
+            null => header switch
+            {
+                "Cameras" => "Camera",
+                "Lights" => "MeshLight",
+                "Textures" => "Texture",
+                "Filters" => "Filter",
+                "Modifiers" => "Modifier",
+                _ => "Geometry"
+            },
+            IModifier => "Modifier",
+            ITextureFilter => "Filter",
+            ITextureSource => "Texture",
             _ => "Geometry"
         };
 
@@ -123,7 +160,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                     InsertChildren(e.NewStartingIndex, e.NewItems!.Cast<IControl>());
                     break;
                 default:
-                    RemoveChildren(0, Children.Count);
+                    // The groups after the items stay.
+                    RemoveChildren(0, Children.Count(child => child.Item != null));
                     InsertChildren(0, ChildManager!.ManagerData.Items);
                     break;
             }

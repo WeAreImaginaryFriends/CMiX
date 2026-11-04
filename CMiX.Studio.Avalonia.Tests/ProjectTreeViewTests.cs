@@ -400,9 +400,12 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ADoubleClickAwayFromTheName_OfARowWithoutChildren_DoesNothing()
         {
             var screen = Show();
-            screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
+            // A row without children: a modifier of an entity (an entity has groups under it).
+            var layer = screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First();
+            layer.ModelEntityManager.AddItem(typeof(Entity));
+            ((Entity)layer.ModelEntityManager.ManagerData.Items[0]).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
             Dispatcher.UIThread.RunJobs();
-            var entityNode = screen.Tree.Roots[0].Children[0].Children[0].Children[0];
+            var entityNode = screen.Tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(group => group.Header == "Modifiers").Children[0];
             var entityRow = screen.RowOf(entityNode);
             var before = entityNode.IsExpanded;
 

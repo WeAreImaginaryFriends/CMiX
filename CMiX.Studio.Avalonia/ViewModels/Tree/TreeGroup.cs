@@ -1,49 +1,104 @@
 // SPDX-FileCopyrightText: 2017-2026 CloneProduction Shanghai Company Limited and CMiX contributors
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+using CMiX.Core;
 using CMiX.Core.Compositing;
+using CMiX.Core.Modifiers;
+using CMiX.Core.Prefabs.Managers;
+using CMiX.Core.Texturing;
 
 namespace CMiX.Studio.Avalonia.ViewModels.Tree
 {
-    // What the inspector shows for a group row of the tree (Entities, Cameras, Lights): the layer that owns the group.
+    // What the inspector shows for a group row of the tree: the item that owns the group, and the list of the group.
+    // The groups of a layer are Entities, Cameras and Lights. Any item can also have Textures, Filters and Modifiers,
+    // by what it can hold (ITexturable, ITextureModifiable, IModifiable).
     // Each kind is its own type, so the inspector picks the panel of the kind with a data template.
     public abstract class TreeGroup
     {
-        protected TreeGroup(Layer layer)
+        protected TreeGroup(IControl owner, PrefabManager manager)
         {
-            Layer = layer;
+            Owner = owner;
+            Manager = manager;
         }
 
-        public Layer Layer { get; }
+        public IControl Owner { get; }
+        public PrefabManager Manager { get; }
 
-        // The group of a layer for the list of items, or null when the list is not one of the lists of the layer.
-        public static TreeGroup? Of(Layer layer, CMiX.Core.Prefabs.Managers.PrefabManager? list)
+        // The type of the owner. The panels that add items list what can be added to this type.
+        public System.Type OwnerType => Owner.GetType();
+
+        // The group of an item for a list, or null when the list is not a list that the tree shows as a group of the item.
+        public static TreeGroup? For(IControl? owner, PrefabManager? list)
         {
-            if (ReferenceEquals(list, layer.ModelEntityManager))
-                return new EntitiesGroup(layer);
+            if (owner == null || list == null)
+                return null;
 
-            if (ReferenceEquals(list, layer.CameraManager))
-                return new CamerasGroup(layer);
+            if (owner is Layer layer)
+            {
+                if (ReferenceEquals(list, layer.ModelEntityManager))
+                    return new EntitiesGroup(layer, list);
 
-            if (ReferenceEquals(list, layer.LightManager))
-                return new LightsGroup(layer);
+                if (ReferenceEquals(list, layer.CameraManager))
+                    return new CamerasGroup(layer, list);
+
+                if (ReferenceEquals(list, layer.LightManager))
+                    return new LightsGroup(layer, list);
+            }
+
+            if (owner is ITexturable textured && ReferenceEquals(list, textured.Texture?.DiffuseTexture?.TextureManager))
+                return new TexturesGroup(owner, list);
+
+            if (owner is ITextureModifiable filtered && ReferenceEquals(list, filtered.TextureModifierManager))
+                return new FiltersGroup(owner, list);
+
+            if (owner is IModifiable modified && ReferenceEquals(list, modified.ModifierManager))
+                return new ModifiersGroup(owner, list);
 
             return null;
         }
     }
 
-    public sealed class EntitiesGroup : TreeGroup
+    // The groups of a layer. The panels of the old tabs take the layer as their DataContext.
+    public abstract class LayerGroup : TreeGroup
     {
-        public EntitiesGroup(Layer layer) : base(layer) { }
+        protected LayerGroup(Layer layer, PrefabManager manager) : base(layer, manager)
+        {
+            Layer = layer;
+        }
+
+        public Layer Layer { get; }
     }
 
-    public sealed class CamerasGroup : TreeGroup
+    public sealed class EntitiesGroup : LayerGroup
     {
-        public CamerasGroup(Layer layer) : base(layer) { }
+        public EntitiesGroup(Layer layer, PrefabManager manager) : base(layer, manager) { }
     }
 
-    public sealed class LightsGroup : TreeGroup
+    public sealed class CamerasGroup : LayerGroup
     {
-        public LightsGroup(Layer layer) : base(layer) { }
+        public CamerasGroup(Layer layer, PrefabManager manager) : base(layer, manager) { }
+    }
+
+    public sealed class LightsGroup : LayerGroup
+    {
+        public LightsGroup(Layer layer, PrefabManager manager) : base(layer, manager) { }
+    }
+
+    // The texture sources of an item.
+    public sealed class TexturesGroup : TreeGroup
+    {
+        public TexturesGroup(IControl owner, PrefabManager manager) : base(owner, manager) { }
+    }
+
+    // The texture filters of an item, a composition, a layer or a texture.
+    public sealed class FiltersGroup : TreeGroup
+    {
+        public FiltersGroup(IControl owner, PrefabManager manager) : base(owner, manager) { }
+    }
+
+    // The modifiers of an item.
+    public sealed class ModifiersGroup : TreeGroup
+    {
+        public ModifiersGroup(IControl owner, PrefabManager manager) : base(owner, manager) { }
     }
 }

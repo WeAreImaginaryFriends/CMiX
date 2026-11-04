@@ -112,8 +112,8 @@ namespace CMiX.Studio.Avalonia.Tests
             composition.LayerManager.AddItem(typeof(Layer));
             TestServiceProviderFactory.Pump();
 
-            // A composition, a layer, and the three groups of the layer.
-            Assert.Equal(before + 5, tree.GetVisualDescendants().OfType<TreeViewItem>().Count());
+            // A composition and its two groups (filters and modifiers), a layer and its five groups.
+            Assert.Equal(before + 9, tree.GetVisualDescendants().OfType<TreeViewItem>().Count());
         }
     }
 }

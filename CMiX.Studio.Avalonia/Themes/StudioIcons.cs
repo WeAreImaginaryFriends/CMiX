@@ -41,6 +41,8 @@ namespace CMiX.Studio.Avalonia.Themes
             Icons.Register("Inspector", MaterialIconKind.TuneVariant);
             Icons.Register("Tree", MaterialIconKind.FileTree);
             Icons.Register("Tabs", MaterialIconKind.TabUnselected);
+            Icons.Register("Filter", MaterialIconKind.FilterVariant);
+            Icons.Register("Modifier", MaterialIconKind.Wrench);
         }
     }
 }

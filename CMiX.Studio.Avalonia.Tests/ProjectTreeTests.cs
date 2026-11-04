@@ -48,6 +48,9 @@ namespace CMiX.Studio.Avalonia.Tests
         // The node of a layer of A.
         private static TreeNode LayerNode(Scene scene, int index) => scene.Tree.Roots[0].Children[index];
 
+        // The layers of a composition. The groups of the composition (filters and modifiers) come after them.
+        private static IEnumerable<TreeNode> LayersOf(TreeNode composition) => composition.Children.Where(child => child.Item != null);
+
         private static TreeNode GroupNode(TreeNode layerNode, string header) =>
             layerNode.Children.Single(group => group.Header == header);
 
@@ -65,7 +68,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
-            Assert.Equal(scene.A.LayerManager.ManagerData.Items, scene.Tree.Roots[0].Children.Select(node => node.Item));
+            Assert.Equal(scene.A.LayerManager.ManagerData.Items, LayersOf(scene.Tree.Roots[0]).Select(node => node.Item));
             Assert.Same(scene.A.LayerManager, scene.Tree.Roots[0].ChildManager);
             Assert.Same(scene.A.LayerManager, LayerNode(scene, 0).Owner);
         }
@@ -78,11 +81,13 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var node = LayerNode(scene, 0);
 
-            Assert.Equal(new[] { "Entities", "Cameras", "Lights" }, node.Children.Select(group => group.Header));
+            Assert.Equal(new[] { "Entities", "Cameras", "Lights", "Filters", "Modifiers" }, node.Children.Select(group => group.Header));
             Assert.All(node.Children, group => Assert.Null(group.Item));
             Assert.Same(layer.ModelEntityManager, node.Children[0].ChildManager);
             Assert.Same(layer.CameraManager, node.Children[1].ChildManager);
             Assert.Same(layer.LightManager, node.Children[2].ChildManager);
+            Assert.Same(layer.TextureModifierManager, node.Children[3].ChildManager);
+            Assert.Same(layer.ModifierManager, node.Children[4].ChildManager);
         }
 
         [Fact]
@@ -109,7 +114,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.A.LayerManager.AddItem(typeof(Layer));
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
 
-            Assert.Equal(3, scene.Tree.Roots[0].Children.Count);
+            Assert.Equal(3, LayersOf(scene.Tree.Roots[0]).Count());
             Assert.Single(GroupNode(LayerNode(scene, 0), "Entities").Children);
         }
 
@@ -120,7 +125,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.A.LayerManager.RemoveItem(scene.LayerOfA(0));
 
-            Assert.Single(scene.Tree.Roots[0].Children);
+            Assert.Single(LayersOf(scene.Tree.Roots[0]));
         }
 
         [Fact]
@@ -132,7 +137,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.A.LayerManager.MoveItem(0, 1);
 
             Assert.Same(first, scene.Tree.Roots[0].Children[1].Item);
-            Assert.Equal(scene.A.LayerManager.ManagerData.Items, scene.Tree.Roots[0].Children.Select(node => node.Item));
+            Assert.Equal(scene.A.LayerManager.ManagerData.Items, LayersOf(scene.Tree.Roots[0]).Select(node => node.Item));
         }
 
         [Fact]
@@ -164,8 +169,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
 
-            Assert.Single(scene.Tree.Roots[0].Children);
-            Assert.Equal(2, scene.Tree.Roots[1].Children.Count);
+            Assert.Single(LayersOf(scene.Tree.Roots[0]));
+            Assert.Equal(2, LayersOf(scene.Tree.Roots[1]).Count());
             Assert.Same(moved, scene.Tree.Roots[1].Children[0].Item);
             Assert.Same(scene.B.LayerManager, scene.Tree.Roots[1].Children[0].Owner);
         }
@@ -179,7 +184,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.Tree.Dispose();
             scene.A.LayerManager.AddItem(typeof(Layer));
 
-            Assert.Equal(2, node.Children.Count);
+            Assert.Equal(2, LayersOf(node).Count());
         }
 
         [Fact]

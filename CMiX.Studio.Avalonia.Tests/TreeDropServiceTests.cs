@@ -269,7 +269,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Locate_TheBottomHalfOfTheLastRowOfABlock_IsAfterTheWholeBlock(double fraction)
         {
             var scene = CreateScene();
-            var lastRow = Scene.Group(scene.LayerNodeOfB(0), "Lights");
+            var lastRow = Scene.Group(scene.LayerNodeOfB(0), "Modifiers");
 
             var place = service.Locate(scene.LayerNodeOfA(0), lastRow, fraction);
 
@@ -280,7 +280,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Locate_TheLastRowOfABlockWhenTheDraggedNodeIsAComposition_IsAfterTheCompositionBlock()
         {
             var scene = CreateScene();
-            var lastRow = Scene.Group(scene.LayerNodeOfB(0), "Lights");
+            // The last row of the block of a composition is the last group of the composition.
+            var lastRow = scene.NodeB.Children.Last();
 
             var place = service.Locate(scene.NodeA, lastRow, 0.9);
 
@@ -292,7 +293,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
-            Assert.Null(service.Locate(scene.LayerNodeOfA(0), Scene.Group(scene.LayerNodeOfB(0), "Lights"), 0.2));
+            Assert.Null(service.Locate(scene.LayerNodeOfA(0), Scene.Group(scene.LayerNodeOfB(0), "Modifiers"), 0.2));
         }
 
         [Theory]
@@ -345,9 +346,16 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             var group = Scene.Group(scene.LayerNodeOfA(0), "Entities");
 
-            var place = service.Locate(group.Children[0], group.Children[1], 0.9);
+            // An entity has groups under it (textures, filters, modifiers). The bottom half of the last row of its block is after it.
+            var lastRowOfTheEntity = group.Children[1].Children.Last();
+            var place = service.Locate(group.Children[0], lastRowOfTheEntity, 0.9);
 
             Assert.Equal(new DropPlace(group.Children[1], DropPosition.After), place);
+            Assert.Null(service.Locate(group.Children[0], group.Children[1], 0.9));
+
+            // A closed entity is one row: its bottom half is after it.
+            group.Children[1].IsExpanded = false;
+            Assert.Equal(new DropPlace(group.Children[1], DropPosition.After), service.Locate(group.Children[0], group.Children[1], 0.9));
         }
 
 

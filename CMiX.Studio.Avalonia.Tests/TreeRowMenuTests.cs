@@ -212,7 +212,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Screen.Click(screen.OpenMenu(screen.Tree.Roots[1])!, "Add Layer");
 
             Assert.Equal(2, screen.B.LayerManager.ManagerData.Items.Count);
-            Assert.Equal(2, screen.Tree.Roots[1].Children.Count);
+            Assert.Equal(2, screen.Tree.Roots[1].Children.Count(child => child.Item != null));
         }
 
         [AvaloniaFact]
