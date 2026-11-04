@@ -14,7 +14,7 @@ using Layer = CMiX.Core.Compositing.Layer;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // The scroll bar of a list or of the tree lies over the content. The content has the same width with a bar and without one.
+    // The scroll bar of a list or of the tree lies in a room on the right of the content. The content has the same width with a bar and without one.
     public class ScrollBarOverlayTests
     {
         private static ScrollBar VerticalBarOf(Control control) =>
@@ -50,7 +50,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheBarOfAList_LiesOverTheContent_AtTheRightEdge()
+        public void TheBarOfAList_LiesInTheRoomOnTheRight_AndNotOverTheRows()
         {
             var list = new ListBox { Width = 200, Height = 96 };
             for (var i = 0; i < 20; i++)
@@ -62,13 +62,35 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var bar = VerticalBarOf(list);
             var presenter = list.GetVisualDescendants().OfType<ScrollContentPresenter>().First();
-            var barRight = bar.TranslatePoint(new Point(bar.Bounds.Width, 0), window)!.Value.X;
-            var presenterRight = presenter.TranslatePoint(new Point(presenter.Bounds.Width, 0), window)!.Value.X;
+            var viewer = list.GetVisualDescendants().OfType<ScrollViewer>().First();
+            var barBox = new Rect(bar.TranslatePoint(new Point(0, 0), window)!.Value, bar.Bounds.Size);
+            var presenterBox = new Rect(presenter.TranslatePoint(new Point(0, 0), window)!.Value, presenter.Bounds.Size);
+            var viewerBox = new Rect(viewer.TranslatePoint(new Point(0, 0), window)!.Value, viewer.Bounds.Size);
 
             Assert.True(bar.IsVisible);
             Assert.True(bar.Bounds.Width > 0);
-            Assert.True(barRight <= presenterRight, "The bar is outside the content.");
-            Assert.True(bar.Bounds.Right >= presenter.Bounds.Right - 0.5 - bar.Margin.Right, "The bar is not at the right edge.");
+            Assert.True(barBox.Left >= presenterBox.Right - 0.5, "The bar is over the rows.");
+            Assert.True(barBox.Right <= viewerBox.Right + 0.5, "The bar is outside the scroll viewer.");
+            window.Close();
+        }
+
+        // The room on the right of the content is the width of the bar and of its margins. If one of them changes, the other must too.
+        [AvaloniaFact]
+        public void TheRoomOnTheRight_IsTheWidthOfTheBarAndItsMargins()
+        {
+            var list = new ListBox { Width = 200, Height = 96 };
+            for (var i = 0; i < 20; i++)
+                list.Items.Add(new Border { Height = 24 });
+            var window = new Window { Content = list, Width = 300, Height = 200 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+
+            var bar = VerticalBarOf(list);
+            var gutter = Assert.IsType<Thickness>(Application.Current!.FindResource("ScrollBarGutter"));
+
+            Assert.Equal(gutter.Right, bar.Width + bar.Margin.Left + bar.Margin.Right);
+            Assert.Equal(0, gutter.Left + gutter.Top + gutter.Bottom);
             window.Close();
         }
 

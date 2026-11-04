@@ -4,13 +4,15 @@
 
     <!-- A scroll viewer whose bars lie over the content. The content has the same size with a bar and without one,
          so it does not move when the bar appears. The default template puts the vertical bar in a column of its own,
-         and that column takes the width of the bar and of its margins from the content. -->
+         and that column takes the width of the bar and of its margins from the content only while the bar is shown.
+         Here the content always leaves that room on the right (ScrollBarGutter), and the bar lies in it. -->
     <ControlTheme x:Key="ScrollViewerOverlay" TargetType="ScrollViewer">
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid>
                     <ScrollContentPresenter
                         Name="PART_ContentPresenter"
+                        Margin="{DynamicResource ScrollBarGutter}"
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
@@ -40,7 +42,7 @@
 
     <ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar">
         <Setter Property="Cursor" Value="Arrow" />
-        <Setter Property="Margin" Value="4,0,2,0" />
+        <Setter Property="Margin" Value="2,0,2,0" />
 
         <Style Selector="^:vertical">
             <Setter Property="Width" Value="4" />

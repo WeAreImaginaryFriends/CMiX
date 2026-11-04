@@ -28,6 +28,9 @@
     <x:Double x:Key="SplitterSize">8</x:Double>
     <x:Double x:Key="SplitterIndicatorSize">2</x:Double>
     <x:Double x:Key="ScrollBarSize">8</x:Double>
+    <!-- The room that the content of an overlay scroll viewer leaves on the right for the bar: the width of the bar (4) and its
+         margins (2 and 2). The bar lies in this room, so the content has one width with a bar and without one. -->
+    <Thickness x:Key="ScrollBarGutter">0,0,8,0</Thickness>
     <x:Double x:Key="SeparatorSize">0.5</x:Double>
     <x:Double x:Key="ContextMenuIconSize">10</x:Double>
     <!-- The least width of the visible panel of every menu and popup, without the margin of the shadow.

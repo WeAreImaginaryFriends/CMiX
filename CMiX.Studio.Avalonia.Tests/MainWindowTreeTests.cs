@@ -83,9 +83,10 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(8, tree.Bounds.Width - (rowOrigin.X + row.Bounds.Width), 0.5);
             Assert.Equal(8, rowOrigin.Y, 0.5);
 
-            // The bottom is the same: the margin of the list is 8 and it has no padding of its own.
+            // The right space of 8 is the room that the scroll bar has (ScrollBarGutter), so the list has no margin on the right.
+            // The bottom is 8 as the left and the top, and the list has no padding of its own.
             var treeView = tree.GetVisualDescendants().OfType<TreeView>().First();
-            Assert.Equal(new Thickness(8), treeView.Margin);
+            Assert.Equal(new Thickness(8, 8, 0, 8), treeView.Margin);
             Assert.Equal(new Thickness(0), treeView.Padding);
         }
 
