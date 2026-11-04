@@ -12,6 +12,8 @@ namespace CMiX.UI.Themes
     {
         public CMiXTheme()
         {
+            // Before the styles are loaded: the tooltips of every control open below it.
+            ToolTipDefaults.Apply();
             AvaloniaXamlLoader.Load(this);
         }
     }

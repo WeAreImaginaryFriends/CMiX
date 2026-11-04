@@ -27,10 +27,7 @@
             Margin="8"
             IconKey="{Binding Icon, ElementName=repositoryTab}"
             Size="{DynamicResource IconSizeXS}"
-            ToolTip.HorizontalOffset="-10"
-            ToolTip.Placement="Pointer"
-            ToolTip.Tip="{Binding ToolTipText, ElementName=repositoryTab}"
-            ToolTip.VerticalOffset="10" />
+            ToolTip.Tip="{Binding ToolTipText, ElementName=repositoryTab}" />
     </TabItem.Header>
 
     <ScrollViewer DataContext="{Binding DataContext, ElementName=repositoryTab}" VerticalScrollBarVisibility="Hidden">

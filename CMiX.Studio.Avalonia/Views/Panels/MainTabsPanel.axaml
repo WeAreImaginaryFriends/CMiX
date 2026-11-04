@@ -29,10 +29,7 @@
                         Margin="8"
                         IconKey="Settings"
                         Size="{DynamicResource IconSizeXS}"
-                        ToolTip.HorizontalOffset="-10"
-                        ToolTip.Placement="Pointer"
-                        ToolTip.Tip="Settings"
-                        ToolTip.VerticalOffset="10" />
+                        ToolTip.Tip="Settings" />
                 </TabItem.Header>
 
                 <Views:SettingsTab />
@@ -47,10 +44,7 @@
                         Margin="8"
                         IconKey="Inspector"
                         Size="{DynamicResource IconSizeXS}"
-                        ToolTip.HorizontalOffset="-10"
-                        ToolTip.Placement="Pointer"
-                        ToolTip.Tip="Inspector"
-                        ToolTip.VerticalOffset="10" />
+                        ToolTip.Tip="Inspector" />
                 </TabItem.Header>
 
                 <Views:Inspector DataContext="{Binding ProjectTree}" />
@@ -64,10 +58,7 @@
                         Margin="8"
                         IconKey="Composition"
                         Size="{DynamicResource IconSizeXS}"
-                        ToolTip.HorizontalOffset="-10"
-                        ToolTip.Placement="Pointer"
-                        ToolTip.Tip="Composition"
-                        ToolTip.VerticalOffset="10" />
+                        ToolTip.Tip="Composition" />
                 </TabItem.Header>
 
                 <Views:MainWindowCompositionTab />
@@ -81,10 +72,7 @@
                         Margin="8"
                         IconKey="LayerScene"
                         Size="{DynamicResource IconSizeXS}"
-                        ToolTip.HorizontalOffset="-10"
-                        ToolTip.Placement="Pointer"
-                        ToolTip.Tip="Layers"
-                        ToolTip.VerticalOffset="10" />
+                        ToolTip.Tip="Layers" />
                 </TabItem.Header>
 
                 <Views:MainWindowLayersTab />
@@ -97,10 +85,7 @@
                         Margin="8"
                         IconKey="Geometry"
                         Size="{DynamicResource IconSizeXS}"
-                        ToolTip.HorizontalOffset="-10"
-                        ToolTip.Placement="Pointer"
-                        ToolTip.Tip="Entities"
-                        ToolTip.VerticalOffset="10" />
+                        ToolTip.Tip="Entities" />
                 </TabItem.Header>
 
                 <Views:MainWindowEntitiesTab />
@@ -193,10 +178,7 @@
                         Margin="8"
                         IconKey="Resources"
                         Size="{DynamicResource IconSizeXS}"
-                        ToolTip.HorizontalOffset="-10"
-                        ToolTip.Placement="Pointer"
-                        ToolTip.Tip="Assets"
-                        ToolTip.VerticalOffset="10" />
+                        ToolTip.Tip="Assets" />
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <i:Interaction.Behaviors>
@@ -213,10 +195,7 @@
                         Margin="8"
                         IconKey="Network"
                         Size="{DynamicResource IconSizeXS}"
-                        ToolTip.HorizontalOffset="-10"
-                        ToolTip.Placement="Pointer"
-                        ToolTip.Tip="Network"
-                        ToolTip.VerticalOffset="10" />
+                        ToolTip.Tip="Network" />
                 </TabItem.Header>
 
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
