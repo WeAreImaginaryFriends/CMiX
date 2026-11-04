@@ -3,6 +3,8 @@
 
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Xaml.Interactivity;
+using CMiX.UI.Behaviors;
 using Avalonia.LogicalTree;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.ViewModels;
@@ -22,6 +24,16 @@ namespace CMiX.Studio.Avalonia.Views
             InitializeComponent();
             titleBar.PointerPressed += TitleBar_PointerPressed;
             Closing += OnClosing;
+            InstallToggleDrag();
+        }
+
+        // A drag over the visibility or the mask buttons sets them all to one state. The whole drag is one undo step.
+        private void InstallToggleDrag()
+        {
+            var toggleDrag = new ToggleDragBehavior();
+            toggleDrag.StrokeStarted += (_, _) => _undoManager?.BeginCapture();
+            toggleDrag.StrokeEnded += (_, _) => _undoManager?.EndCapture();
+            Interaction.GetBehaviors(this).Add(toggleDrag);
         }
 
         // The cross button, Alt+F4 and the close command all end here. With unsaved changes the close is
