@@ -58,14 +58,16 @@ namespace CMiX.Studio.Avalonia.Views.Modulation
             return choices;
         }
 
-        // "Random Modulator" with the output "Value" gives "Random Value".
-        private static string LabelOf(ModulatorOutputSelection selection)
+        private static string LabelOf(ModulatorOutputSelection selection) => LabelOf(selection.Modulator, selection.Output);
+
+        // "Random Modulator" with the output "Value" gives "Random Value". The tooltip of the assign button uses it too.
+        public static string LabelOf(IModulator? modulator, IModulatorOutput? output)
         {
-            var modulatorName = selection.Modulator?.PrefabService?.Name?.Value;
+            var modulatorName = modulator?.PrefabService?.Name?.Value;
             if (modulatorName != null && modulatorName.EndsWith(ModulatorSuffix, StringComparison.Ordinal))
                 modulatorName = modulatorName[..^ModulatorSuffix.Length];
 
-            var outputName = selection.Output is IAddressedOutput addressed ? addressed.Address : selection.Output?.Name;
+            var outputName = output is IAddressedOutput addressed ? addressed.Address : output?.Name;
             return $"{modulatorName} {outputName}";
         }
     }

@@ -27,6 +27,15 @@
         IsEnabled="{Binding ModulatorManager.ManagerData.Items.Count, ElementName=modulatorAssignButton, Converter={StaticResource CountToVisibility}, ConverterParameter=0}"
         Theme="{StaticResource ButtonRoundedRightNoHover}">
 
+        <!-- The tooltip names what is assigned, so the user sees it without opening the menu. -->
+        <ToolTip.Tip>
+            <MultiBinding Converter="{StaticResource ModulatorToToolTip}">
+                <Binding Path="BoundModulator" />
+                <Binding Path="BoundOutputName" />
+                <Binding Path="BoundModulator.PrefabService.Name.Value" />
+            </MultiBinding>
+        </ToolTip.Tip>
+
         <Ellipse
             Width="{DynamicResource IndicatorSize}"
             Height="{DynamicResource IndicatorSize}"

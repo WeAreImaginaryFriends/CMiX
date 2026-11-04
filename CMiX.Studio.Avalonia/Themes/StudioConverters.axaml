@@ -5,6 +5,7 @@
 
     <StudioConverters:MultiPeriodToBeatAnimationConverter x:Key="MultiPeriodToBeatAnimation" />
     <StudioConverters:ModulatorStateToBrushConverter x:Key="ModulatorStateToBrush" />
+    <StudioConverters:ModulatorToToolTipConverter x:Key="ModulatorToToolTip" />
     <StudioConverters:SyncStatusIsConnectingConverter x:Key="SyncStatusIsConnecting" />
     <StudioConverters:PeerSyncStateConverter x:Key="PeerSyncState" />
 
