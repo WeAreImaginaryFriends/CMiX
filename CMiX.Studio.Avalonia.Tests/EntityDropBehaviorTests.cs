@@ -20,6 +20,7 @@ using Xunit;
 using FullscreenQuad = CMiX.Core.Compositing.FullscreenQuad;
 using Image = CMiX.Core.Texturing.Sources.Image;
 using Layer = CMiX.Core.Compositing.Layer;
+using TextEntity = CMiX.Core.Compositing.TextEntity;
 using SequencePlayer = CMiX.Core.Texturing.Sources.SequencePlayer;
 using VideoPlayer = CMiX.Core.Texturing.Sources.VideoPlayer;
 
@@ -163,7 +164,44 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (entities, _, dropper) = Show();
 
+            dropper.Drop(new[] { NewFile("notes.xyz") });
+
+            Assert.Empty(entities.ManagerData.Items);
+        }
+
+        [AvaloniaFact]
+        public void ADroppedTextFile_BecomesATextEntityWithTheTextOfTheFile()
+        {
+            var (entities, _, dropper) = Show();
+            var path = System.IO.Path.Combine(_folder, "notes.txt");
+            File.WriteAllText(path, "Hello\nWorld");
+
+            dropper.Drop(new[] { path });
+
+            var entity = Assert.IsType<TextEntity>(Assert.Single(entities.ManagerData.Items));
+            Assert.Equal("Hello\nWorld", entity.Text.Value);
+        }
+
+        [AvaloniaFact]
+        public void ADroppedTextFile_IsOneUndoStep()
+        {
+            var (entities, undo, dropper) = Show();
+            undo.Clear();
+
             dropper.Drop(new[] { NewFile("notes.txt") });
+            undo.Undo();
+
+            Assert.Empty(entities.ManagerData.Items);
+        }
+
+        [AvaloniaFact]
+        public void ATextFileThatIsTooLarge_AddsNothing()
+        {
+            var (entities, _, dropper) = Show();
+            var path = System.IO.Path.Combine(_folder, "big.txt");
+            File.WriteAllText(path, new string('a', (int)Studio.Avalonia.Services.PathDropService.MaxTextBytes + 1));
+
+            dropper.Drop(new[] { path });
 
             Assert.Empty(entities.ManagerData.Items);
         }
