@@ -6,6 +6,7 @@ using CMiX.Studio.Avalonia;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
+    // The real renderer (Skia) draws the frames, so a test can measure pixels and the metrics of the font are the real ones.
     // Configures the headless runtime around the real App class so App.Initialize runs and
     // loads the XAML resources the views under test need (SimpleTheme, Themes/Generic.axaml,
     // Themes/Basic/Basic.axaml). App.OnFrameworkInitializationCompleted only runs its body
@@ -16,7 +17,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public static AppBuilder BuildAvaloniaApp()
         {
             return AppBuilder.Configure<App>()
-                .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                .UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
         }
     }
 }
