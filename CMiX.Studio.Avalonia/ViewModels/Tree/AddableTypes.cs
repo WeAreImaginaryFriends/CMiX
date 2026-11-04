@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Texturing.Filters;
 using CMiX.Core.Texturing.Sources;
@@ -38,6 +39,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             FiltersGroup => ForInterface(typeof(ITextureFilter)),
             TexturesGroup => ForInterface(typeof(ITextureSource)),
             ModifiersGroup => ForOwner(group.OwnerType),
+            ModulatorsGroup => ForInterface(typeof(IModulator)),
             _ => Array.Empty<Type>()
         };
 

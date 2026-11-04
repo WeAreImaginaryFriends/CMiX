@@ -4,6 +4,8 @@
 using CMiX.Core;
 using CMiX.Core.Compositing;
 using CMiX.Core.Modifiers;
+using CMiX.Core.Modulation;
+using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Texturing;
 
@@ -54,6 +56,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (owner is IModifiable modified && ReferenceEquals(list, modified.ModifierManager))
                 return new ModifiersGroup(owner, list);
 
+            if (owner is IModulatable modulated && ReferenceEquals(list, modulated.ModulatorManager))
+                return new ModulatorsGroup(owner, list);
+
             return null;
         }
     }
@@ -100,5 +105,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     public sealed class ModifiersGroup : TreeGroup
     {
         public ModifiersGroup(IControl owner, PrefabManager manager) : base(owner, manager) { }
+    }
+
+    // The modulators of a modifier, a filter or a texture.
+    public sealed class ModulatorsGroup : TreeGroup
+    {
+        public ModulatorsGroup(IControl owner, PrefabManager manager) : base(owner, manager) { }
     }
 }

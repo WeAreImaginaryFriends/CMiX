@@ -400,12 +400,18 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ADoubleClickAwayFromTheName_OfARowWithoutChildren_DoesNothing()
         {
             var screen = Show();
-            // A row without children: a modifier of an entity (an entity has groups under it).
+            // A row without children: a modulator of a modifier of an entity (the entity, the modifier and its groups have rows under them).
             var layer = screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First();
             layer.ModelEntityManager.AddItem(typeof(Entity));
-            ((Entity)layer.ModelEntityManager.ManagerData.Items[0]).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
+            var modifiers = ((Entity)layer.ModelEntityManager.ManagerData.Items[0]).ModifierManager;
+            modifiers.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
+            ((CMiX.Core.Modulation.IModulatable)modifiers.ManagerData.Items[0]).ModulatorManager.AddItem(typeof(CMiX.Core.Modulation.Modulators.LFOModulator));
             Dispatcher.UIThread.RunJobs();
-            var entityNode = screen.Tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(group => group.Header == "Modifiers").Children[0];
+            var modifierNode = screen.Tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(group => group.Header == "Modifiers").Children[0];
+            var entityNode = modifierNode.Children.Single(group => group.Header == "Modulators").Children[0];
+            for (var ancestor = entityNode.Parent; ancestor != null; ancestor = ancestor.Parent)
+                ancestor.IsExpanded = true;
+            Dispatcher.UIThread.RunJobs();
             var entityRow = screen.RowOf(entityNode);
             var before = entityNode.IsExpanded;
 

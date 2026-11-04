@@ -43,6 +43,7 @@ namespace CMiX.Studio.Avalonia.Themes
             Icons.Register("Tabs", MaterialIconKind.TabUnselected);
             Icons.Register("Filter", MaterialIconKind.FilterVariant);
             Icons.Register("Modifier", MaterialIconKind.Wrench);
+            Icons.Register("Modulator", MaterialIconKind.SineWave);
         }
     }
 }

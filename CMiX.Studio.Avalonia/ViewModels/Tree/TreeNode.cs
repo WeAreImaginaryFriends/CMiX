@@ -9,6 +9,8 @@ using System.Linq;
 using CMiX.Core;
 using CMiX.Core.Compositing;
 using CMiX.Core.Modifiers;
+using CMiX.Core.Modulation;
+using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Rendering.Cameras;
@@ -80,6 +82,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             if (item is IModifiable modified && modified.ModifierManager is { } modifiers)
                 AddGroup("Modifiers", modifiers);
+
+            if (item is IModulatable modulated && modulated.ModulatorManager is { } modulators)
+                AddGroup("Modulators", modulators);
         }
 
         private void AddGroup(string header, PrefabManager list) =>
@@ -125,9 +130,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 "Textures" => "Texture",
                 "Filters" => "Filter",
                 "Modifiers" => "Modifier",
+                "Modulators" => "Modulator",
                 _ => "Geometry"
             },
             IModifier => "Modifier",
+            IModulator => "Modulator",
             ITextureFilter => "Filter",
             ITextureSource => "Texture",
             _ => "Geometry"

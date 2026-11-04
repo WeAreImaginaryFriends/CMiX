@@ -1,6 +1,7 @@
 using CMiX.Core;
 using CMiX.Core.Compositing;
 using CMiX.Core.Modulation.Modifiers;
+using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Rendering.Cameras;
 using CMiX.Core.Rendering.Lights;
@@ -132,7 +133,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var texture = Assert.Single(Scene.Group(entityNode, "Textures").Children);
             Assert.IsType<CMiX.Core.Texturing.Sources.Image>(texture.Item);
             Assert.Equal("Texture", texture.IconKey);
-            Assert.Equal(new[] { "Filters" }, Scene.Headers(texture));
+            Assert.Equal(new[] { "Filters", "Modulators" }, Scene.Headers(texture));
         }
 
         [Fact]
@@ -245,6 +246,54 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Contains(adds, add => add.Header == AddableTypes.LabelOf(typeof(CMiX.Core.Texturing.Sources.Image)));
             adds.Single(add => add.Header == AddableTypes.LabelOf(typeof(CMiX.Core.Texturing.Sources.Image))).Execute!();
             Assert.IsType<CMiX.Core.Texturing.Sources.Image>(Assert.Single(entity.Texture.DiffuseTexture.TextureManager.ManagerData.Items));
+        }
+
+        [Fact]
+        public void AModifierAFilterAndATexture_HaveAModulatorsGroup_WithTheirModulators()
+        {
+            var scene = CreateScene();
+            scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
+            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
+            entity.ModifierManager.AddItem(typeof(TranslateModifier));
+            entity.Texture.DiffuseTexture.TextureManager.AddItem(typeof(CMiX.Core.Texturing.Sources.Image));
+            var entityNode = Scene.Group(scene.LayerNode, "Entities").Children[0];
+            var nodes = new[]
+            {
+                Scene.Group(scene.LayerNode, "Filters").Children[0],
+                Scene.Group(entityNode, "Modifiers").Children[0],
+                Scene.Group(entityNode, "Textures").Children[0]
+            };
+
+            foreach (var node in nodes)
+            {
+                var owner = (CMiX.Core.Modulation.IModulatable)node.Item!;
+                owner.ModulatorManager.AddItem(typeof(LFOModulator));
+
+                var group = Scene.Group(node, "Modulators");
+                Assert.IsType<ModulatorsGroup>(group.Group);
+                Assert.Same(owner.ModulatorManager, group.ChildManager);
+                var modulator = Assert.Single(group.Children);
+                Assert.IsType<LFOModulator>(modulator.Item);
+                Assert.Equal("Modulator", modulator.IconKey);
+                Assert.Equal("Modulator", group.IconKey);
+            }
+        }
+
+        [Fact]
+        public void TheGroupOfModulators_OffersTheModulators_AndAddsTheChosenOne()
+        {
+            var scene = CreateScene();
+            scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
+            var filter = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
+            var filterNode = Scene.Group(scene.LayerNode, "Filters").Children[0];
+
+            var adds = scene.Tree.GetAdds(Scene.Group(filterNode, "Modulators"));
+
+            Assert.Equal(AddableTypes.ForInterface(typeof(IModulator)).Select(AddableTypes.LabelOf), adds.Select(add => add.Header));
+            adds.Single(add => add.Header == AddableTypes.LabelOf(typeof(LFOModulator))).Execute!();
+            Assert.IsType<LFOModulator>(Assert.Single(filter.ModulatorManager.ManagerData.Items));
+            Assert.Contains(scene.Tree.GetAdds(filterNode), add => add.Header == "Add Modulator" && add.Secondary);
         }
 
         [Fact]

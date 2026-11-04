@@ -223,6 +223,30 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void TheModulatorsGroupAndAModulatorRow_ShowTheListAndTheEditorOfTheModulator()
+        {
+            var screen = Show();
+            EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
+            var modifier = (CMiX.Core.Modulation.IModulatable)EntityOf(screen).ModifierManager.ManagerData.Items[0];
+            modifier.ModulatorManager.AddItem(typeof(CMiX.Core.Modulation.Modulators.LFOModulator));
+            TestServiceProviderFactory.Pump();
+            var modifierNode = screen.Group("Entities").Children[0].Children.Single(group => group.Header == "Modifiers").Children[0];
+            var groupNode = modifierNode.Children.Single(group => group.Header == "Modulators");
+
+            Select(screen, groupNode);
+            Assert.IsType<ModulatorsGroup>(screen.Editor.Content);
+            var list = screen.Find<ModifierManager>()!;
+            Assert.Same(modifier.ModulatorManager, list.DataContext);
+            Assert.Equal("Add Modulator", list.Caption);
+            Assert.Equal(typeof(CMiX.Core.Modulation.Modulators.IModulator), ((AutoSelectionPanel)list.SelectionPanel).Interface);
+
+            Select(screen, groupNode.Children[0]);
+            Assert.Same(groupNode.Children[0].Item, screen.Editor.Content);
+            Assert.Equal("Modulator", screen.HeaderIcon.IconKey);
+            Assert.NotNull(screen.Editor.GetVisualDescendants().OfType<Control>().FirstOrDefault(control => control.GetType().Name == "LFOModulator"));
+        }
+
+        [AvaloniaFact]
         public void AFilterRow_ShowsTheEditorOfThatFilter()
         {
             var screen = Show();

@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using CMiX.Core;
 using CMiX.Core.Compositing;
 using CMiX.Core.Modifiers;
+using CMiX.Core.Modulation;
+using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Texturing;
 using CMiX.Core.Rendering.Cameras;
@@ -144,6 +146,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             if (item is IModifiable { ModifierManager: { } modifiers })
                 adds.Add(new TreeAdd("row.add-modifier", "Add Modifier", Children: AddsOfTypes(new ModifiersGroup(item, modifiers)), Secondary: true));
+
+            if (item is IModulatable { ModulatorManager: { } modulators })
+                adds.Add(new TreeAdd("row.add-modulator", "Add Modulator", Children: AddsOfTypes(new ModulatorsGroup(item, modulators)), Secondary: true));
 
             return adds;
         }
