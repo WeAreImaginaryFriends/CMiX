@@ -25,8 +25,10 @@
             </Views:ModifierManager.SelectionPanel>
           </Views:ModifierManager>
           
-          <ui:ExpanderIndented 
-            Background="{DynamicResource Grey300Brush}">
+          <!-- The blend of a filter is closed when the filter appears: most filters do not blend. -->
+          <ui:ExpanderIndented
+            Background="{DynamicResource Grey300Brush}"
+            IsExpanded="False">
 
             <ui:ExpanderIndented.Header>
 
