@@ -20,8 +20,8 @@
     <SolidColorBrush x:Key="ListBoxBackground" Opacity="0.4" Color="Black" />
 
     <SolidColorBrush x:Key="PanelBackgroundLevel1Brush" Color="{DynamicResource Grey200}" />
-    <SolidColorBrush x:Key="PanelBackgroundLevel2Brush" Color="{DynamicResource Grey100}" />
-    <SolidColorBrush x:Key="PanelBackgroundLevel3Brush" Color="{DynamicResource Grey100}" />
+    <SolidColorBrush x:Key="PanelBackgroundLevel2Brush" Color="{DynamicResource Grey300}" />
+    <SolidColorBrush x:Key="PanelBackgroundLevel3Brush" Color="{DynamicResource Grey400}" />
 
     <!-- The background of every popup, flyout, drop down and context menu. PopupFrame and DropdownFrame read it. -->
     <SolidColorBrush x:Key="PopupBackgroundBrush" Color="{DynamicResource Grey100}" />

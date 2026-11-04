@@ -41,6 +41,16 @@ namespace CMiX.UI.Tests
             Assert.Equal(Level(3), Content(inner3));
         }
 
+        // A panel inside a panel is one step brighter than its parent, at every depth.
+        [AvaloniaFact]
+        public void EachLevel_IsBrighterThanTheLevelOutsideIt()
+        {
+            double Brightness(Color color) => color.R + color.G + color.B;
+
+            Assert.True(Brightness(Level(2)) > Brightness(Level(1)));
+            Assert.True(Brightness(Level(3)) > Brightness(Level(2)));
+        }
+
         [AvaloniaFact]
         public void TheHeader_TakesTheColorOfItsLevel()
         {
