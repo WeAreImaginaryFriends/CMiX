@@ -121,8 +121,11 @@ namespace CMiX.Studio.Avalonia.Views
         {
             treeView.ContextMenu?.Close();
 
+            // On a row: the menu of the row. On the space under the rows: a menu to add a composition, which is under no row.
             var item = ItemOf(e.Source);
-            var menu = item?.DataContext is TreeNode node && DataContext is ProjectTree tree ? CreateMenu(item, node, tree) : null;
+            var menu = item?.DataContext is TreeNode node && DataContext is ProjectTree tree ? CreateMenu(item, node, tree)
+                : item == null && DataContext is ProjectTree project ? CreateSpaceMenu(project)
+                : null;
             treeView.ContextMenu = menu;
             if (menu == null)
                 return;
@@ -130,6 +133,10 @@ namespace CMiX.Studio.Avalonia.Views
             menu.Open(treeView);
             e.Handled = true;
         }
+
+        // The menu of the empty space of the tree: the rows that the project takes.
+        private ContextMenu CreateSpaceMenu(ProjectTree tree) =>
+            PrefabRowMenu.Create(treeView, RowMenuKind.Group, () => null, tree.GetAdds(null).ToRows(), () => "Project");
 
         private static ContextMenu? CreateMenu(TreeViewItem row, TreeNode node, ProjectTree tree)
         {

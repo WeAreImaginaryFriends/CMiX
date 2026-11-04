@@ -110,17 +110,25 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             return Array.Empty<TreeAdd>();
         }
 
-        // The rows that add one thing: the children of a submenu, or the row itself.
-        public IReadOnlyList<TreeAdd> GetAddChoices(TreeNode? node) =>
-            GetAdds(node).SelectMany(add => add.Children ?? new[] { add }).ToList();
+        // The rows that add one thing, for the Add button: the children of a submenu, or the row itself.
+        // The composition is under no row, so it can be added whatever is selected. It comes last, after what the row takes.
+        public IReadOnlyList<TreeAdd> GetAddChoices(TreeNode? node)
+        {
+            var choices = GetAdds(node).SelectMany(add => add.Children ?? new[] { add }).ToList();
+            if (node != null)
+                choices.Add(AddOf("row.add-composition", "Add Composition", compositions, typeof(Composition)));
+
+            return choices;
+        }
 
         private static TreeAdd AddOf(string id, string header, PrefabManager list, Type type) =>
             new(id, header, () => list.AddItem(type));
 
+        // With nothing selected the button adds a composition at once. With a node selected the toolbar opens a menu (see GetAddChoices).
         private void AddItem()
         {
             var choices = GetAddChoices(selectedNode);
-            if (choices.Count == 1)
+            if (selectedNode == null && choices.Count == 1)
                 choices[0].Execute?.Invoke();
         }
 

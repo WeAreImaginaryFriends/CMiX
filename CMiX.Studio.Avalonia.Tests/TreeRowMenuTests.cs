@@ -373,15 +373,33 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARightClickOutsideTheRows_OpensNoMenu()
+        public void ARightClickOutsideTheRows_OpensTheMenuToAddAComposition()
         {
             var screen = Show();
+            var before = screen.Project.CompositionManager.ManagerData.Items.Count;
 
             screen.TreeView.RaiseEvent(new ContextRequestedEventArgs { Source = screen.TreeView });
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Null(screen.TreeView.ContextMenu);
+            var menu = screen.TreeView.ContextMenu!;
+            Assert.NotNull(menu);
+            Assert.Contains("Add Composition", Screen.Headers(menu));
+            Assert.DoesNotContain("Duplicate", Screen.Headers(menu));
+            Assert.DoesNotContain("Remove", Screen.Headers(menu));
             Assert.All(screen.View.GetVisualDescendants().OfType<TreeViewItem>(), row => Assert.Null(row.ContextMenu));
+
+            Screen.Click(menu, "Add Composition");
+
+            Assert.Equal(before + 1, screen.Project.CompositionManager.ManagerData.Items.Count);
+        }
+
+        [AvaloniaFact]
+        public void ARightClickOnARow_OffersNoCompositionToAdd_ExceptOnTheRowsThatTakeOneNow()
+        {
+            var screen = Show();
+
+            Assert.DoesNotContain("Add Composition", Screen.Headers(screen.OpenMenu(screen.LayerNodeOfA(0))!));
+            Assert.DoesNotContain("Add Composition", Screen.Headers(screen.OpenMenu(screen.Tree.Roots[0])!));
         }
 
         private static bool IsRenaming(TextBoxEditable box) =>

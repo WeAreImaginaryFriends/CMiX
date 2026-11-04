@@ -99,7 +99,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.Tree.Roots[1];
 
-            scene.Tree.AddItemCommand.Execute(null);
+            // The toolbar opens a menu for a selected node. Its first row is the layer.
+            scene.Tree.GetAddChoices(scene.Tree.SelectedNode).Single(choice => choice.Header == "Add Layer").Execute!.Invoke();
 
             Assert.Equal(2, scene.B.LayerManager.ManagerData.Items.Count);
             Assert.Equal(2, scene.A.LayerManager.ManagerData.Items.Count);
@@ -126,7 +127,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var choices = scene.Tree.GetAddChoices(scene.Tree.SelectedNode);
             scene.Tree.AddItemCommand.Execute(null);
 
-            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, choices.Select(choice => choice.Header));
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light", "Add Composition" }, choices.Select(choice => choice.Header));
             Assert.True(scene.Tree.AddItemCommand.CanExecute(null));
             Assert.Empty(scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
             Assert.Empty(scene.LayerOfA(0).CameraManager.ManagerData.Items);
@@ -139,7 +140,22 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var choices = scene.Tree.GetAddChoices(scene.Group(0, "Entities"));
 
-            Assert.Equal(new[] { "Add Entity", "Add Fullscreen Quad", "Add Text" }, choices.Select(choice => choice.Header));
+            Assert.Equal(new[] { "Add Entity", "Add Fullscreen Quad", "Add Text", "Add Composition" }, choices.Select(choice => choice.Header));
+        }
+
+        [Fact]
+        public void TheCompositionIsTheLastChoiceOfAdd_WhateverIsSelected_AndTheOnlyOneWithNothingSelected()
+        {
+            var scene = CreateScene();
+            scene.A.LayerManager.AddItem(typeof(Layer));
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            string[] Headers(CMiX.Studio.Avalonia.ViewModels.Tree.TreeNode? node) => scene.Tree.GetAddChoices(node).Select(choice => choice.Header).ToArray();
+
+            Assert.Equal(new[] { "Add Composition" }, Headers(null));
+            Assert.Equal(new[] { "Add Layer", "Add Composition" }, Headers(scene.Tree.Roots[0]));
+            Assert.Equal("Add Composition", Headers(scene.LayerNodeOfA(0)).Last());
+            Assert.Equal(new[] { "Add Camera", "Add Composition" }, Headers(scene.Group(0, "Cameras")));
+            Assert.Equal(new[] { "Add Composition" }, Headers(scene.Group(0, "Entities").Children[0]));
         }
 
         [Fact]
@@ -148,10 +164,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
 
-            scene.Tree.SelectedNode = scene.Group(0, "Cameras");
-            scene.Tree.AddItemCommand.Execute(null);
-            scene.Tree.SelectedNode = scene.Group(0, "Lights");
-            scene.Tree.AddItemCommand.Execute(null);
+            // The toolbar opens a menu for a group, so the test takes the row of the kind from the choices.
+            scene.Tree.GetAddChoices(scene.Group(0, "Cameras")).Single(choice => choice.Header == "Add Camera").Execute!.Invoke();
+            scene.Tree.GetAddChoices(scene.Group(0, "Lights")).Single(choice => choice.Header == "Add Light").Execute!.Invoke();
 
             Assert.IsType<Camera>(Assert.Single(layer.CameraManager.ManagerData.Items));
             Assert.IsType<LightEntity>(Assert.Single(layer.LightManager.ManagerData.Items));
@@ -170,18 +185,19 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AnEntitySelected_CannotAdd_ButCanDuplicateMoveAndRemove()
+        public void AnEntitySelected_CanOnlyAddAComposition_AndCanDuplicateMoveAndRemove()
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             var group = scene.Group(0, "Entities");
 
+            // Add is on: a composition can be added whatever is selected.
             scene.Tree.SelectedNode = group.Children[0];
-            Assert.Equal(new[] { false, true, false, true, true }, Enabled(scene.Tree));
+            Assert.Equal(new[] { true, true, false, true, true }, Enabled(scene.Tree));
 
             scene.Tree.SelectedNode = group.Children[1];
-            Assert.Equal(new[] { false, true, true, false, true }, Enabled(scene.Tree));
+            Assert.Equal(new[] { true, true, true, false, true }, Enabled(scene.Tree));
         }
 
         [Fact]
@@ -261,6 +277,13 @@ namespace CMiX.Studio.Avalonia.Tests
 
             public Button ButtonOf(string name) => View.GetVisualDescendants().OfType<Button>().First(button => button.Name == name);
 
+            // A click on a row of the menu.
+            public void ClickRow(ContextMenu menu, string header)
+            {
+                menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, header)).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                Dispatcher.UIThread.RunJobs();
+            }
+
             public void Click(Control control)
             {
                 Window.UpdateLayout();
@@ -306,7 +329,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             screen.Scene.Tree.SelectedNode = screen.Scene.Group(0, "Entities").Children[0];
-            Assert.False(screen.ButtonOf("AddButton").IsEffectivelyEnabled);
+            // A composition can be added whatever is selected, so Add is never disabled.
+            Assert.True(screen.ButtonOf("AddButton").IsEffectivelyEnabled);
             Assert.True(screen.ButtonOf("DuplicateButton").IsEffectivelyEnabled);
             Assert.False(screen.ButtonOf("MoveUpButton").IsEffectivelyEnabled);
 
@@ -317,30 +341,68 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnAdd_WithACompositionSelected_AddsALayerAtOnce()
+        public void AClickOnAdd_WithACompositionSelected_OpensAMenuWithAddLayerAndAddComposition()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Tree.Roots[1];
 
             screen.Click(screen.ButtonOf("AddButton"));
 
-            Assert.Equal(2, screen.Scene.B.LayerManager.ManagerData.Items.Count);
-            Assert.Null(screen.ButtonOf("AddButton").ContextMenu);
+            var menu = screen.ButtonOf("AddButton").ContextMenu!;
+            var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
+            Assert.Equal(new[] { screen.Scene.B.PrefabService.Name.Value, "-", "Add Layer", "Add Composition" }, headers);
+            Assert.Equal(1, screen.Scene.B.LayerManager.ManagerData.Items.Count);
+            Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
+
+            screen.ClickRow(menu, "Add Composition");
+
+            Assert.Equal(3, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
+            Assert.Equal(1, screen.Scene.B.LayerManager.ManagerData.Items.Count);
         }
 
         [AvaloniaFact]
-        public void AClickOnAdd_WithACamerasGroupSelected_AddsACameraAtOnce()
+        public void TheAddLayerRowOfTheMenu_AddsALayerToTheSelectedComposition()
+        {
+            var screen = Show();
+            screen.Scene.Tree.SelectedNode = screen.Scene.Tree.Roots[1];
+            screen.Click(screen.ButtonOf("AddButton"));
+
+            screen.ClickRow(screen.ButtonOf("AddButton").ContextMenu!, "Add Layer");
+
+            Assert.Equal(2, screen.Scene.B.LayerManager.ManagerData.Items.Count);
+            Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
+        }
+
+        [AvaloniaFact]
+        public void AClickOnAdd_WithAnEntitySelected_OffersTheCompositionOnly_AndAddsNothingByItself()
+        {
+            var screen = Show();
+            screen.Scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            Dispatcher.UIThread.RunJobs();
+            screen.Scene.Tree.SelectedNode = screen.Scene.Group(0, "Entities").Children[0];
+
+            screen.Click(screen.ButtonOf("AddButton"));
+
+            var menu = screen.ButtonOf("AddButton").ContextMenu!;
+            Assert.True(menu.IsOpen);
+            Assert.Equal(new[] { "Add Composition" }, menu.Items.OfType<MenuItem>().Skip(2).Select(item => item.Header?.ToString()));
+            Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
+        }
+
+        [AvaloniaFact]
+        public void AClickOnAdd_WithACamerasGroupSelected_OpensAMenu_AndAddACameraFromIt()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Group(0, "Cameras");
 
             screen.Click(screen.ButtonOf("AddButton"));
+            screen.ClickRow(screen.ButtonOf("AddButton").ContextMenu!, "Add Camera");
 
             Assert.IsType<Camera>(Assert.Single(screen.Scene.LayerOfA(0).CameraManager.ManagerData.Items));
         }
 
         [AvaloniaFact]
-        public void AClickOnAdd_WithALayerSelected_OpensAMenuOfTheFiveThingsToAdd()
+        public void AClickOnAdd_WithALayerSelected_OpensAMenuOfTheFiveThingsToAddAndTheComposition()
         {
             var screen = Show();
             var layer = screen.Scene.LayerNodeOfA(0);
@@ -351,7 +413,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var menu = screen.ButtonOf("AddButton").ContextMenu!;
             Assert.True(menu.IsOpen);
             var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
-            Assert.Equal(new[] { layer.Header, "-", "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, headers);
+            Assert.Equal(new[] { layer.Header, "-", "Entity", "Fullscreen Quad", "Text", "Camera", "Light", "Add Composition" }, headers);
             Assert.Empty(screen.Scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
         }
 
@@ -428,7 +490,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var menu = screen.ButtonOf("AddButton").ContextMenu!;
             var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
-            Assert.Equal(new[] { "Entities", "-", "Add Entity", "Add Fullscreen Quad", "Add Text" }, headers);
+            Assert.Equal(new[] { "Entities", "-", "Add Entity", "Add Fullscreen Quad", "Add Text", "Add Composition" }, headers);
         }
 
         [AvaloniaFact]

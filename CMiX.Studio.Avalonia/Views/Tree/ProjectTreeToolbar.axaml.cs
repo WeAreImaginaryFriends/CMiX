@@ -12,7 +12,7 @@ using CMiX.UI.Controls.Parts;
 namespace CMiX.Studio.Avalonia.Views
 {
     // The toolbar under the tree of the project. The buttons are commands of the tree.
-    // The Add button adds at once when the selected node has one thing to add. With several, it opens a menu of them.
+    // The Add button adds a composition at once when nothing is selected. With a node selected it opens a menu of what to add.
     public partial class ProjectTreeToolbar : UserControl
     {
         // The space between the panel of the menu of the Add button and the button.
@@ -29,8 +29,10 @@ namespace CMiX.Studio.Avalonia.Views
             if (DataContext is not ProjectTree tree)
                 return;
 
+            // With nothing selected the command adds a composition at once. With a node selected the menu opens, also when it has
+            // only the composition to offer: a click on the button must not add a composition by surprise.
             var choices = tree.GetAddChoices(tree.SelectedNode);
-            if (choices.Count < 2)
+            if (tree.SelectedNode == null || choices.Count == 0)
                 return;
 
             AddButton.ContextMenu?.Close();
