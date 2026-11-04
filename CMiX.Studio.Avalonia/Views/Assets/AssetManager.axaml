@@ -8,9 +8,8 @@
         x:Name="dropBorder"
         Background="Transparent">
         <StackPanel>
-            <Expander
-                Header="Images"
-                IsExpanded="True">
+            <ui:ExpanderIndented
+                Header="Images">
                 <ListBox
                     x:Name="imagesListBox"
                     Background="Transparent"
@@ -35,10 +34,9 @@
                     </ListBox.ItemTemplate>
 
                 </ListBox>
-            </Expander>
-            <Expander
-                Header="Videos"
-                IsExpanded="True">
+            </ui:ExpanderIndented>
+            <ui:ExpanderIndented
+                Header="Videos">
                 <ListBox
                     x:Name="videosListBox"
                     Background="Transparent"
@@ -63,10 +61,9 @@
                     </ListBox.ItemTemplate>
 
                 </ListBox>
-            </Expander>
-            <Expander
-                Header="Geometries"
-                IsExpanded="True">
+            </ui:ExpanderIndented>
+            <ui:ExpanderIndented
+                Header="Geometries">
                 <ListBox
                     x:Name="geometriesListBox"
                     Background="Transparent"
@@ -91,10 +88,9 @@
                     </ListBox.ItemTemplate>
 
                 </ListBox>
-            </Expander>
-            <Expander
-                Header="Image Sequences"
-                IsExpanded="True">
+            </ui:ExpanderIndented>
+            <ui:ExpanderIndented
+                Header="Image Sequences">
                 <ListBox
                     x:Name="imageSequencesListBox"
                     Background="Transparent"
@@ -119,7 +115,7 @@
                     </ListBox.ItemTemplate>
 
                 </ListBox>
-            </Expander>
+            </ui:ExpanderIndented>
         </StackPanel>
     </Border>
 </UserControl>
