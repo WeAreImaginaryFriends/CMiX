@@ -1,0 +1,97 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.Inspector"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Compositing="clr-namespace:CMiX.Core.Compositing;assembly=CMiX.Core"
+    xmlns:Cameras="clr-namespace:CMiX.Core.Rendering.Cameras;assembly=CMiX.Core"
+    xmlns:Lights="clr-namespace:CMiX.Core.Rendering.Lights;assembly=CMiX.Core"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    d:DesignWidth="400"
+    d:DesignHeight="600">
+
+    <!-- The editor of the item that is selected in the project tree. The DataContext is the ProjectTree.
+         The editors are the views of the other tabs, so an item looks the same here and there. -->
+    <DockPanel>
+
+        <!-- The icon and the name of the selected node. A group (Entities, Cameras, Lights) has a name and no editor. -->
+        <Border
+            Name="header"
+            Padding="8,4"
+            Background="{DynamicResource Grey200Brush}"
+            DockPanel.Dock="Top"
+            IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+            <StackPanel Orientation="Horizontal" Spacing="{DynamicResource SpacingMD}">
+                <ui:AppIcon IconKey="{Binding SelectedNode.IconKey}" Size="{DynamicResource IconSizeXS}" />
+                <TextBlock Name="title" VerticalAlignment="Center" Text="{Binding SelectedNode.Header}" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock
+            Name="placeholder"
+            Margin="8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Opacity="0.5"
+            Text="Select an item in the tree"
+            IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNull}, FallbackValue=True}" />
+
+        <ScrollViewer
+            Name="scroller"
+            VerticalScrollBarVisibility="Hidden"
+            IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+
+            <i:Interaction.Behaviors>
+                <ui:ScrollViewerBehavior />
+            </i:Interaction.Behaviors>
+
+            <ContentControl Name="editor" Content="{Binding SelectedNode.Item}">
+                <ContentControl.DataTemplates>
+
+                    <DataTemplate DataType="{x:Type Compositing:Composition}">
+                        <StackPanel>
+                            <Border Background="{DynamicResource Grey200Brush}">
+                                <Views:ComposableItemSettings Margin="8" />
+                            </Border>
+                            <Views:Composition />
+                        </StackPanel>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Compositing:Layer}">
+                        <StackPanel>
+                            <Border Background="{DynamicResource Grey200Brush}">
+                                <Views:ComposableItemSettings Margin="8" />
+                            </Border>
+                            <Views:LayerPostFXTab />
+                        </StackPanel>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Compositing:Entity}">
+                        <Views:ModelEntity />
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Compositing:FullscreenQuad}">
+                        <Views:FullscreenQuad />
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Compositing:TextEntity}">
+                        <Views:TextEntity />
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Cameras:Camera}">
+                        <Views:Camera />
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type Lights:LightEntity}">
+                        <Views:LightEntity />
+                    </DataTemplate>
+
+                </ContentControl.DataTemplates>
+            </ContentControl>
+        </ScrollViewer>
+
+    </DockPanel>
+
+</UserControl>
