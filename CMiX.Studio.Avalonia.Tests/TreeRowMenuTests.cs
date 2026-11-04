@@ -372,6 +372,61 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Empty(screen.Group(0, "Entities").Children);
         }
 
+        // ---- the row under the pointer when the menu opens (see MenuAnchor) ----
+
+        private static string? AnchorOf(ContextMenu menu) =>
+            menu.Items.OfType<MenuItem>().Where(item => item.IsVisible && CMiX.UI.AttachedProperties.MenuAnchor.GetIsAnchor(item))
+                .Select(item => item.Header?.ToString()).SingleOrDefault();
+
+        [AvaloniaFact]
+        public void AMenuOfAComposition_OpensReadyToAddALayer()
+        {
+            var screen = Show();
+
+            var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
+
+            Assert.Equal("Add Layer", AnchorOf(menu));
+        }
+
+        [AvaloniaFact]
+        public void AMenuOfALayer_OpensOnTheAddRow_AndAMenuOfAnEntityOnDuplicate()
+        {
+            var screen = Show();
+            screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.LayerNodeOfA(0))!));
+            Assert.Equal("Add Entity", AnchorOf(screen.OpenMenu(screen.Group(0, "Entities"))!));
+            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Group(0, "Entities").Children[0])!));
+        }
+
+        [AvaloniaFact]
+        public void AfterTheCreationOfAComposition_TheMenuOfACompositionStillOpensOnAddLayer()
+        {
+            var screen = Show();
+            screen.TreeView.RaiseEvent(new ContextRequestedEventArgs { Source = screen.TreeView });
+            Dispatcher.UIThread.RunJobs();
+            Screen.Click(screen.TreeView.ContextMenu!, "Add Composition");
+
+            var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
+
+            Assert.Equal("Add Layer", AnchorOf(menu));
+        }
+
+        [AvaloniaFact]
+        public void TheRowUsedLast_StillOpensUnderThePointer()
+        {
+            var screen = Show();
+            Screen.Click(screen.OpenMenu(screen.Tree.Roots[0])!, "Duplicate");
+
+            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Tree.Roots[0])!));
+            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Tree.Roots[1])!));
+
+            Screen.Click(screen.OpenMenu(screen.Tree.Roots[0])!, "Add Layer");
+
+            Assert.Equal("Add Layer", AnchorOf(screen.OpenMenu(screen.Tree.Roots[0])!));
+        }
+
         [AvaloniaFact]
         public void ARightClickOutsideTheRows_OpensTheMenuToAddAComposition()
         {
