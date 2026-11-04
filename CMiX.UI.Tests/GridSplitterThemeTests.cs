@@ -1,0 +1,110 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Styling;
+using Avalonia.Headless.XUnit;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Xunit;
+using Avalonia.Headless;
+using Avalonia.Input;
+
+namespace CMiX.UI.Tests
+{
+    // One splitter theme for the rows and for the columns. The bar that shows when the pointer is over the splitter
+    // is the same in both: 2 wide and as long as the splitter.
+    public class GridSplitterThemeTests
+    {
+        private static ResourceDictionaryHelper Theme => new();
+
+        private sealed class ResourceDictionaryHelper
+        {
+            public ControlTheme Splitter => (ControlTheme)Application.Current!.FindResource("GridSplitterCMiX")!;
+            public double IndicatorSize => Convert.ToDouble(Application.Current!.FindResource("SplitterIndicatorSize"));
+            public double Size => Convert.ToDouble(Application.Current!.FindResource("SplitterSize"));
+        }
+
+        private static (Window Window, GridSplitter Splitter) ShowColumns()
+        {
+            var grid = new Grid { Width = 300, Height = 100 };
+            grid.ColumnDefinitions.Add(new ColumnDefinition(1, GridUnitType.Star));
+            grid.ColumnDefinitions.Add(new ColumnDefinition(1, GridUnitType.Star));
+            var splitter = new GridSplitter
+            {
+                Theme = Theme.Splitter,
+                Width = Theme.Size,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                ResizeDirection = GridResizeDirection.Columns
+            };
+            grid.Children.Add(splitter);
+            var window = new Window { Content = grid, Width = 400, Height = 200 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            return (window, splitter);
+        }
+
+        private static (Window Window, GridSplitter Splitter) ShowRows()
+        {
+            var grid = new Grid { Width = 300, Height = 100 };
+            grid.RowDefinitions.Add(new RowDefinition(1, GridUnitType.Star));
+            grid.RowDefinitions.Add(new RowDefinition(1, GridUnitType.Star));
+            var splitter = new GridSplitter
+            {
+                Theme = Theme.Splitter,
+                Height = Theme.Size,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom
+            };
+            grid.Children.Add(splitter);
+            var window = new Window { Content = grid, Width = 400, Height = 200 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            return (window, splitter);
+        }
+
+        private static Border Indicator(GridSplitter splitter) =>
+            splitter.GetVisualDescendants().OfType<Border>().First(border => border.Name == "indicator");
+
+        private static Border Backdrop(GridSplitter splitter) =>
+            splitter.GetVisualDescendants().OfType<Border>().First(border => border.Name == "border");
+
+        [AvaloniaFact]
+        public void ASplitterOfColumns_HasAVerticalBar_AsLongAsItself()
+        {
+            var (_, splitter) = ShowColumns();
+
+            var bar = Indicator(splitter);
+
+            Assert.Equal(Theme.IndicatorSize, bar.Bounds.Width);
+            Assert.Equal(splitter.Bounds.Height, bar.Bounds.Height);
+        }
+
+        [AvaloniaFact]
+        public void ASplitterOfRows_HasAHorizontalBar_AsLongAsItself()
+        {
+            var (_, splitter) = ShowRows();
+
+            var bar = Indicator(splitter);
+
+            Assert.Equal(Theme.IndicatorSize, bar.Bounds.Height);
+            Assert.Equal(splitter.Bounds.Width, bar.Bounds.Width);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WhenThePointerIsOver_TheBarAndTheBackShow_InBothDirections(bool columns)
+        {
+            var (window, splitter) = columns ? ShowColumns() : ShowRows();
+            var idleBar = Assert.IsAssignableFrom<ISolidColorBrush>(Indicator(splitter).Background ?? Brushes.Transparent);
+            Assert.Equal(Colors.Transparent, idleBar.Color);
+
+            window.MouseMove(splitter.TranslatePoint(new Point(splitter.Bounds.Width / 2, splitter.Bounds.Height / 2), window)!.Value);
+            Dispatcher.UIThread.RunJobs();
+
+            var grey600 = Assert.IsAssignableFrom<ISolidColorBrush>(Application.Current!.FindResource("Grey600Brush")).Color;
+            var grey100 = Assert.IsAssignableFrom<ISolidColorBrush>(Application.Current!.FindResource("Grey100Brush")).Color;
+            Assert.Equal(grey600, Assert.IsAssignableFrom<ISolidColorBrush>(Indicator(splitter).Background).Color);
+            Assert.Equal(grey100, Assert.IsAssignableFrom<ISolidColorBrush>(Backdrop(splitter).Background).Color);
+        }
+    }
+}

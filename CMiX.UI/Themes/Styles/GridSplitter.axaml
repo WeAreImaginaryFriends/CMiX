@@ -24,6 +24,16 @@
             </ControlTemplate>
         </Setter>
 
+        <!-- The splitter of columns (ResizeDirection="Columns") shows a vertical bar, the splitter of rows a horizontal one.
+             Both have the same look and the same size (SplitterSize and SplitterIndicatorSize). Put the splitter over the edge
+             between the two panels with a negative margin, so it takes no room of its own: the panels have no gap between them. -->
+        <Style Selector="^[ResizeDirection=Columns] /template/ Border#indicator">
+            <Setter Property="Height" Value="NaN" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Width" Value="{DynamicResource SplitterIndicatorSize}" />
+        </Style>
+
         <Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource Grey100Brush}" />
         </Style>
