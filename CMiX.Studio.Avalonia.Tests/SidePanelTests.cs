@@ -1,23 +1,25 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels;
-using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls;
-using CMiX.UI.Controls.Enum;
+using CMiX.UI.Controls.Collection;
+using CMiX.UI.Controls.Parts;
+using CMiX.UI.Themes;
 using Xunit;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // Each side of the window has a combo box at its top. The user picks what the side shows: the tree or the tabs, on either
-    // side, or the same on both sides.
+    // Each side of the window has an icon button at its top. A click opens the list of what the side can show, each with its icon
+    // and its name. The user picks the tree or the tabs or the assets, on either side, or the same on both sides.
     public class SidePanelTests
     {
         private sealed class Screen
@@ -30,8 +32,15 @@ namespace CMiX.Studio.Avalonia.Tests
             public SidePanelHost Right => Hosts[1];
             public List<ProjectTreeView> Trees => Window.GetVisualDescendants().OfType<ProjectTreeView>().ToList();
             public List<MainTabsPanel> Tabs => Window.GetVisualDescendants().OfType<MainTabsPanel>().ToList();
+            public List<AssetManager> Assets => Window.GetVisualDescendants().OfType<AssetManager>().ToList();
 
-            public static ComboBox PickerOf(SidePanelHost host) => host.GetVisualDescendants().OfType<ComboBox>().First(combo => combo.Name == "picker");
+            public static ToggleButton ToggleOf(SidePanelHost host) => host.FindControl<ToggleButton>("pickerToggle")!;
+            public static Popup PopupOf(SidePanelHost host) => host.FindControl<Popup>("pickerPopup")!;
+            public static ItemPickerList ListOf(SidePanelHost host) => host.FindControl<ItemPickerList>("pickerList")!;
+
+            // The rows of the list, as the user sees them after a click on the button.
+            public static List<Button> RowsOf(SidePanelHost host) =>
+                ListOf(host).GetVisualDescendants().OfType<Button>().ToList();
         }
 
         private static Screen Show()
@@ -44,10 +53,16 @@ namespace CMiX.Studio.Avalonia.Tests
             return new Screen { Window = window, ViewModel = viewModel };
         }
 
+        // The user opens the list and picks the row of the choice.
         private static void Pick(Screen screen, bool left, PanelChoice choice)
         {
             var host = left ? screen.Left : screen.Right;
-            Screen.PickerOf(host).SelectedItem = choice;
+            Screen.ToggleOf(host).IsChecked = true;
+            TestServiceProviderFactory.Pump();
+            var row = Screen.RowsOf(host).Single(candidate => ReferenceEquals(candidate.CommandParameter, choice));
+            // A click runs the command, and then the list closes (the list posts Picked after a click).
+            row.Command!.Execute(row.CommandParameter);
+            row.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
             TestServiceProviderFactory.Pump();
         }
 
@@ -64,21 +79,86 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EachSide_HasAComboBoxAtItsTop_WithTheTwoChoices_AndTheCurrentOneSelected()
+        public void EachSide_HasAnIconButtonAtItsTop_ThatShowsTheIconOfTheChoice_AndNoName()
         {
             var screen = Show();
 
             foreach (var host in screen.Hosts)
             {
-                var picker = Screen.PickerOf(host);
-                Assert.Equal(new[] { "Tree", "Tabs" }, picker.Items.Cast<PanelChoice>().Select(choice => choice.Name));
+                var toggle = Screen.ToggleOf(host);
+                var controlHeight = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
+                Assert.Equal(controlHeight, toggle.Bounds.Width);
+                Assert.Equal(controlHeight, toggle.Bounds.Height);
+
                 var hostTop = host.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
-                var pickerTop = picker.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
-                Assert.True(pickerTop - hostTop < 10, "The combo box is not at the top of the panel.");
+                var toggleTop = toggle.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
+                Assert.True(toggleTop - hostTop < 10, "The button is not at the top of the panel.");
+
+                var icon = toggle.GetVisualDescendants().OfType<AppIcon>().Single();
+                Assert.Equal(host.Choice!.IconKey, icon.IconKey);
+                Assert.Empty(toggle.GetVisualDescendants().OfType<TextBlock>().Where(text => !string.IsNullOrEmpty(text.Text)));
             }
 
-            Assert.Same(PanelChoice.Tree, Screen.PickerOf(screen.Left).SelectedItem);
-            Assert.Same(PanelChoice.Tabs, Screen.PickerOf(screen.Right).SelectedItem);
+            Assert.Equal("Tree", Screen.ToggleOf(screen.Left).GetVisualDescendants().OfType<AppIcon>().Single().IconKey);
+            Assert.Equal("Tabs", Screen.ToggleOf(screen.Right).GetVisualDescendants().OfType<AppIcon>().Single().IconKey);
+        }
+
+        [AvaloniaFact]
+        public void TheTooltipOfTheButton_IsTheNameOfTheChoice_BelowTheButton()
+        {
+            var screen = Show();
+            var toggle = Screen.ToggleOf(screen.Left);
+
+            Assert.Equal("Tree", ToolTip.GetTip(toggle));
+            Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(toggle));
+
+            screen.ViewModel.LeftPanel = PanelChoice.Assets;
+            TestServiceProviderFactory.Pump();
+            Assert.Equal("Assets", ToolTip.GetTip(toggle));
+        }
+
+        [AvaloniaFact]
+        public void TheList_HasOneRowForEachChoice_WithItsIconAndItsName()
+        {
+            var screen = Show();
+            Screen.ToggleOf(screen.Left).IsChecked = true;
+            TestServiceProviderFactory.Pump();
+
+            var rows = Screen.RowsOf(screen.Left);
+
+            Assert.Equal(new[] { "Tree", "Tabs", "Assets" }, rows.Select(row => ((PanelChoice)row.CommandParameter!).Name));
+            Assert.Equal(new[] { "Tree", "Tabs", "Resources" }, rows.Select(row => row.GetVisualDescendants().OfType<AppIcon>().Single().IconKey));
+            Assert.Equal(new[] { "Tree", "Tabs", "Assets" }, rows.Select(row => row.GetVisualDescendants().OfType<TextBlock>().Single().Text));
+        }
+
+        [AvaloniaFact]
+        public void TheList_IsTheListOfTheSwapButtonOfThePrefabSlots_InTheSameFrame()
+        {
+            var screen = Show();
+            var popup = Screen.PopupOf(screen.Left);
+
+            var frame = Assert.IsType<DropdownFrame>(popup.Child);
+            Assert.Same(Screen.ListOf(screen.Left), frame.Content);
+            Assert.Equal(PlacementMode.BottomEdgeAlignedLeft, popup.Placement);
+        }
+
+        [AvaloniaFact]
+        public void EveryChoice_HasAnIconThatTheAppKnows()
+        {
+            foreach (var choice in PanelChoice.All)
+                Assert.True(Icons.Kinds.ContainsKey(choice.IconKey), "No icon for " + choice.Name);
+        }
+
+        [AvaloniaFact]
+        public void PickingARow_ChangesThePanel_AndClosesTheList()
+        {
+            var screen = Show();
+
+            Pick(screen, left: false, PanelChoice.Tree);
+
+            Assert.Same(PanelChoice.Tree, screen.ViewModel.RightPanel);
+            Assert.False(Screen.ToggleOf(screen.Right).IsChecked);
+            Assert.Equal(2, screen.Trees.Count);
         }
 
         [AvaloniaFact]
@@ -131,6 +211,35 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void TheAssets_CanBeOnEitherSide_WithTheAssetManagerOfTheProject()
+        {
+            var screen = Show();
+
+            Pick(screen, left: false, PanelChoice.Assets);
+
+            var assets = Assert.Single(screen.Assets);
+            Assert.Same(screen.ViewModel.AssetManager, assets.DataContext);
+            Assert.Empty(screen.Tabs);
+            Assert.Single(screen.Trees);
+
+            Pick(screen, left: true, PanelChoice.Assets);
+            Assert.Equal(2, screen.Assets.Count);
+            Assert.Empty(screen.Trees);
+        }
+
+        [AvaloniaFact]
+        public void TheAssets_AreNoLongerATab()
+        {
+            var screen = Show();
+
+            var keys = TestServiceProviderFactory.MainTabControl(screen.Window).Items.OfType<TabItem>()
+                .Select(item => (item.Header as AppIcon)?.IconKey).ToList();
+
+            Assert.DoesNotContain("Resources", keys);
+            Assert.Empty(screen.Assets);
+        }
+
+        [AvaloniaFact]
         public void TheMasterBeat_IsPartOfTheTabsPanel_WhereverItIs()
         {
             var screen = Show();
@@ -144,13 +253,13 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheViewModel_ChangesTheComboBox_AndTheOtherWayAround()
+        public void TheViewModel_ChangesTheButton_AndTheOtherWayAround()
         {
             var screen = Show();
 
             screen.ViewModel.RightPanel = PanelChoice.Tree;
             TestServiceProviderFactory.Pump();
-            Assert.Same(PanelChoice.Tree, Screen.PickerOf(screen.Right).SelectedItem);
+            Assert.Equal("Tree", Screen.ToggleOf(screen.Right).GetVisualDescendants().OfType<AppIcon>().Single().IconKey);
             Assert.Equal(2, screen.Trees.Count);
 
             Pick(screen, left: false, PanelChoice.Tabs);
@@ -214,39 +323,16 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(tree.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y, tabs.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y, 0.5);
         }
 
-        // The picker must look like the other combo boxes of the app, so it is measured against one of them.
-        [AvaloniaFact]
-        public void ThePicker_HasTheHeightAndTheLookOfTheComboBoxesOfTheSettings()
-        {
-            var screen = Show();
-            var picker = Screen.PickerOf(screen.Left);
-            var pickerBox = screen.Left.GetVisualDescendants().OfType<Border>().First(border => border.Name == "pickerBox");
-
-            var reference = new ComboBoxCaptioned { Caption = "Reference", ItemsSource = new[] { "A", "B" }, Width = 300 };
-            var referenceWindow = new Window { Content = reference, Width = 400, Height = 100 };
-            referenceWindow.Show();
-            Dispatcher.UIThread.RunJobs();
-            var referenceCombo = reference.GetVisualDescendants().OfType<ComboBox>().First();
-            var referenceBox = reference.GetVisualDescendants().OfType<Border>().First(border => border.Name == "mainBorder");
-
-            var controlHeight = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
-            Assert.Equal(controlHeight, pickerBox.Bounds.Height);
-            Assert.Equal(referenceBox.Bounds.Height, pickerBox.Bounds.Height);
-            Assert.Equal(referenceCombo.Bounds.Height, picker.Bounds.Height);
-            Assert.Equal(referenceBox.Classes.Contains("BorderMask"), pickerBox.Classes.Contains("BorderMask"));
-            Assert.Equal(((global::Avalonia.Media.ISolidColorBrush)referenceBox.Background!).Color, ((global::Avalonia.Media.ISolidColorBrush)pickerBox.Background!).Color);
-            Assert.Same(referenceCombo.Theme, picker.Theme);
-            referenceWindow.Close();
-        }
-
         [AvaloniaFact]
         public void TheHost_IsReusable_AnyPanelOfTheWindowCanUseIt()
         {
             var host = new SidePanelHost { Choices = PanelChoice.All, Choice = PanelChoice.Tabs };
 
             Assert.Same(PanelChoice.Tabs, host.Choice);
-            Assert.Equal(2, host.Choices!.Cast<object>().Count());
-            Assert.Equal(typeof(PanelChoice), PanelChoice.All[0].GetType().BaseType);
+            Assert.Equal(3, host.Choices!.Cast<object>().Count());
+            Assert.NotNull(host.PickCommand);
+            host.PickCommand.Execute(PanelChoice.Assets);
+            Assert.Same(PanelChoice.Assets, host.Choice);
         }
     }
 }

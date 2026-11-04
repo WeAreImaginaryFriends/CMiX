@@ -2,11 +2,14 @@
     x:Class="CMiX.Studio.Avalonia.Views.SidePanelHost"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
-    xmlns:StudioViewModels="clr-namespace:CMiX.Studio.Avalonia.ViewModels">
+    xmlns:StudioViewModels="clr-namespace:CMiX.Studio.Avalonia.ViewModels"
+    x:Name="sidePanelHost">
 
-    <!-- A panel of the window with a combo box at the top. The user picks what the panel shows (a PanelChoice).
+    <!-- A panel of the window with an icon button at the top. The button shows the icon of what the panel shows. A click opens the list
+         of the choices (a PanelChoice), each with its icon and its name, as the list of the swap button of the prefab slots does.
          Use it for every panel that can show different things: the Choice is the choice of the user, the Choices are the options.
          The views of the choices get their data from the DataContext of the window (the MainViewModel). -->
     <DockPanel>
@@ -16,26 +19,45 @@
             Padding="4"
             Background="{DynamicResource Grey100Brush}"
             DockPanel.Dock="Top">
-            <!-- The same box as the combo boxes of the settings (ComboBoxCaptioned): one control height, a grey back with rounded corners. -->
-            <Border
-                Name="pickerBox"
-                Height="{DynamicResource ControlHeightMD}"
-                Background="{DynamicResource Grey500Brush}"
-                Classes="BorderMask">
-                <ComboBox
-                    Name="picker"
-                    HorizontalAlignment="Stretch"
-                    DisplayMemberBinding="{Binding Name}"
-                    ItemsSource="{Binding Choices, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}}"
-                    SelectedItem="{Binding Choice, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}, Mode=TwoWay}" />
-            </Border>
+            <DockPanel>
+
+                <ToggleButton
+                    Name="pickerToggle"
+                    Width="{DynamicResource ControlHeightMD}"
+                    Height="{DynamicResource ControlHeightMD}"
+                    HorizontalAlignment="Left"
+                    DockPanel.Dock="Left"
+                    ToolTip.Tip="{Binding Choice.Name, ElementName=sidePanelHost}">
+                    <ui:AppIcon IconKey="{Binding Choice.IconKey, ElementName=sidePanelHost}" Size="{DynamicResource IconSizeXS}" />
+                </ToggleButton>
+
+                <Popup
+                    Name="pickerPopup"
+                    ui:TogglePopup.Toggle="{Binding ElementName=pickerToggle}"
+                    Placement="BottomEdgeAlignedLeft"
+                    VerticalOffset="-1">
+                    <ui:DropdownFrame>
+                        <ui:ItemPickerList
+                            Name="pickerList"
+                            IconPath="IconKey"
+                            ItemCommand="{Binding PickCommand, ElementName=sidePanelHost}"
+                            ItemsSource="{Binding Choices, ElementName=sidePanelHost}"
+                            Picked="OnPicked"
+                            TextPath="Name" />
+                    </ui:DropdownFrame>
+                </Popup>
+
+                <!-- The rest of the bar is empty. -->
+                <Panel />
+
+            </DockPanel>
         </Border>
 
         <ContentControl
             Name="content"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"
-            Content="{Binding Choice, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}}">
+            Content="{Binding Choice, ElementName=sidePanelHost}">
             <ContentControl.DataTemplates>
 
                 <DataTemplate DataType="{x:Type StudioViewModels:TreePanelChoice}">
@@ -44,6 +66,15 @@
 
                 <DataTemplate DataType="{x:Type StudioViewModels:TabsPanelChoice}">
                     <Views:MainTabsPanel DataContext="{Binding $parent[Window].DataContext}" />
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type StudioViewModels:AssetsPanelChoice}">
+                    <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                        <i:Interaction.Behaviors>
+                            <ui:ScrollViewerBehavior />
+                        </i:Interaction.Behaviors>
+                        <Views:AssetManager DataContext="{Binding $parent[Window].DataContext.AssetManager}" />
+                    </ScrollViewer>
                 </DataTemplate>
 
             </ContentControl.DataTemplates>

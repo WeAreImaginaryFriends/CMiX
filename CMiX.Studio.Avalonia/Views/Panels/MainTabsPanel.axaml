@@ -173,22 +173,6 @@
             </Managers:RepositoryTab>-->
 
             <TabItem Theme="{StaticResource TabItemHorizontal}">
-                <TabItem.Header>
-                    <ui:AppIcon
-                        Margin="8"
-                        IconKey="Resources"
-                        Size="{DynamicResource IconSizeXS}"
-                        ToolTip.Tip="Assets" />
-                </TabItem.Header>
-                <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                    <i:Interaction.Behaviors>
-                        <ui:ScrollViewerBehavior />
-                    </i:Interaction.Behaviors>
-                    <Views:AssetManager DataContext="{Binding AssetManager}" />
-                </ScrollViewer>
-            </TabItem>
-
-            <TabItem Theme="{StaticResource TabItemHorizontal}">
 
                 <TabItem.Header>
                     <ui:AppIcon

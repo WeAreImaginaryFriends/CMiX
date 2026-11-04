@@ -1,15 +1,18 @@
 // SPDX-FileCopyrightText: 2017-2026 CloneProduction Shanghai Company Limited and CMiX contributors
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+using System;
 using System.Collections;
+using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using CMiX.Studio.Avalonia.ViewModels;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CMiX.Studio.Avalonia.Views
 {
-    // A panel of the window with a combo box at the top, in which the user picks what the panel shows.
+    // A panel of the window with an icon button at the top, in which the user picks what the panel shows.
     public partial class SidePanelHost : UserControl
     {
         public static readonly StyledProperty<PanelChoice?> ChoiceProperty =
@@ -30,9 +33,16 @@ namespace CMiX.Studio.Avalonia.Views
             set => SetValue(ChoicesProperty, value);
         }
 
+        // The command of the rows of the list: it makes the picked choice the choice of the panel.
+        public ICommand PickCommand { get; }
+
         public SidePanelHost()
         {
+            PickCommand = new RelayCommand<PanelChoice>(choice => Choice = choice);
             InitializeComponent();
         }
+
+        // A row was picked. The list closes.
+        private void OnPicked(object? sender, EventArgs e) => pickerToggle.IsChecked = false;
     }
 }

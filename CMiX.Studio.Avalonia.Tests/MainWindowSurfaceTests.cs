@@ -86,11 +86,10 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(layerTabs.Bounds.Height, strip.Bounds.Height);
         }
 
-        // Every tab sits on the surface of the main window. The assets tab and the network tab had a lighter surface of their own.
+        // Every tab sits on the surface of the main window. The network tab had a lighter surface of its own.
         [AvaloniaTheory]
-        [InlineData("Resources", "AssetManager")]
         [InlineData("Network", "SyncPanel")]
-        public void TheAssetsTabAndTheNetworkTab_SitOnTheSurfaceOfTheWindow(string icon, string viewName)
+        public void TheNetworkTab_SitsOnTheSurfaceOfTheWindow(string icon, string viewName)
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
             var tabs = TestServiceProviderFactory.MainTabControl(window);
@@ -104,6 +103,23 @@ namespace CMiX.Studio.Avalonia.Tests
 
             foreach (var brush in surfaces.OfType<ISolidColorBrush>().Where(brush => brush.Color.A > 0))
                 Assert.True(Brightness(brush) <= windowBrightness, $"{viewName} paints a color lighter than the window.");
+        }
+
+        // The assets are a panel of a side now. They sit on the surface of the window too.
+        [AvaloniaFact]
+        public void TheAssetsPanel_SitsOnTheSurfaceOfTheWindow()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.RightPanel = CMiX.Studio.Avalonia.ViewModels.PanelChoice.Assets;
+            TestServiceProviderFactory.Pump();
+
+            var view = window.GetVisualDescendants().OfType<UserControl>().First(control => control.GetType().Name == "AssetManager");
+            var surfaces = new List<IBrush?> { view.Background };
+            surfaces.AddRange(view.GetVisualDescendants().OfType<Border>().Where(border => border.Name == "dropBorder").Select(border => border.Background));
+            var windowBrightness = Brightness(window.Background);
+
+            foreach (var brush in surfaces.OfType<ISolidColorBrush>().Where(brush => brush.Color.A > 0))
+                Assert.True(Brightness(brush) <= windowBrightness, "AssetManager paints a color lighter than the window.");
         }
     }
 }
