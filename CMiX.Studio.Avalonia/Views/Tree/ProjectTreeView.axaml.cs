@@ -53,6 +53,51 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(DoubleTappedEvent, OnDoubleTapped, RoutingStrategies.Bubble);
         }
 
+        // The height of a row and the space between two rows, in whole pixels of the screen.
+        // On a screen with a scaling like 125%, a size of 24 or of 1 is not a whole number of pixels, and every panel rounds its
+        // size up. The rows of a long tree are then slightly more than one pitch apart, and the error adds up. With whole pixels
+        // there is nothing to round, and every row is exactly one pitch from the next, whatever is open.
+        // The height goes up to the next pixel, and the space is one pixel or more.
+        public static (double Height, double Spacing) SnapToPixels(double height, double spacing, double scale)
+        {
+            var heightPixels = Math.Ceiling(height * scale - 1e-6);
+            var spacingPixels = Math.Max(1, Math.Round(spacing * scale, MidpointRounding.AwayFromZero));
+            return (heightPixels / scale, spacingPixels / scale);
+        }
+
+        private void SetRowMetrics(double scale)
+        {
+            var height = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
+            var spacing = Convert.ToDouble(Application.Current!.FindResource("SpacingXXS"));
+            var (snappedHeight, snappedSpacing) = SnapToPixels(height, spacing, scale);
+            Resources["TreeRowHeight"] = snappedHeight;
+            Resources["TreeRowSpacing"] = snappedSpacing;
+        }
+
+        private TopLevel? scaledTopLevel;
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            scaledTopLevel = TopLevel.GetTopLevel(this);
+            if (scaledTopLevel == null)
+                return;
+
+            SetRowMetrics(scaledTopLevel.RenderScaling);
+            scaledTopLevel.ScalingChanged += OnScalingChanged;
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            if (scaledTopLevel != null)
+                scaledTopLevel.ScalingChanged -= OnScalingChanged;
+
+            scaledTopLevel = null;
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private void OnScalingChanged(object? sender, EventArgs e) => SetRowMetrics(scaledTopLevel?.RenderScaling ?? 1);
+
         // A double tap on a row, away from its name, expands or collapses the row. The name takes its own double tap (it starts
         // the rename and handles the tap), so that tap never comes here. A toggle or an input keeps its double tap too.
         // TreeViewItem does this by itself for the part PART_HeaderPresenter. The template has no such part (see ProjectTree.axaml),
