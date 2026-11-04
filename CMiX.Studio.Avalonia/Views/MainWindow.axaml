@@ -64,17 +64,6 @@
 
         </Border>
 
-        <Border
-            Padding="8"
-            Background="{DynamicResource Grey300Brush}"
-            BorderBrush="{DynamicResource Grey100Brush}"
-            BorderThickness="2,0"
-            DockPanel.Dock="Bottom">
-
-            <Views:MasterBeatControl DataContext="{Binding Project.MasterBeat}" />
-
-        </Border>
-
         <!-- The tree and the tabs have the same width. -->
         <Grid ColumnDefinitions="*,Auto,*" DockPanel.Dock="Top">
 
@@ -88,8 +77,11 @@
             Background="Transparent"
             ResizeDirection="Columns" />
 
+        <!-- The right column holds the tabs and, under them, the master beat. The tree has the whole height of the left column. -->
+        <Grid Grid.Column="2" RowDefinitions="*,Auto">
+
         <TabControl
-            Grid.Column="2"
+            Grid.Row="0"
             VerticalAlignment="Stretch"
             Theme="{StaticResource TabControlMain}">
 
@@ -282,6 +274,19 @@
             </TabItem>
 
         </TabControl>
+
+        <Border
+            Grid.Row="1"
+            Padding="8"
+            Background="{DynamicResource Grey300Brush}"
+            BorderBrush="{DynamicResource Grey100Brush}"
+            BorderThickness="2,0">
+
+            <Views:MasterBeatControl DataContext="{Binding Project.MasterBeat}" />
+
+        </Border>
+
+        </Grid>
 
         </Grid>
     </DockPanel>
