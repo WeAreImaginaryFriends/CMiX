@@ -1,0 +1,246 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.MainTabsPanel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+    xmlns:Modulators="clr-namespace:CMiX.Core.Modulation.Modulators;assembly=CMiX.Core"
+    xmlns:ColorModifiers="clr-namespace:CMiX.Core.Colors.Modifiers;assembly=CMiX.Core"
+    xmlns:Cameras="clr-namespace:CMiX.Core.Rendering.Cameras;assembly=CMiX.Core"
+    xmlns:Lights="clr-namespace:CMiX.Core.Rendering.Lights;assembly=CMiX.Core"
+    xmlns:TextureSources="clr-namespace:CMiX.Core.Texturing.Sources;assembly=CMiX.Core"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    xmlns:Managers="clr-namespace:CMiX.Studio.Avalonia.Views.Managers">
+
+    <!-- The tabs of the app and, under them, the master beat. The DataContext is the MainViewModel.
+         A side panel can show this (see SidePanelHost). -->
+    <Grid RowDefinitions="*,Auto">
+
+        <TabControl
+            x:Name="mainTabs"
+            Grid.Row="0"
+            VerticalAlignment="Stretch"
+            Theme="{StaticResource TabControlMain}">
+
+            <TabItem Theme="{StaticResource TabItemHorizontal}">
+
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="Settings"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.HorizontalOffset="-10"
+                        ToolTip.Placement="Pointer"
+                        ToolTip.Tip="Settings"
+                        ToolTip.VerticalOffset="10" />
+                </TabItem.Header>
+
+                <Views:SettingsTab />
+
+            </TabItem>
+
+            <!-- The editor of the item that is selected in the tree. The tabs after it are the first way to edit, which stays for now. -->
+            <TabItem x:Name="inspectorTab" Theme="{StaticResource TabItemHorizontal}">
+
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="Inspector"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.HorizontalOffset="-10"
+                        ToolTip.Placement="Pointer"
+                        ToolTip.Tip="Inspector"
+                        ToolTip.VerticalOffset="10" />
+                </TabItem.Header>
+
+                <Views:Inspector DataContext="{Binding ProjectTree}" />
+
+            </TabItem>
+
+            <TabItem Theme="{StaticResource TabItemHorizontal}">
+
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="Composition"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.HorizontalOffset="-10"
+                        ToolTip.Placement="Pointer"
+                        ToolTip.Tip="Composition"
+                        ToolTip.VerticalOffset="10" />
+                </TabItem.Header>
+
+                <Views:MainWindowCompositionTab />
+
+            </TabItem>
+
+            <TabItem Theme="{StaticResource TabItemHorizontal}">
+
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="LayerScene"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.HorizontalOffset="-10"
+                        ToolTip.Placement="Pointer"
+                        ToolTip.Tip="Layers"
+                        ToolTip.VerticalOffset="10" />
+                </TabItem.Header>
+
+                <Views:MainWindowLayersTab />
+
+            </TabItem>
+
+            <TabItem Theme="{StaticResource TabItemHorizontal}">
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="Geometry"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.HorizontalOffset="-10"
+                        ToolTip.Placement="Pointer"
+                        ToolTip.Tip="Entities"
+                        ToolTip.VerticalOffset="10" />
+                </TabItem.Header>
+
+                <Views:MainWindowEntitiesTab />
+
+            </TabItem>
+
+            <Managers:RepositoryTab
+                DataContext="{Binding TextureManager}"
+                Icon="Texture"
+                ItemsSource="{Binding ControlRepository.Textures}"
+                ToolTipText="Textures">
+                <Managers:RepositoryTab.SelectionPanel>
+                    <ui:PopupButton Caption="New Texture">
+                        <ui:PopupButton.PopupContent>
+                            <Managers:AutoSelectionPanel Interface="{x:Type TextureSources:ITextureSource}" />
+                        </ui:PopupButton.PopupContent>
+                    </ui:PopupButton>
+                </Managers:RepositoryTab.SelectionPanel>
+                <Managers:RepositoryTab.EditingPanel>
+                    <Views:Texture />
+                </Managers:RepositoryTab.EditingPanel>
+            </Managers:RepositoryTab>
+
+            <Managers:RepositoryTab
+                DataContext="{Binding CameraManager}"
+                Icon="Camera"
+                ItemsSource="{Binding ControlRepository.Cameras}"
+                RowMenu="Repository"
+                ToolTipText="Cameras">
+                <Managers:RepositoryTab.SelectionPanel>
+                    <Button
+                        Command="{Binding AddItemCommand}"
+                        CommandParameter="{x:Type Cameras:Camera}"
+                        Content="New Camera" />
+                </Managers:RepositoryTab.SelectionPanel>
+                <Managers:RepositoryTab.EditingPanel>
+                    <Views:Camera />
+                </Managers:RepositoryTab.EditingPanel>
+            </Managers:RepositoryTab>
+
+            <Managers:RepositoryTab
+                DataContext="{Binding LightManager}"
+                Icon="MeshLight"
+                ItemsSource="{Binding ControlRepository.Lights}"
+                RowMenu="Repository"
+                ToolTipText="Lights">
+                <Managers:RepositoryTab.SelectionPanel>
+                    <Button
+                        Command="{Binding AddItemCommand}"
+                        CommandParameter="{x:Type Lights:LightEntity}"
+                        Content="New Light" />
+                </Managers:RepositoryTab.SelectionPanel>
+                <Managers:RepositoryTab.EditingPanel>
+                    <Views:LightEntity />
+                </Managers:RepositoryTab.EditingPanel>
+            </Managers:RepositoryTab>
+
+<!--            <Managers:RepositoryTab
+                DataContext="{Binding BeatManager}"
+                Icon="Beat"
+                ItemsSource="{Binding ControlRepository.BeatModulators}"
+                ToolTipText="BeatModulators">
+                <Managers:RepositoryTab.SelectionPanel>
+                    <Button
+                        Command="{Binding AddItemCommand}"
+                        CommandParameter="{x:Type Modulators:BeatModulator}"
+                        Content="New Beat" />
+                </Managers:RepositoryTab.SelectionPanel>
+                <Managers:RepositoryTab.EditingPanel>
+                    <Views:BeatModulator />
+                </Managers:RepositoryTab.EditingPanel>
+            </Managers:RepositoryTab>-->
+
+<!--            <Managers:RepositoryTab
+                DataContext="{Binding ColorPaletteManager}"
+                Icon="Coloration"
+                ItemsSource="{Binding ControlRepository.ColorPalettes}"
+                ToolTipText="Color Palette">
+                <Managers:RepositoryTab.SelectionPanel>
+                    <Button
+                        Command="{Binding AddItemCommand}"
+                        CommandParameter="{x:Type ColorModifiers:ColorPaletteModifier}"
+                        Content="New Palette" />
+                </Managers:RepositoryTab.SelectionPanel>
+            </Managers:RepositoryTab>-->
+
+            <TabItem Theme="{StaticResource TabItemHorizontal}">
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="Resources"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.HorizontalOffset="-10"
+                        ToolTip.Placement="Pointer"
+                        ToolTip.Tip="Assets"
+                        ToolTip.VerticalOffset="10" />
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <i:Interaction.Behaviors>
+                        <ui:ScrollViewerBehavior />
+                    </i:Interaction.Behaviors>
+                    <Views:AssetManager DataContext="{Binding AssetManager}" />
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Theme="{StaticResource TabItemHorizontal}">
+
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="Network"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.HorizontalOffset="-10"
+                        ToolTip.Placement="Pointer"
+                        ToolTip.Tip="Network"
+                        ToolTip.VerticalOffset="10" />
+                </TabItem.Header>
+
+                <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <i:Interaction.Behaviors>
+                        <ui:ScrollViewerBehavior />
+                    </i:Interaction.Behaviors>
+                    <Views:SyncManagementPanel DataContext="{Binding Sync}" />
+                </ScrollViewer>
+
+            </TabItem>
+
+        </TabControl>
+
+        <Border
+            Grid.Row="1"
+            Padding="8"
+            Background="{DynamicResource Grey300Brush}"
+            BorderBrush="{DynamicResource Grey100Brush}"
+            BorderThickness="2,0">
+
+            <Views:MasterBeatControl DataContext="{Binding Project.MasterBeat}" />
+
+        </Border>
+
+    </Grid>
+
+</UserControl>

@@ -1,0 +1,47 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.SidePanelHost"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    xmlns:StudioViewModels="clr-namespace:CMiX.Studio.Avalonia.ViewModels">
+
+    <!-- A panel of the window with a combo box at the top. The user picks what the panel shows (a PanelChoice).
+         Use it for every panel that can show different things: the Choice is the choice of the user, the Choices are the options.
+         The views of the choices get their data from the DataContext of the window (the MainViewModel). -->
+    <DockPanel>
+
+        <Border
+            Name="bar"
+            Padding="4"
+            Background="{DynamicResource Grey100Brush}"
+            DockPanel.Dock="Top">
+            <ComboBox
+                Name="picker"
+                HorizontalAlignment="Stretch"
+                DisplayMemberBinding="{Binding Name}"
+                ItemsSource="{Binding Choices, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}}"
+                SelectedItem="{Binding Choice, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}, Mode=TwoWay}" />
+        </Border>
+
+        <ContentControl
+            Name="content"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            Content="{Binding Choice, RelativeSource={RelativeSource AncestorType=Views:SidePanelHost}}">
+            <ContentControl.DataTemplates>
+
+                <DataTemplate DataType="{x:Type StudioViewModels:TreePanelChoice}">
+                    <Views:ProjectTreeView DataContext="{Binding $parent[Window].DataContext.ProjectTree}" />
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type StudioViewModels:TabsPanelChoice}">
+                    <Views:MainTabsPanel DataContext="{Binding $parent[Window].DataContext}" />
+                </DataTemplate>
+
+            </ContentControl.DataTemplates>
+        </ContentControl>
+
+    </DockPanel>
+
+</UserControl>

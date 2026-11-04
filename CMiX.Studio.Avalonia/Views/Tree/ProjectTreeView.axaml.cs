@@ -169,7 +169,15 @@ namespace CMiX.Studio.Avalonia.Views
 
         // A left click on a row, away from its buttons and its name box: the user chooses the node. It does not come when a node is
         // selected by a program, a list or a peer. The main window uses it to show the inspector.
-        public event EventHandler<TreeNode>? NodeChosen;
+        public static readonly RoutedEvent<NodeChosenEventArgs> NodeChosenEvent =
+            RoutedEvent.Register<ProjectTreeView, NodeChosenEventArgs>(nameof(NodeChosen), RoutingStrategies.Bubble);
+
+        // A routed event: it goes up to the window, whichever panel the tree is in.
+        public event EventHandler<NodeChosenEventArgs> NodeChosen
+        {
+            add => AddHandler(NodeChosenEvent, value);
+            remove => RemoveHandler(NodeChosenEvent, value);
+        }
 
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
@@ -182,7 +190,7 @@ namespace CMiX.Studio.Avalonia.Views
             pressPoint = e.GetPosition(treeView);
 
             if (node != null)
-                NodeChosen?.Invoke(this, node);
+                RaiseEvent(new NodeChosenEventArgs(NodeChosenEvent, this, node));
         }
 
         private async void OnPointerMoved(object? sender, PointerEventArgs e)
@@ -340,5 +348,20 @@ namespace CMiX.Studio.Avalonia.Views
                 position == DropPosition.Before ? DropBefore : position == DropPosition.After ? DropAfter : DropTarget,
                 true);
         }
+    }
+}
+
+namespace CMiX.Studio.Avalonia.Views
+{
+    // The node that the user chose with a click on its row.
+    public sealed class NodeChosenEventArgs : RoutedEventArgs
+    {
+        public NodeChosenEventArgs(RoutedEvent routedEvent, object source, TreeNode node)
+            : base(routedEvent, source)
+        {
+            Node = node;
+        }
+
+        public TreeNode Node { get; }
     }
 }

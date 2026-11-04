@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using Avalonia.Controls;
+using System.Linq;
 using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using Avalonia.Xaml.Interactivity;
 using CMiX.UI.Behaviors;
 using Avalonia.LogicalTree;
@@ -25,7 +28,7 @@ namespace CMiX.Studio.Avalonia.Views
             titleBar.PointerPressed += TitleBar_PointerPressed;
             Closing += OnClosing;
             InstallToggleDrag();
-            projectTree.NodeChosen += (_, _) => ShowInspector();
+            AddHandler(ProjectTreeView.NodeChosenEvent, (_, _) => ShowInspector());
         }
 
         // A click on a row of the tree shows the inspector, which has the editor of that row. A program can turn this off.
@@ -33,8 +36,11 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void ShowInspector()
         {
-            if (OpenInspectorOnTreeClick)
-                mainTabs.SelectedItem = inspectorTab;
+            if (!OpenInspectorOnTreeClick)
+                return;
+
+            foreach (var tabs in this.GetVisualDescendants().OfType<MainTabsPanel>().ToList())
+                tabs.ShowInspector();
         }
 
         // A drag over the visibility or the mask buttons sets them all to one state. The whole drag is one undo step.

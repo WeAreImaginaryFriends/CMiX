@@ -55,8 +55,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(GridResizeDirection.Columns, splitter.ResizeDirection);
             Assert.Same(Application.Current!.FindResource("GridSplitterCMiX"), splitter.Theme);
 
-            // It is on top: it comes after the panels in the grid.
-            Assert.True(grid.Children.IndexOf(splitter) > grid.Children.IndexOf(tabs.GetVisualAncestors().OfType<Grid>().First(g => g.Parent == grid)));
+            // It is on top: it comes after the two side panels in the grid.
+            Assert.All(grid.Children.OfType<SidePanelHost>(), host => Assert.True(grid.Children.IndexOf(splitter) > grid.Children.IndexOf(host)));
         }
 
         [AvaloniaFact]
