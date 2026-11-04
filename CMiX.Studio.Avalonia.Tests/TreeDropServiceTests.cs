@@ -21,6 +21,7 @@ namespace CMiX.Studio.Avalonia.Tests
             public TreeNode NodeA => Tree.Roots[0];
             public TreeNode NodeB => Tree.Roots[1];
             public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
+            public Layer LayerOfB() => (Layer)B.LayerManager.ManagerData.Items[0];
             public TreeNode LayerNodeOfA(int index) => NodeA.Children[index];
             public TreeNode LayerNodeOfB(int index) => NodeB.Children[index];
             public static TreeNode Group(TreeNode layerNode, string header) => layerNode.Children.Single(group => group.Header == header);
@@ -376,15 +377,152 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void CanDrop_AnEntityBeforeAnEntityOfAnotherLayer_IsFalse()
+        public void Drop_AnEntityBeforeAnEntityOfAnotherLayer_MovesItThere()
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             scene.LayerOfA(1).ModelEntityManager.AddItem(typeof(Entity));
+            var moved = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            var staying = scene.LayerOfA(1).ModelEntityManager.ManagerData.Items[0];
             var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
             var target = Scene.Group(scene.LayerNodeOfA(1), "Entities").Children[0];
 
-            Assert.False(service.CanDrop(source, target, DropPosition.Before));
+            Assert.True(service.CanDrop(source, target, DropPosition.Before));
+            var outcome = service.Drop(source, target, DropPosition.Before);
+
+            Assert.True(outcome.Moved);
+            Assert.Empty(scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
+            Assert.Equal(new IControl[] { moved, staying }, scene.LayerOfA(1).ModelEntityManager.ManagerData.Items);
+        }
+
+        [Fact]
+        public void Drop_AnEntityInsideTheEntitiesOfAnotherLayer_MovesItToTheEnd()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            scene.LayerOfA(1).ModelEntityManager.AddItem(typeof(Entity));
+            var moved = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            var staying = scene.LayerOfA(1).ModelEntityManager.ManagerData.Items[0];
+            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var target = Scene.Group(scene.LayerNodeOfA(1), "Entities");
+
+            Assert.True(service.CanDrop(source, target, DropPosition.Inside));
+            service.Drop(source, target, DropPosition.Inside);
+
+            Assert.Equal(new IControl[] { staying, moved }, scene.LayerOfA(1).ModelEntityManager.ManagerData.Items);
+        }
+
+        [Fact]
+        public void Drop_AnEntityInsideAnEmptyEntitiesOfAnotherLayer_MovesIt()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var moved = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+
+            service.Drop(Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0], Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside);
+
+            Assert.Same(moved, Assert.Single(scene.LayerOfA(1).ModelEntityManager.ManagerData.Items));
+        }
+
+        [Fact]
+        public void Locate_AnEntityOverTheEntitiesGroupOfAnotherLayer_IsInsideThatGroup()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var group = Scene.Group(scene.LayerNodeOfA(1), "Entities");
+
+            var place = service.Locate(source, group, 0.9);
+
+            Assert.NotNull(place);
+            Assert.Same(group, place!.Target);
+            Assert.Equal(DropPosition.Inside, place.Position);
+        }
+
+        [Fact]
+        public void CanDrop_AnEntityIntoACameraGroup_OrOntoItsOwnGroup_IsFalse()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+
+            Assert.False(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(1), "Cameras"), DropPosition.Inside));
+            Assert.False(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(0), "Entities"), DropPosition.Inside));
+        }
+
+        [Fact]
+        public void CanDrop_ACameraIntoTheCamerasOfAnotherLayer_IsTrue()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).CameraManager.AddItem(typeof(Camera));
+            var source = Scene.Group(scene.LayerNodeOfA(0), "Cameras").Children[0];
+
+            Assert.True(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(1), "Cameras"), DropPosition.Inside));
+            Assert.False(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside));
+        }
+
+        [Fact]
+        public void CanDrop_AnEntityThatTheOtherLayerHasAlready_IsFalse()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
+            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+
+            Assert.False(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside));
+        }
+
+        [Fact]
+        public void Drop_AnEntityToAnotherComposition_ChangesItsCompositionID()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IHasCompositionID)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+
+            var outcome = service.Drop(source, Scene.Group(scene.LayerNodeOfB(0), "Entities"), DropPosition.Inside);
+
+            Assert.True(outcome.Moved);
+            Assert.Equal(scene.B.ID, entity.CompositionID);
+        }
+
+        [Fact]
+        public void Drop_AnEntityThatAnotherLayerUsesToAnotherComposition_StaysAndReturnsItAsBlocking()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
+            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var target = Scene.Group(scene.LayerNodeOfB(0), "Entities");
+
+            Assert.True(service.CanDrop(source, target, DropPosition.Inside));
+            var outcome = service.Drop(source, target, DropPosition.Inside);
+
+            Assert.False(outcome.Moved);
+            Assert.Same(entity, Assert.Single(outcome.Blocking));
+            Assert.Contains(entity, scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
+            Assert.Empty(scene.LayerOfB().ModelEntityManager.ManagerData.Items);
+            Assert.Contains("also used by other layers", service.DescribeBlock(source, target, outcome.Blocking));
+        }
+
+        [Fact]
+        public void Drop_AnEntityThatAnotherLayerUsesToAnotherLayerOfTheSameComposition_Moves()
+        {
+            var scene = CreateScene();
+            scene.A.LayerManager.AddItem(typeof(Layer));
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
+            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+
+            var outcome = service.Drop(source, Scene.Group(scene.LayerNodeOfA(2), "Entities"), DropPosition.Inside);
+
+            Assert.True(outcome.Moved);
+            Assert.Contains(entity, scene.LayerOfA(2).ModelEntityManager.ManagerData.Items);
+            Assert.Contains(entity, scene.LayerOfA(1).ModelEntityManager.ManagerData.Items);
+            Assert.DoesNotContain(entity, scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
         }
 
         [Fact]

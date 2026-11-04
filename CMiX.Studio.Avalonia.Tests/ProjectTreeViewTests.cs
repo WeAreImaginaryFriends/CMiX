@@ -234,7 +234,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.DoesNotContain(":dropbefore", screen.RowOf(last).Classes);
             Assert.DoesNotContain(":dropafter", screen.RowOf(last).Classes);
-            Assert.DoesNotContain(":dropinside", screen.RowOf(last).Classes);
+            Assert.DoesNotContain(":droptarget", screen.RowOf(last).Classes);
         }
 
         [AvaloniaTheory]
@@ -334,7 +334,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction, RawDragEventType.DragOver);
 
-            Assert.Contains(":dropinside", screen.RowOf(screen.Tree.Roots[1]).Classes);
+            Assert.Contains(":droptarget", screen.RowOf(screen.Tree.Roots[1]).Classes);
         }
 
         private static TextBoxEditable NameBoxOf(TreeViewItem row) =>
@@ -642,7 +642,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(layerNode, screen.Tree.Roots[1], 0.5, RawDragEventType.DragOver);
 
-            Assert.Contains(":dropinside", screen.RowOf(screen.Tree.Roots[1]).Classes);
+            Assert.Contains(":droptarget", screen.RowOf(screen.Tree.Roots[1]).Classes);
         }
 
         [AvaloniaTheory]
@@ -657,7 +657,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.DoesNotContain(":dropbefore", screen.RowOf(node).Classes);
             Assert.DoesNotContain(":dropafter", screen.RowOf(node).Classes);
-            Assert.DoesNotContain(":dropinside", screen.RowOf(node).Classes);
+            Assert.DoesNotContain(":droptarget", screen.RowOf(node).Classes);
         }
 
         [AvaloniaFact]
@@ -697,7 +697,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0], group, 0.5, RawDragEventType.DragOver);
 
-            Assert.DoesNotContain(":dropinside", screen.RowOf(group).Classes);
+            Assert.DoesNotContain(":droptarget", screen.RowOf(group).Classes);
             Assert.DoesNotContain(":dropbefore", screen.RowOf(group).Classes);
             Assert.DoesNotContain(":dropafter", screen.RowOf(group).Classes);
         }
@@ -740,6 +740,40 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(2, screen.A.LayerManager.ManagerData.Items.Count);
             Assert.Single(screen.B.LayerManager.ManagerData.Items);
+        }
+
+        [AvaloniaFact]
+        public void AGroup_CannotBeDragged_ButAnItemCan()
+        {
+            var screen = Show();
+            var layerNode = screen.Tree.Roots[0].Children[0];
+            ((Layer)screen.A.LayerManager.ManagerData.Items[0]).ModelEntityManager.AddItem(typeof(Entity));
+
+            foreach (var group in layerNode.Children)
+                Assert.False(screen.Tree.CanDrag(group));
+            Assert.True(screen.Tree.CanDrag(screen.Tree.Roots[0]));
+            Assert.True(screen.Tree.CanDrag(layerNode));
+            Assert.True(screen.Tree.CanDrag(layerNode.Children[0].Children[0]));
+        }
+
+        // The press on a row remembers the node for a drag. A group is not remembered, so a move of the pointer starts no drag.
+        [AvaloniaFact]
+        public void APressOnAGroup_PreparesNoDrag_AndAPressOnALayerDoes()
+        {
+            var screen = Show();
+            var layerNode = screen.Tree.Roots[0].Children[0];
+            var field = typeof(ProjectTreeView).GetField("pressedNode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+            screen.Window.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+
+            screen.Window.MouseDown(screen.PointIn(layerNode.Children[0], 0.5), MouseButton.Left);
+            Assert.Null(field.GetValue(screen.View));
+            screen.Window.MouseUp(screen.PointIn(layerNode.Children[0], 0.5), MouseButton.Left);
+
+            screen.Window.MouseDown(screen.PointIn(layerNode, 0.5), MouseButton.Left);
+            Assert.Same(layerNode, field.GetValue(screen.View));
+            screen.Window.MouseUp(screen.PointIn(layerNode, 0.5), MouseButton.Left);
         }
 
         [AvaloniaFact]

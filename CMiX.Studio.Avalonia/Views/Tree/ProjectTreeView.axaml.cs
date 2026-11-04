@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Managers;
@@ -26,7 +28,7 @@ namespace CMiX.Studio.Avalonia.Views
         private const double DragThreshold = 4.0;
         private const string DropBefore = ":dropbefore";
         private const string DropAfter = ":dropafter";
-        private const string DropInside = ":dropinside";
+        private const string DropTarget = ":droptarget";
 
         private TreeNode? pressedNode;
         private Point pressPoint;
@@ -126,7 +128,7 @@ namespace CMiX.Studio.Avalonia.Views
             if (!e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed || IsEditor(e.Source))
                 return;
 
-            pressedNode = ItemOf(e.Source)?.DataContext as TreeNode;
+            pressedNode = ItemOf(e.Source)?.DataContext is TreeNode node && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
             pressPoint = e.GetPosition(treeView);
         }
 
@@ -150,8 +152,48 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e) => pressedNode = null;
 
+        // The local paths of the files and folders of a drag from the file explorer. A drag of a node has none.
+        private static List<string> PathsOf(DragEventArgs e) =>
+            (e.Data.GetFiles() ?? Enumerable.Empty<IStorageItem>())
+                .Select(item => item.TryGetLocalPath())
+                .Where(path => path != null && (File.Exists(path) || Directory.Exists(path)))
+                .Select(path => path!)
+                .ToList();
+
+        // Files over the tree: the row under the pointer looks hovered when that row takes the files itself (see
+        // ProjectTree.IsPathTarget). Over a child of a layer, or over the space under the rows, nothing is marked.
+        private void OnFilesDragOver(DragEventArgs e)
+        {
+            e.Handled = true;
+            e.DragEffects = DragDropEffects.None;
+            Mark(null, null);
+
+            if (DataContext is not ProjectTree tree || !tree.CanDropPaths(PathsOf(e)))
+                return;
+
+            e.DragEffects = DragDropEffects.Copy;
+            var hoveredItem = ItemOf(e.Source);
+            if (hoveredItem?.DataContext is TreeNode hovered && tree.IsPathTarget(hovered))
+                Mark(hoveredItem, DropPosition.Inside);
+        }
+
+        private void OnFilesDrop(DragEventArgs e)
+        {
+            e.Handled = true;
+            Mark(null, null);
+
+            if (DataContext is ProjectTree tree)
+                tree.DropPaths(ItemOf(e.Source)?.DataContext as TreeNode, PathsOf(e));
+        }
+
         private void OnDragOver(object? sender, DragEventArgs e)
         {
+            if (e.Data.Contains(DataFormats.Files))
+            {
+                OnFilesDragOver(e);
+                return;
+            }
+
             e.DragEffects = DragDropEffects.None;
             e.Handled = true;
 
@@ -176,6 +218,12 @@ namespace CMiX.Studio.Avalonia.Views
 
         private async void OnDrop(object? sender, DragEventArgs e)
         {
+            if (e.Data.Contains(DataFormats.Files))
+            {
+                OnFilesDrop(e);
+                return;
+            }
+
             e.Handled = true;
             Mark(null, null);
 
@@ -227,7 +275,7 @@ namespace CMiX.Studio.Avalonia.Views
                 var old = (IPseudoClasses)marked.Classes;
                 old.Set(DropBefore, false);
                 old.Set(DropAfter, false);
-                old.Set(DropInside, false);
+                old.Set(DropTarget, false);
             }
 
             marked = item;
@@ -236,7 +284,7 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             ((IPseudoClasses)item.Classes).Set(
-                position == DropPosition.Before ? DropBefore : position == DropPosition.After ? DropAfter : DropInside,
+                position == DropPosition.Before ? DropBefore : position == DropPosition.After ? DropAfter : DropTarget,
                 true);
         }
     }

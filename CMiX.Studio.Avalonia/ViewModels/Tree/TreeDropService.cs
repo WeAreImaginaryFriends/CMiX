@@ -52,7 +52,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             if (ReferenceEquals(hovered, target))
             {
-                if (source.Item is Layer && target.Item is Composition)
+                if (target.Item == null || (source.Item is Layer && target.Item is Composition))
                     return new DropPlace(target, DropPosition.Inside);
 
                 if (fraction < 0.5)
@@ -67,12 +67,83 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // True when the node is a row that the dragged node can go before, after, or (a layer on a composition) inside.
         private static bool TakesDropOf(TreeNode source, TreeNode target)
         {
-            if (target.Item == null || target.Owner == null || target.IsOrIsUnder(source))
+            if (target.IsOrIsUnder(source))
+                return false;
+
+            // A group takes an item of the same kind from another layer, inside it.
+            if (target.Item == null)
+                return target.ChildManager != null
+                    && SlotOfItem(source) != Slot.None
+                    && SlotOfGroup(target) == SlotOfItem(source)
+                    && !ReferenceEquals(target.ChildManager, source.Owner)
+                    && !target.ChildManager.ManagerData.Items.Contains(source.Item!);
+
+            if (target.Owner == null)
                 return false;
 
             return ReferenceEquals(source.Owner, target.Owner)
-                || (source.Item is Layer && (target.Item is Layer || target.Item is Composition));
+                || (source.Item is Layer && (target.Item is Layer || target.Item is Composition))
+                || CanMoveBetweenLayers(source, target);
         }
+
+        // The kinds of list that a layer has for its items. An item moves between layers only into a list of its own kind.
+        private enum Slot
+        {
+            None,
+            Entities,
+            Cameras,
+            Lights
+        }
+
+        private static Slot SlotOfList(Layer layer, PrefabManager? list) =>
+            ReferenceEquals(list, layer.ModelEntityManager) ? Slot.Entities
+            : ReferenceEquals(list, layer.CameraManager) ? Slot.Cameras
+            : ReferenceEquals(list, layer.LightManager) ? Slot.Lights
+            : Slot.None;
+
+        // The kind of list that holds an item row of a layer. A layer, a composition and a group give None.
+        private static Slot SlotOfItem(TreeNode item) =>
+            item.Item != null && item.Parent?.Parent?.Item is Layer layer ? SlotOfList(layer, item.Owner) : Slot.None;
+
+        // The kind of list that a group row shows.
+        private static Slot SlotOfGroup(TreeNode group) =>
+            group.Item == null && group.Parent?.Item is Layer layer ? SlotOfList(layer, group.ChildManager) : Slot.None;
+
+        // The item of one layer is in a list of the same kind as the row of another layer, and that list does not have it yet.
+        private static bool CanMoveBetweenLayers(TreeNode source, TreeNode target) =>
+            SlotOfItem(source) != Slot.None
+            && SlotOfItem(source) == SlotOfItem(target)
+            && target.Owner != null
+            && !ReferenceEquals(source.Owner, target.Owner)
+            && !target.Owner.ManagerData.Items.Contains(source.Item!);
+
+        private static TreeNode? CompositionOf(TreeNode node)
+        {
+            for (var current = node; current != null; current = current.Parent)
+                if (current.Item is Composition)
+                    return current;
+
+            return null;
+        }
+
+        // True when a layer of the composition, other than the layer of the source, has the item in a list of the same kind.
+        private static bool IsUsedByOtherLayers(TreeNode source)
+        {
+            if (CompositionOf(source) is not { Item: Composition composition } || source.Parent?.Parent?.Item is not Layer ownLayer)
+                return false;
+
+            var slot = SlotOfItem(source);
+            return composition.LayerManager.ManagerData.Items.OfType<Layer>().Any(layer =>
+                !ReferenceEquals(layer, ownLayer)
+                && ListOf(layer, slot).ManagerData.Items.Contains(source.Item!));
+        }
+
+        private static PrefabManager ListOf(Layer layer, Slot slot) => slot switch
+        {
+            Slot.Cameras => layer.CameraManager,
+            Slot.Lights => layer.LightManager,
+            _ => layer.ModelEntityManager
+        };
 
         // The last row that is shown in the block of a node: itself when it is collapsed or has no children.
         private static TreeNode LastVisible(TreeNode node) =>
@@ -98,6 +169,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 return new DropOutcome(true, new List<IPrefab>());
             }
 
+            // An item of a layer can go to a layer of another composition only if no other layer of its composition uses it.
+            if (item is IPrefab prefab && source.Item is not Layer
+                && !ReferenceEquals(CompositionOf(source), CompositionOf(target)) && IsUsedByOtherLayers(source))
+                return new DropOutcome(false, new List<IPrefab> { prefab });
+
             var blocking = list.MoveItemToManager(item, owner, index);
             return new DropOutcome(blocking.Count == 0, blocking);
         }
@@ -105,6 +181,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The text for a move that shared items block.
         public string DescribeBlock(TreeNode source, TreeNode target, IReadOnlyList<IPrefab> blocking)
         {
+            if (source.Item is not Layer)
+            {
+                var toLayer = (target.Item == null ? target.Parent : target.Parent?.Parent)?.Header ?? string.Empty;
+                var fromComposition = CompositionOf(source)?.Header ?? string.Empty;
+
+                return $"Cannot move \"{source.Header}\" to \"{toLayer}\".\n"
+                    + $"This item is also used by other layers of \"{fromComposition}\".\n"
+                    + "An item can belong to one composition only. "
+                    + "Remove the item from the other layers first, or duplicate it, then move it.";
+            }
+
             var layer = source.Header;
             var from = source.Parent?.Header ?? string.Empty;
             var to = (target.Item is Composition ? target : target.Parent)?.Header ?? string.Empty;
@@ -129,8 +216,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             (PrefabManager List, int Index)? place;
             if (position == DropPosition.Inside)
             {
-                // Only a composition takes a layer inside it, at the end.
-                if (target.Item is not Composition || source.Item is not Layer || target.ChildManager == null)
+                // A composition takes a layer inside it, and a group takes an item of its kind, at the end.
+                if (target.ChildManager == null)
+                    return null;
+
+                var takes = target.Item is Composition ? source.Item is Layer : TakesDropOf(source, target);
+                if (!takes)
                     return null;
 
                 place = (target.ChildManager, target.ChildManager.ManagerData.Items.Count);
@@ -142,7 +233,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
                 var sameList = ReferenceEquals(source.Owner, target.Owner);
                 var layerToLayerList = source.Item is Layer && target.Item is Layer;
-                if (!sameList && !layerToLayerList)
+                if (!sameList && !layerToLayerList && !CanMoveBetweenLayers(source, target))
                     return null;
 
                 var index = target.Owner.ManagerData.Items.IndexOf(target.Item) + (position == DropPosition.After ? 1 : 0);

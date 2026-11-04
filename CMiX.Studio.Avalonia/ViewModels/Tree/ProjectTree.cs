@@ -27,6 +27,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private readonly UndoManager undoManager;
         private readonly IMoveBlockedNotice? notice;
         private readonly TreeDropService dropService = new();
+        private readonly PathDropService pathDrop = new();
         private readonly PrefabManager compositions;
         private readonly TreeNode root;
         private TreeNode? selectedNode;
@@ -154,6 +155,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 RefreshCommands();
         }
 
+        // A group (Entities, Cameras, Lights) has a fixed place in its layer. Only an item can be dragged.
+        public bool CanDrag(TreeNode node) => node.Item != null && node.Owner != null;
+
         public bool CanDrop(TreeNode source, TreeNode target, DropPosition position) =>
             dropService.CanDrop(source, target, position);
 
@@ -163,11 +167,84 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // Drops the node. A move that shared items block leaves everything as it is and tells the user why.
         public async Task DropAsync(TreeNode source, TreeNode target, DropPosition position)
         {
-            var outcome = dropService.Drop(source, target, position);
+            // The move and the selection of the moved item are one undo step.
+            DropOutcome outcome;
+            undoManager.BeginCapture();
+            try
+            {
+                outcome = dropService.Drop(source, target, position);
+                if (outcome.Moved && FindNode(root, source.Item!) is { } moved)
+                    SelectedNode = moved;
+            }
+            finally
+            {
+                undoManager.EndCapture();
+            }
+
             if (outcome.Moved || outcome.Blocking.Count == 0 || notice == null)
                 return;
 
             await notice.ShowAsync(dropService.DescribeBlock(source, target, outcome.Blocking));
+        }
+
+        // The node that takes dropped files: the first composition or layer from the node up. No node, or a node
+        // that is under no composition, gives null, and then the drop makes a new composition.
+        public TreeNode? FindPathTarget(TreeNode? node)
+        {
+            for (var current = node; current != null; current = current.Parent)
+                if (current.Item is Composition or Layer)
+                    return current;
+
+            return null;
+        }
+
+        // True when the node itself takes the dropped files: a composition, a layer, or the group of entities of a layer.
+        // The other nodes of a layer pass the drop to the entities of their layer, but they are not the target themselves.
+        public bool IsPathTarget(TreeNode node) =>
+            node.Item is Composition or Layer
+            || (node.Item == null && node.Parent?.Item is Layer layer && ReferenceEquals(node.ChildManager, layer.ModelEntityManager));
+
+        public bool CanDropPaths(IEnumerable<string> paths) => paths.Any(pathDrop.Accepts);
+
+        // Makes what the dropped paths need, and adds an item for each path, as one undo step.
+        // A composition takes a new layer, and a layer takes the items. With no target, a new composition with a new
+        // layer takes them. A drop of nothing that is accepted changes nothing.
+        public void DropPaths(TreeNode? hovered, IReadOnlyList<string> paths)
+        {
+            var accepted = paths.Where(pathDrop.Accepts).ToList();
+            if (accepted.Count == 0)
+                return;
+
+            var target = FindPathTarget(hovered);
+            undoManager.BeginCapture();
+            try
+            {
+                switch (target?.Item)
+                {
+                    case Layer layer:
+                        AddPaths(layer, accepted);
+                        break;
+                    case Composition composition:
+                        AddLayerWithPaths(composition, accepted);
+                        break;
+                    default:
+                        compositions.AddItem(typeof(Composition), item => AddLayerWithPaths((Composition)item, accepted));
+                        break;
+                }
+            }
+            finally
+            {
+                undoManager.EndCapture();
+            }
+        }
+
+        private void AddLayerWithPaths(Composition composition, IReadOnlyList<string> paths) =>
+            composition.LayerManager.AddItem(typeof(Layer), item => AddPaths((Layer)item, paths));
+
+        private void AddPaths(Layer layer, IEnumerable<string> paths)
+        {
+            foreach (var path in paths)
+                pathDrop.AddItem(layer.ModelEntityManager, path);
         }
 
         public TreeNode? SelectedNode
@@ -180,6 +257,21 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
                 SelectChain(value);
             }
+        }
+
+        // The node of an item, wherever it is in the tree. A moved item has a new node in its new list.
+        private static TreeNode? FindNode(TreeNode from, IControl item)
+        {
+            foreach (var child in from.Children)
+            {
+                if (ReferenceEquals(child.Item, item))
+                    return child;
+
+                if (FindNode(child, item) is { } found)
+                    return found;
+            }
+
+            return null;
         }
 
         // Selects the item of every node from the composition down to the node.
