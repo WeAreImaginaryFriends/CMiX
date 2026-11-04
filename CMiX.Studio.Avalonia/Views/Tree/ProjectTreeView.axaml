@@ -24,6 +24,7 @@
         Opacity="0.6"
         Brush="{DynamicResource PanelBackgroundLevel1Brush}"
         RowHeight="{DynamicResource ControlHeightMD}"
+        RowName="RowBorder"
         RowSpacing="{DynamicResource SpacingXXS}" />
 
     <TreeView
