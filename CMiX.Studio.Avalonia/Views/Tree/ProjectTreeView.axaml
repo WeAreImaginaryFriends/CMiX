@@ -42,6 +42,10 @@
         </TreeView.ItemsPanel>
 
         <TreeView.Styles>
+            <!-- The bar lies over the rows, so the rows do not move when it appears. -->
+            <Style Selector="TreeView /template/ ScrollViewer">
+                <Setter Property="Theme" Value="{DynamicResource ScrollViewerOverlay}" />
+            </Style>
             <Style Selector="TreeViewItem">
                 <Setter Property="Theme" Value="{StaticResource TreeViewItemCMiX}" />
                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />

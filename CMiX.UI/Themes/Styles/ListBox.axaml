@@ -46,6 +46,7 @@
                             MinHeight="{TemplateBinding MinHeight}">
                             <ScrollViewer
                                 Name="PART_ScrollViewer"
+                                Theme="{DynamicResource ScrollViewerOverlay}"
                                 Focusable="False"
                                 HorizontalScrollBarVisibility="Disabled"
                                 Margin="{DynamicResource ListScrollMargin}"
@@ -84,6 +85,7 @@
                     CornerRadius="{DynamicResource CornerRadiusAll}">
                     <ScrollViewer
                         Name="PART_ScrollViewer"
+                        Theme="{DynamicResource ScrollViewerOverlay}"
                         Focusable="False"
                         HorizontalScrollBarVisibility="Disabled"
                         Margin="{DynamicResource ListScrollMargin}"

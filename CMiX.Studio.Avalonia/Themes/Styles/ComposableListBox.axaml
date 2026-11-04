@@ -40,6 +40,7 @@
               <Border Background="{TemplateBinding Background}">
                 <ScrollViewer
                   Name="PART_ScrollViewer"
+                  Theme="{DynamicResource ScrollViewerOverlay}"
                   Focusable="False"
                   HorizontalScrollBarVisibility="Disabled"
                   VerticalScrollBarVisibility="Auto">
