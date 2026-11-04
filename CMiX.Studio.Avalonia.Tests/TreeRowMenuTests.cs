@@ -121,7 +121,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var headers = Screen.Headers(screen.OpenMenu(screen.Tree.Roots[0])!);
 
             Assert.Equal(screen.A.PrefabService.Name.Value, headers[0]);
-            Assert.Equal(new[] { "Add Layer", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
+            Assert.Equal(new[] { "Add Layer", "Add Filter", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
                 headers.Skip(2));
         }
 
@@ -165,7 +165,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARightClickOnAnEntityAfterARightClickOnItsGroup_OpensTheMenuOfTheEntityWithNoAddRow()
+        public void ARightClickOnAnEntityAfterARightClickOnItsGroup_OpensTheMenuOfTheEntityWithoutTheAddRowsOfTheGroup()
         {
             var screen = Show();
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -176,9 +176,9 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var headers = Screen.Headers(screen.OpenMenu(entityNode)!);
 
-            Assert.Equal(new[] { "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
+            Assert.Equal(new[] { "Add Texture", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
                 headers.Skip(2));
-            Assert.DoesNotContain(headers, header => header.StartsWith("Add"));
+            Assert.DoesNotContain(headers, header => header is "Add Entity" or "Add Fullscreen Quad" or "Add Text" or "Add Layer");
         }
 
         [AvaloniaTheory]
@@ -222,7 +222,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var headers = Screen.Headers(screen.OpenMenu(screen.LayerNodeOfA(0))!);
 
-            Assert.Equal(new[] { "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
+            Assert.Equal(new[] { "Add", "Add Filter", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
                 headers.Skip(2));
         }
 
@@ -354,7 +354,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var headers = Screen.Headers(screen.OpenMenu(screen.Group(0, "Entities").Children[0])!);
 
-            Assert.Equal(new[] { "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
+            Assert.Equal(new[] { "Add Texture", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
                 headers.Skip(2));
         }
 

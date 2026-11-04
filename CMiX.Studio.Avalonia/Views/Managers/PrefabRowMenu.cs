@@ -47,9 +47,9 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             _target = target;
             _adds = adds;
             // The menu opens on the row that was used last, if it has it. Before that it opens on the first row that adds, so a click
-            // right after the creation of an item can add what goes in it (a layer in a composition). Rows without adds open on Duplicate.
+            // right after the creation of an item can add what goes in it (a layer in a composition). Rows without such an add open on Duplicate. The submenus of modifiers, filters and textures are secondary.
             _builder = new TitledContextMenu(row, title ?? (() => (row.DataContext as IPrefab)?.PrefabService.Name.Value?.Trim() ?? string.Empty),
-                                             adds.Count > 0 ? adds[0].Id : DuplicateId);
+                                             adds.FirstOrDefault(add => !add.Secondary)?.Id ?? DuplicateId);
         }
 
         // Gives a row of a list the menu of the kind of the list. The menu is built once the row is in the window,

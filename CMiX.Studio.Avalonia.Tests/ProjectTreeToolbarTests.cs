@@ -127,7 +127,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var choices = scene.Tree.GetAddChoices(scene.Tree.SelectedNode);
             scene.Tree.AddItemCommand.Execute(null);
 
-            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light", "Add Composition" }, choices.Select(choice => choice.Header));
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light", "Add Filter", "Add Modifier", "Add Composition" }, choices.Select(choice => choice.Header));
             Assert.True(scene.Tree.AddItemCommand.CanExecute(null));
             Assert.Empty(scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
             Assert.Empty(scene.LayerOfA(0).CameraManager.ManagerData.Items);
@@ -152,10 +152,10 @@ namespace CMiX.Studio.Avalonia.Tests
             string[] Headers(CMiX.Studio.Avalonia.ViewModels.Tree.TreeNode? node) => scene.Tree.GetAddChoices(node).Select(choice => choice.Header).ToArray();
 
             Assert.Equal(new[] { "Add Composition" }, Headers(null));
-            Assert.Equal(new[] { "Add Layer", "Add Composition" }, Headers(scene.Tree.Roots[0]));
+            Assert.Equal(new[] { "Add Layer", "Add Filter", "Add Modifier", "Add Composition" }, Headers(scene.Tree.Roots[0]));
             Assert.Equal("Add Composition", Headers(scene.LayerNodeOfA(0)).Last());
             Assert.Equal(new[] { "Add Camera", "Add Composition" }, Headers(scene.Group(0, "Cameras")));
-            Assert.Equal(new[] { "Add Composition" }, Headers(scene.Group(0, "Entities").Children[0]));
+            Assert.Equal(new[] { "Add Texture", "Add Modifier", "Add Composition" }, Headers(scene.Group(0, "Entities").Children[0]));
         }
 
         [Fact]
@@ -350,7 +350,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var menu = screen.ButtonOf("AddButton").ContextMenu!;
             var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
-            Assert.Equal(new[] { screen.Scene.B.PrefabService.Name.Value, "-", "Add Layer", "Add Composition" }, headers);
+            Assert.Equal(new[] { screen.Scene.B.PrefabService.Name.Value, "-", "Add Layer", "Add Filter", "Add Modifier", "Add Composition" }, headers);
             Assert.Equal(1, screen.Scene.B.LayerManager.ManagerData.Items.Count);
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
 
@@ -385,7 +385,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var menu = screen.ButtonOf("AddButton").ContextMenu!;
             Assert.True(menu.IsOpen);
-            Assert.Equal(new[] { "Add Composition" }, menu.Items.OfType<MenuItem>().Skip(2).Select(item => item.Header?.ToString()));
+            Assert.Equal(new[] { "Add Texture", "Add Modifier", "Add Composition" }, menu.Items.OfType<MenuItem>().Skip(2).Select(item => item.Header?.ToString()));
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
         }
 
@@ -413,7 +413,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var menu = screen.ButtonOf("AddButton").ContextMenu!;
             Assert.True(menu.IsOpen);
             var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
-            Assert.Equal(new[] { layer.Header, "-", "Entity", "Fullscreen Quad", "Text", "Camera", "Light", "Add Composition" }, headers);
+            Assert.Equal(new[] { layer.Header, "-", "Entity", "Fullscreen Quad", "Text", "Camera", "Light", "Add Filter", "Add Modifier", "Add Composition" }, headers);
             Assert.Empty(screen.Scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
         }
 

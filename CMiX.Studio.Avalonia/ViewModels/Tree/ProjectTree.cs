@@ -9,7 +9,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using CMiX.Core;
 using CMiX.Core.Compositing;
+using CMiX.Core.Modifiers;
 using CMiX.Core.Prefabs.Managers;
+using CMiX.Core.Texturing;
 using CMiX.Core.Rendering.Cameras;
 using CMiX.Core.Rendering.Lights;
 using CMiX.Core.Undo;
@@ -73,7 +75,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 return new[] { AddOf("row.add-composition", "Add Composition", compositions, typeof(Composition)) };
 
             if (node.Item is Composition && node.ChildManager is { } layers)
-                return new[] { AddOf("row.add-layer", "Add Layer", layers, typeof(Layer)) };
+                return new[] { AddOf("row.add-layer", "Add Layer", layers, typeof(Layer)) }.Concat(HeldAdds(node.Item)).ToList();
 
             // A layer takes an item of any kind: the entities, then the camera and the light.
             if (node.Item is Layer own)
@@ -87,10 +89,18 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                         AddOf("row.add-camera", "Camera", own.CameraManager, typeof(Camera)),
                         AddOf("row.add-light", "Light", own.LightManager, typeof(LightEntity))
                     })
-                };
+                }.Concat(HeldAdds(own)).ToList();
+
+            // Any other item takes the modifiers, the filters and the textures that it can hold.
+            if (node.Item != null)
+                return HeldAdds(node.Item);
+
+            // A group of modifiers, filters or textures takes one of the types that its owner can hold.
+            if (node.Group is { } held && held is not LayerGroup)
+                return AddsOfTypes(held);
 
             // A group of a layer takes the kind of item of its list.
-            if (node.Item != null || node.ChildManager is not { } list || node.Parent?.Item is not Layer layer)
+            if (node.ChildManager is not { } list || node.Parent?.Item is not Layer layer)
                 return Array.Empty<TreeAdd>();
 
             if (ReferenceEquals(list, layer.ModelEntityManager))
@@ -114,12 +124,34 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The composition is under no row, so it can be added whatever is selected. It comes last, after what the row takes.
         public IReadOnlyList<TreeAdd> GetAddChoices(TreeNode? node)
         {
-            var choices = GetAdds(node).SelectMany(add => add.Children ?? new[] { add }).ToList();
+            // The submenu of the layer is flat. The submenus of textures, filters and modifiers stay submenus: they are long.
+            var choices = GetAdds(node).SelectMany(add => add.Id == "row.add" ? add.Children! : new[] { add }).ToList();
             if (node != null)
                 choices.Add(AddOf("row.add-composition", "Add Composition", compositions, typeof(Composition)));
 
             return choices;
         }
+
+        // The submenus of an item for what it can hold: textures, filters and modifiers. A submenu is there only when the item can hold the kind.
+        private static IReadOnlyList<TreeAdd> HeldAdds(IControl item)
+        {
+            var adds = new List<TreeAdd>();
+            if (item is ITexturable { Texture.DiffuseTexture.TextureManager: { } textures })
+                adds.Add(new TreeAdd("row.add-texture", "Add Texture", Children: AddsOfTypes(new TexturesGroup(item, textures)), Secondary: true));
+
+            if (item is ITextureModifiable { TextureModifierManager: { } filters })
+                adds.Add(new TreeAdd("row.add-filter", "Add Filter", Children: AddsOfTypes(new FiltersGroup(item, filters)), Secondary: true));
+
+            if (item is IModifiable { ModifierManager: { } modifiers })
+                adds.Add(new TreeAdd("row.add-modifier", "Add Modifier", Children: AddsOfTypes(new ModifiersGroup(item, modifiers)), Secondary: true));
+
+            return adds;
+        }
+
+        private static IReadOnlyList<TreeAdd> AddsOfTypes(TreeGroup group) =>
+            AddableTypes.ForGroup(group)
+                .Select(type => AddOf("row.add-" + type.Name, AddableTypes.LabelOf(type), group.Manager, type))
+                .ToList();
 
         private static TreeAdd AddOf(string id, string header, PrefabManager list, Type type) =>
             new(id, header, () => list.AddItem(type));

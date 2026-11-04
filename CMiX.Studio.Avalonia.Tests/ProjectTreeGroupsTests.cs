@@ -203,6 +203,71 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public void TheGroupOfModifiers_OffersTheModifiersOfItsOwner_AndAddsTheChosenOne()
+        {
+            var scene = CreateScene();
+            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
+            var group = Scene.Group(Scene.Group(scene.LayerNode, "Entities").Children[0], "Modifiers");
+
+            var adds = scene.Tree.GetAdds(group);
+
+            Assert.Equal(AddableTypes.ForOwner(typeof(Entity)).Select(AddableTypes.LabelOf), adds.Select(add => add.Header));
+            Assert.Contains(adds, add => add.Header == AddableTypes.LabelOf(typeof(TranslateModifier)));
+            adds.Single(add => add.Header == AddableTypes.LabelOf(typeof(TranslateModifier))).Execute!();
+            Assert.IsType<TranslateModifier>(Assert.Single(entity.ModifierManager.ManagerData.Items));
+            Assert.Single(group.Children);
+        }
+
+        [Fact]
+        public void TheGroupOfFilters_OffersTheFilters_AndAddsTheChosenOne()
+        {
+            var scene = CreateScene();
+            var group = Scene.Group(scene.LayerNode, "Filters");
+
+            var adds = scene.Tree.GetAdds(group);
+
+            Assert.Equal(AddableTypes.ForInterface(typeof(ITextureFilter)).Select(AddableTypes.LabelOf), adds.Select(add => add.Header));
+            adds.Single(add => add.Header == AddableTypes.LabelOf(typeof(Blur))).Execute!();
+            Assert.IsType<Blur>(Assert.Single(scene.Layer.TextureModifierManager.ManagerData.Items));
+        }
+
+        [Fact]
+        public void TheGroupOfTextures_OffersTheTextureSources_AndAddsTheChosenOne()
+        {
+            var scene = CreateScene();
+            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
+            var group = Scene.Group(Scene.Group(scene.LayerNode, "Entities").Children[0], "Textures");
+
+            var adds = scene.Tree.GetAdds(group);
+
+            Assert.Contains(adds, add => add.Header == AddableTypes.LabelOf(typeof(CMiX.Core.Texturing.Sources.Image)));
+            adds.Single(add => add.Header == AddableTypes.LabelOf(typeof(CMiX.Core.Texturing.Sources.Image))).Execute!();
+            Assert.IsType<CMiX.Core.Texturing.Sources.Image>(Assert.Single(entity.Texture.DiffuseTexture.TextureManager.ManagerData.Items));
+        }
+
+        [Fact]
+        public void AnItem_HasSubmenusForWhatItCanHold_AndTheyAreNotTheDefaultRow()
+        {
+            var scene = CreateScene();
+            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
+            var entityNode = Scene.Group(scene.LayerNode, "Entities").Children[0];
+
+            var adds = scene.Tree.GetAdds(entityNode);
+            Assert.Equal(new[] { "Add Texture", "Add Modifier" }, adds.Select(add => add.Header));
+            Assert.All(adds, add => Assert.True(add.Secondary));
+            Assert.All(adds, add => Assert.NotEmpty(add.Children!));
+
+            Assert.Equal(new[] { "Add Layer", "Add Filter", "Add Modifier" }, scene.Tree.GetAdds(scene.CompositionNode).Select(add => add.Header));
+            Assert.False(scene.Tree.GetAdds(scene.CompositionNode)[0].Secondary);
+
+            var modifier = adds.Single(add => add.Header == "Add Modifier").Children!.Single(add => add.Header == AddableTypes.LabelOf(typeof(ScaleModifier)));
+            modifier.Execute!();
+            Assert.IsType<ScaleModifier>(Assert.Single(((Entity)entityNode.Item!).ModifierManager.ManagerData.Items));
+        }
+
+        [Fact]
         public void TheModifiersOfAnEntity_CanBeReorderedInTheirOwnList_AndNotMovedElsewhere()
         {
             var scene = CreateScene();

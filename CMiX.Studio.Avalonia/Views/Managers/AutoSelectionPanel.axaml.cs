@@ -10,7 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
-using CMiX.Core.Prefabs;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
 using AvaloniaGrid = Avalonia.Controls.Grid;
 
 namespace CMiX.Studio.Avalonia.Views.Managers
@@ -55,9 +55,11 @@ namespace CMiX.Studio.Avalonia.Views.Managers
 
             if (!_cache.TryGetValue(key, out var entries))
             {
-                entries = PanelOwner != null
-                    ? DiscoverByAttribute(PanelOwner)
-                    : DiscoverByInterface(Interface);
+                entries = (PanelOwner != null
+                        ? AddableTypes.ForOwner(PanelOwner)
+                        : AddableTypes.ForInterface(Interface))
+                    .Select(type => new ModifierEntry { Type = type })
+                    .ToList();
                 _cache[key] = entries;
             }
 
@@ -97,32 +99,5 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             Content = grid;
         }
 
-        private static List<ModifierEntry> DiscoverByAttribute(Type ownerType)
-        {
-            return typeof(ModifierPanelAttribute).Assembly
-                .GetTypes()
-                .Concat(ownerType.Assembly.GetTypes())
-                .Distinct()
-                .Where(t => !t.IsAbstract && !t.IsInterface && !IsHidden(t))
-                .Where(t => t.GetCustomAttributes<ModifierPanelAttribute>()
-                    .Any(a => a.PanelOwner == ownerType))
-                .Select(t => new ModifierEntry { Type = t })
-                .OrderBy(e => e.Label)
-                .ToList();
-        }
-
-        private static bool IsHidden(Type type) =>
-            type.GetCustomAttribute<HiddenInMenuAttribute>() != null;
-
-        private static List<ModifierEntry> DiscoverByInterface(Type interfaceType)
-        {
-            return interfaceType.Assembly
-                .GetTypes()
-                .Where(t => !t.IsAbstract && !t.IsInterface && !IsHidden(t))
-                .Where(t => interfaceType.IsAssignableFrom(t))
-                .Select(t => new ModifierEntry { Type = t })
-                .OrderBy(e => e.Label)
-                .ToList();
-        }
     }
 }
