@@ -72,13 +72,14 @@
             </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0">
-            <Views:ProjectTreeView DataContext="{Binding ProjectTree}" />
+            <Views:ProjectTreeView x:Name="projectTree" DataContext="{Binding ProjectTree}" />
         </Border>
 
         <!-- The right column holds the tabs and, under them, the master beat. The tree has the whole height of the left column. -->
         <Grid Grid.Column="1" RowDefinitions="*,Auto">
 
         <TabControl
+            x:Name="mainTabs"
             Grid.Row="0"
             VerticalAlignment="Stretch"
             Theme="{StaticResource TabControlMain}">
@@ -101,7 +102,7 @@
             </TabItem>
 
             <!-- The editor of the item that is selected in the tree. The tabs after it are the first way to edit, which stays for now. -->
-            <TabItem Theme="{StaticResource TabItemHorizontal}">
+            <TabItem x:Name="inspectorTab" Theme="{StaticResource TabItemHorizontal}">
 
                 <TabItem.Header>
                     <ui:AppIcon

@@ -25,6 +25,16 @@ namespace CMiX.Studio.Avalonia.Views
             titleBar.PointerPressed += TitleBar_PointerPressed;
             Closing += OnClosing;
             InstallToggleDrag();
+            projectTree.NodeChosen += (_, _) => ShowInspector();
+        }
+
+        // A click on a row of the tree shows the inspector, which has the editor of that row. A program can turn this off.
+        public bool OpenInspectorOnTreeClick { get; set; } = true;
+
+        private void ShowInspector()
+        {
+            if (OpenInspectorOnTreeClick)
+                mainTabs.SelectedItem = inspectorTab;
         }
 
         // A drag over the visibility or the mask buttons sets them all to one state. The whole drag is one undo step.

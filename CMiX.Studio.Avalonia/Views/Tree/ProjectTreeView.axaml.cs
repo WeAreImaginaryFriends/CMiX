@@ -167,14 +167,22 @@ namespace CMiX.Studio.Avalonia.Views
             return false;
         }
 
+        // A left click on a row, away from its buttons and its name box: the user chooses the node. It does not come when a node is
+        // selected by a program, a list or a peer. The main window uses it to show the inspector.
+        public event EventHandler<TreeNode>? NodeChosen;
+
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             pressedNode = null;
             if (!e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed || IsEditor(e.Source))
                 return;
 
-            pressedNode = ItemOf(e.Source)?.DataContext is TreeNode node && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
+            var node = ItemOf(e.Source)?.DataContext as TreeNode;
+            pressedNode = node != null && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
             pressPoint = e.GetPosition(treeView);
+
+            if (node != null)
+                NodeChosen?.Invoke(this, node);
         }
 
         private async void OnPointerMoved(object? sender, PointerEventArgs e)

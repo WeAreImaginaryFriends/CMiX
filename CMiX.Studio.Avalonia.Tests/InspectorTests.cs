@@ -1,4 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
+using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
 using CMiX.Core;
@@ -8,6 +13,8 @@ using CMiX.Studio.Avalonia.ViewModels;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls;
+using CMiX.Core.Undo;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using CameraModel = CMiX.Core.Rendering.Cameras.Camera;
 using CameraView = CMiX.Studio.Avalonia.Views.Camera;
@@ -32,6 +39,7 @@ namespace CMiX.Studio.Avalonia.Tests
             public MainViewModel ViewModel { get; init; } = null!;
             public Inspector Inspector { get; init; } = null!;
             public Layer Layer { get; init; } = null!;
+            public UndoManager UndoManager { get; init; } = null!;
 
             public ProjectTree Tree => ViewModel.ProjectTree;
             public TreeNode CompositionNode => Tree.Roots[0];
@@ -52,7 +60,7 @@ namespace CMiX.Studio.Avalonia.Tests
         // A composition with a layer. The layer has one of each kind of item. The inspector tab is shown.
         private static Screen Show()
         {
-            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            var (provider, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
             var composition = (Composition)viewModel.Project.CompositionManager.SelectedItem;
             composition.LayerManager.AddItem(typeof(Layer));
@@ -67,7 +75,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.SelectMainTab(window, "Inspector");
             var inspector = window.GetVisualDescendants().OfType<Inspector>().Single();
             TestServiceProviderFactory.Pump();
-            return new Screen { Window = window, ViewModel = viewModel, Inspector = inspector, Layer = layer };
+            return new Screen { Window = window, ViewModel = viewModel, Inspector = inspector, Layer = layer, UndoManager = provider.GetRequiredService<UndoManager>() };
         }
 
         private static void Select(Screen screen, TreeNode node)
@@ -222,6 +230,173 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Same(camera.Item, screen.Editor.Content);
             Assert.NotNull(screen.Find<CameraView>());
+        }
+
+        // ---- the inspector follows what happens to the item ----
+
+        [AvaloniaFact]
+        public async Task AnEntityMovedToAnotherLayer_StaysInTheInspector()
+        {
+            var screen = Show();
+            var composition = (Composition)screen.CompositionNode.Item!;
+            composition.LayerManager.AddItem(typeof(Layer));
+            TestServiceProviderFactory.Pump();
+            var entity = screen.Group("Entities").Children[0];
+            var item = entity.Item;
+            Select(screen, entity);
+            var otherEntities = screen.CompositionNode.Children[1].Children.Single(group => group.Header == "Entities");
+
+            await screen.Tree.DropAsync(entity, otherEntities, DropPosition.Inside);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Same(item, screen.Editor.Content);
+            Assert.NotNull(screen.Find<ModelEntity>());
+            Assert.Same(item, screen.Tree.SelectedNode!.Item);
+        }
+
+        [AvaloniaFact]
+        public void WhenTheCompositionOfTheSelectedLayerIsRemoved_TheInspectorShowsTheHint()
+        {
+            var screen = Show();
+            Select(screen, screen.LayerNode);
+            Assert.NotNull(screen.Find<LayerPostFXTab>());
+
+            screen.ViewModel.Project.CompositionManager.RemoveItem((IControl)screen.CompositionNode.Item!);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Null(screen.Tree.SelectedNode);
+            Assert.True(screen.Placeholder.IsEffectivelyVisible);
+            Assert.False(screen.Header.IsVisible);
+            Assert.False(screen.Scroller.IsVisible);
+        }
+
+        [AvaloniaFact]
+        public void AnUndoOfTheRemoval_AndARedo_LeaveTheInspectorWorking()
+        {
+            var screen = Show();
+            var camera = screen.Group("Cameras").Children[0];
+            Select(screen, camera);
+
+            screen.Layer.CameraManager.RemoveItem((IControl)camera.Item!);
+            TestServiceProviderFactory.Pump();
+            Assert.Equal("Cameras", screen.Title.Text);
+
+            screen.UndoManager.Undo();
+            TestServiceProviderFactory.Pump();
+            screen.UndoManager.Redo();
+            TestServiceProviderFactory.Pump();
+
+            Assert.Equal("Cameras", screen.Title.Text);
+            Assert.Null(screen.Find<CameraView>());
+        }
+
+        [AvaloniaFact]
+        public void AfterAnotherTab_TheInspectorShowsTheCurrentSelection()
+        {
+            var screen = Show();
+            Select(screen, screen.LayerNode);
+
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
+            Select(screen, screen.Group("Cameras").Children[0]);
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Inspector");
+
+            var inspector = screen.Window.GetVisualDescendants().OfType<Inspector>().Single();
+            Assert.NotNull(inspector.GetVisualDescendants().OfType<CameraView>().FirstOrDefault());
+            Assert.Null(inspector.GetVisualDescendants().OfType<LayerPostFXTab>().FirstOrDefault());
+        }
+
+        // ---- the inspector tab opens on a click in the tree ----
+
+        private static Point CenterOfRow(Screen screen, TreeNode node)
+        {
+            var tree = screen.Window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            screen.Window.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+            var item = tree.GetVisualDescendants().OfType<TreeViewItem>().First(row => ReferenceEquals(row.DataContext, node));
+            var rowBorder = item.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
+            // Right of the name and left of the buttons: on the row, on nothing else.
+            return rowBorder.TranslatePoint(new Point(rowBorder.Bounds.Width * 0.5, rowBorder.Bounds.Height / 2), screen.Window)!.Value;
+        }
+
+        private static void Click(Screen screen, Point point)
+        {
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            TestServiceProviderFactory.Pump();
+        }
+
+        private static string SelectedTab(Screen screen) =>
+            (TestServiceProviderFactory.MainTabControl(screen.Window).SelectedItem as TabItem is { Header: AppIcon icon }) ? icon.IconKey : "";
+
+        [AvaloniaFact]
+        public void AClickOnARow_ShowsTheInspectorWithThatItem()
+        {
+            var screen = Show();
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
+
+            Click(screen, CenterOfRow(screen, screen.Group("Cameras").Children[0]));
+
+            Assert.Equal("Inspector", SelectedTab(screen));
+            Assert.NotNull(screen.Find<CameraView>());
+        }
+
+        [AvaloniaFact]
+        public void AClickOnAGroup_ShowsTheInspectorToo()
+        {
+            var screen = Show();
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
+
+            Click(screen, CenterOfRow(screen, screen.Group("Lights")));
+
+            Assert.Equal("Inspector", SelectedTab(screen));
+            Assert.Equal("Lights", screen.Title.Text);
+        }
+
+        [AvaloniaFact]
+        public void AClickOnTheVisibilityButton_DoesNotChangeTheTab()
+        {
+            var screen = Show();
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
+            var tree = screen.Window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            var item = tree.GetVisualDescendants().OfType<TreeViewItem>().First(row => ReferenceEquals(row.DataContext, screen.LayerNode));
+            var toggle = item.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder")
+                .GetVisualDescendants().OfType<ToggleButton>().First(button => CMiX.UI.Behaviors.ToggleDrag.GetGroup(button) == "visibility");
+            var point = toggle.TranslatePoint(new Point(toggle.Bounds.Width / 2, toggle.Bounds.Height / 2), screen.Window)!.Value;
+
+            Click(screen, point);
+
+            Assert.Equal("Settings", SelectedTab(screen));
+        }
+
+        [AvaloniaFact]
+        public void ASelectionByAProgramOrAList_DoesNotChangeTheTab()
+        {
+            var screen = Show();
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
+
+            Select(screen, screen.LayerNode);
+            Assert.Equal("Settings", SelectedTab(screen));
+
+            screen.Layer.CameraManager.AddItem(typeof(CameraModel));
+            TestServiceProviderFactory.Pump();
+            screen.Layer.CameraManager.SelectAt(0);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Equal("Settings", SelectedTab(screen));
+        }
+
+        [AvaloniaFact]
+        public void WhenTheOptionIsOff_AClickDoesNotChangeTheTab()
+        {
+            var screen = Show();
+            screen.Window.OpenInspectorOnTreeClick = false;
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
+
+            Click(screen, CenterOfRow(screen, screen.LayerNode));
+
+            Assert.Equal("Settings", SelectedTab(screen));
+            Assert.Same(screen.Layer, screen.Tree.SelectedNode!.Item);
         }
     }
 }
