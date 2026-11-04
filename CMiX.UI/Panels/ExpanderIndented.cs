@@ -9,6 +9,12 @@ namespace CMiX.UI.Panels
 {
     public class ExpanderIndented : Expander
     {
+        static ExpanderIndented()
+        {
+            // A panel is open when it appears. The user closes what is not needed.
+            IsExpandedProperty.OverrideDefaultValue<ExpanderIndented>(true);
+        }
+
         public static readonly StyledProperty<int> IndentationProperty =
             AvaloniaProperty.Register<ExpanderIndented, int>(nameof(Indentation), 0, defaultBindingMode: BindingMode.TwoWay);
         public int Indentation

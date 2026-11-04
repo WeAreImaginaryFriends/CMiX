@@ -232,6 +232,36 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.NotNull(screen.Find<CameraView>());
         }
 
+        // Every panel of an editor is open when the item is new.
+        [AvaloniaTheory]
+        [InlineData("composition")]
+        [InlineData("layer")]
+        [InlineData("entity")]
+        [InlineData("quad")]
+        [InlineData("text")]
+        [InlineData("camera")]
+        [InlineData("light")]
+        public void EveryPanelOfAnEditor_IsOpen(string kind)
+        {
+            var screen = Show();
+            var node = kind switch
+            {
+                "composition" => screen.CompositionNode,
+                "layer" => screen.LayerNode,
+                "entity" => screen.Group("Entities").Children[0],
+                "quad" => screen.Group("Entities").Children[1],
+                "text" => screen.Group("Entities").Children[2],
+                "camera" => screen.Group("Cameras").Children[0],
+                _ => screen.Group("Lights").Children[0]
+            };
+
+            Select(screen, node);
+
+            var expanders = screen.Editor.GetVisualDescendants().OfType<Expander>().ToList();
+            Assert.NotEmpty(expanders);
+            Assert.All(expanders, expander => Assert.True(expander.IsExpanded, "Closed panel: " + expander.Header));
+        }
+
         // ---- the inspector follows what happens to the item ----
 
         [AvaloniaFact]

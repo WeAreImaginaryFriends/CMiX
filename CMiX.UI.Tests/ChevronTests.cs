@@ -123,12 +123,14 @@ namespace CMiX.UI.Tests
         {
             var view = Show(Expander(kind));
             var chevron = view.GetVisualDescendants().OfType<Chevron>().Single();
+
+            // An expander is open by default, so the test closes it first.
+            Assert.True(chevron.IsOpen);
+            ((Expander)view).IsExpanded = false;
+            Dispatcher.UIThread.RunJobs();
             Assert.False(chevron.IsOpen);
 
-            if (view is ExpanderIndented indented)
-                indented.IsExpanded = true;
-            else
-                ((Expander)view).IsExpanded = true;
+            ((Expander)view).IsExpanded = true;
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(chevron.IsOpen);

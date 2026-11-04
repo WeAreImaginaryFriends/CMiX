@@ -31,6 +31,8 @@
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type Expander}" TargetType="Expander">
+        <!-- A panel is open when it appears. A binding or a value in the view can still close it. -->
+        <Setter Property="IsExpanded" Value="True" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -116,6 +118,7 @@
     </ControlTheme>
 
     <ControlTheme x:Key="ExpanderItem" TargetType="Expander">
+        <Setter Property="IsExpanded" Value="True" />
         <Setter Property="Background" Value="{DynamicResource Grey300Brush}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />

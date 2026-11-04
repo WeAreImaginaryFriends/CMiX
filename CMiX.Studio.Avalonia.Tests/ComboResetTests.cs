@@ -122,7 +122,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var original = filter.AlphaChannel.Value;
             filter.AlphaChannel.Value = Enum.GetValues<AlphaChannel>().First(v => v != original);
 
-            var combo = view.GetVisualDescendants().OfType<ComboBoxCaptioned>().Single();
+            var combo = view.GetVisualDescendants().OfType<ComboBoxCaptioned>().Single(c => c.Caption == "Channel");
             combo.ContextMenu!.Items.OfType<MenuItem>().Single(i => Equals(i.Header, "Reset")).Command!.Execute(null);
 
             Assert.Equal(original, filter.AlphaChannel.Value);

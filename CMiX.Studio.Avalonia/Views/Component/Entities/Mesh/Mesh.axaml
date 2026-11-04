@@ -69,8 +69,7 @@
 
         <ui:ExpanderIndented
             Header="Geometry FX"
-            Indentation="4"
-            IsExpanded="False">
+            Indentation="4">
 
             <StackPanel 
               Margin="8" 
@@ -110,8 +109,7 @@
         <ui:ExpanderIndented
 
             Header="Displacement"
-            Indentation="4"
-            IsExpanded="False">
+            Indentation="4">
 
             <StackPanel 
               Margin="8" 

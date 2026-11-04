@@ -111,14 +111,20 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
             var transform = ExpanderWithHeader(view, "Transform");
 
-            Assert.False(transform.IsExpanded);
+            // The transform is open, as every panel is when it is new.
+            Assert.True(transform.IsExpanded);
 
-            transform.IsExpanded = true;
             transform.IsExpanded = false;
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(mask.IsExpanded);
             Assert.False(mask.TransformIsExpanded);
+
+            transform.IsExpanded = true;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(mask.IsExpanded);
+            Assert.True(mask.TransformIsExpanded);
         }
 
         [AvaloniaFact]
