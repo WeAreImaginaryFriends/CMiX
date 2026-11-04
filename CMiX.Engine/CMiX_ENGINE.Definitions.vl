@@ -2067,8 +2067,9 @@
                 <Pin Id="HoYlYULnOGjLh1gqAnVP8I" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="U2m21hZPM1JMWyvFLs1yRr" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="NS28gdG2acAODtKWpb6jaC" Name="Name" Kind="InputPin" />
+                <Pin Id="Pcit5CRDKffMWgn1zdadYW" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="FwsfvVLj5huNPzj9dGu3yj" Comment="Name" Bounds="476,301,20,15" ShowValueBox="true" isIOBox="true" Value="X">
+              <Pad Id="FwsfvVLj5huNPzj9dGu3yj" Comment="Name" Bounds="377,310,20,15" ShowValueBox="true" isIOBox="true" Value="X">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
@@ -2136,8 +2137,9 @@
                 <Pin Id="P6ZoFQ0waLyOFVJDpr6Ops" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="PTtEKdQvFPqNf6n1cGFK6X" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="HXqrtEo6TY3PIXgDTVe2He" Name="Name" Kind="InputPin" />
+                <Pin Id="IaBTgxcAHtsPM0tdPBQtzj" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="R9x0Vb8BWy8MSozuNfM9RO" Comment="Name" Bounds="1305,321,50,15" ShowValueBox="true" isIOBox="true" Value="Count">
+              <Pad Id="R9x0Vb8BWy8MSozuNfM9RO" Comment="Name" Bounds="1232,321,50,15" ShowValueBox="true" isIOBox="true" Value="Count">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
@@ -2154,11 +2156,11 @@
                 <Pin Id="ItQQbM38eg4LYrg78z4Nx6" Name="Input 2" Kind="InputPin" />
                 <Pin Id="LwyA2R2hz0rPryUNwuWVZQ" Name="Input 3" Kind="InputPin" />
               </Node>
-              <ControlPoint Id="EsrXE5JC4bDPAfFz7wOy08" Bounds="327,301" />
-              <ControlPoint Id="Muh2WfVxY75MTAsaYzqWiQ" Bounds="1196,321" />
-              <Pad Id="MpQidunnh17NAnLA1alBNK" SlotId="JHSz2GrclCjLXhAE4auhJe" Bounds="394,80" />
-              <ControlPoint Id="AbTKnKRUHFCPSP16ZEOER1" Bounds="394,121" />
-              <Pad Id="NfK84ULr34LMrfKBj5xCHJ" Comment="SyncMode" Bounds="394,41,72,15" ShowValueBox="true" isIOBox="true" Value="Unbound">
+              <ControlPoint Id="EsrXE5JC4bDPAfFz7wOy08" Bounds="277,320" />
+              <ControlPoint Id="Muh2WfVxY75MTAsaYzqWiQ" Bounds="1159,311" />
+              <Pad Id="MpQidunnh17NAnLA1alBNK" SlotId="JHSz2GrclCjLXhAE4auhJe" Bounds="1044,71" />
+              <ControlPoint Id="AbTKnKRUHFCPSP16ZEOER1" Bounds="1044,112" />
+              <Pad Id="NfK84ULr34LMrfKBj5xCHJ" Comment="SyncMode" Bounds="1044,32,72,15" ShowValueBox="true" isIOBox="true" Value="Unbound">
                 <p:TypeAnnotation LastCategoryFullName="Main" LastDependency="CMiX_ENGINEUtils.csproj">
                   <Choice Kind="TypeFlag" Name="SyncMode" />
                 </p:TypeAnnotation>
@@ -2172,7 +2174,7 @@
               <Pad Id="D0CLnSQT2xtQW1bxZQAYBt" SlotId="MevJifGzdUYMqysYUEA4Sv" Bounds="190,269" />
               <Pad Id="VPKWYgNqqyCNP2xPI3jOgj" SlotId="MevJifGzdUYMqysYUEA4Sv" Bounds="1098,260" />
               <ControlPoint Id="IgO8yAI2w6xMiOyBYpJRTj" Bounds="1086,767" />
-              <Pad Id="VqcBt6NWTmjNGSbq3sIEyO" SlotId="VquwPJoJDqyM0DusF0FOYT" Bounds="441,331" />
+              <Pad Id="VqcBt6NWTmjNGSbq3sIEyO" SlotId="VquwPJoJDqyM0DusF0FOYT" Bounds="372,340" />
               <Node Bounds="621,359,303,400" Id="P5vacmt40ZdPJOf8XAkegg">
                 <p:NodeReference LastCategoryFullName="CMiX.Engine.Animations" LastDependency="CMiX_ENGINE.Definitions.vl">
                   <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
@@ -2294,16 +2296,17 @@
                 <Pin Id="VW6DYFwopUuLlKJC1PDEy9" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="Ev2faHi8u2VMBmqwD6f9sU" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="SlDoiVtfeInL10G6ti1lS5" Name="Name" Kind="InputPin" />
+                <Pin Id="C2xXB11GgjGPZDemqj3GE6" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="GyKRwIJHqLeOf8ZaZyRFO4" Comment="Name" Bounds="921,291,20,15" ShowValueBox="true" isIOBox="true" Value="Y">
+              <Pad Id="GyKRwIJHqLeOf8ZaZyRFO4" Comment="Name" Bounds="822,310,20,15" ShowValueBox="true" isIOBox="true" Value="Y">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
               </Pad>
-              <ControlPoint Id="V22Vo0BhNUwOruNFSV3vaU" Bounds="772,291" />
+              <ControlPoint Id="V22Vo0BhNUwOruNFSV3vaU" Bounds="722,310" />
               <ControlPoint Id="NtEqqkdaEmFQIYuIECsAiC" Bounds="623,291" />
               <Pad Id="AQWPLql2p98LhaDFmmEz69" SlotId="MevJifGzdUYMqysYUEA4Sv" Bounds="635,260" />
-              <Pad Id="JQ8UsZw0ebFO1hpUXHIUqR" SlotId="VquwPJoJDqyM0DusF0FOYT" Bounds="877,331" />
+              <Pad Id="JQ8UsZw0ebFO1hpUXHIUqR" SlotId="VquwPJoJDqyM0DusF0FOYT" Bounds="817,340" />
             </Canvas>
             <Patch Id="JKEUoqOQ92YQZO6IjjIJMc" Name="Create" ParticipatingElements="BYkD2kE0hnvOnwPMcIgkYL">
               <Pin Id="QmxABVwmUvlM56mvQ94y9i" Name="ViewModel" Kind="InputPin" />
@@ -2416,6 +2419,9 @@
             <Link Id="EIcyzDYpLrWLjzacUcCisr" Ids="BBAXSahBNNfOpk8zyMLI0H,TlXQBMy6ifoPVLGOoC8id5" />
             <Link Id="Ko7ANUmisW7MNqWHffsfdY" Ids="R7z0C63PRPqL2KMLhnNPVV,LiQagiYtQAoPZocE1jnKzy" />
             <Link Id="OMhhK3YcgUtMcYgpRJ26iE" Ids="RRk5NNWLKpMQUipdCrakuW,ItQQbM38eg4LYrg78z4Nx6" />
+            <Link Id="GY73lPSuWzAPEuzRJ4OSfb" Ids="MpQidunnh17NAnLA1alBNK,Pcit5CRDKffMWgn1zdadYW" />
+            <Link Id="VylKYDe9olaODk0nVEc2uy" Ids="MpQidunnh17NAnLA1alBNK,C2xXB11GgjGPZDemqj3GE6" />
+            <Link Id="DOWQYLpDf8uNXOE5YJACif" Ids="MpQidunnh17NAnLA1alBNK,IaBTgxcAHtsPM0tdPBQtzj" />
           </Patch>
         </Node>
         <!--
@@ -2554,6 +2560,7 @@
                 <Pin Id="OJTXU3YWZi1LBUXH4fmPio" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="IJEQWN8WTIiNx2xi8eQ4aC" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="GPPigDcUdZMLbghoo8iMqK" Name="Name" Kind="InputPin" />
+                <Pin Id="J0WG8Tr2SSDLIsb7atwfkF" Name="SyncMode" Kind="InputPin" />
               </Node>
               <Pad Id="O43Nd1uKoMPPWNsF7qkhYb" SlotId="GAgUbVLJHn1OS94qDDsEjq" Bounds="237,830" />
               <Pad Id="RTcJxRaFdXsNMGe7HZTlGq" Comment="Name" Bounds="492,830,60,15" ShowValueBox="true" isIOBox="true" Value="Value">
@@ -2901,6 +2908,7 @@
                 <Pin Id="SPpeXsrIwgfNNGkY9YYWYt" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="ESGHoccidp8MxIz8SdWw3c" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="M6GhOBHxDrGQCNMg56oQfA" Name="Name" Kind="InputPin" />
+                <Pin Id="ODVMHyuF7yOPom8aalc51p" Name="SyncMode" Kind="InputPin" />
               </Node>
               <Node Bounds="226,300,66,26" Id="Sm09ODybzGeLjdYEKAx4ir">
                 <p:NodeReference LastCategoryFullName="CMiX.Core.Modulation.Modulators.LFOModulator" LastDependency="CMiX.Core.csproj">
@@ -2952,6 +2960,7 @@
                 <Pin Id="KOa14itL7wHNAoBKTSgRn2" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="DO1c5oV4rX6N80eWE0bXnq" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="ElYs3eCHwwHOKvMS02MIqo" Name="Name" Kind="InputPin" />
+                <Pin Id="LQWSOxsLXNEOLSrhTfc4um" Name="SyncMode" Kind="InputPin" />
               </Node>
               <Pad Id="DPOSXi5mXEMLLZAnzOmqPH" SlotId="OXPhyiuEwdAOcGAbcYJQzt" Bounds="764,820" />
               <Pad Id="K7XAuoQNijuOLD6aZ8rIIr" Comment="Name" Bounds="844,740,40,15" ShowValueBox="true" isIOBox="true" Value="Cycles">
@@ -3078,6 +3087,7 @@
                 <Pin Id="Gh2roSl62XaPREZyY6qVsW" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="JnmoQ3ReLkeQVJOcc7FkVM" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="HDIQpsK4ALDLc7FgTnlDb3" Name="Name" Kind="InputPin" />
+                <Pin Id="HOReQFwO6rDP7dHUsWw83t" Name="SyncMode" Kind="InputPin" />
               </Node>
               <Pad Id="VVUk6kLlVKFLoGfa8py6Ek" Comment="Name" Bounds="1267,750,40,15" ShowValueBox="true" isIOBox="true" Value="Gate">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
@@ -3455,6 +3465,7 @@
                 <Pin Id="DRTUIi0sReYNBTCc3JNj3o" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="EZ1yudKnDMQLwIHaZYNAMS" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="GVeyzKRKJghNd5UOMb2SWH" Name="Name" Kind="InputPin" />
+                <Pin Id="L83ZC361OxcP2mROuoQSFo" Name="SyncMode" Kind="InputPin" />
               </Node>
               <ControlPoint Id="BhcZFKAFTfnN4nooCmp8zO" Bounds="143,622" />
               <Node Bounds="141,571,39,19" Id="OyoTmRd5sCuLeuqgqdlvw9">
@@ -3843,7 +3854,7 @@
               </Pad>
               <Pad Id="D75MJM9wkK2LtsXFWZzbwA" SlotId="VQmZi7fMeK0Pjc8yELddZ3" Bounds="153,160" />
               <ControlPoint Id="NYc1JQKzeAAPAP6mvMFQCe" Bounds="153,111" />
-              <Node Bounds="195,601,106,26" Id="ADYUntQnrbiNNrjXLB1YEI">
+              <Node Bounds="220,530,106,26" Id="ADYUntQnrbiNNrjXLB1YEI">
                 <p:NodeReference LastCategoryFullName="CMiX.Engine.IO.ICMiXServiceMachineRole" LastDependency="CMiX_ENGINE.Definitions.vl">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="InterfaceTypeFlag" Name="ICMiXServiceMachineRole" />
@@ -3853,7 +3864,44 @@
                 <Pin Id="Aoe9Hmplj1EQNInoRu4EMV" Name="Output" Kind="StateOutputPin" />
                 <Pin Id="NxJqSFhf3zZNnKkKcDxC8Z" Name="IsPrimary" Kind="OutputPin" />
               </Node>
-              <Pad Id="MrKMpCNIXFsOpiLpt5Gp8T" SlotId="VQmZi7fMeK0Pjc8yELddZ3" Bounds="197,573" />
+              <Pad Id="MrKMpCNIXFsOpiLpt5Gp8T" SlotId="VQmZi7fMeK0Pjc8yELddZ3" Bounds="222,491" />
+              <ControlPoint Id="DkzcqlR27hgNyA3FlVae1D" Bounds="684,111" />
+              <ControlPoint Id="N34AZbyGgIBNF2mbjAKL04" Bounds="684,170" />
+              <Pad Id="H2y5ZEQTSJsOdchfGXvMY5" SlotId="Ibw6gLWxHLFQQIHxuMxk2D" Bounds="684,170" />
+              <Pad Id="UevafcTomOhNJbEZerFDSI" SlotId="Ibw6gLWxHLFQQIHxuMxk2D" Bounds="96,549" />
+              <Node Bounds="94,580,25,19" Id="FNjfA6DScxfOHs0Ve1r6Mc">
+                <p:NodeReference LastCategoryFullName="Math" LastDependency="VL.CoreLib.vl">
+                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                  <Choice Kind="OperationCallFlag" Name="=" />
+                </p:NodeReference>
+                <Pin Id="GwvVvBW9QB1MYsBgOGnTNQ" Name="Input" Kind="InputPin" />
+                <Pin Id="GdCSgC84VNUMTMzod0ZrQO" Name="Input 2" Kind="InputPin" />
+                <Pin Id="AeqcGDd7CNDLZr62c4nuRW" Name="Result" Kind="OutputPin" />
+              </Node>
+              <Pad Id="Mz9nM2UJ0wlMFk2GHEKBvN" Comment="" Bounds="116,549,72,15" ShowValueBox="true" isIOBox="true" Value="Unbound">
+                <p:TypeAnnotation LastCategoryFullName="Main" LastDependency="CMiX_ENGINEUtils.csproj">
+                  <Choice Kind="TypeFlag" Name="SyncMode" />
+                </p:TypeAnnotation>
+              </Pad>
+              <Node Bounds="296,610,30,19" Id="B07XwgEn5DcP2RWiF5HYvn">
+                <p:NodeReference LastCategoryFullName="Primitive.Boolean" LastDependency="VL.CoreLib.vl">
+                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                  <CategoryReference Kind="BooleanType" Name="Boolean" NeedsToBeDirectParent="true" />
+                  <Choice Kind="OperationCallFlag" Name="OR" />
+                </p:NodeReference>
+                <Pin Id="Kv18QgdYrnbL2nC4RInI6S" Name="Input" Kind="StateInputPin" />
+                <Pin Id="Fn5q6aCbiNNN8sKuXgBXGd" Name="Input 2" Kind="InputPin" />
+                <Pin Id="KovoW3wTPYsPG8T2lGXIsk" Name="Output" Kind="StateOutputPin" />
+              </Node>
+              <Pad Id="IF3IpVBccQpOrkIdycGyQO" Bounds="126,625,131,19" ShowValueBox="true" isIOBox="true" Value="Clean that up later !">
+                <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
+                  <Choice Kind="TypeFlag" Name="String" />
+                </p:TypeAnnotation>
+                <p:ValueBoxSettings>
+                  <p:fontsize p:Type="Int32">9</p:fontsize>
+                  <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
+                </p:ValueBoxSettings>
+              </Pad>
             </Canvas>
             <Patch Id="Q0bKXYYLYUqNUgH9VU02v9" Name="Create">
               <Pin Id="NF3c9lEeZ9oLNgwYK5Dnyx" Name="ICMiXServiceMachineRole" Kind="InputPin">
@@ -3867,6 +3915,11 @@
                 </p:TypeAnnotation>
               </Pin>
               <Pin Id="S66bXxwtPuuMmNgxU5CNgz" Name="Name" Kind="InputPin" />
+              <Pin Id="Af693vC4qDlNZtGhb2HsRv" Name="SyncMode" Kind="InputPin">
+                <p:TypeAnnotation LastCategoryFullName="Main" LastDependency="CMiX_ENGINEUtils.csproj">
+                  <Choice Kind="TypeFlag" Name="SyncMode" />
+                </p:TypeAnnotation>
+              </Pin>
             </Patch>
             <Patch Id="H6JEtutOrXnLW642rvxEm6" Name="Update">
               <Pin Id="KY86f7wZLCAMueJA6doXnB" Name="Update" Kind="InputPin" />
@@ -3945,7 +3998,14 @@
             <Link Id="ANc43yyyve9P0psiiqOWlx" Ids="NYc1JQKzeAAPAP6mvMFQCe,D75MJM9wkK2LtsXFWZzbwA" />
             <Link Id="TVT3UYtttfrOybycEk2NPB" Ids="NF3c9lEeZ9oLNgwYK5Dnyx,NYc1JQKzeAAPAP6mvMFQCe" IsHidden="true" />
             <Link Id="CxDiIyOzIyBOdkWbr0xBWR" Ids="MrKMpCNIXFsOpiLpt5Gp8T,CFqiuqg2phQLOBkCUWTho3" />
-            <Link Id="AlZc3RBfhEXNUfTpmHnZb7" Ids="NxJqSFhf3zZNnKkKcDxC8Z,IrGzC6NrVb3NY9BRgsYI6H" />
+            <Link Id="Vmb52gq6LePNUbwQZ3bhoQ" Ids="Af693vC4qDlNZtGhb2HsRv,DkzcqlR27hgNyA3FlVae1D" IsHidden="true" />
+            <Slot Id="Ibw6gLWxHLFQQIHxuMxk2D" Name="SyncMode" />
+            <Link Id="LbOEAADcbW0Nw5UawI0XKq" Ids="DkzcqlR27hgNyA3FlVae1D,N34AZbyGgIBNF2mbjAKL04,H2y5ZEQTSJsOdchfGXvMY5" />
+            <Link Id="VLu8FV1AuGxNxDxfiy6Xpq" Ids="UevafcTomOhNJbEZerFDSI,GwvVvBW9QB1MYsBgOGnTNQ" />
+            <Link Id="FJCwtLRuK4WNBdwtREGT4c" Ids="Mz9nM2UJ0wlMFk2GHEKBvN,GdCSgC84VNUMTMzod0ZrQO" />
+            <Link Id="IMgcUmILhu5M7TvygxbdO4" Ids="NxJqSFhf3zZNnKkKcDxC8Z,Fn5q6aCbiNNN8sKuXgBXGd" />
+            <Link Id="Kvh0ftqBxDNNv5M2QoYpfj" Ids="AeqcGDd7CNDLZr62c4nuRW,Kv18QgdYrnbL2nC4RInI6S" />
+            <Link Id="J16w5MeiVelOFlFa5Vct9j" Ids="KovoW3wTPYsPG8T2lGXIsk,IrGzC6NrVb3NY9BRgsYI6H" />
           </Patch>
         </Node>
         <!--
@@ -4031,8 +4091,9 @@
                 <Pin Id="OL8fnVK6WfBLkaBSGJgkXm" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="KgtXHoXEgJQMOojifx4wm1" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="RR5JGWIdL20MoNXQH5fOrr" Name="Name" Kind="InputPin" />
+                <Pin Id="OE8oGcxtcI6MkuWBn339fp" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="OYxFa27OOGgMIzkHsQ7AbE" Comment="Name" Bounds="300,349,46,15" ShowValueBox="true" isIOBox="true" Value="Bass">
+              <Pad Id="OYxFa27OOGgMIzkHsQ7AbE" Comment="Name" Bounds="236,331,46,15" ShowValueBox="true" isIOBox="true" Value="Bass">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
@@ -4108,8 +4169,9 @@
                 <Pin Id="K3LKsDezTlWQF8q73dXYkq" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="L9fCfB031FTLTXLNY6HXcu" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="IPUA3XHcM4eMInXiaFuwMs" Name="Name" Kind="InputPin" />
+                <Pin Id="L6T0ZXpk28cNT4Vd773Whu" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="V4iaaJQARn2LZBA1FjeZsf" Comment="Name" Bounds="750,350,61,15" ShowValueBox="true" isIOBox="true" Value="LowerMid">
+              <Pad Id="V4iaaJQARn2LZBA1FjeZsf" Comment="Name" Bounds="678,331,61,15" ShowValueBox="true" isIOBox="true" Value="LowerMid">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
@@ -4173,8 +4235,9 @@
                 <Pin Id="F0Eu8269J6bLQ89W0DwRUI" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="Vj92WX5P6fpOsX5W1lBlRP" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="Bp1dZlu1JgOK98g5oB2TEC" Name="Name" Kind="InputPin" />
+                <Pin Id="Fyl8rAHWFCwPtbxDn3F4MA" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="QcNU9NApPXeORMf8E7X6m3" Comment="Name" Bounds="1626,349,61,15" ShowValueBox="true" isIOBox="true" Value="High">
+              <Pad Id="QcNU9NApPXeORMf8E7X6m3" Comment="Name" Bounds="1563,331,61,15" ShowValueBox="true" isIOBox="true" Value="High">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
@@ -4241,20 +4304,21 @@
                 <Pin Id="LSyMLz55dwPNH3m3y6EVZV" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="EGXB1r9fjGOMLCrStvFWnH" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="Bvxy8w7TWsuOFDuWRzHIpm" Name="Name" Kind="InputPin" />
+                <Pin Id="GunaWIqTD4fP1yGmUhsxJ8" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="HFo32ByIiMaOnNbTfB4Hm8" Comment="Name" Bounds="1201,350,61,15" ShowValueBox="true" isIOBox="true" Value="HigherMid">
+              <Pad Id="HFo32ByIiMaOnNbTfB4Hm8" Comment="Name" Bounds="1128,331,61,15" ShowValueBox="true" isIOBox="true" Value="HigherMid">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
               </Pad>
-              <ControlPoint Id="PZf8Bsg6rwJQAzNySQ2GyC" Bounds="204,349" />
-              <ControlPoint Id="HEHG9wZLF4wOrAhxT1T2vK" Bounds="643,300" />
-              <ControlPoint Id="EBe9RFbt1hVOKU3l7fuHm4" Bounds="1092,300" />
+              <ControlPoint Id="PZf8Bsg6rwJQAzNySQ2GyC" Bounds="172,331" />
+              <ControlPoint Id="HEHG9wZLF4wOrAhxT1T2vK" Bounds="607,300" />
+              <ControlPoint Id="EBe9RFbt1hVOKU3l7fuHm4" Bounds="1056,300" />
               <Pad Id="NRnuCFWLK6rLMflKQ37ok3" SlotId="SgAktIfKdICP5mBCe6aL0c" Bounds="1103,349" />
-              <ControlPoint Id="Q8EvnwhBgCLMMVpfRDV3xn" Bounds="1530,300" />
-              <Pad Id="N89f6H4aI7PO0hFnYj4GmR" SlotId="QmFV5QtS3BpN6a0yN16XEQ" Bounds="227,79" />
-              <ControlPoint Id="UC9RucsuRdxPK559hTLE5G" Bounds="227,121" />
-              <Pad Id="FnIRMdamsd8Lxh3L7ZT31E" Comment="SyncMode" Bounds="227,35,72,15" ShowValueBox="true" isIOBox="true" Value="Bound">
+              <ControlPoint Id="Q8EvnwhBgCLMMVpfRDV3xn" Bounds="1498,300" />
+              <Pad Id="N89f6H4aI7PO0hFnYj4GmR" SlotId="QmFV5QtS3BpN6a0yN16XEQ" Bounds="847,71" />
+              <ControlPoint Id="UC9RucsuRdxPK559hTLE5G" Bounds="847,151" />
+              <Pad Id="FnIRMdamsd8Lxh3L7ZT31E" Comment="SyncMode" Bounds="847,27,72,15" ShowValueBox="true" isIOBox="true" Value="Unbound">
                 <p:TypeAnnotation LastCategoryFullName="Main" LastDependency="CMiX_ENGINEUtils.csproj">
                   <Choice Kind="TypeFlag" Name="SyncMode" />
                 </p:TypeAnnotation>
@@ -4502,6 +4566,10 @@
             <Link Id="GGxj27qPJaUOEYQw8JOxZc" Ids="PGlLKTLR1K5OMyWvPkUHWd,QDMAinnmdtOMZLf0sv5Pcc" />
             <Link Id="FKMyuiZf6WuONGTsMYUUng" Ids="ANZVBe2hK9AOtH7qRmiJbp,HWJByy8ACXpOWIyor17vE6" />
             <Link Id="JWOgUm0c8POLITtOfhyBWI" Ids="OwtN321WC2OOfFHIYMs2oX,CGymvoOFtyEL0Nba7AJafX" />
+            <Link Id="DJ193LSfQMZLWehKD48HNj" Ids="N89f6H4aI7PO0hFnYj4GmR,OE8oGcxtcI6MkuWBn339fp" />
+            <Link Id="REyUt2hrAQwNnvRmFLgNiv" Ids="N89f6H4aI7PO0hFnYj4GmR,L6T0ZXpk28cNT4Vd773Whu" />
+            <Link Id="ACqwiJ55z3BOME2TUFv9tK" Ids="N89f6H4aI7PO0hFnYj4GmR,GunaWIqTD4fP1yGmUhsxJ8" />
+            <Link Id="Hf3TkduexbkO3LcLKJAwey" Ids="N89f6H4aI7PO0hFnYj4GmR,Fyl8rAHWFCwPtbxDn3F4MA" />
           </Patch>
         </Node>
         <Node Bounds="558,75,227,80" Id="CjX9d4rzqHQL1VVLEDlIj9">
@@ -4896,6 +4964,7 @@
                 <Pin Id="GO5bAijV7v3Nusw0yx1XuG" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="GywvZgv4VQlLaMn0ucC506" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="IsP7vSO2fTCPSMwSDBQvj6" Name="Name" Kind="InputPin" />
+                <Pin Id="VXlrnZMwHkROywvW1unsxE" Name="SyncMode" Kind="InputPin" />
               </Node>
               <Pad Id="EoSSH1W378GMLMrswaEkmC" SlotId="HMdFWwL9TVcMevlLGoMVsK" Bounds="227,761" />
               <Pad Id="E5C4WQOrPlMLucOi9N3Ska" Comment="Name" Bounds="532,761,60,15" ShowValueBox="true" isIOBox="true" Value="Value">
@@ -5994,6 +6063,7 @@
                 <Pin Id="NGdDGoXxQQ9LtrRczJwchl" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="EWl4rUczL4lMFbGgOKHdp8" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="HISMDRz2SQGLQisO0VXNQS" Name="Name" Kind="InputPin" />
+                <Pin Id="THbmmgMixqlO32EH7ol3AO" Name="SyncMode" Kind="InputPin" />
               </Node>
               <Pad Id="Q4BUibE1mg5P4aTnmri3xX" SlotId="ETBNEOuhyH7NTtRSZAq6EB" Bounds="218,700" />
               <Pad Id="Q6ttfj2E7h3O7yrNCrAEI0" Comment="Name" Bounds="482,700,60,15" ShowValueBox="true" isIOBox="true" Value="Value">
@@ -6468,13 +6538,14 @@
                 <Pin Id="TL2MGLzrPx1PY8IfPfWGIT" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="SF3xlhP3BejPBCw68dfA2P" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="SxoZxolX32HNVfqxm5GMHx" Name="Name" Kind="InputPin" />
+                <Pin Id="KciEc5BEaEcLMaL3LQdJBP" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="Br67fWdP93iOsCmWNV8J5Y" Comment="Name" Bounds="980,300,45,15" ShowValueBox="true" isIOBox="true" Value="Value">
+              <Pad Id="Br67fWdP93iOsCmWNV8J5Y" Comment="Name" Bounds="727,271,45,15" ShowValueBox="true" isIOBox="true" Value="Value">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
               </Pad>
-              <ControlPoint Id="FBTuymCAlDcLEFiIdyOehb" Bounds="600,300" />
+              <ControlPoint Id="FBTuymCAlDcLEFiIdyOehb" Bounds="473,281" />
               <ControlPoint Id="KneFcOCZgbiOXsPgKhWWbQ" Bounds="220,251" />
               <Pad Id="UxfkfW1jtWGOWzqfhzUMbi" SlotId="B5emlcSHYqMOCcQa3oLBT7" Bounds="172,511" />
               <Pad Id="FpcsiFEMQmZQHWyvWJcJT7" SlotId="C6hX0KGhRabMploVKpO2PW" Bounds="232,301" />
@@ -6490,6 +6561,7 @@
                 <Pin Id="QHQRDU0pi50PgFoJ7gAIlV" Name="Input" Kind="InputPin" />
                 <Pin Id="QK6zC3ntnawMurDvrKOF4S" Name="Result" Kind="OutputPin" />
               </Node>
+              <ControlPoint Id="IzLzHxLQ2AcNplbCCLZE7K" Bounds="980,261" />
             </Canvas>
             <Patch Id="HdTXAhAsas5MhAOSAdlzAM" Name="Create" ParticipatingElements="P9Q4BTfZ0rEM7mRiJ8b4V5">
               <Pin Id="RuIFv5tyJoYMy6yqAXqv7h" Name="ViewModel" Kind="InputPin" />
@@ -6583,6 +6655,7 @@
             <Link Id="VTJHr6rAtchNP7rXIMO8t7" Ids="P4zqYcUR1d7O8Qjw4kOlM8,NyHBOiWYV4CMZo2zzRww5G" />
             <Link Id="Oq1hlTScYqaLoR5JXgQrI6" Ids="MYZG5A7ntgUMergdpLdAXA,HvPCaQrFx3tNux5WTJmKP0" />
             <Link Id="QCd6NWdxFF5OPvWhxh7ZRR" Ids="Fv5wheMSogzLdDXc67v2tv,J5sWXEvnkX1N8n9QcHp3NX" />
+            <Link Id="CfYD0U56vkZMRdn4TAghDp" Ids="Lf1WEcByn8pNQRBkmq8Nqf,IzLzHxLQ2AcNplbCCLZE7K,KciEc5BEaEcLMaL3LQdJBP" />
           </Patch>
         </Node>
         <!--
@@ -6905,13 +6978,14 @@
                 <Pin Id="K0lahvmGl6dNyaOCJOdfvY" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="F1EmjfROPOtQOGx1Xh9SCf" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="EHrybuR6R86NrBIyoyRN4l" Name="Name" Kind="InputPin" />
+                <Pin Id="HQsDIKQ5s6QMxtJIYkbxvL" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="NN15RrFiDO2PSQlp8ZtKNd" Comment="Name" Bounds="770,271,35,15" ShowValueBox="true" isIOBox="true" Value="Value">
+              <Pad Id="NN15RrFiDO2PSQlp8ZtKNd" Comment="Name" Bounds="595,261,35,15" ShowValueBox="true" isIOBox="true" Value="Value">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
               </Pad>
-              <ControlPoint Id="HO3XUsNupJPQAKc3mhnHnv" Bounds="507,261" />
+              <ControlPoint Id="HO3XUsNupJPQAKc3mhnHnv" Bounds="420,261" />
               <ControlPoint Id="QN6S47w9Ii7MKxKUov1J4d" Bounds="245,240" />
               <Pad Id="RKpbvdXFooIPC5lpkG1mz0" SlotId="R4LNyolrTAIOpXkOM310x9" Bounds="257,300" />
               <Pad Id="J6bHcDrtSbVM0kVUDX9Waw" SlotId="V2cfZdpz9uQLrun3DbbFrk" Bounds="295,270" />
@@ -6927,6 +7001,7 @@
                 <Pin Id="SQfVxXxWueRPCwRDorIQH1" Name="Input" Kind="InputPin" />
                 <Pin Id="La9i55s4GlZMQL3OIki2kH" Name="Result" Kind="OutputPin" />
               </Node>
+              <ControlPoint Id="LgXeaQOTCjEQY2U37L8bWu" Bounds="770,234" />
             </Canvas>
             <Patch Id="DVqOoeZIs99NLVxZD1rq6t" Name="Create" ParticipatingElements="M4u5G8c0883L8kEdyDsQhl">
               <Pin Id="AIQaB7cwVoiNtH3HIfR6Cu" Name="ViewModel" Kind="InputPin" />
@@ -7011,6 +7086,7 @@
             <Link Id="DgvUh6t7YD4LZcRXBZ5GEK" Ids="UKQKy2ZPsLbOw4sBSZkAWg,CfZIYkCQTHkNyJC56CAC84" />
             <Link Id="Np4387QyfyZMG2FrJ1TNh3" Ids="HKHchMmqggzNBAu63N1lfw,PHLEk34pQsGLY4DCo0HOhf" />
             <Link Id="OeTmh4MqVNaMx7e9FaMFSE" Ids="UTrUKj5rfi1PE1OTGymYJt,UuRqdtDnBfsOyIG8jV0mKS" />
+            <Link Id="PaACZeqVF0hL76tQjnG1ei" Ids="TSUm3wrMFlmMxAeGN0iA8c,LgXeaQOTCjEQY2U37L8bWu,HQsDIKQ5s6QMxtJIYkbxvL" />
           </Patch>
         </Node>
         <!--
@@ -7244,13 +7320,14 @@
                 <Pin Id="J5FawHEx2jaOfmf9DEelXV" Name="ICMiXServiceMachineRole" Kind="InputPin" />
                 <Pin Id="NJf8efIVzIYMAUg1fgfgTL" Name="ModulatorViewModel" Kind="InputPin" />
                 <Pin Id="PH8WZC8D90OL5C5CIM5EyD" Name="Name" Kind="InputPin" />
+                <Pin Id="OcvRRfPiXI0Pqi3UDV7ISA" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="NpIZlmASmJRL11HfStQnor" Comment="Name" Bounds="770,271,35,15" ShowValueBox="true" isIOBox="true" Value="Value">
+              <Pad Id="NpIZlmASmJRL11HfStQnor" Comment="Name" Bounds="595,251,35,15" ShowValueBox="true" isIOBox="true" Value="Value">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
               </Pad>
-              <ControlPoint Id="FGW0XZ00X4hOr2RsQ8sC2b" Bounds="507,261" />
+              <ControlPoint Id="FGW0XZ00X4hOr2RsQ8sC2b" Bounds="420,251" />
               <ControlPoint Id="NMRqVOYTVOjOUhK1IgvhOG" Bounds="245,240" />
               <Pad Id="DH9vXVNxZUdM2FJMH6Wgeb" SlotId="I1o1k2Ir4KWQGUPi1wPUcK" Bounds="257,300" />
               <Pad Id="CxmZ9O2RssYLVXN4nXejUe" SlotId="HvHhJYoPwDEOnOLbA9SOqD" Bounds="295,270" />
@@ -7266,6 +7343,7 @@
                 <Pin Id="Vp5AimsyMp5PtDR47efKXG" Name="Input" Kind="InputPin" />
                 <Pin Id="LdbX1LfxORoLD2cgdrWQ8G" Name="Result" Kind="OutputPin" />
               </Node>
+              <ControlPoint Id="N446tvtT5XzNRKyTi48Puz" Bounds="770,222" />
             </Canvas>
             <Patch Id="DHukOt5SdIGPC5kH3KkWfs" Name="Create" ParticipatingElements="JSvMS6iUg6BLDMCBu7EgVV">
               <Pin Id="JDlTn9aNtTpNNSdoPSw7EJ" Name="ViewModel" Kind="InputPin" />
@@ -7350,6 +7428,7 @@
             <Link Id="Om6sagO74caPVnAhkZ8VQy" Ids="OlHD3HEI3EPLkqv0w6wiju,LAkifoDvk2kNwgOZWWnpHo" />
             <Link Id="Te52kEeQWZIMEZvhrv8Hd1" Ids="D92KIlabKxaLqmFJtaX2kJ,IhRqouxMqTSPmx9dTwRCHm" />
             <Link Id="Tpu79IwX33PN6ac2kHMvLN" Ids="Ph1A3exycWDOahSK5waYT5,J36IDEvy4oWOHk1FuzFVGS" />
+            <Link Id="C4pYGWLt07gMaHohT0a0z8" Ids="T3RDLVFqPKBNsT2OisXTFx,N446tvtT5XzNRKyTi48Puz,OcvRRfPiXI0Pqi3UDV7ISA" />
           </Patch>
         </Node>
       </Canvas>
