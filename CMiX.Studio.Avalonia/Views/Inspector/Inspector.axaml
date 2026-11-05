@@ -18,6 +18,16 @@
 
     <!-- The editor of the row that is selected in the project tree. The DataContext is the ProjectTree.
          The editors are the views of the other tabs, so an item looks the same here and there. -->
+    <!-- The toggles sit on squares, as in the rows of the tree (see RowToggles): the same size, the same fill. -->
+    <UserControl.Styles>
+        <Style Selector="Border.slot">
+            <Setter Property="Width" Value="{DynamicResource ControlHeightMD}" />
+            <Setter Property="Height" Value="{DynamicResource ControlHeightMD}" />
+            <Setter Property="Background" Value="{DynamicResource PanelBackgroundLevel2Brush}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusAll}" />
+        </Style>
+    </UserControl.Styles>
+
     <DockPanel>
 
         <!-- The icon of the selected node on a square in the color of its kind, and its name. -->
@@ -55,26 +65,32 @@
                     Orientation="Horizontal"
                     Spacing="{DynamicResource SpacingXXS}"
                     IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <ToggleButton
-                        Name="visibilityToggle"
-                        IsChecked="{Binding SelectedNode.Item.PrefabService.Visibility.Value}"
-                        Theme="{DynamicResource ToggleButtonVisibility}" />
+                    <Border Classes="slot">
+                        <ToggleButton
+                            Name="visibilityToggle"
+                            IsChecked="{Binding SelectedNode.Item.PrefabService.Visibility.Value}"
+                            Theme="{DynamicResource ToggleButtonVisibility}" />
+                    </Border>
 
                     <!-- The mask toggle: a composition and a layer only. The templates are only for those two types: a template for any
                          object would also catch the text of a tooltip. -->
                     <ContentControl Name="maskToggle" Content="{Binding SelectedNode.MaskOwner}">
                         <ContentControl.DataTemplates>
                             <DataTemplate DataType="{x:Type Compositing:Composition}">
-                                <ToggleButton
-                                    IsChecked="{Binding Mask.IsMask.Value}"
-                                    Theme="{DynamicResource ToggleButtonMask}"
-                                    ToolTip.Tip="Mask" />
+                                <Border Classes="slot">
+                                    <ToggleButton
+                                        IsChecked="{Binding Mask.IsMask.Value}"
+                                        Theme="{DynamicResource ToggleButtonMask}"
+                                        ToolTip.Tip="Mask" />
+                                </Border>
                             </DataTemplate>
                             <DataTemplate DataType="{x:Type Compositing:Layer}">
-                                <ToggleButton
-                                    IsChecked="{Binding Mask.IsMask.Value}"
-                                    Theme="{DynamicResource ToggleButtonMask}"
-                                    ToolTip.Tip="Mask" />
+                                <Border Classes="slot">
+                                    <ToggleButton
+                                        IsChecked="{Binding Mask.IsMask.Value}"
+                                        Theme="{DynamicResource ToggleButtonMask}"
+                                        ToolTip.Tip="Mask" />
+                                </Border>
                             </DataTemplate>
                         </ContentControl.DataTemplates>
                     </ContentControl>

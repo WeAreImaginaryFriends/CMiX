@@ -189,12 +189,33 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(screen.NameEditor.IsEffectivelyVisible);
 
             var headerWidth = screen.Header.Bounds.Width;
-            var maskRight = mask.TranslatePoint(new Point(mask.Bounds.Width, 0), screen.Header)!.Value.X;
+            var maskSlot = (Control)mask.Parent!;
+            var maskRight = maskSlot.TranslatePoint(new Point(maskSlot.Bounds.Width, 0), screen.Header)!.Value.X;
             var visibilityLeft = visibility.TranslatePoint(new Point(0, 0), screen.Header)!.Value.X;
             var nameRight = screen.NameEditor.TranslatePoint(new Point(screen.NameEditor.Bounds.Width, 0), screen.Header)!.Value.X;
             Assert.Equal(headerWidth - 8, maskRight, 1);
             Assert.True(visibilityLeft < maskRight);
             Assert.True(nameRight <= visibilityLeft + 0.5, "The name goes under the toggles.");
+        }
+
+        [AvaloniaFact]
+        public void TheToggles_HaveTheSameSquaresAsTheToggleColumnOfTheTree()
+        {
+            var screen = Show();
+            Select(screen, screen.LayerNode);
+
+            var tree = screen.Window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            var treeItem = tree.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, screen.LayerNode));
+            var treeToggles = treeItem.GetVisualDescendants().OfType<RowToggles>().First();
+            var treeSlots = treeToggles.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("slot")).ToList();
+            var treeButtons = treeToggles.GetVisualDescendants().OfType<ToggleButton>().ToList();
+
+            var slots = screen.Header.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("slot")).ToList();
+            var buttons = screen.Header.GetVisualDescendants().OfType<ToggleButton>().ToList();
+
+            Assert.Equal(treeSlots.Select(slot => slot.Bounds.Size), slots.Select(slot => slot.Bounds.Size));
+            Assert.Equal(treeButtons.Select(button => button.Bounds.Size), buttons.Select(button => button.Bounds.Size));
+            Assert.Equal(2, slots.Count);
         }
 
         [AvaloniaFact]
