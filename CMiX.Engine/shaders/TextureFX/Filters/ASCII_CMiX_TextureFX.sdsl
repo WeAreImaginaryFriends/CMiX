@@ -38,7 +38,9 @@ shader ASCII_CMiX_TextureFX : FilterBase, TileParams
 
         float letter = Texture1.SampleLevel(PointSampler, (frac(uv / gridSize) + float2(Quantized * CharacterCount, 0)) / float2(CharacterCount, 1), 0);
 
-        c.rgb = normalize(c.rgb) * sqrt(3) * letter;
+        // Black pixels have no direction. Skip normalize to avoid NaN.
+        float3 dir = any(c.rgb) ? normalize(c.rgb) : float3(0, 0, 0);
+        c.rgb = dir * sqrt(3) * letter;
 
         if(Grayscale)c.rgb=letter;
 
