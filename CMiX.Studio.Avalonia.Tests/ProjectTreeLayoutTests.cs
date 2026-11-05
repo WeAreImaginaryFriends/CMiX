@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
@@ -81,7 +82,39 @@ namespace CMiX.Studio.Avalonia.Tests
             var tops = All(tree.Roots).Select(node => BoundsIn(RowOf(view, node)).Left).ToList();
 
             Assert.All(tops, left => Assert.True(left >= 8, $"A fill starts at {left}, inside the gutter."));
-            Assert.Equal(8, BoundsIn(RowOf(view, tree.Roots[0])).Left);
+            // The top row starts after the gutter (8) and its chevron (16).
+            Assert.Equal(24, BoundsIn(RowOf(view, tree.Roots[0])).Left);
+        }
+
+        [AvaloniaFact]
+        public void TheChevron_IsOutsideTheFill_AtTheLeftOfTheRow_InFrontOfTheFillOfItsLevel()
+        {
+            var (view, tree) = Show();
+
+            foreach (var node in All(tree.Roots).Where(node => node.Children.Count > 0))
+            {
+                var chevron = ItemOf(view, node).GetVisualDescendants().OfType<ToggleButton>().First(toggle => toggle.Name == "PART_ExpandCollapseChevron");
+                var fill = BoundsIn(RowOf(view, node));
+                var chevronBounds = BoundsIn(chevron);
+
+                Assert.Equal(16, chevronBounds.Width);
+                Assert.True(chevronBounds.Right <= fill.Left + 0.01, $"The chevron of {node.Header} is inside the fill.");
+                Assert.Equal(fill.Left, chevronBounds.Right, 3);
+                Assert.Equal(fill.Top, chevronBounds.Top, 3);
+            }
+        }
+
+        [AvaloniaFact]
+        public void TheChevronOfAChild_IsOneIndentToTheRightOfTheChevronOfItsParent()
+        {
+            var (view, tree) = Show();
+            var composition = tree.Roots[0];
+            var layer = composition.Children[0];
+
+            double ChevronLeft(TreeNode node) =>
+                BoundsIn(ItemOf(view, node).GetVisualDescendants().OfType<ToggleButton>().First(toggle => toggle.Name == "PART_ExpandCollapseChevron")).Left;
+
+            Assert.Equal(16, ChevronLeft(layer) - ChevronLeft(composition));
         }
 
         [AvaloniaFact]
