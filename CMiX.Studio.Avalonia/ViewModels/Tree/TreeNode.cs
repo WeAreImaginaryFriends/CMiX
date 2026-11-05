@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -32,6 +33,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         internal TreeNode(ProjectTree tree, TreeNode? parent, PrefabManager? owner, IControl? item, string header, PrefabManager? childManager)
         {
             this.tree = tree;
+            Children.CollectionChanged += (_, _) => RaiseKindCountsChanged();
             Parent = parent;
             Owner = owner;
             Item = item;
@@ -109,6 +111,38 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public PrefabManager? Owner { get; }
         public PrefabManager? ChildManager { get; }
         public ObservableCollection<TreeNode> Children { get; } = new();
+
+        // The kinds of what the row holds, in the order of the rows under it, each with its number: an item under the row counts for
+        // its own kind, and a group under the row counts for the items in it. A collapsed row shows these.
+        public IReadOnlyList<KindCount> KindCounts
+        {
+            get
+            {
+                var counts = new Dictionary<TreeCategory, int>();
+                foreach (var child in Children)
+                {
+                    if (child.Category is not { } category)
+                        continue;
+
+                    var number = child.Item != null ? 1 : child.Children.Count;
+                    if (number > 0)
+                        counts[category] = counts.GetValueOrDefault(category) + number;
+                }
+
+                return counts.Select(count => new KindCount(count.Key, count.Value)).ToList();
+            }
+        }
+
+        public bool HasKindCounts => KindCounts.Count > 0;
+
+        // The rows under a group change what its parent holds, so the parent tells its own change too.
+        private void RaiseKindCountsChanged()
+        {
+            OnPropertyChanged(nameof(KindCounts));
+            OnPropertyChanged(nameof(HasKindCounts));
+            if (Item == null)
+                Parent?.RaiseKindCountsChanged();
+        }
 
         [ObservableProperty]
         private string header;
