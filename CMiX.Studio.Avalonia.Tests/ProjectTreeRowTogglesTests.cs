@@ -110,7 +110,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnEntity_HasOnlyTheEye_AtTheSamePlaceAsTheEyeOfAComposition_AndAGroupHasNone()
+        public void AnEntity_HasOnlyTheEye_AtTheSamePlaceAsTheEyeOfAComposition_AndEveryOtherSquareIsEmpty()
         {
             var (view, tree) = Show();
             var composition = tree.Roots[0];
@@ -118,10 +118,17 @@ namespace CMiX.Studio.Avalonia.Tests
             var entities = layer.Children[0];
             var entity = entities.Children[0];
 
-            Assert.Empty(SquaresOf(ColumnOf(view, entities)));
+            // A group has two empty squares, an entity has the eye and an empty square. A square without a button is only a place.
+            var groupSquares = SquaresOf(ColumnOf(view, entities));
+            Assert.Equal(2, groupSquares.Count);
+            Assert.All(groupSquares, square => Assert.Empty(square.GetVisualDescendants().OfType<ToggleButton>().Where(button => button.IsEffectivelyVisible)));
+
             var entitySquares = SquaresOf(ColumnOf(view, entity));
-            Assert.Single(entitySquares);
+            Assert.Equal(2, entitySquares.Count);
+            Assert.Single(entitySquares[0].GetVisualDescendants().OfType<ToggleButton>().Where(button => button.IsEffectivelyVisible));
+            Assert.Empty(entitySquares[1].GetVisualDescendants().OfType<ToggleButton>().Where(button => button.IsEffectivelyVisible));
             Assert.Equal(BoundsIn(SquaresOf(ColumnOf(view, composition))[0]).Left, BoundsIn(entitySquares[0]).Left);
+            Assert.Equal(BoundsIn(SquaresOf(ColumnOf(view, composition))[1]).Left, BoundsIn(entitySquares[1]).Left);
         }
 
         [AvaloniaFact]

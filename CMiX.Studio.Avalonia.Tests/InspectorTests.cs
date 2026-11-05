@@ -207,8 +207,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var tree = screen.Window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
             var treeItem = tree.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, screen.LayerNode));
             var treeToggles = treeItem.GetVisualDescendants().OfType<RowToggles>().First();
-            var treeSlots = treeToggles.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("slot")).ToList();
-            var treeButtons = treeToggles.GetVisualDescendants().OfType<ToggleButton>().ToList();
+            var treeSlots = treeToggles.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("slot") && border.IsEffectivelyVisible).ToList();
+            var treeButtons = treeToggles.GetVisualDescendants().OfType<ToggleButton>().Where(button => button.IsEffectivelyVisible).ToList();
 
             var slots = screen.Header.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("slot")).ToList();
             var buttons = screen.Header.GetVisualDescendants().OfType<ToggleButton>().ToList();

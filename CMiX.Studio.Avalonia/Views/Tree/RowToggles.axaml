@@ -9,7 +9,7 @@
          The visibility toggle is always the first square, since every item has one, so the visibility toggles line up down the
          tree. The other toggles follow it, to the right. The column has the width of the space and all the squares (TreeToggleWidth, see
          ProjectTreeView), so the colored rows all end at the same place. A new toggle is a new square here, and a wider column.
-         A group has no toggle.
+         A group, and the places without a toggle, have an empty square: it has no button.
          The content is null for a row without a mask toggle. The templates are only for a composition and a layer: a template for any
          object would also catch the text of the tooltip of the toggle, and the tooltip would be an empty box. -->
     <UserControl.Styles>
@@ -31,11 +31,15 @@
         <!-- It has no width: with the space between the children, it makes the space between the colored row and the first square. -->
         <Border Width="0" />
 
-        <Border Classes="slot" IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}">
+        <Border Classes="slot">
             <ToggleButton
                 IsChecked="{Binding Item.PrefabService.Visibility.Value}"
+                IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}"
                 Theme="{DynamicResource ToggleButtonVisibility}" />
         </Border>
+
+        <!-- A row without a mask toggle has an empty square here, with no button, so the column looks the same on every row. -->
+        <Border Classes="slot" IsVisible="{Binding MaskOwner, Converter={x:Static ObjectConverters.IsNull}}" />
 
         <!-- The mask toggle: a composition and a layer only. -->
         <ContentControl Content="{Binding MaskOwner}">
