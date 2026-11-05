@@ -83,7 +83,7 @@
                     <!-- The same animation as the expanders. The panel owns the IsVisible of the presenter. -->
                     <!-- The space between the row and its first child is inside the panel. A closed panel has no height, so
                          a closed row is followed by the same space as an open row: every row is one row height plus one space
-                         from the next, whatever is open. The stripes behind the tree (RowStripes) need this. -->
+                         from the next, whatever is open, so the pitch of the rows never changes. -->
                     <ui:CollapsePanel Name="PART_Collapse" IsExpanded="{TemplateBinding IsExpanded}">
                         <Panel>
                             <StackPanel Spacing="{DynamicResource TreeRowSpacing}">
