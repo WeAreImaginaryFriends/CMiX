@@ -92,14 +92,14 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheInspectorTab_IsAfterTheSettings_AndTheOtherTabsAreStillThere()
+        public void TheInspectorTab_IsTheFirstTab_AndTheOtherTabsAreStillThere()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
             var keys = TestServiceProviderFactory.MainTabControl(window).Items.OfType<TabItem>()
                 .Select(item => (item.Header as AppIcon)?.IconKey).ToList();
 
-            Assert.Equal("Settings", keys[0]);
-            Assert.Equal("Inspector", keys[1]);
+            Assert.Equal("Inspector", keys[0]);
+            Assert.Equal("Settings", keys[1]);
             Assert.Contains("Composition", keys);
             Assert.Contains("LayerScene", keys);
             Assert.Contains("Geometry", keys);

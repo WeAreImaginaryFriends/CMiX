@@ -22,20 +22,6 @@
             VerticalAlignment="Stretch"
             Theme="{StaticResource TabControlMain}">
 
-            <TabItem Theme="{StaticResource TabItemHorizontal}">
-
-                <TabItem.Header>
-                    <ui:AppIcon
-                        Margin="8"
-                        IconKey="Settings"
-                        Size="{DynamicResource IconSizeXS}"
-                        ToolTip.Tip="Settings" />
-                </TabItem.Header>
-
-                <Views:SettingsTab />
-
-            </TabItem>
-
             <!-- The editor of the item that is selected in the tree. The tabs after it are the first way to edit, which stays for now. -->
             <TabItem x:Name="inspectorTab" Theme="{StaticResource TabItemHorizontal}">
 
@@ -48,6 +34,20 @@
                 </TabItem.Header>
 
                 <Views:Inspector DataContext="{Binding ProjectTree}" />
+
+            </TabItem>
+
+            <TabItem Theme="{StaticResource TabItemHorizontal}">
+
+                <TabItem.Header>
+                    <ui:AppIcon
+                        Margin="8"
+                        IconKey="Settings"
+                        Size="{DynamicResource IconSizeXS}"
+                        ToolTip.Tip="Settings" />
+                </TabItem.Header>
+
+                <Views:SettingsTab />
 
             </TabItem>
 
