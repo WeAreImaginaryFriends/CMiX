@@ -52,13 +52,12 @@
         <TreeView.DataTemplates>
             <TreeDataTemplate DataType="{x:Type Tree:TreeNode}" ItemsSource="{Binding Children}">
 
-                <!-- The row of a list: an icon, the name, and on the right the toggles. A composition and a layer
+                <!-- The row of a list: an icon in the color of the name (the kind shows in the fill of the row), the name, and on the right the toggles. A composition and a layer
                      have the visibility toggle and the mask toggle, as in the lists of the Composition and Layers tabs. -->
                 <DockPanel>
 
                     <ui:AppIcon
                         Margin="4,0"
-                        Opacity="0.7"
                         IconKey="{Binding IconKey}"
                         Size="{DynamicResource IconSizeXS}" />
 
