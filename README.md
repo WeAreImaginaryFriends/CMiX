@@ -66,12 +66,13 @@ The tree shows the project as rows. A row is a composition, a layer, an item of 
 Each row has a kind: composable (a composition and a layer), entity, camera, light, texture, filter, modifier or modulator. A group has the kind of its items. The kind sets the color of the row.
 
 - The colors of the kinds are in `Colors.axaml`, with the names `Category` and the kind. A composable inside a composable has one more color for each level, `CategoryComposableLevel1` to `CategoryComposableLevel3`.
-- A row is filled with its color over the panel background. The fill is one step brighter under the pointer, and one more step when the row is selected. `CategoryPalette` holds the strength of each step.
+- A row is filled with a saturated tone of its color. Every kind has the same brightness, so no kind looks weaker than another and the text reads the same on all of them. The fill is one step brighter under the pointer, and more when the row is selected, and the name of a selected row is white. A group and its items have the same tone. What a row holds of another kind is darker by one step for each change of kind (`TreeNode.KindDepth`). `CategoryPalette` holds the brightness of each step, and a test checks the contrast of the text on every kind, level and state.
+- The fill of a row starts at its indent, so no fill touches the left border of the tree. The space between two rows is 3 pixels (`ProjectTreeView.RowGap`), and the drop line sits in it. The space between a row and its toggles stays 1 pixel.
 - A collapsed row shows what it holds: a small square for each kind, in the color of the kind, with the number of items. An open row shows none.
 - The toggles are at the right of the colored row. The visibility toggle is the first square. The mask toggle follows it on a composition and a layer. A new toggle is a new square in `RowToggles`.
 - The title bar of the inspector shows the icon of the selected row on a square in the color of its kind (`CategoryBadge`).
 
-While you drag a row, each row that can take it has a frame. A collapsed row with such a row inside has a fainter frame. The other rows are covered. The rows use the rules of the drop itself (`TreeDropService`), so a framed row always takes the drop.
+While you drag a row, each row that can take it has the fill of a row under the pointer, with no border. The other rows are covered. The rows use the rules of the drop itself (`TreeDropService`), so a bright row always takes the drop. A collapsed row with such a row inside is not covered.
 
 A row can move inside its list. It can also move to a list of the same kind of another owner: an entity to another layer, a modifier to another entity, a filter, a texture or a modulator to another owner of the same kind of list.
 
