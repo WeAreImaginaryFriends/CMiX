@@ -19,6 +19,10 @@
             <Setter Property="Background" Value="{DynamicResource PanelBackgroundLevel2Brush}" />
             <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusAll}" />
         </Style>
+        <!-- A square with no button is one step darker than a square with one. -->
+        <Style Selector="Border.slot.empty">
+            <Setter Property="Background" Value="{DynamicResource PanelBackgroundLevel1Brush}" />
+        </Style>
     </UserControl.Styles>
 
     <StackPanel
@@ -31,7 +35,7 @@
         <!-- It has no width: with the space between the children, it makes the space between the colored row and the first square. -->
         <Border Width="0" />
 
-        <Border Classes="slot">
+        <Border Classes="slot" Classes.empty="{Binding Item, Converter={x:Static ObjectConverters.IsNull}}">
             <ToggleButton
                 IsChecked="{Binding Item.PrefabService.Visibility.Value}"
                 IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -39,7 +43,7 @@
         </Border>
 
         <!-- A row without a mask toggle has an empty square here, with no button, so the column looks the same on every row. -->
-        <Border Classes="slot" IsVisible="{Binding MaskOwner, Converter={x:Static ObjectConverters.IsNull}}" />
+        <Border Classes="slot empty" IsVisible="{Binding MaskOwner, Converter={x:Static ObjectConverters.IsNull}}" />
 
         <!-- The mask toggle: a composition and a layer only. -->
         <ContentControl Content="{Binding MaskOwner}">
