@@ -152,9 +152,11 @@
         <Style Selector="^ /template/ Border#RowBorder.candidate">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillHover}" />
         </Style>
-        <!-- The pointer is tested on the row, not on the item: the item also contains its children. -->
+        <!-- The pointer is tested on the row, not on the item: the item also contains its children. A row under the pointer is as bright as a
+             selected row, without the border. -->
         <Style Selector="^ /template/ Border#RowBorder:pointerover">
-            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillHover}" />
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource ActiveForegroundBrush}" />
         </Style>
         <Style Selector="^:selected /template/ Border#SelectionFrame">
             <Setter Property="IsVisible" Value="True" />

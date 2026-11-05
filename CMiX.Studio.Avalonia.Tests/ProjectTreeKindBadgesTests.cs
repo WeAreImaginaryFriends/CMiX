@@ -148,7 +148,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(tone.Kind, FillOf(SquaresOf(badges).First()));
 
             badges.IsHovered = true;
-            Assert.Equal(tone.KindHover, FillOf(SquaresOf(badges).First()));
+            Assert.Equal(tone.KindSelected, FillOf(SquaresOf(badges).First()));
 
             tree.SelectedNode = layer;
             Settle();
