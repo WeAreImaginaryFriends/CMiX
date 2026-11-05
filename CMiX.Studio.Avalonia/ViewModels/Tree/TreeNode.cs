@@ -239,10 +239,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    InsertChildren(e.NewStartingIndex, e.NewItems!.Cast<IControl>());
-
-                    // A new item opens the row that holds it, so the item is seen.
-                    IsExpanded = true;
+                    // A new item starts collapsed: the user opens it.
+                    InsertChildren(e.NewStartingIndex, e.NewItems!.Cast<IControl>(), expanded: false);
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     RemoveChildren(e.OldStartingIndex, e.OldItems!.Count);
@@ -264,10 +262,14 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             tree.ListChanged();
         }
 
-        private void InsertChildren(int index, System.Collections.Generic.IEnumerable<IControl> items)
+        private void InsertChildren(int index, System.Collections.Generic.IEnumerable<IControl> items, bool expanded = true)
         {
             foreach (var item in items)
-                Children.Insert(index++, CreateItemNode(item));
+            {
+                var node = CreateItemNode(item);
+                node.IsExpanded = expanded;
+                Children.Insert(index++, node);
+            }
         }
 
         private void RemoveChildren(int index, int count)
