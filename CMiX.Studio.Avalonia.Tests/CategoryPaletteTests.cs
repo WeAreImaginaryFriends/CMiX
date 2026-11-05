@@ -33,14 +33,13 @@ namespace CMiX.Studio.Avalonia.Tests
         private static double LuminanceOf(Color color) => ColorMix.Luminance(color);
 
         [Fact]
-        public void TheFills_HaveTheBrightnessOfTheirState_AndTheHueOfTheKind()
+        public void TheFills_AreTheColorOfTheKindOverTheBackground_WithOneStrengthForEachState()
         {
             var tone = Palette().For(TreeCategory.Light);
 
-            Assert.InRange(LuminanceOf(tone.Fill), CategoryPalette.FillLuminance - 0.004, CategoryPalette.FillLuminance + 0.004);
-            Assert.InRange(LuminanceOf(tone.FillHover), CategoryPalette.FillLuminance * CategoryPalette.HoverFactor - 0.004, CategoryPalette.FillLuminance * CategoryPalette.HoverFactor + 0.004);
-            Assert.InRange(LuminanceOf(tone.FillSelected), CategoryPalette.FillLuminance * CategoryPalette.SelectedFactor - 0.004, CategoryPalette.FillLuminance * CategoryPalette.SelectedFactor + 0.004);
-            Assert.True(tone.Fill.R > tone.Fill.B && tone.Fill.G > tone.Fill.B, "A yellow fill is not yellow.");
+            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillStrength), tone.Fill);
+            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillHoverStrength), tone.FillHover);
+            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillSelectedStrength), tone.FillSelected);
         }
 
         [Fact]
@@ -65,47 +64,33 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void EveryKind_HasTheSameBrightnessAtRest()
-        {
-            var palette = new CategoryPalette(key => key switch
-            {
-                "CategoryLight" => Amber,
-                "CategoryComposable" => Magenta,
-                _ => Violet
-            }, Background);
-
-            var amber = LuminanceOf(palette.For(TreeCategory.Light).Fill);
-            var magenta = LuminanceOf(palette.For(TreeCategory.Composable).Fill);
-            var violet = LuminanceOf(palette.For(TreeCategory.Modulator).Fill);
-
-            Assert.InRange(magenta, amber - 0.006, amber + 0.006);
-            Assert.InRange(violet, amber - 0.006, amber + 0.006);
-        }
-
-        [Fact]
-        public void ARowDeeperByAChangeOfKind_IsDarker_ByTheLevelFactor_DownToTheFloor()
+        public void ARowDeeperByAChangeOfKind_IsWeaker_ByTheLevelFactor_DownToTheFloor()
         {
             var palette = Palette();
-            var first = LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 0).Fill);
-            var second = LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 1).Fill);
-            var third = LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 2).Fill);
-            var deep = LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 40).Fill);
 
-            Assert.InRange(second, first * CategoryPalette.LevelFactor - 0.004, first * CategoryPalette.LevelFactor + 0.004);
-            Assert.True(third < second);
-            Assert.InRange(deep, CategoryPalette.FloorLuminance - 0.004, CategoryPalette.FloorLuminance + 0.004);
+            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillStrength * CategoryPalette.LevelFactor), palette.For(TreeCategory.Light, kindDepth: 1).Fill);
+            Assert.True(LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 2).Fill) < LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 1).Fill));
+            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillFloor), palette.For(TreeCategory.Light, kindDepth: 40).Fill);
+            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillHoverFloor), palette.For(TreeCategory.Light, kindDepth: 40).FillHover);
+            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillSelectedFloor), palette.For(TreeCategory.Light, kindDepth: 40).FillSelected);
         }
 
         [Fact]
-        public void TheComposableDepth_ChangesTheHue_AndTheKindDepth_ChangesTheBrightness()
+        public void ADeepRow_IsStillAColor_AndEachStateIsStillBrighterThanTheOneBefore()
+        {
+            var tone = Palette().For(TreeCategory.Light, kindDepth: 40);
+
+            Assert.NotEqual(Background, tone.Fill);
+            Assert.True(LuminanceOf(tone.Fill) < LuminanceOf(tone.FillHover));
+            Assert.True(LuminanceOf(tone.FillHover) < LuminanceOf(tone.FillSelected));
+        }
+
+        [Fact]
+        public void TheComposableDepth_ChangesTheHue_AndNotTheStrength()
         {
             var palette = Palette();
 
             Assert.NotEqual(palette.For(TreeCategory.Composable, 0).Fill, palette.For(TreeCategory.Composable, 3).Fill);
-            Assert.InRange(
-                LuminanceOf(palette.For(TreeCategory.Composable, 3).Fill),
-                LuminanceOf(palette.For(TreeCategory.Composable, 0).Fill) - 0.006,
-                LuminanceOf(palette.For(TreeCategory.Composable, 0).Fill) + 0.006);
         }
 
         [Theory]

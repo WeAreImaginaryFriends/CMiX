@@ -47,17 +47,17 @@ namespace CMiX.Studio.Avalonia.Themes
     // It takes a function for the colors, so a test can give its own colors without an application.
     public sealed class CategoryPalette
     {
-        // The fill behind a row has the hue of its kind and the same brightness for every kind, so every kind is as strong as the others and
-        // a text reads the same on all of them. The brightness is a relative luminance (see ColorMix.Luminance). A row deeper in the tree
-        // by a change of kind has the brightness of the level above times LevelFactor, down to FloorLuminance. A hovered row and a
-        // selected row have the brightness of the row at rest times a factor. The selected factor keeps a white text above a contrast of 4.5.
-        public const double FillLuminance = 0.075;
+        // The strength of the fill behind a row over the background, from 0 (the background) to 1 (the color of the kind). A row deeper in
+        // the tree by a change of kind has the strength of the level above times LevelFactor, down to a floor for each state, so a deep
+        // row is still a color. A hovered row and a selected row are stronger than a row at rest. The selected strength keeps a white
+        // text above a contrast of 4.5 on every kind.
+        public const double FillStrength = 0.24;
+        public const double FillHoverStrength = 0.30;
+        public const double FillSelectedStrength = 0.40;
         public const double LevelFactor = 0.8;
-        public const double FloorLuminance = 0.02;
-        public const double HoverFactor = 1.5;
-        public const double SelectedFactor = 2.3;
-        public const double MinSaturation = 0.55;
-        public const double MaxSaturation = 0.85;
+        public const double FillFloor = 0.12;
+        public const double FillHoverFloor = 0.16;
+        public const double FillSelectedFloor = 0.30;
 
         // The strength of the color of a count square over the background, from 0 (the background) to 1 (the color of the kind).
         public const double KindStrength = 0.60;
@@ -101,13 +101,13 @@ namespace CMiX.Studio.Avalonia.Themes
         public CategoryTone For(TreeCategory category, int composableDepth = 0, int kindDepth = 0)
         {
             var color = colorOf(ColorKey(category, composableDepth));
-            var rest = Math.Max(FloorLuminance, FillLuminance * Math.Pow(LevelFactor, Math.Max(0, kindDepth)));
-            Color Fill(double luminance) => ColorMix.WithLuminance(color, luminance, MinSaturation, MaxSaturation);
+            var level = Math.Pow(LevelFactor, Math.Max(0, kindDepth));
+            Color Fill(double strength, double floor) => ColorMix.Over(color, background, Math.Max(floor, strength * level));
 
             return new CategoryTone(
-                Fill(rest),
-                Fill(rest * HoverFactor),
-                Fill(rest * SelectedFactor),
+                Fill(FillStrength, FillFloor),
+                Fill(FillHoverStrength, FillHoverFloor),
+                Fill(FillSelectedStrength, FillSelectedFloor),
                 ColorMix.Over(color, background, KindStrength),
                 ColorMix.Over(color, background, KindHoverStrength),
                 ColorMix.Over(color, background, KindSelectedStrength));

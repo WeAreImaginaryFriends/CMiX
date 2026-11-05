@@ -43,58 +43,6 @@ namespace CMiX.UI.Mathematics
             return (Math.Max(a, b) + 0.05) / (Math.Min(a, b) + 0.05);
         }
 
-        // The color with the hue of the given color, a saturation kept between two limits, and the given luminance.
-        // Two colors of different hues get the same brightness, so they look as strong as each other, and a text on them reads the same.
-        // The result is the closest the lightness can come to the luminance: a luminance that no lightness reaches gives the nearest end.
-        public static Color WithLuminance(Color color, double luminance, double minSaturation, double maxSaturation)
-        {
-            var (hue, saturation, _) = ToHsl(color);
-            saturation = Math.Clamp(saturation, minSaturation, maxSaturation);
-
-            double low = 0, high = 1;
-            for (var step = 0; step < 32; step++)
-            {
-                var middle = (low + high) / 2;
-                if (Luminance(FromHsl(hue, saturation, middle)) < luminance)
-                    low = middle;
-                else
-                    high = middle;
-            }
-
-            return FromHsl(hue, saturation, (low + high) / 2);
-        }
-
-        private static (double Hue, double Saturation, double Lightness) ToHsl(Color color)
-        {
-            double r = color.R / 255.0, g = color.G / 255.0, b = color.B / 255.0;
-            var max = Math.Max(r, Math.Max(g, b));
-            var min = Math.Min(r, Math.Min(g, b));
-            var lightness = (max + min) / 2;
-            if (max == min)
-                return (0, 0, lightness);
-
-            var delta = max - min;
-            var saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
-            var hue = max == r ? (g - b) / delta + (g < b ? 6 : 0)
-                : max == g ? (b - r) / delta + 2
-                : (r - g) / delta + 4;
-
-            return (hue * 60, saturation, lightness);
-        }
-
-        private static Color FromHsl(double hue, double saturation, double lightness)
-        {
-            var chroma = saturation * Math.Min(lightness, 1 - lightness);
-            double Channel(int n)
-            {
-                var k = (n + hue / 30) % 12;
-                return lightness - chroma * Math.Max(-1, Math.Min(Math.Min(k - 3, 9 - k), 1));
-            }
-
-            static byte ToByte(double value) => (byte)Math.Round(Math.Clamp(value, 0, 1) * 255, MidpointRounding.AwayFromZero);
-            return Color.FromRgb(ToByte(Channel(0)), ToByte(Channel(8)), ToByte(Channel(4)));
-        }
-
         private static byte Channel(byte from, byte to, double by) =>
             (byte)Math.Round(MathHelper.Lerp(from, to, by), MidpointRounding.AwayFromZero);
     }
