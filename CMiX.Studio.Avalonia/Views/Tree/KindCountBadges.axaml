@@ -32,7 +32,8 @@
                     Classes="kindcount"
                     Height="{DynamicResource ControlHeightXS}"
                     MinWidth="{DynamicResource ControlHeightXS}"
-                    CornerRadius="{DynamicResource CornerRadiusAll}">
+                    CornerRadius="{DynamicResource CornerRadiusAll}"
+                    ToolTip.Tip="{Binding Description}">
                     <TextBlock
                         Margin="4,0"
                         HorizontalAlignment="Center"

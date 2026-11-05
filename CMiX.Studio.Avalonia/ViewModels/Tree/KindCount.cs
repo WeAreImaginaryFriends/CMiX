@@ -4,5 +4,9 @@
 namespace CMiX.Studio.Avalonia.ViewModels.Tree
 {
     // How many items of one kind a row holds. A collapsed row shows one of these for each kind it holds.
-    public sealed record KindCount(TreeCategory Category, int Count);
+    public sealed record KindCount(TreeCategory Category, int Count)
+    {
+        // The text of the tooltip of the count, such as "2 Entities" or "1 Filter".
+        public string Description => Count + " " + TreeCategories.Label(Category, Count);
+    }
 }

@@ -2,7 +2,6 @@
     x:Class="CMiX.Studio.Avalonia.Views.RowToggles"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="using:System"
     xmlns:Compositing="clr-namespace:CMiX.Core.Compositing;assembly=CMiX.Core">
 
     <!-- The toggles of a row of the tree, outside the colored row, at its right end. The DataContext is the tree node.
@@ -10,7 +9,9 @@
          The visibility toggle is always the first square, since every item has one, so the visibility toggles line up down the
          tree. The other toggles follow it, to the right. The column has the width of the space and all the squares (TreeToggleWidth, see
          ProjectTreeView), so the colored rows all end at the same place. A new toggle is a new square here, and a wider column.
-         A group has no toggle. -->
+         A group has no toggle.
+         The content is null for a row without a mask toggle. The templates are only for a composition and a layer: a template for any
+         object would also catch the text of the tooltip of the toggle, and the tooltip would be an empty box. -->
     <UserControl.Styles>
         <Style Selector="Border.slot">
             <Setter Property="Width" Value="{DynamicResource TreeRowHeight}" />
@@ -36,7 +37,7 @@
         </Border>
 
         <!-- The mask toggle: a composition and a layer only. -->
-        <ContentControl Content="{Binding Item}">
+        <ContentControl Content="{Binding MaskOwner}">
             <ContentControl.DataTemplates>
                 <DataTemplate DataType="{x:Type Compositing:Composition}">
                     <Border Classes="slot">
@@ -53,9 +54,6 @@
                             Theme="{DynamicResource ToggleButtonMask}"
                             ToolTip.Tip="Mask" />
                     </Border>
-                </DataTemplate>
-                <DataTemplate DataType="{x:Type sys:Object}">
-                    <Panel />
                 </DataTemplate>
             </ContentControl.DataTemplates>
         </ContentControl>

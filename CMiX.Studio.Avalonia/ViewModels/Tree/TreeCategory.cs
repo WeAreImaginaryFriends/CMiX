@@ -42,6 +42,27 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             _ => null
         };
 
+        // The name of a kind for a number of items, such as Entity for one and Entities for two.
+        public static string Label(TreeCategory category, int count) => (category, count == 1) switch
+        {
+            (TreeCategory.Composable, true) => "Composable",
+            (TreeCategory.Composable, false) => "Composables",
+            (TreeCategory.Entity, true) => "Entity",
+            (TreeCategory.Entity, false) => "Entities",
+            (TreeCategory.Camera, true) => "Camera",
+            (TreeCategory.Camera, false) => "Cameras",
+            (TreeCategory.Light, true) => "Light",
+            (TreeCategory.Light, false) => "Lights",
+            (TreeCategory.Texture, true) => "Texture",
+            (TreeCategory.Texture, false) => "Textures",
+            (TreeCategory.Filter, true) => "Filter",
+            (TreeCategory.Filter, false) => "Filters",
+            (TreeCategory.Modifier, true) => "Modifier",
+            (TreeCategory.Modifier, false) => "Modifiers",
+            (TreeCategory.Modulator, true) => "Modulator",
+            _ => "Modulators"
+        };
+
         // The kind of the items in a group.
         public static TreeCategory? Of(TreeGroup group) => group switch
         {

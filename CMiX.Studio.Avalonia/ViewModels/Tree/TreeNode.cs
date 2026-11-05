@@ -135,6 +135,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public bool HasKindCounts => KindCounts.Count > 0;
 
+        // The item that has the mask toggle: a composition or a layer. The other rows have none. The toggle column shows the toggle for it.
+        public IControl? MaskOwner => Item is Composition or Layer ? Item : null;
+
         // A collapsed row shows what it holds. An open row shows it in the rows under it.
         public bool ShowsKindCounts => HasKindCounts && !IsExpanded;
 
