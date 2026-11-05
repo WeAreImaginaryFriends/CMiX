@@ -83,6 +83,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 screen.Layers.Add((Layer)composition.LayerManager.SelectedItem);
             }
 
+            TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
             TestServiceProviderFactory.Pump();
             screen.CenterOf(screen.ButtonOf(screen.LayerNode(0), "visibility"));
             return screen;

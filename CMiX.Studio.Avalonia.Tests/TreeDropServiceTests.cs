@@ -345,6 +345,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             var group = Scene.Group(scene.LayerNodeOfA(0), "Entities");
+            TestServiceProviderFactory.ExpandAll(scene.Tree);
 
             // An entity has groups under it (textures, filters, modifiers). The bottom half of the last row of its block is after it.
             var lastRowOfTheEntity = group.Children[1].Children.Last();

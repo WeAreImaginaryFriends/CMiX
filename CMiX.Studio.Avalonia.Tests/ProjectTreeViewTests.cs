@@ -117,6 +117,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
+            TestServiceProviderFactory.ExpandAll(screen.Tree);
             Dispatcher.UIThread.RunJobs();
             var expected = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
 
@@ -188,6 +189,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             screen.Project.CompositionManager.AddItem(typeof(Composition));
             ((Composition)screen.Project.CompositionManager.ManagerData.Items[2]).LayerManager.AddItem(typeof(Layer));
+            TestServiceProviderFactory.ExpandAll(screen.Tree);
             Dispatcher.UIThread.RunJobs();
             screen.Window.UpdateLayout();
             return screen;

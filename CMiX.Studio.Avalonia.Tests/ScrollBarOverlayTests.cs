@@ -123,6 +123,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var composition = (Composition)viewModel.Project.CompositionManager.SelectedItem;
             for (var i = 0; i < layers; i++)
                 composition.LayerManager.AddItem(typeof(Layer));
+            TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
             TestServiceProviderFactory.Pump();
             window.UpdateLayout();
 

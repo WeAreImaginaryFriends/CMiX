@@ -77,6 +77,7 @@ namespace CMiX.Studio.Avalonia.Tests
             layer.ModelEntityManager.AddItem(typeof(TextEntity));
             layer.CameraManager.AddItem(typeof(CameraModel));
             layer.LightManager.AddItem(typeof(LightModel));
+            TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
             TestServiceProviderFactory.Pump();
             viewModel.ProjectTree.SelectedNode = null;
             TestServiceProviderFactory.SelectMainTab(window, "Inspector");
@@ -103,6 +104,21 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Contains("Composition", keys);
             Assert.Contains("LayerScene", keys);
             Assert.Contains("Geometry", keys);
+        }
+
+        [AvaloniaFact]
+        public void EveryTab_HasATooltipOnItsIcon()
+        {
+            var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
+            var tabs = TestServiceProviderFactory.MainTabControl(window).Items.OfType<TabItem>().ToList();
+
+            Assert.NotEmpty(tabs);
+            Assert.All(tabs, tab =>
+            {
+                var header = Assert.IsAssignableFrom<Control>(tab.Header);
+                var tip = ToolTip.GetTip(header) ?? ToolTip.GetTip(tab);
+                Assert.False(string.IsNullOrWhiteSpace(tip as string), $"The tab {(header as AppIcon)?.IconKey} has no tooltip.");
+            });
         }
 
         // The title bar has the height of the headers of the panels under it (the headers of the expanders).

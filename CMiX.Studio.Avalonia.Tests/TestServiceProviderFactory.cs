@@ -64,6 +64,20 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // Two dispatcher passes, the idiom this suite uses wherever a UI visible change needs its
         // deferred bindings or layout to settle before assertions run.
+        // New items start collapsed. A test that looks at the rows under a new item opens them first.
+        public static void ExpandAll(CMiX.Studio.Avalonia.ViewModels.Tree.ProjectTree tree)
+        {
+            static void Open(CMiX.Studio.Avalonia.ViewModels.Tree.TreeNode node)
+            {
+                node.IsExpanded = true;
+                foreach (var child in node.Children)
+                    Open(child);
+            }
+
+            foreach (var root in tree.Roots)
+                Open(root);
+        }
+
         public static void Pump()
         {
             Dispatcher.UIThread.RunJobs();
