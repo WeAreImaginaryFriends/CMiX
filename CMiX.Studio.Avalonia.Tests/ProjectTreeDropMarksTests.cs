@@ -4,9 +4,11 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media;
+using AvaloniaColor = Avalonia.Media.Color;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
@@ -71,8 +73,14 @@ namespace CMiX.Studio.Avalonia.Tests
         private static TreeNode FirstEntity(ProjectTree tree) =>
             tree.Roots[0].Children[0].Children.Single(child => child.Header == "Entities").Children[0];
 
+        private static AvaloniaColor FillOf(ProjectTreeView view, TreeNode node) =>
+            ((ISolidColorBrush)Part(view, node, "RowBorder").Background!).Color;
+
+        private static CategoryTone ToneOf(TreeNode node) =>
+            CategoryPalette.FromApplication().For(node.Category!.Value, node.ComposableDepth, node.KindDepth);
+
         [AvaloniaFact]
-        public void DuringADrag_ARowThatCanTakeTheNode_HasAFrame_AndARowThatCanNot_IsCovered()
+        public void DuringADrag_ARowThatCanTakeTheNode_HasABrighterFill_AndARowThatCanNot_IsCovered()
         {
             var (view, tree) = Show();
             var source = FirstEntity(tree);
@@ -82,7 +90,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             foreach (var node in All(tree.Roots))
             {
-                Assert.Equal(node.IsDropCandidate, Part(view, node, "CandidateFrame").IsEffectivelyVisible);
+                Assert.Equal(node.IsDropCandidate ? ToneOf(node).FillHover : ToneOf(node).Fill, FillOf(view, node));
                 Assert.Equal(node.IsDimmed, Part(view, node, "DimLayer").IsEffectivelyVisible);
             }
 
@@ -103,14 +111,29 @@ namespace CMiX.Studio.Avalonia.Tests
 
             foreach (var node in All(tree.Roots))
             {
-                Assert.False(Part(view, node, "CandidateFrame").IsEffectivelyVisible);
-                Assert.False(Part(view, node, "HintFrame").IsEffectivelyVisible);
+                Assert.Equal(ToneOf(node).Fill, FillOf(view, node));
                 Assert.False(Part(view, node, "DimLayer").IsEffectivelyVisible);
             }
         }
 
         [AvaloniaFact]
-        public void ACollapsedRowWithACandidateUnderIt_HasTheFaintFrame()
+        public void NoRow_HasABorder_DuringADrag()
+        {
+            var (view, tree) = Show();
+            tree.BeginDrag(FirstEntity(tree));
+            Settle();
+
+            foreach (var node in All(tree.Roots))
+            {
+                var borders = ItemOf(view, node).GetVisualDescendants().OfType<Border>().Where(border => border.Name != "DropLine");
+                Assert.All(borders, border => Assert.Equal(new Thickness(0), border.BorderThickness));
+            }
+
+            Assert.DoesNotContain(All(tree.Roots), node => ItemOf(view, node).GetVisualDescendants().OfType<Border>().Any(border => border.Name is "CandidateFrame" or "HintFrame"));
+        }
+
+        [AvaloniaFact]
+        public void ACollapsedRowWithACandidateUnderIt_IsNotCovered_AndHasNoOtherMark()
         {
             var (view, tree) = Show();
             var secondLayer = tree.Roots[0].Children[1];
@@ -120,29 +143,22 @@ namespace CMiX.Studio.Avalonia.Tests
             tree.BeginDrag(FirstEntity(tree));
             Settle();
 
-            var hint = Part(view, secondLayer, "HintFrame");
-            Assert.True(hint.IsEffectivelyVisible);
-            Assert.Equal(Convert.ToDouble(Application.Current!.FindResource("TreeHintOpacity")), hint.Opacity);
-            Assert.False(Part(view, secondLayer, "CandidateFrame").IsEffectivelyVisible);
+            Assert.True(secondLayer.IsDropHint);
             Assert.False(Part(view, secondLayer, "DimLayer").IsEffectivelyVisible);
+            Assert.Equal(ToneOf(secondLayer).Fill, FillOf(view, secondLayer));
         }
 
         [AvaloniaFact]
-        public void TheMarks_UseTheColorsOfTheTheme_AndTakeNoClick()
+        public void TheCover_UsesTheColorsOfTheTheme_AndTakesNoClick()
         {
             var (view, tree) = Show();
             var source = FirstEntity(tree);
             tree.BeginDrag(source);
             Settle();
-            var candidate = tree.Roots[0].Children[0].Children[0].Children[1];
-
-            var frame = Part(view, candidate, "CandidateFrame");
             var cover = Part(view, tree.Roots[0], "DimLayer");
 
-            Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("AccentInactiveBrush")!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
             Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel1Brush")!).Color, ((ISolidColorBrush)cover.Background!).Color);
             Assert.Equal(Convert.ToDouble(Application.Current!.FindResource("TreeDimOpacity")), cover.Opacity);
-            Assert.False(frame.IsHitTestVisible);
             Assert.False(cover.IsHitTestVisible);
         }
 
