@@ -342,6 +342,8 @@ namespace CMiX.Studio.Avalonia.Views
         private void TrackDragPointer(DragEventArgs e)
         {
             dragY = ScrollerOfTree is { } scroller ? e.GetPosition(scroller).Y : null;
+            wheelHook ??= new DragWheelHook(steps => Dispatcher.UIThread.Post(() => ScrollByWheel(steps)));
+            wheelHook.Start();
             if (!autoScrollTimer.IsEnabled)
             {
                 autoScrollTimer.Tick -= OnAutoScrollTick;
@@ -353,7 +355,21 @@ namespace CMiX.Studio.Avalonia.Views
         private void StopAutoScroll()
         {
             autoScrollTimer.Stop();
+            wheelHook?.Stop();
             dragY = null;
+        }
+
+        // The mouse wheel also scrolls the tree during a drag (see DragWheelHook). A step is three rows.
+        private DragWheelHook? wheelHook;
+
+        public void ScrollByWheel(int steps)
+        {
+            if (dragY == null || ScrollerOfTree is not { } scroller)
+                return;
+
+            var maxOffset = Math.Max(0, scroller.Extent.Height - scroller.Viewport.Height);
+            var rows = steps * 3 * (Convert.ToDouble(Resources["TreeRowHeight"]) + Convert.ToDouble(Resources["TreeRowGap"]));
+            scroller.Offset = scroller.Offset.WithY(Math.Clamp(scroller.Offset.Y - rows, 0, maxOffset));
         }
 
         private void OnAutoScrollTick(object? sender, EventArgs e) => AutoScrollStep();

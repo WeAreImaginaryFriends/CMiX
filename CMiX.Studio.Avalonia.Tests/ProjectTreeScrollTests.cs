@@ -168,6 +168,27 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void TheMouseWheel_ScrollsTheTreeDuringADrag_AndNotWithoutOne()
+        {
+            var (view, tree, scroller) = Show();
+            view.ScrollByWheel(-2);
+            Assert.Equal(0, scroller.Offset.Y);
+
+            tree.BeginDrag(tree.Roots[0].Children[0]);
+            DragAt(view, tree, scroller, scroller.Bounds.Height / 2, RawDragEventType.DragEnter);
+            DragAt(view, tree, scroller, scroller.Bounds.Height / 2, RawDragEventType.DragOver);
+            view.ScrollByWheel(-2);
+            var down = scroller.Offset.Y;
+            Assert.True(down > 0);
+
+            view.ScrollByWheel(1);
+            Assert.True(scroller.Offset.Y < down);
+
+            DragAt(view, tree, scroller, scroller.Bounds.Height + 20, RawDragEventType.DragLeave);
+            tree.EndDrag();
+        }
+
+        [AvaloniaFact]
         public void ADragAwayFromTheEdges_DoesNotScroll_AndADragThatLeavesTheTree_Stops()
         {
             var (view, tree, scroller) = Show();

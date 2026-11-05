@@ -121,19 +121,6 @@
                             <ItemsPresenter
                                 Name="PART_ItemsPresenter"
                                 ItemsPanel="{TemplateBinding ItemsPanel}" />
-                            <!-- The pipe: a line under the chevron, along the children of the row. It is drawn over the
-                                 children, so a hovered or selected child does not hide it. The margin is the indent of the
-                                 row, as for the chevron. The line is at the middle of the chevron: 8, half of its column. -->
-                            <Panel
-                                Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeLevelIndent}}"
-                                IsHitTestVisible="False">
-                                <Border
-                                    Name="Pipe"
-                                    Width="1"
-                                    Margin="8,4,0,4"
-                                    HorizontalAlignment="Left"
-                                    Background="{DynamicResource Grey500Brush}" />
-                            </Panel>
                         </Panel>
                     </ui:CollapsePanel>
                 </StackPanel>
