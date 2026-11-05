@@ -28,10 +28,58 @@
             Background="{DynamicResource Grey200Brush}"
             DockPanel.Dock="Top"
             IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
-            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="{DynamicResource SpacingMD}">
-                <Views:CategoryBadge DataContext="{Binding SelectedNode}" />
-                <TextBlock Name="title" VerticalAlignment="Center" Text="{Binding SelectedNode.Header}" />
-            </StackPanel>
+            <!-- The badge, the name, and at the right end the toggles of the item: visibility, and the mask of a composition or a layer.
+                 The name of an item can be edited here, as in the tree. A group has a name that can not be changed, and no toggle. -->
+            <Grid VerticalAlignment="Center" ColumnDefinitions="Auto,*,Auto">
+                <Views:CategoryBadge
+                    Grid.Column="0"
+                    Margin="0,0,8,0"
+                    DataContext="{Binding SelectedNode}" />
+
+                <Panel Grid.Column="1" VerticalAlignment="Center">
+                    <ui:TextBoxEditable
+                        Name="nameEditor"
+                        Text="{Binding SelectedNode.Item.PrefabService.Name.Value, Mode=TwoWay}"
+                        IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <TextBlock
+                        Name="title"
+                        VerticalAlignment="Center"
+                        Text="{Binding SelectedNode.Header}"
+                        IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNull}}" />
+                </Panel>
+
+                <StackPanel
+                    Name="headerToggles"
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="{DynamicResource SpacingXXS}"
+                    IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <ToggleButton
+                        Name="visibilityToggle"
+                        IsChecked="{Binding SelectedNode.Item.PrefabService.Visibility.Value}"
+                        Theme="{DynamicResource ToggleButtonVisibility}" />
+
+                    <!-- The mask toggle: a composition and a layer only. The templates are only for those two types: a template for any
+                         object would also catch the text of a tooltip. -->
+                    <ContentControl Name="maskToggle" Content="{Binding SelectedNode.MaskOwner}">
+                        <ContentControl.DataTemplates>
+                            <DataTemplate DataType="{x:Type Compositing:Composition}">
+                                <ToggleButton
+                                    IsChecked="{Binding Mask.IsMask.Value}"
+                                    Theme="{DynamicResource ToggleButtonMask}"
+                                    ToolTip.Tip="Mask" />
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type Compositing:Layer}">
+                                <ToggleButton
+                                    IsChecked="{Binding Mask.IsMask.Value}"
+                                    Theme="{DynamicResource ToggleButtonMask}"
+                                    ToolTip.Tip="Mask" />
+                            </DataTemplate>
+                        </ContentControl.DataTemplates>
+                    </ContentControl>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <TextBlock

@@ -14,6 +14,7 @@ using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.Controls;
+using CMiX.UI.Controls.String;
 using CMiX.UI.Panels;
 using CMiX.Core.Undo;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,7 +52,11 @@ namespace CMiX.Studio.Avalonia.Tests
             // Found by its name: while no item is selected the scroll viewer is hidden and has no visual children yet.
             public ContentControl Editor => Inspector.FindControl<ContentControl>("editor")!;
             public ScrollViewer Scroller => Inspector.FindControl<ScrollViewer>("scroller")!;
-            public TextBlock Title => Inspector.GetVisualDescendants().OfType<TextBlock>().First(t => t.Name == "title");
+            // The name of an item is in its name editor (TextDisplay), the name of a group is in a text block called title.
+            public TextBlock Title => Header.GetVisualDescendants().OfType<TextBlock>().First(t => t.Name is "title" or "TextDisplay" && t.IsEffectivelyVisible);
+            public ToggleButton? VisibilityToggle => Inspector.GetVisualDescendants().OfType<ToggleButton>().FirstOrDefault(t => t.Name == "visibilityToggle");
+            public ToggleButton? MaskToggle => Inspector.FindControl<ContentControl>("maskToggle")!.GetVisualDescendants().OfType<ToggleButton>().FirstOrDefault();
+            public TextBoxEditable NameEditor => Inspector.FindControl<TextBoxEditable>("nameEditor")!;
             public TextBlock Placeholder => Inspector.GetVisualDescendants().OfType<TextBlock>().First(t => t.Name == "placeholder");
             public Border Header => Inspector.GetVisualDescendants().OfType<Border>().First(b => b.Name == "header");
             public AppIcon HeaderIcon => Header.GetVisualDescendants().OfType<AppIcon>().First();
@@ -153,6 +158,64 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var white = ((global::Avalonia.Media.ISolidColorBrush)Application.Current!.FindResource("ActiveForegroundBrush")!).Color;
             Assert.Equal(white, ((global::Avalonia.Media.ISolidColorBrush)screen.HeaderIcon.Foreground!).Color);
+        }
+
+        [AvaloniaFact]
+        public void TheHeaderOfAnItem_HasTheEditableName_AndTheToggles_AtTheRightEnd()
+        {
+            var screen = Show();
+            Select(screen, screen.LayerNode);
+
+            var visibility = screen.VisibilityToggle!;
+            var mask = screen.MaskToggle!;
+            Assert.True(visibility.IsEffectivelyVisible);
+            Assert.True(mask.IsEffectivelyVisible);
+            Assert.True(screen.NameEditor.IsEffectivelyVisible);
+
+            var headerWidth = screen.Header.Bounds.Width;
+            var maskRight = mask.TranslatePoint(new Point(mask.Bounds.Width, 0), screen.Header)!.Value.X;
+            var visibilityLeft = visibility.TranslatePoint(new Point(0, 0), screen.Header)!.Value.X;
+            var nameRight = screen.NameEditor.TranslatePoint(new Point(screen.NameEditor.Bounds.Width, 0), screen.Header)!.Value.X;
+            Assert.Equal(headerWidth - 8, maskRight, 1);
+            Assert.True(visibilityLeft < maskRight);
+            Assert.True(nameRight <= visibilityLeft + 0.5, "The name goes under the toggles.");
+        }
+
+        [AvaloniaFact]
+        public void TheToggles_ChangeTheItem_AndTheNameEditorRenamesIt()
+        {
+            var screen = Show();
+            Select(screen, screen.LayerNode);
+            var layer = (Layer)screen.LayerNode.Item!;
+
+            var visible = layer.PrefabService.Visibility.Value;
+            screen.VisibilityToggle!.IsChecked = !visible;
+            Assert.Equal(!visible, layer.PrefabService.Visibility.Value);
+
+            screen.MaskToggle!.IsChecked = true;
+            Assert.True(layer.Mask.IsMask.Value);
+
+            screen.NameEditor.Text = "Renamed";
+            Assert.Equal("Renamed", layer.PrefabService.Name.Value);
+        }
+
+        [AvaloniaFact]
+        public void OnlyACompositionAndALayerHaveTheMaskToggle_AndAGroupHasNoToggle()
+        {
+            var screen = Show();
+            var entity = screen.Group("Entities").Children[0];
+
+            Select(screen, screen.CompositionNode);
+            Assert.True(screen.MaskToggle!.IsEffectivelyVisible);
+
+            Select(screen, entity);
+            Assert.True(screen.VisibilityToggle!.IsEffectivelyVisible);
+            Assert.True(screen.MaskToggle == null || !screen.MaskToggle.IsEffectivelyVisible);
+
+            Select(screen, screen.Group("Entities"));
+            Assert.False(screen.VisibilityToggle!.IsEffectivelyVisible);
+            Assert.False(screen.NameEditor.IsEffectivelyVisible);
+            Assert.Equal("Entities", screen.Title.Text);
         }
 
         [AvaloniaFact]
