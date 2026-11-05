@@ -224,6 +224,9 @@ namespace CMiX.Studio.Avalonia.Views
             return null;
         }
 
+        private static bool IsInToggles(object? source) =>
+            (source as Visual)?.FindAncestorOfType<RowToggles>(true) != null;
+
         private static bool IsEditor(object? source)
         {
             for (var visual = source as Visual; visual != null; visual = visual.GetVisualParent())
@@ -256,7 +259,8 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             var node = ItemOf(e.Source)?.DataContext as TreeNode;
-            pressedNode = node != null && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
+            // The toggles at the right of a row never start a drag, not even the space around them.
+            pressedNode = node != null && !IsInToggles(e.Source) && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
             pressPoint = e.GetPosition(treeView);
 
             if (node != null)
