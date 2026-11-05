@@ -101,9 +101,13 @@ namespace CMiX.Core.Prefabs.Managers
             }
         }
 
+        // The owner of the manager can refuse an existing control, for example a texture that would loop back to it.
+        public Func<IControl, bool> CanAddExistingItem { get; set; }
+
         private void EnsureItemInCollection(IControl control)
         {
             if (Collection.ManagerData.Items.Contains(control)) return;
+            if (CanAddExistingItem?.Invoke(control) == false) return;
 
             Run(new AddItemUndoCommand(_sync, control, ManagerData.Items.Count));
         }
@@ -172,7 +176,9 @@ namespace CMiX.Core.Prefabs.Managers
         public void AddExistingItem(IControl control)
         {
             EnsureItemInCollection(control);
-            SelectAt(Collection.ManagerData.Items.IndexOf(control));
+            var index = Collection.ManagerData.Items.IndexOf(control);
+            if (index >= 0)
+                SelectAt(index);
         }
 
         public void RemoveItem(IControl control) => RemoveFrom(Collection, control);

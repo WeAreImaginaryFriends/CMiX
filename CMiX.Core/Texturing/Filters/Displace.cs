@@ -4,6 +4,7 @@
 using CMiX.Core.Modulation;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
+using CMiX.Core.Texturing.Sources;
 using static CMiX.Core.ControlExtensions;
 
 namespace CMiX.Core.Texturing.Filters
@@ -27,6 +28,33 @@ namespace CMiX.Core.Texturing.Filters
                 offset.X, offset.Y,
                 offsetScale.X, offsetScale.Y
             };
+
+            TextureSelector.CanAddExistingItem = control => control is not ITextureSource texture || !WouldLoop(texture);
+        }
+
+        // True when the texture, or a texture that it displaces with, has this filter. Taking it would
+        // make the filter displace with itself.
+        public bool WouldLoop(ITextureSource texture) => Reaches(texture, new HashSet<ITextureSource>());
+
+        private bool Reaches(ITextureSource texture, HashSet<ITextureSource> visited)
+        {
+            if (!visited.Add(texture))
+                return false;
+
+            var filters = texture.TextureModifierManager?.ManagerData.Items.OfType<Displace>();
+            if (filters == null)
+                return false;
+
+            foreach (var filter in filters)
+            {
+                if (ReferenceEquals(filter, this))
+                    return true;
+
+                if (filter.TextureSelector.ManagerData.Items.OfType<ITextureSource>().Any(source => Reaches(source, visited)))
+                    return true;
+            }
+
+            return false;
         }
 
         public PrefabManager TextureSelector { get; set; }

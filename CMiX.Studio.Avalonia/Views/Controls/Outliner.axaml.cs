@@ -30,7 +30,13 @@ namespace CMiX.Studio.Avalonia.Views.Controls
             if (DataContext is not PrefabManagerBase selector) return;
             var newItem = (sender as SelectingItemsControl)?.SelectedItem as IControl;
             if (newItem == null || ReferenceEquals(newItem, selector.SelectedItem)) return;
-            Dispatcher.UIThread.Post(() => selector.SelectedItem = newItem);
+            Dispatcher.UIThread.Post(() =>
+            {
+                selector.SelectedItem = newItem;
+                // The manager can refuse the item. The box then shows the real selection again.
+                if (!ReferenceEquals(selector.SelectedItem, newItem) && sender is SelectingItemsControl box)
+                    box.SelectedItem = selector.SelectedItem;
+            });
         }
 
         public static readonly StyledProperty<Control> SelectionPanelProperty =
