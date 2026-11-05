@@ -55,6 +55,19 @@ namespace CMiX.Studio.Avalonia.Tests
             layerNode.Children.Single(group => group.Header == header);
 
         [Fact]
+        public void ANewItem_OpensTheRowThatHoldsIt_AndIsOpenItself()
+        {
+            var scene = CreateScene();
+            var composition = scene.Tree.Roots[0];
+            composition.IsExpanded = false;
+
+            scene.A.LayerManager.AddItem(typeof(Layer));
+
+            Assert.True(composition.IsExpanded);
+            Assert.All(composition.Children.Where(child => child.Item != null), child => Assert.True(child.IsExpanded));
+        }
+
+        [Fact]
         public void Roots_AreTheCompositionsInTheOrderOfTheList()
         {
             var scene = CreateScene();

@@ -240,6 +240,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             {
                 case NotifyCollectionChangedAction.Add:
                     InsertChildren(e.NewStartingIndex, e.NewItems!.Cast<IControl>());
+
+                    // A new item opens the row that holds it, so the item is seen.
+                    IsExpanded = true;
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     RemoveChildren(e.OldStartingIndex, e.OldItems!.Count);
