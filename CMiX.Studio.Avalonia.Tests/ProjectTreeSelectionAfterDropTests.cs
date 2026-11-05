@@ -61,6 +61,25 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public async Task ADrop_OpensTheRowsThatHoldTheItem_ButNotTheItem()
+        {
+            var scene = CreateScene();
+            var node = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var target = Scene.Group(scene.LayerNodeOfA(1), "Entities");
+            TestServiceProviderFactory.ExpandAll(scene.Tree);
+            target.IsExpanded = false;
+            scene.LayerNodeOfA(1).IsExpanded = false;
+            scene.Tree.Roots[0].IsExpanded = false;
+
+            await scene.Tree.DropAsync(node, target, DropPosition.Inside);
+
+            Assert.True(target.IsExpanded);
+            Assert.True(scene.LayerNodeOfA(1).IsExpanded);
+            Assert.True(scene.Tree.Roots[0].IsExpanded);
+            Assert.False(target.Children[0].IsExpanded);
+        }
+
+        [Fact]
         public async Task AnEntityThatWasNotSelected_IsSelectedAfterTheMove()
         {
             var scene = CreateScene();

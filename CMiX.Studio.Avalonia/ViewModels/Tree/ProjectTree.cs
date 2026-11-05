@@ -256,8 +256,15 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             try
             {
                 outcome = dropService.Drop(source, target, position);
-                if (outcome.Moved && FindNode(root, source.Item!) is { } moved)
-                    SelectedNode = moved;
+                if (outcome.Moved)
+                {
+                    // The rows that hold the item open, so the user sees the result.
+                    for (var holder = position == DropPosition.Inside ? target : target.Parent; holder != null; holder = holder.Parent)
+                        holder.IsExpanded = true;
+
+                    if (FindNode(root, source.Item!) is { } moved)
+                        SelectedNode = moved;
+                }
             }
             finally
             {
