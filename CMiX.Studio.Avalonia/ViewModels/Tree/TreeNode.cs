@@ -48,6 +48,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (item == null)
                 Group = TreeGroup.For(parent?.Item, childManager);
 
+            Category = item != null ? TreeCategories.Of(item) : Group != null ? TreeCategories.Of(Group) : null;
+            ComposableDepth = parent == null ? 0 : parent.ComposableDepth + (parent.Category == TreeCategory.Composable ? 1 : 0);
+
             ChildManager = childManager ?? (item is Composition composition ? composition.LayerManager : null);
             if (ChildManager != null)
             {
@@ -94,6 +97,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public string IconKey { get; }
         public IControl? Item { get; }
         public TreeGroup? Group { get; }
+
+        // The kind of the row: its color in the tree. Null for a row that the tree does not know.
+        public TreeCategory? Category { get; }
+
+        // The number of composables around the row. A composable has one more color for each level.
+        public int ComposableDepth { get; }
 
         // What the inspector shows for this row: the item, or the group of items of a layer.
         public object? InspectorContent => (object?)Item ?? Group;
