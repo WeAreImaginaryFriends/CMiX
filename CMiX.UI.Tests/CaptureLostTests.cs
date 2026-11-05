@@ -698,14 +698,16 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ASlider_MovesAsSlowAsADragValue()
+        public void ASlider_FollowsTheCursor_ShiftSlowsAndCtrlSpeedsUp()
         {
             var normal = SliderGainWith(RawInputModifiers.None);
             var fine = SliderGainWith(RawInputModifiers.Shift);
+            var fast = SliderGainWith(RawInputModifiers.Control);
 
-            // 60 pixels at 0.001 a pixel, and the small step of a DragValue with Shift.
-            Assert.InRange(normal, 0.059, 0.061);
-            Assert.InRange(fine / normal, 0.099, 0.101);
+            // The first move only starts the drag, so 30 pixels count. The thumb moves as far as the cursor.
+            Assert.InRange(normal, 0.05, 0.25);
+            Assert.InRange(fine / normal, 0.0099, 0.0101);
+            Assert.True(fast > normal * 2, "fast: " + fast);
         }
     }
 }

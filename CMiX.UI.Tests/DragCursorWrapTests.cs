@@ -322,7 +322,8 @@ namespace CMiX.UI.Tests
                 mouse.Move(20, 0);
 
             Assert.True(mouse.Placements - placementsBefore >= 8, "placements: " + (mouse.Placements - placementsBefore));
-            var expected = 0.1 + slider.SmallChange * (mouse.MovedX - movedBefore + 2);
+            var track = slider.GetVisualDescendants().OfType<Border>().First(b => b.Name == "sliderBorder").Bounds.Width;
+            var expected = 0.1 + 0.01 * (mouse.MovedX - movedBefore + 2) / track;
             Assert.InRange(slider.Value, expected - 0.01, expected + 0.01);
         }
 
