@@ -82,7 +82,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
             var view = new ProjectTreeView { DataContext = tree };
-            var window = new Window { Content = view, Width = 400, Height = 900 };
+            var window = new Window { Content = view, Width = 400, Height = 1100 };
             window.Show();
             Dispatcher.UIThread.RunJobs();
             return new Screen { Window = window, View = view, Tree = tree, Project = project, A = a, B = b };
