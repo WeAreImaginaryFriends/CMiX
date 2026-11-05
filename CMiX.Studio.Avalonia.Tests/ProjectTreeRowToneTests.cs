@@ -68,7 +68,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         private static AvaloniaColor FillOf(Border row) => ((ISolidColorBrush)row.Background!).Color;
 
-        private CategoryTone ToneOf(TreeNode node) => palette.For(node.Category!.Value, node.ComposableDepth);
+        private CategoryTone ToneOf(TreeNode node) => palette.For(node.Category!.Value, node.ComposableDepth, node.KindDepth);
 
         private static IEnumerable<TreeNode> All(IEnumerable<TreeNode> nodes) =>
             nodes.SelectMany(node => new[] { node }.Concat(All(node.Children)));

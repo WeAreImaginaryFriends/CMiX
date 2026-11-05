@@ -130,7 +130,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 Select(screen, node);
                 var square = screen.Header.GetVisualDescendants().OfType<CategoryBadge>().Single().GetVisualDescendants().OfType<Border>().First();
 
-                var expected = palette.For(node.Category!.Value, node.ComposableDepth).KindSelected;
+                var expected = palette.For(node.Category!.Value, node.ComposableDepth, node.KindDepth).FillSelected;
                 Assert.Equal(expected, ((global::Avalonia.Media.ISolidColorBrush)square.Background!).Color);
                 Assert.Equal(node.IconKey, screen.HeaderIcon.IconKey);
             }

@@ -52,6 +52,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             Category = item != null ? TreeCategories.Of(item) : Group != null ? TreeCategories.Of(Group) : null;
             ComposableDepth = parent == null ? 0 : parent.ComposableDepth + (parent.Category == TreeCategory.Composable ? 1 : 0);
+            KindDepth = parent == null ? 0 : parent.KindDepth + (parent.Category != null && Category != null && parent.Category != Category ? 1 : 0);
 
             ChildManager = childManager ?? (item is Composition composition ? composition.LayerManager : null);
             if (ChildManager != null)
@@ -105,6 +106,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The number of composables around the row. A composable has one more color for each level.
         public int ComposableDepth { get; }
+
+        // The number of changes of kind from the top of the tree to the row. A group and its items have the same one, and what a row holds
+        // of another kind has one more. A row is darker for each one (see CategoryPalette).
+        public int KindDepth { get; }
 
         // What the inspector shows for this row: the item, or the group of items of a layer.
         public object? InspectorContent => (object?)Item ?? Group;

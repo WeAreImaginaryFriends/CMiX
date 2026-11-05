@@ -8,13 +8,15 @@ using Xunit;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // The tones of a kind of row: the color of the kind, over the background, for each state.
+    // The tones of a kind of row: the fills of the states, and the colors of the count squares.
     public class CategoryPaletteTests
     {
         private static readonly Color Background = Color.FromRgb(34, 34, 36);
         private static readonly Color Amber = Color.FromRgb(233, 211, 73);
         private static readonly Color Magenta = Color.FromRgb(220, 116, 215);
         private static readonly Color Violet = Color.FromRgb(159, 133, 236);
+        private static readonly Color Text = Color.FromRgb(224, 224, 224);
+        private static readonly Color White = Color.FromRgb(255, 255, 255);
 
         private static CategoryPalette Palette()
         {
@@ -28,14 +30,24 @@ namespace CMiX.Studio.Avalonia.Tests
             return new CategoryPalette(key => colors[key], Background);
         }
 
+        private static double LuminanceOf(Color color) => ColorMix.Luminance(color);
+
         [Fact]
-        public void ATone_IsTheColorOverTheBackground_WithOneStrengthForEachState()
+        public void TheFills_HaveTheBrightnessOfTheirState_AndTheHueOfTheKind()
         {
             var tone = Palette().For(TreeCategory.Light);
 
-            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillStrength), tone.Fill);
-            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillHoverStrength), tone.FillHover);
-            Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.FillSelectedStrength), tone.FillSelected);
+            Assert.InRange(LuminanceOf(tone.Fill), CategoryPalette.FillLuminance - 0.004, CategoryPalette.FillLuminance + 0.004);
+            Assert.InRange(LuminanceOf(tone.FillHover), CategoryPalette.FillLuminance * CategoryPalette.HoverFactor - 0.004, CategoryPalette.FillLuminance * CategoryPalette.HoverFactor + 0.004);
+            Assert.InRange(LuminanceOf(tone.FillSelected), CategoryPalette.FillLuminance * CategoryPalette.SelectedFactor - 0.004, CategoryPalette.FillLuminance * CategoryPalette.SelectedFactor + 0.004);
+            Assert.True(tone.Fill.R > tone.Fill.B && tone.Fill.G > tone.Fill.B, "A yellow fill is not yellow.");
+        }
+
+        [Fact]
+        public void TheCountSquares_AreTheColorOfTheKindOverTheBackground_WithOneStrengthForEachState()
+        {
+            var tone = Palette().For(TreeCategory.Light);
+
             Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.KindStrength), tone.Kind);
             Assert.Equal(ColorMix.Over(Amber, Background, CategoryPalette.KindHoverStrength), tone.KindHover);
             Assert.Equal(Amber, tone.KindSelected);
@@ -46,11 +58,54 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var tone = Palette().For(TreeCategory.Light);
 
-            static int Sum(Color color) => color.R + color.G + color.B;
-            Assert.True(Sum(tone.Fill) < Sum(tone.FillHover));
-            Assert.True(Sum(tone.FillHover) < Sum(tone.FillSelected));
-            Assert.True(Sum(tone.Kind) < Sum(tone.KindHover));
-            Assert.True(Sum(tone.KindHover) < Sum(tone.KindSelected));
+            Assert.True(LuminanceOf(tone.Fill) < LuminanceOf(tone.FillHover));
+            Assert.True(LuminanceOf(tone.FillHover) < LuminanceOf(tone.FillSelected));
+            Assert.True(LuminanceOf(tone.Kind) < LuminanceOf(tone.KindHover));
+            Assert.True(LuminanceOf(tone.KindHover) < LuminanceOf(tone.KindSelected));
+        }
+
+        [Fact]
+        public void EveryKind_HasTheSameBrightnessAtRest()
+        {
+            var palette = new CategoryPalette(key => key switch
+            {
+                "CategoryLight" => Amber,
+                "CategoryComposable" => Magenta,
+                _ => Violet
+            }, Background);
+
+            var amber = LuminanceOf(palette.For(TreeCategory.Light).Fill);
+            var magenta = LuminanceOf(palette.For(TreeCategory.Composable).Fill);
+            var violet = LuminanceOf(palette.For(TreeCategory.Modulator).Fill);
+
+            Assert.InRange(magenta, amber - 0.006, amber + 0.006);
+            Assert.InRange(violet, amber - 0.006, amber + 0.006);
+        }
+
+        [Fact]
+        public void ARowDeeperByAChangeOfKind_IsDarker_ByTheLevelFactor_DownToTheFloor()
+        {
+            var palette = Palette();
+            var first = LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 0).Fill);
+            var second = LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 1).Fill);
+            var third = LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 2).Fill);
+            var deep = LuminanceOf(palette.For(TreeCategory.Light, kindDepth: 40).Fill);
+
+            Assert.InRange(second, first * CategoryPalette.LevelFactor - 0.004, first * CategoryPalette.LevelFactor + 0.004);
+            Assert.True(third < second);
+            Assert.InRange(deep, CategoryPalette.FloorLuminance - 0.004, CategoryPalette.FloorLuminance + 0.004);
+        }
+
+        [Fact]
+        public void TheComposableDepth_ChangesTheHue_AndTheKindDepth_ChangesTheBrightness()
+        {
+            var palette = Palette();
+
+            Assert.NotEqual(palette.For(TreeCategory.Composable, 0).Fill, palette.For(TreeCategory.Composable, 3).Fill);
+            Assert.InRange(
+                LuminanceOf(palette.For(TreeCategory.Composable, 3).Fill),
+                LuminanceOf(palette.For(TreeCategory.Composable, 0).Fill) - 0.006,
+                LuminanceOf(palette.For(TreeCategory.Composable, 0).Fill) + 0.006);
         }
 
         [Theory]
@@ -71,7 +126,27 @@ namespace CMiX.Studio.Avalonia.Tests
             var palette = Palette();
 
             Assert.Equal(palette.For(TreeCategory.Composable, 3), palette.For(TreeCategory.Composable, 7));
-            Assert.NotEqual(palette.For(TreeCategory.Composable, 0), palette.For(TreeCategory.Composable, 3));
+        }
+
+        // The text must stay readable on every fill: the light text of the theme at rest and when hovered, white when selected.
+        [AvaloniaFact]
+        public void TheTextIsReadable_OnEveryKindAtEveryLevelAndState()
+        {
+            var palette = CategoryPalette.FromApplication();
+
+            foreach (var category in System.Enum.GetValues<TreeCategory>())
+            {
+                for (var composable = 0; composable <= CategoryPalette.LastComposableLevel; composable++)
+                {
+                    for (var kind = 0; kind <= 6; kind++)
+                    {
+                        var tone = palette.For(category, composable, kind);
+                        Assert.True(ColorMix.Contrast(Text, tone.Fill) >= 4.5, $"{category} {composable}/{kind} at rest: {ColorMix.Contrast(Text, tone.Fill):0.0}");
+                        Assert.True(ColorMix.Contrast(Text, tone.FillHover) >= 4.5, $"{category} {composable}/{kind} hovered: {ColorMix.Contrast(Text, tone.FillHover):0.0}");
+                        Assert.True(ColorMix.Contrast(White, tone.FillSelected) >= 4.5, $"{category} {composable}/{kind} selected: {ColorMix.Contrast(White, tone.FillSelected):0.0}");
+                    }
+                }
+            }
         }
 
         [AvaloniaFact]

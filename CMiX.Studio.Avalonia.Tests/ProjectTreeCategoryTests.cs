@@ -71,6 +71,29 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public void TheKindDepth_CountsTheChangesOfKindDownToTheRow()
+        {
+            var composition = CreateTree().Roots[0];
+            var layer = composition.Children[0];
+            var entities = Child(layer, "Entities");
+            var entity = entities.Children[0];
+            var modifiers = Child(entity, "Modifiers");
+            var modifier = modifiers.Children[0];
+            var modulators = Child(modifier, "Modulators");
+
+            Assert.Equal(0, composition.KindDepth);
+            Assert.Equal(0, layer.KindDepth);
+            Assert.Equal(1, entities.KindDepth);
+            Assert.Equal(1, entity.KindDepth);
+            Assert.Equal(2, modifiers.KindDepth);
+            Assert.Equal(2, modifier.KindDepth);
+            Assert.Equal(3, modulators.KindDepth);
+            Assert.Equal(3, modulators.Children[0].KindDepth);
+            Assert.Equal(1, Child(layer, "Filters").KindDepth);
+            Assert.Equal(1, Child(layer, "Filters").Children[0].KindDepth);
+        }
+
+        [Fact]
         public void ALayerAddedLater_HasTheKindAndTheDepthOfALayer()
         {
             var tree = CreateTree();

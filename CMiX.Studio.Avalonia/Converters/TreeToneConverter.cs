@@ -20,18 +20,18 @@ namespace CMiX.Studio.Avalonia.Converters
 
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            var (category, depth) = value switch
+            var (category, composableDepth, kindDepth) = value switch
             {
-                TreeNode node => (node.Category, node.ComposableDepth),
-                KindCount count => (count.Category, 0),
-                _ => ((TreeCategory?)null, 0)
+                TreeNode node => (node.Category, node.ComposableDepth, node.KindDepth),
+                KindCount count => (count.Category, 0, 0),
+                _ => ((TreeCategory?)null, 0, 0)
             };
 
             if (category == null || parameter is not string name || !Enum.TryParse<ToneRole>(name, out var role))
                 return Brushes.Transparent;
 
             palette ??= CategoryPalette.FromApplication();
-            return new ImmutableSolidColorBrush(palette.For(category.Value, depth).Of(role));
+            return new ImmutableSolidColorBrush(palette.For(category.Value, composableDepth, kindDepth).Of(role));
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>

@@ -47,10 +47,19 @@ namespace CMiX.Studio.Avalonia.Themes
     // It takes a function for the colors, so a test can give its own colors without an application.
     public sealed class CategoryPalette
     {
-        // The strength of each color over the background, from 0 (the background) to 1 (the color of the kind).
-        public const double FillStrength = 0.20;
-        public const double FillHoverStrength = 0.27;
-        public const double FillSelectedStrength = 0.36;
+        // The fill behind a row has the hue of its kind and the same brightness for every kind, so every kind is as strong as the others and
+        // a text reads the same on all of them. The brightness is a relative luminance (see ColorMix.Luminance). A row deeper in the tree
+        // by a change of kind has the brightness of the level above times LevelFactor, down to FloorLuminance. A hovered row and a
+        // selected row have the brightness of the row at rest times a factor. The selected factor keeps a white text above a contrast of 4.5.
+        public const double FillLuminance = 0.075;
+        public const double LevelFactor = 0.8;
+        public const double FloorLuminance = 0.02;
+        public const double HoverFactor = 1.5;
+        public const double SelectedFactor = 2.3;
+        public const double MinSaturation = 0.55;
+        public const double MaxSaturation = 0.85;
+
+        // The strength of the color of a count square over the background, from 0 (the background) to 1 (the color of the kind).
         public const double KindStrength = 0.60;
         public const double KindHoverStrength = 0.85;
         public const double KindSelectedStrength = 1.0;
@@ -87,13 +96,18 @@ namespace CMiX.Studio.Avalonia.Themes
             return "CategoryComposableLevel" + Math.Min(depth, LastComposableLevel);
         }
 
-        public CategoryTone For(TreeCategory category, int depth = 0)
+        // The tone of a row. The composable depth is the number of composables around it (the hue of a composable). The kind depth is the
+        // number of changes of kind above it (the brightness): a group and its items have the same kind depth.
+        public CategoryTone For(TreeCategory category, int composableDepth = 0, int kindDepth = 0)
         {
-            var color = colorOf(ColorKey(category, depth));
+            var color = colorOf(ColorKey(category, composableDepth));
+            var rest = Math.Max(FloorLuminance, FillLuminance * Math.Pow(LevelFactor, Math.Max(0, kindDepth)));
+            Color Fill(double luminance) => ColorMix.WithLuminance(color, luminance, MinSaturation, MaxSaturation);
+
             return new CategoryTone(
-                ColorMix.Over(color, background, FillStrength),
-                ColorMix.Over(color, background, FillHoverStrength),
-                ColorMix.Over(color, background, FillSelectedStrength),
+                Fill(rest),
+                Fill(rest * HoverFactor),
+                Fill(rest * SelectedFactor),
                 ColorMix.Over(color, background, KindStrength),
                 ColorMix.Over(color, background, KindHoverStrength),
                 ColorMix.Over(color, background, KindSelectedStrength));

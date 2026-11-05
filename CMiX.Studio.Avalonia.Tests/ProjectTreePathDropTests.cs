@@ -329,7 +329,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var cameras = layer.Children[1];
             var palette = CategoryPalette.FromApplication();
             bool Hovered(TreeNode node) =>
-                (RowOf(screen, node).Background as ISolidColorBrush)?.Color == palette.For(node.Category!.Value, node.ComposableDepth).FillHover;
+                (RowOf(screen, node).Background as ISolidColorBrush)?.Color == palette.For(node.Category!.Value, node.ComposableDepth, node.KindDepth).FillHover;
 
             // Over the layer: only the layer looks hovered, not its children.
             Drag(screen, RowPoint(screen, layer), data, RawDragEventType.DragOver);
