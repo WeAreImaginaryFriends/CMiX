@@ -181,7 +181,9 @@
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
         </Style>
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
-            <Setter Property="IsVisible" Value="False" />
+            <!-- The chevron keeps its room: it holds the indent of the row, so an empty row stays aligned with the rows around it. -->
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
         </Style>
         <!-- An empty list of children takes no room, and adds no space below the row. -->
         <Style Selector="^:empty /template/ ui|CollapsePanel#PART_Collapse">

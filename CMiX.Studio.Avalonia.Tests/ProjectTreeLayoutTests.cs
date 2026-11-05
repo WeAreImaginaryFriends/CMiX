@@ -134,6 +134,19 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void AnEmptyRow_IsIndentedLikeItsSiblings_AndItsChevronCannotBeClicked()
+        {
+            var (view, tree) = Show();
+            var layer = tree.Roots[0].Children[0];
+            var empty = tree.Roots[0].Children.Single(child => child.Header == "Filters");
+            Assert.Empty(empty.Children);
+
+            Assert.Equal(BoundsIn(RowOf(view, layer)).Left, BoundsIn(RowOf(view, empty)).Left, 3);
+            var chevron = ItemOf(view, empty).GetVisualDescendants().OfType<ToggleButton>().First(toggle => toggle.Name == "PART_ExpandCollapseChevron");
+            Assert.False(chevron.IsHitTestVisible);
+        }
+
+        [AvaloniaFact]
         public void EveryFill_EndsAtTheSamePlace_WhateverItsLevel()
         {
             var (view, tree) = Show();
