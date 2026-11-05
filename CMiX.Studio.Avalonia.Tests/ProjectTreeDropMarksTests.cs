@@ -125,7 +125,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             foreach (var node in All(tree.Roots))
             {
-                var borders = ItemOf(view, node).GetVisualDescendants().OfType<Border>().Where(border => border.Name != "DropLine");
+                var borders = ItemOf(view, node).GetVisualDescendants().OfType<Border>().Where(border => border.Name is not ("DropLine" or "SelectionFrame"));
                 Assert.All(borders, border => Assert.Equal(new Thickness(0), border.BorderThickness));
             }
 

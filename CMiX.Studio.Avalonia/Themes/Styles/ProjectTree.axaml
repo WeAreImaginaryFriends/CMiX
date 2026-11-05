@@ -65,7 +65,6 @@
                         Height="{DynamicResource TreeRowHeight}"
                         Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeLevelIndent}}"
                         Classes.candidate="{Binding IsDropCandidate}"
-                        Padding="2,0,0,0"
                         CornerRadius="{DynamicResource CornerRadiusAll}"
                         TextElement.Foreground="{DynamicResource ForegroundBrush}">
                         <Panel>
@@ -74,6 +73,7 @@
                                  renames it. Only the chevron expands a row. -->
                             <Grid
                                 Name="RowContent"
+                                Margin="2,0,0,0"
                                 ColumnDefinitions="16,*">
                                 <ToggleButton
                                     Name="PART_ExpandCollapseChevron"
@@ -98,6 +98,15 @@
                                 IsHitTestVisible="False"
                                 IsVisible="{Binding IsDimmed}"
                                 Opacity="{DynamicResource TreeDimOpacity}" />
+                            <!-- The selected row has a thin border in the bright color of its kind. It is drawn over the row, inside it, so the row
+                                 does not change its size. Its thickness is one pixel of the screen (see ProjectTreeView.SetRowMetrics). -->
+                            <Border
+                                Name="SelectionFrame"
+                                BorderBrush="{Binding Converter={StaticResource TreeTone}, ConverterParameter=KindSelected}"
+                                BorderThickness="{DynamicResource TreeSelectionThickness}"
+                                CornerRadius="{DynamicResource CornerRadiusAll}"
+                                IsHitTestVisible="False"
+                                IsVisible="False" />
                         </Panel>
                     </Border>
                     <Views:RowToggles Grid.Column="1" />
@@ -160,6 +169,9 @@
         <!-- The pointer is tested on the row, not on the item: the item also contains its children. -->
         <Style Selector="^ /template/ Border#RowBorder:pointerover">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillHover}" />
+        </Style>
+        <Style Selector="^:selected /template/ Border#SelectionFrame">
+            <Setter Property="IsVisible" Value="True" />
         </Style>
         <Style Selector="^:selected /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
