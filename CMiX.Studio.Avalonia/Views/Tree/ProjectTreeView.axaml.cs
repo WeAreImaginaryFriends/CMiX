@@ -212,8 +212,19 @@ namespace CMiX.Studio.Avalonia.Views
 
             var data = new DataObject();
             data.Set(NodeFormat, node);
-            await DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
-            Mark(null, null);
+
+            // The tree shows every row that can take the node for as long as the drag goes on.
+            var tree = DataContext as ProjectTree;
+            tree?.BeginDrag(node);
+            try
+            {
+                await DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
+            }
+            finally
+            {
+                tree?.EndDrag();
+                Mark(null, null);
+            }
         }
 
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e) => pressedNode = null;
