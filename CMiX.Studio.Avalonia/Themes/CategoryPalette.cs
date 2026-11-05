@@ -19,7 +19,29 @@ namespace CMiX.Studio.Avalonia.Themes
         Color FillSelected,
         Color Kind,
         Color KindHover,
-        Color KindSelected);
+        Color KindSelected)
+    {
+        // A color of the tone by its role. The XAML of the tree asks for a role by name (see TreeToneConverter).
+        public Color Of(ToneRole role) => role switch
+        {
+            ToneRole.Fill => Fill,
+            ToneRole.FillHover => FillHover,
+            ToneRole.FillSelected => FillSelected,
+            ToneRole.Kind => Kind,
+            ToneRole.KindHover => KindHover,
+            _ => KindSelected
+        };
+    }
+
+    public enum ToneRole
+    {
+        Fill,
+        FillHover,
+        FillSelected,
+        Kind,
+        KindHover,
+        KindSelected
+    }
 
     // Gives the colors of a kind of row from the colors of the theme (Colors.axaml, the names Category + kind).
     // It takes a function for the colors, so a test can give its own colors without an application.

@@ -11,6 +11,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -322,12 +323,13 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show(compositions: 1, layersEach: 1);
             var data = FilesOf(screen.Window, NewFile("one.png"));
-            var hover = Assert.IsAssignableFrom<ISolidColorBrush>(Application.Current!.FindResource("RowHoverBrush"));
             var layer = screen.Tree.Roots[0].Children[0];
             var composition = screen.Tree.Roots[0];
             var entities = layer.Children[0];
             var cameras = layer.Children[1];
-            bool Hovered(TreeNode node) => (RowOf(screen, node).Background as ISolidColorBrush)?.Color == hover.Color;
+            var palette = CategoryPalette.FromApplication();
+            bool Hovered(TreeNode node) =>
+                (RowOf(screen, node).Background as ISolidColorBrush)?.Color == palette.For(node.Category!.Value, node.ComposableDepth).FillHover;
 
             // Over the layer: only the layer looks hovered, not its children.
             Drag(screen, RowPoint(screen, layer), data, RawDragEventType.DragOver);

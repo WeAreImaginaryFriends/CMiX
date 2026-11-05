@@ -2,17 +2,21 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
-    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
+    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
+    xmlns:StudioConverters="clr-namespace:CMiX.Studio.Avalonia.Converters">
 
     <!-- The tree of the project. A row is as high as the rows of the other lists: one control height,
          with the space SpacingXXS between two rows. The two sizes are TreeRowHeight and TreeRowSpacing: the same values in
          whole pixels of the screen (see ProjectTreeView), so the rows are always one same pitch apart.
-         It is transparent, grey when the pointer is over the row itself (not over its children), and blue
-         when it is selected. A child is indented by its level.
+         It has a fill in the color of its kind (see CategoryPalette), one step brighter when the pointer is over the row itself
+         (not over its children), and one more step when it is selected. A child is indented by its level.
          The classes dropbefore and dropafter show the place of a drag between rows. The class droptarget shows the row
          that takes a drop inside it: it looks as if the pointer was over it. The marks are drawn
          over the row and take no room, so the rows never move during a drag. -->
     <converters:MarginMultiplierConverter x:Key="TreeLevelIndent" Indent="16" Left="True" />
+
+    <!-- The tones of a row: the fill behind it and the colors of its count squares, by the kind of the row (see CategoryPalette). -->
+    <StudioConverters:TreeToneConverter x:Key="TreeTone" />
 
     <ControlTheme x:Key="TreeChevronToggle" TargetType="ToggleButton">
         <Setter Property="Width" Value="16" />
@@ -54,7 +58,6 @@
                         Name="RowBorder"
                         Height="{DynamicResource TreeRowHeight}"
                         Padding="2,0,0,0"
-                        Background="Transparent"
                         CornerRadius="{DynamicResource CornerRadiusAll}"
                         TextElement.Foreground="{DynamicResource ForegroundBrush}">
                         <Panel>
@@ -120,19 +123,21 @@
             </ControlTemplate>
         </Setter>
 
+        <!-- The fill of a row is the tone of its kind. It is a style, not a value of the template, so the states below can replace it.
+             A row with no fill would not take the pointer, so a row of an unknown kind has a clear fill. -->
+        <Style Selector="^ /template/ Border#RowBorder">
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=Fill}" />
+        </Style>
         <!-- The pointer is tested on the row, not on the item: the item also contains its children. -->
         <Style Selector="^ /template/ Border#RowBorder:pointerover">
-            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillHover}" />
         </Style>
         <Style Selector="^:selected /template/ Border#RowBorder">
-            <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
-        </Style>
-        <Style Selector="^:selected /template/ Border#RowBorder:pointerover">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
         </Style>
         <!-- Files dragged over the tree: the row that takes them looks as if the pointer was over it. -->
         <Style Selector="^:droptarget /template/ Border#RowBorder">
-            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillHover}" />
         </Style>
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
             <Setter Property="IsVisible" Value="False" />
