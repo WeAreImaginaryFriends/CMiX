@@ -150,7 +150,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheDropLine_StartsAtTheIndentOfItsRow_AndIsInTheSpaceBetweenRows()
+        public void TheDropLine_StartsAtTheIndentOfItsRow_AtTheTopOfTheItemBeforeIt_AndAtTheBottomAfterIt()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
@@ -164,8 +164,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(line.IsVisible, "line.IsVisible");
             Assert.True(line.IsEffectivelyVisible, "line.IsEffectivelyVisible");
             Assert.Equal(BoundsIn(row).Left, BoundsIn(line).Left, 3);
-            Assert.Equal(BoundsIn(row).Top, BoundsIn(line).Bottom, 3);
-            Assert.True(line.Bounds.Height <= Convert.ToDouble(view.Resources["TreeRowGap"]));
+            Assert.Equal(BoundsIn(row).Top, BoundsIn(line).Top, 3);
 
             ((IPseudoClasses)item.Classes).Set(":dropbefore", false);
             ((IPseudoClasses)item.Classes).Set(":dropafter", true);
@@ -173,7 +172,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var after = BoundsIn(line);
             var itemBounds = BoundsIn(item);
 
-            Assert.Equal(itemBounds.Bottom, after.Top, 3);
+            Assert.Equal(itemBounds.Bottom, after.Bottom, 3);
         }
 
         [AvaloniaFact]

@@ -73,13 +73,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (target.IsOrIsUnder(source))
                 return false;
 
-            // A group takes an item of the same kind from another layer, inside it.
+            // A group takes an item of the same kind, inside it. An item of its own list goes to the end of the list. An item of another
+            // list goes there too, unless that list has the item already.
             if (target.Item == null)
                 return target.ChildManager != null
                     && KindOfItem(source) is { } kind
                     && KindOfGroup(target) == kind
-                    && !ReferenceEquals(target.ChildManager, source.Owner)
-                    && !target.ChildManager.ManagerData.Items.Contains(source.Item!)
+                    && (ReferenceEquals(target.ChildManager, source.Owner) || !target.ChildManager.ManagerData.Items.Contains(source.Item!))
                     && Accepts(source.Item!, target.Group);
 
             if (target.Owner == null)

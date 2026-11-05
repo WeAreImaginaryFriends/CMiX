@@ -78,11 +78,6 @@ namespace CMiX.Studio.Avalonia.Views
             var (_, snappedGap) = SnapToPixels(height, RowGap, scale);
             Resources["TreeRowGap"] = snappedGap;
 
-            // The drop line is in the space between two rows: over the space above a row, or under it.
-            var line = Convert.ToDouble(Application.Current!.FindResource("SplitterIndicatorSize"));
-            Resources["TreeDropLineBeforeMargin"] = new Thickness(0, -line, 0, 0);
-            Resources["TreeDropLineAfterMargin"] = new Thickness(0, 0, 0, -line);
-
             // The border of the selected row is one pixel of the screen, so it is as thin on a screen of 150% as on a screen of 100%.
             Resources["TreeSelectionThickness"] = new Thickness(1 / scale);
         }
