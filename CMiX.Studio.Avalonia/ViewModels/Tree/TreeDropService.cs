@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2017-2026 CloneProduction Shanghai Company Limited and CMiX contributors
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CMiX.Core;
@@ -168,6 +169,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // so the user can drop it and read the reason.
         public bool CanDrop(TreeNode source, TreeNode target, DropPosition position) =>
             Resolve(source, target, position) != null;
+
+        // True when the row is a place where the dragged node could go: the row takes the drop, before it, after it or inside it.
+        // These are the rows that the user can drop on, so a drag can show them all.
+        public bool IsTarget(TreeNode source, TreeNode target) =>
+            source.Item != null && source.Owner != null
+            && TakesDropOf(source, target)
+            && Enum.GetValues<DropPosition>().Any(position => Resolve(source, target, position) != null);
 
         public DropOutcome Drop(TreeNode source, TreeNode target, DropPosition position)
         {

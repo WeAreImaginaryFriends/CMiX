@@ -153,7 +153,32 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ShowsKindCounts))]
+        [NotifyPropertyChangedFor(nameof(IsDropHint))]
+        [NotifyPropertyChangedFor(nameof(IsDimmed))]
         private bool isExpanded = true;
+
+        // The state of the row during a drag of a node (see ProjectTree.BeginDrag). The rows that can take the node are candidates.
+        // A collapsed row that has a candidate under it gives a hint, so the user knows to open it. The other rows are dimmed.
+        public bool IsDragActive { get; private set; }
+        public bool IsDragSource { get; private set; }
+        public bool IsDropCandidate { get; private set; }
+        public bool HasDropCandidateBelow { get; private set; }
+        public bool IsDropHint => IsDragActive && HasDropCandidateBelow && !IsDropCandidate && !IsExpanded;
+        public bool IsDimmed => IsDragActive && !IsDragSource && !IsDropCandidate && !IsDropHint;
+
+        internal void SetDragState(bool active, bool isSource, bool isCandidate, bool hasCandidateBelow)
+        {
+            IsDragActive = active;
+            IsDragSource = isSource;
+            IsDropCandidate = isCandidate;
+            HasDropCandidateBelow = hasCandidateBelow;
+            OnPropertyChanged(nameof(IsDragActive));
+            OnPropertyChanged(nameof(IsDragSource));
+            OnPropertyChanged(nameof(IsDropCandidate));
+            OnPropertyChanged(nameof(HasDropCandidateBelow));
+            OnPropertyChanged(nameof(IsDropHint));
+            OnPropertyChanged(nameof(IsDimmed));
+        }
 
         public bool IsOrIsUnder(TreeNode node)
         {
