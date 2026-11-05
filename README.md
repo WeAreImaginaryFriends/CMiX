@@ -4,7 +4,7 @@ CMiX is a realtime graphic composition tool.
 
 ## Requirements
 
-- Windows and .NET 8
+- Windows and .NET 10
 - A Redis or Memurai server
 - vvvv gamma for the engine in `CMiX.Engine`. vvvv has its own license: https://vvvv.org/licensing
 
@@ -42,7 +42,7 @@ This command pushes the package. Fallout also reads both values from the environ
 
     .\build.ps1 Push --feed <url> --api-key <key>
 
-The file `version.txt` holds the version of the zip, the package and the executable. The package installs the Studio into `C:\tools\CMiX.Studio` and adds a desktop shortcut. The Studio needs the .NET 8 runtime (package `dotnet-8.0-runtime`). An upgrade replaces `studio-settings.json` in that folder with the shipped file.
+The file `version.txt` holds the version of the zip, the package and the executable. The package installs the Studio into `C:\tools\CMiX.Studio` and adds a desktop shortcut. The Studio needs the .NET 10 runtime (package `dotnet-10.0-runtime`). An upgrade replaces `studio-settings.json` in that folder with the shipped file.
 
 ## Project files
 

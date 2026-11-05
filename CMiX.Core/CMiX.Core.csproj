@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
       <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
       <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
@@ -9,11 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
     <PackageReference Include="Scrutor" Version="6.1.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.31" />
-    <PackageReference Include="VL.CoreLib" Version="2025.7.0" />
-    <PackageReference Include="VL.Serialization.MessagePack" Version="2025.7.0" />
+    <PackageReference Include="VL.CoreLib" Version="2026.8.0-0252-g3d8784ef07" />
+    <PackageReference Include="VL.Serialization.MessagePack" Version="2026.8.0-0252-g3d8784ef07" />
   </ItemGroup>
 
   <ItemGroup>

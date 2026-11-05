@@ -7,7 +7,7 @@
     <VLTargetOS>Windows</VLTargetOS>
     <OutputType>WinExe</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <VLIgnoreCompileErrors>False</VLIgnoreCompileErrors>
     <VLIgnoreUnhandledExceptions>False</VLIgnoreUnhandledExceptions>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
