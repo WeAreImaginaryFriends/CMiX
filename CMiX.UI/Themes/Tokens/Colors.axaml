@@ -27,6 +27,21 @@
     <Color x:Key="ModulatorExternal">#FFC28A56</Color>
     <Color x:Key="ModulatorExternalHighlight">#FFD7B091</Color>
 
+    <!-- The colors of the kinds of row in the project tree, one for each TreeCategory.
+         A composable inside a composable moves its hue one step for each level of nesting (Level1 to Level3).
+         The tree reads them by the name Category + kind, and shows them as tones over the panel background. -->
+    <Color x:Key="CategoryComposable">#FFDC74D7</Color>
+    <Color x:Key="CategoryComposableLevel1">#FFC874E4</Color>
+    <Color x:Key="CategoryComposableLevel2">#FFB27DEA</Color>
+    <Color x:Key="CategoryComposableLevel3">#FF9F85EC</Color>
+    <Color x:Key="CategoryEntity">#FFE56C9E</Color>
+    <Color x:Key="CategoryCamera">#FFE66756</Color>
+    <Color x:Key="CategoryLight">#FFE9D349</Color>
+    <Color x:Key="CategoryTexture">#FF9DCE64</Color>
+    <Color x:Key="CategoryFilter">#FF60C7A2</Color>
+    <Color x:Key="CategoryModifier">#FF68B6D4</Color>
+    <Color x:Key="CategoryModulator">#FF9A8BE4</Color>
+
     <Color x:Key="Text">#FFE0E0E0</Color>
     <Color x:Key="ActiveText">#FFFFFFFF</Color>
 
