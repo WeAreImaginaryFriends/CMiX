@@ -12,8 +12,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Scrutor" Version="6.1.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.31" />
-    <PackageReference Include="VL.CoreLib" Version="2025.7.0" />
-    <PackageReference Include="VL.Serialization.MessagePack" Version="2025.7.0" />
+      <PackageReference Include="VL.Core" Version="2026.8.0-0296-g8e308ce467" />
+    <PackageReference Include="VL.Serialization.MessagePack" Version="2026.8.0-0296-g8e308ce467" />
   </ItemGroup>
 
   <ItemGroup>
