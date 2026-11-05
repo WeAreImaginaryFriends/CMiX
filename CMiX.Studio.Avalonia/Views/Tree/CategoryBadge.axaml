@@ -1,0 +1,23 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.CategoryBadge"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
+
+    <!-- The icon of an item on a square in the color of its kind, as in the title bar of the inspector. The DataContext is a tree node.
+         The square is as high as a row, with the corners of the controls, and the icon is in the color of the text on a fill. The tree
+         does not use it: a row of the tree shows its kind with its fill (see TreeToneConverter). -->
+    <Border
+        Width="{DynamicResource ControlHeightMD}"
+        Height="{DynamicResource ControlHeightMD}"
+        Background="{Binding Converter={StaticResource TreeTone}, ConverterParameter=KindSelected}"
+        CornerRadius="{DynamicResource CornerRadiusAll}">
+        <ui:AppIcon
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{DynamicResource ActiveForegroundBrush}"
+            IconKey="{Binding IconKey}"
+            Size="{DynamicResource IconSizeXS}" />
+    </Border>
+
+</UserControl>

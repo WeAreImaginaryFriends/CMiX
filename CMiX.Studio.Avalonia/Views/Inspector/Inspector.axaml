@@ -20,7 +20,7 @@
          The editors are the views of the other tabs, so an item looks the same here and there. -->
     <DockPanel>
 
-        <!-- The icon and the name of the selected node. -->
+        <!-- The icon of the selected node on a square in the color of its kind, and its name. -->
         <Border
             Name="header"
             Height="{DynamicResource ControlHeightXL}"
@@ -29,7 +29,7 @@
             DockPanel.Dock="Top"
             IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="{DynamicResource SpacingMD}">
-                <ui:AppIcon IconKey="{Binding SelectedNode.IconKey}" Size="{DynamicResource IconSizeXS}" />
+                <Views:CategoryBadge DataContext="{Binding SelectedNode}" />
                 <TextBlock Name="title" VerticalAlignment="Center" Text="{Binding SelectedNode.Header}" />
             </StackPanel>
         </Border>

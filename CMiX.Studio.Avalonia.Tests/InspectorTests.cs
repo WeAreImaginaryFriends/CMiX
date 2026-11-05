@@ -119,6 +119,42 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(height / 2, iconMiddle, 1);
         }
 
+        // The icon of the title bar is on a square in the color of the kind of the selected row.
+        [AvaloniaFact]
+        public void TheHeader_ShowsTheIconOnASquareInTheColorOfTheKind_AndItFollowsTheSelection()
+        {
+            var screen = Show();
+            var palette = CMiX.Studio.Avalonia.Themes.CategoryPalette.FromApplication();
+            foreach (var node in new[] { screen.CompositionNode, screen.LayerNode, screen.Group("Entities"), screen.Group("Lights") })
+            {
+                Select(screen, node);
+                var square = screen.Header.GetVisualDescendants().OfType<CategoryBadge>().Single().GetVisualDescendants().OfType<Border>().First();
+
+                var expected = palette.For(node.Category!.Value, node.ComposableDepth).KindSelected;
+                Assert.Equal(expected, ((global::Avalonia.Media.ISolidColorBrush)square.Background!).Color);
+                Assert.Equal(node.IconKey, screen.HeaderIcon.IconKey);
+            }
+        }
+
+        [AvaloniaFact]
+        public void TheBadgeOfTheHeader_IsARowHighSquareWithTheCornersOfTheControls_AndAWhiteIcon_InTheMiddleOfTheBar()
+        {
+            var screen = Show();
+            Select(screen, screen.CompositionNode);
+            var square = screen.Header.GetVisualDescendants().OfType<CategoryBadge>().Single().GetVisualDescendants().OfType<Border>().First();
+
+            var row = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
+            Assert.Equal(row, square.Bounds.Width);
+            Assert.Equal(row, square.Bounds.Height);
+            Assert.Equal((CornerRadius)Application.Current!.FindResource("CornerRadiusAll")!, square.CornerRadius);
+
+            var top = square.TranslatePoint(new Point(0, 0), screen.Header)!.Value.Y;
+            Assert.Equal(top, screen.Header.Bounds.Height - (top + square.Bounds.Height), 1);
+
+            var white = ((global::Avalonia.Media.ISolidColorBrush)Application.Current!.FindResource("ActiveForegroundBrush")!).Color;
+            Assert.Equal(white, ((global::Avalonia.Media.ISolidColorBrush)screen.HeaderIcon.Foreground!).Color);
+        }
+
         [AvaloniaFact]
         public void WithNothingSelected_TheInspectorShowsOnlyTheHint()
         {
