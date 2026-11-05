@@ -37,6 +37,14 @@ namespace CMiX.UI.Controls.String
             set => SetValue(TextProperty, value);
         }
 
+        public static readonly StyledProperty<object?> SuffixProperty =
+            AvaloniaProperty.Register<TextBoxEditable, object?>(nameof(Suffix));
+        public object? Suffix
+        {
+            get => GetValue(SuffixProperty);
+            set => SetValue(SuffixProperty, value);
+        }
+
         private TopLevel? _parentTopLevel;
         private readonly ContextMenuGuard _contextMenuGuard;
 
@@ -66,6 +74,7 @@ namespace CMiX.UI.Controls.String
         {
             InputValue.IsVisible = editing;
             TextDisplay.IsVisible = !editing;
+            DisplayRow.IsVisible = !editing;
         }
 
         private void TextBoxEditable_PointerPressed(object? sender, PointerPressedEventArgs e)

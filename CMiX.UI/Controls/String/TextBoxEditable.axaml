@@ -13,15 +13,26 @@
              so the text does not move by a pixel when the edit mode starts. -->
         <!-- Only as wide as its text: a double tap on the text starts the edit mode, a double tap on the rest of the row does not.
              The least width keeps an empty name easy to hit. -->
-        <TextBlock
-            x:Name="TextDisplay"
-            MinWidth="{DynamicResource ControlHeightMD}"
-            Padding="4,2"
-            Background="Transparent"
+        <!-- The suffix is something that follows the text, such as the counts of a row of a tree. It shows with the text. -->
+        <StackPanel
+            x:Name="DisplayRow"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Foreground="{Binding Foreground, ElementName=editableTextBox}"
-            Text="{Binding Text, ElementName=editableTextBox}" />
+            Orientation="Horizontal">
+            <TextBlock
+                x:Name="TextDisplay"
+                MinWidth="{DynamicResource ControlHeightMD}"
+                Padding="4,2"
+                Background="Transparent"
+                VerticalAlignment="Center"
+                Foreground="{Binding Foreground, ElementName=editableTextBox}"
+                Text="{Binding Text, ElementName=editableTextBox}" />
+            <ContentPresenter
+                x:Name="SuffixPresenter"
+                Margin="4,0,0,0"
+                VerticalAlignment="Center"
+                Content="{Binding Suffix, ElementName=editableTextBox}" />
+        </StackPanel>
 
         <!-- The input has no binding to Text: it gets the text when the edit starts, and gives it back when the edit ends.
              So the text of the owner never holds a half edited or an empty text. -->
