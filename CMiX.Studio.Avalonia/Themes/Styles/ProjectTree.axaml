@@ -11,7 +11,7 @@
          whole pixels of the screen (see ProjectTreeView), so the rows are always one same pitch apart.
          It has a fill in the color of its kind (see CategoryPalette), one step brighter when the pointer is over the row itself
          (not over its children), and one more step when it is selected. A child is indented by its level.
-         The classes dropbefore and dropafter show the place of a drag between rows. The class droptarget shows the row
+         The classes dropgap and droptop show the place of a drag between rows. The class droptarget shows the row
          that takes a drop inside it: it looks as if the pointer was over it. The marks are drawn
          over the row and take no room, so the rows never move during a drag. -->
     <converters:MarginMultiplierConverter x:Key="TreeLevelIndent" Indent="16" Left="True" />
@@ -50,7 +50,7 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
-                <StackPanel Spacing="{DynamicResource TreeRowGap}" />
+                <StackPanel />
             </ItemsPanelTemplate>
         </Setter>
         <Setter Property="Template">
@@ -111,18 +111,16 @@
                     </Border>
                     <Views:RowToggles Grid.Column="2" />
                     </Grid>
+                    <!-- The space under the row (TreeRowGap) is a part of the item of the row, so it follows the row whatever is open: every
+                         row is one row height plus one space from the next, and the pitch of the rows never changes. The drop line is a
+                         part of the item too, and it fills this space. -->
+                    <Border Name="GapUnderTheRow" Height="{DynamicResource TreeRowGap}" />
                     <!-- The same animation as the expanders. The panel owns the IsVisible of the presenter. -->
-                    <!-- The space between the row and its first child is inside the panel. A closed panel has no height, so
-                         a closed row is followed by the same space as an open row: every row is one row height plus one space
-                         from the next, whatever is open, so the pitch of the rows never changes. -->
                     <ui:CollapsePanel Name="PART_Collapse" IsExpanded="{TemplateBinding IsExpanded}">
                         <Panel>
-                            <StackPanel Spacing="{DynamicResource TreeRowGap}">
-                                <Border />
-                                <ItemsPresenter
-                                    Name="PART_ItemsPresenter"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
-                            </StackPanel>
+                            <ItemsPresenter
+                                Name="PART_ItemsPresenter"
+                                ItemsPanel="{TemplateBinding ItemsPanel}" />
                             <!-- The pipe: a line under the chevron, along the children of the row. It is drawn over the
                                  children, so a hovered or selected child does not hide it. The margin is the indent of the
                                  row, as for the chevron. The line is at the middle of the chevron: 8, half of its column. -->
@@ -190,13 +188,15 @@
             <Setter Property="IsVisible" Value="False" />
         </Style>
 
-        <Style Selector="^:dropbefore /template/ Border#DropLine">
+        <!-- The line of a drop between two rows is in the space under the row above the place: it fills that space, so it is
+             exactly in the middle between the two rows. The first row of the tree has no row above it: the line is at its top. -->
+        <Style Selector="^:dropgap /template/ Border#DropLine">
             <Setter Property="IsVisible" Value="True" />
-            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Height" Value="{DynamicResource TreeRowGap}" />
+            <Setter Property="Margin" Value="{DynamicResource TreeDropLineGapMargin}" />
         </Style>
-        <Style Selector="^:dropafter /template/ Border#DropLine">
+        <Style Selector="^:droptop /template/ Border#DropLine">
             <Setter Property="IsVisible" Value="True" />
-            <Setter Property="VerticalAlignment" Value="Bottom" />
         </Style>
     </ControlTheme>
 

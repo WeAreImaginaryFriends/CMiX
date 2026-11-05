@@ -183,7 +183,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheDropLine_StartsAtTheIndentOfItsRow_AtTheTopOfTheItemBeforeIt_AndAtTheBottomAfterIt()
+        public void TheDropLine_StartsAtTheIndentOfItsRow_AtTheTopOfTheFirstRow_AndInTheSpaceUnderARow()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
@@ -191,21 +191,22 @@ namespace CMiX.Studio.Avalonia.Tests
             var line = item.GetVisualDescendants().OfType<Border>().Last(border => border.Name == "DropLine");
             var row = RowOf(view, layer);
 
-            ((IPseudoClasses)item.Classes).Set(":dropbefore", true);
+            ((IPseudoClasses)item.Classes).Set(":droptop", true);
             Settle();
 
-            Assert.True(line.IsVisible, "line.IsVisible");
             Assert.True(line.IsEffectivelyVisible, "line.IsEffectivelyVisible");
             Assert.Equal(BoundsIn(row).Left, BoundsIn(line).Left, 3);
             Assert.Equal(BoundsIn(row).Top, BoundsIn(line).Top, 3);
 
-            ((IPseudoClasses)item.Classes).Set(":dropbefore", false);
-            ((IPseudoClasses)item.Classes).Set(":dropafter", true);
+            ((IPseudoClasses)item.Classes).Set(":droptop", false);
+            ((IPseudoClasses)item.Classes).Set(":dropgap", true);
             Settle();
-            var after = BoundsIn(line);
-            var itemBounds = BoundsIn(item);
+            var inGap = BoundsIn(line);
+            var gap = Convert.ToDouble(view.Resources["TreeRowGap"]);
 
-            Assert.Equal(itemBounds.Bottom, after.Bottom, 3);
+            Assert.Equal(BoundsIn(row).Left, inGap.Left, 3);
+            Assert.Equal(BoundsIn(row).Bottom, inGap.Top, 3);
+            Assert.Equal(gap, inGap.Height, 3);
         }
 
         [AvaloniaFact]

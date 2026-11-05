@@ -105,13 +105,13 @@ namespace CMiX.Studio.Avalonia.Tests
             DragOver(view, source, group.Children[2], 0.2);
             var item = ItemOf(view, group.Children[2]);
             Assert.Contains(":dropbefore", item.Classes);
-            Assert.True(SeenArea(LineOf(item)) > 0, "The bar before the row is cut.");
+            Assert.True(SeenArea(LineOf(ItemOf(view, TreeDropService.LastVisible(group.Children[1])))) > 0, "The bar before the row is cut.");
 
             tree.EndDrag();
             tree.BeginDrag(group.Children[2]);
             DragOver(view, group.Children[2], group.Children[0], 0.2);
             Assert.Contains(":dropbefore", ItemOf(view, group.Children[0]).Classes);
-            Assert.True(SeenArea(LineOf(ItemOf(view, group.Children[0]))) > 0, "The bar before the first row is cut.");
+            Assert.True(SeenArea(LineOf(ItemOf(view, group))) > 0, "The bar before the first row is cut.");
         }
 
         // The last row of the list has rows under it (its group of modulators): the bar after it is at the bottom of the item.
@@ -127,7 +127,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var item = ItemOf(view, last);
             Assert.Contains(":dropafter", item.Classes);
-            Assert.True(SeenArea(LineOf(item)) > 0, "The bar after the last row is cut.");
+            Assert.True(SeenArea(LineOf(ItemOf(view, TreeDropService.LastVisible(last)))) > 0, "The bar after the last row is cut.");
         }
 
         [AvaloniaFact]

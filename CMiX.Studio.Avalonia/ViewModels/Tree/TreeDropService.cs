@@ -162,8 +162,23 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         };
 
         // The last row that is shown in the block of a node: itself when it is collapsed or has no children.
-        private static TreeNode LastVisible(TreeNode node) =>
+        public static TreeNode LastVisible(TreeNode node) =>
             node.IsExpanded && node.Children.Count > 0 ? LastVisible(node.Children[^1]) : node;
+
+        // The row whose space below it is the place of a drop before the node: the last visible row of the sibling above,
+        // or the parent when the node is the first child. Null when the node is the first row of the tree.
+        public static TreeNode? RowAbove(TreeNode node)
+        {
+            if (node.Parent == null)
+                return null;
+
+            var siblings = node.Parent.Children;
+            var index = siblings.IndexOf(node);
+            if (index > 0)
+                return LastVisible(siblings[index - 1]);
+
+            return node.Parent;
+        }
 
         // True when the drop is possible by type and place. A move that shared items block is still possible here,
         // so the user can drop it and read the reason.

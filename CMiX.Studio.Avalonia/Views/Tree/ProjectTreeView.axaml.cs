@@ -31,6 +31,9 @@ namespace CMiX.Studio.Avalonia.Views
         private const string DropBefore = ":dropbefore";
         private const string DropAfter = ":dropafter";
         private const string DropTarget = ":droptarget";
+        private const string DropGap = ":dropgap";
+        private const string DropTop = ":droptop";
+        private TreeViewItem? barItem;
 
         private TreeNode? pressedNode;
         private Point pressPoint;
@@ -122,6 +125,9 @@ namespace CMiX.Studio.Avalonia.Views
             // The space between rows is a space of its own, not the space between a row and its toggles.
             var (_, snappedGap) = SnapToPixels(height, RowGap, scale);
             Resources["TreeRowGap"] = snappedGap;
+
+            // The drop line in the space under a row starts at the end of the row and at the start of the colored row (16).
+            Resources["TreeDropLineGapMargin"] = new Thickness(16, snappedHeight, 0, 0);
 
             // The border of the selected row is one pixel of the screen, so it is as thin on a screen of 150% as on a screen of 100%.
             Resources["TreeSelectionThickness"] = new Thickness(1 / scale);
@@ -414,6 +420,14 @@ namespace CMiX.Studio.Avalonia.Views
                 old.Set(DropTarget, false);
             }
 
+            if (barItem != null)
+            {
+                var oldBar = (IPseudoClasses)barItem.Classes;
+                oldBar.Set(DropGap, false);
+                oldBar.Set(DropTop, false);
+                barItem = null;
+            }
+
             marked = item;
             markedPosition = position;
             if (item == null || position == null)
@@ -422,7 +436,19 @@ namespace CMiX.Studio.Avalonia.Views
             ((IPseudoClasses)item.Classes).Set(
                 position == DropPosition.Before ? DropBefore : position == DropPosition.After ? DropAfter : DropTarget,
                 true);
+
+            if (position == DropPosition.Inside || item.DataContext is not TreeNode node)
+                return;
+
+            // The bar is in the space under the row above the place: the last visible row of the block for a drop after the node.
+            var above = position == DropPosition.After ? TreeDropService.LastVisible(node) : TreeDropService.RowAbove(node);
+            var aboveItem = above == null ? null : ItemOfNode(item, above) ?? FindItem(above);
+            barItem = aboveItem ?? item;
+            ((IPseudoClasses)barItem.Classes).Set(aboveItem != null ? DropGap : DropTop, true);
         }
+
+        private TreeViewItem? FindItem(TreeNode node) =>
+            treeView.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(item => ReferenceEquals(item.DataContext, node));
     }
 }
 

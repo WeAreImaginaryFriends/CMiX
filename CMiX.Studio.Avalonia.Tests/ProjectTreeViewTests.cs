@@ -274,14 +274,13 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0], lastRow, 0.9, RawDragEventType.DragOver);
 
-            var item = screen.RowOf(last);
-            var line = DropLineOf(item);
+            var line = DropLineOf(screen.RowOf(lastRow));
             var lastRowHeader = HeaderOf(screen.RowOf(lastRow));
+            var gap = Convert.ToDouble(screen.View.Resources["TreeRowGap"]);
             Assert.True(line.IsVisible);
-            // The bar is at the bottom of the block, inside it: a panel around the rows under a row cuts what is drawn outside.
-            Assert.InRange(Top(screen, line) + line.Bounds.Height, Top(screen, item) + item.Bounds.Height - 0.5, Top(screen, item) + item.Bounds.Height + 0.5);
-            Assert.True(Top(screen, line) >= Top(screen, lastRowHeader) + lastRowHeader.Bounds.Height - line.Bounds.Height - 0.5,
-                "The bar is above the bottom of the last row of the block.");
+            // The bar fills the space under the last row of the block.
+            Assert.Equal(Top(screen, lastRowHeader) + lastRowHeader.Bounds.Height, Top(screen, line), 3);
+            Assert.Equal(gap, line.Bounds.Height, 3);
         }
 
         [AvaloniaFact]
@@ -292,11 +291,13 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0], last, 0.2, RawDragEventType.DragOver);
 
-            var item = screen.RowOf(last);
-            var line = DropLineOf(item);
+            var above = HeaderOf(screen.RowOf(LastVisibleOf(screen.Tree.Roots[1])));
+            var below = HeaderOf(screen.RowOf(last));
+            var line = DropLineOf(screen.RowOf(LastVisibleOf(screen.Tree.Roots[1])));
             Assert.True(line.IsVisible);
-            // The bar is at the top of the block, inside it: an item cuts what is drawn outside it.
-            Assert.InRange(Top(screen, line), Top(screen, item) - 0.5, Top(screen, item) + 0.5);
+            // The bar fills the space between the two rows: the same space above it and under it.
+            Assert.Equal(Top(screen, above) + above.Bounds.Height, Top(screen, line), 3);
+            Assert.Equal(Top(screen, below), Top(screen, line) + line.Bounds.Height, 3);
         }
 
         [AvaloniaFact]
