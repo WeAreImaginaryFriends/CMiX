@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Managers;
@@ -48,6 +50,49 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(DragDrop.DropEvent, OnDrop);
             treeView.AddHandler(ContextRequestedEvent, OnContextRequested, RoutingStrategies.Bubble);
             treeView.AddHandler(DoubleTappedEvent, OnDoubleTapped, RoutingStrategies.Bubble);
+        }
+
+        // The tree does not scroll by itself when the user chooses a row: a click on a row that is at the edge of the view would scroll to
+        // show the whole block of the row, and the second click of a double click would land on another row. A row that a program or a
+        // peer selects is brought into view here, and only its own row, not the rows under it.
+        private ProjectTree? watched;
+        private bool chosenByClick;
+
+        // A row asks to be brought into view when it gets the focus or the selection. For the choice of the user the request stops here:
+        // it would scroll to show the whole block of the row.
+        static ProjectTreeView()
+        {
+            RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((item, e) =>
+            {
+                if (item.FindAncestorOfType<ProjectTreeView>() is { chosenByClick: true })
+                    e.Handled = true;
+            });
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+
+            if (watched != null)
+                watched.PropertyChanged -= OnWatchedPropertyChanged;
+
+            watched = DataContext as ProjectTree;
+            if (watched != null)
+                watched.PropertyChanged += OnWatchedPropertyChanged;
+        }
+
+        private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(ProjectTree.SelectedNode) || chosenByClick || watched?.SelectedNode is not { } node)
+                return;
+
+            Dispatcher.UIThread.Post(() => RevealRow(node), DispatcherPriority.Loaded);
+        }
+
+        private void RevealRow(TreeNode node)
+        {
+            var item = treeView.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(row => ReferenceEquals(row.DataContext, node));
+            item?.GetVisualDescendants().OfType<Border>().FirstOrDefault(border => border.Name == "RowBorder")?.BringIntoView();
         }
 
         // The height of a row and the space between two rows, in whole pixels of the screen.
@@ -197,6 +242,10 @@ namespace CMiX.Studio.Avalonia.Views
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             pressedNode = null;
+
+            // The selection that this press makes is the choice of the user: the tree does not scroll for it.
+            chosenByClick = true;
+            Dispatcher.UIThread.Post(() => chosenByClick = false, DispatcherPriority.Background);
             if (!e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed || IsEditor(e.Source))
                 return;
 

@@ -26,6 +26,7 @@
 
     <TreeView
         x:Name="treeView"
+        AutoScrollToSelectedItem="False"
         Margin="8,8,0,8"
         Padding="0"
         Background="Transparent"
