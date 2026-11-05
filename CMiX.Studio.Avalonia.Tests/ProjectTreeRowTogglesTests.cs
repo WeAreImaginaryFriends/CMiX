@@ -192,19 +192,19 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASquareWithNoButton_IsOneStepDarker_ThanASquareWithOne()
+        public void ASquareWithNoButton_IsDarker_ThanASquareWithOne()
         {
             var (view, tree) = Show();
-            var level1 = ((ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel1Brush")!).Color;
+            var darkest = ((ISolidColorBrush)Application.Current!.FindResource("Grey100Brush")!).Color;
             var level2 = ((ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel2Brush")!).Color;
             var entities = tree.Roots[0].Children[0].Children[0];
             var entity = entities.Children[0];
 
             // A group has two empty squares. An entity has the eye on a normal square, then an empty square.
-            Assert.All(SquaresOf(ColumnOf(view, entities)), square => Assert.Equal(level1, ((ISolidColorBrush)square.Background!).Color));
+            Assert.All(SquaresOf(ColumnOf(view, entities)), square => Assert.Equal(darkest, ((ISolidColorBrush)square.Background!).Color));
             var entitySquares = SquaresOf(ColumnOf(view, entity));
             Assert.Equal(level2, ((ISolidColorBrush)entitySquares[0].Background!).Color);
-            Assert.Equal(level1, ((ISolidColorBrush)entitySquares[1].Background!).Color);
+            Assert.Equal(darkest, ((ISolidColorBrush)entitySquares[1].Background!).Color);
         }
 
         [AvaloniaFact]

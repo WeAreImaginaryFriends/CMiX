@@ -19,9 +19,9 @@
             <Setter Property="Background" Value="{DynamicResource PanelBackgroundLevel2Brush}" />
             <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusAll}" />
         </Style>
-        <!-- A square with no button is one step darker than a square with one. -->
+        <!-- A square with no button is darker than a square with one (Grey100). -->
         <Style Selector="Border.slot.empty">
-            <Setter Property="Background" Value="{DynamicResource PanelBackgroundLevel1Brush}" />
+            <Setter Property="Background" Value="{DynamicResource Grey100Brush}" />
         </Style>
     </UserControl.Styles>
 
