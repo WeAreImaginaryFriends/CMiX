@@ -578,7 +578,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
             var tree = screen.Window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
             var item = tree.GetVisualDescendants().OfType<TreeViewItem>().First(row => ReferenceEquals(row.DataContext, screen.LayerNode));
-            var toggle = item.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder")
+            var toggle = item.GetVisualDescendants().OfType<RowToggles>().First()
                 .GetVisualDescendants().OfType<ToggleButton>().First(button => CMiX.UI.Behaviors.ToggleDrag.GetGroup(button) == "visibility");
             var point = toggle.TranslatePoint(new Point(toggle.Bounds.Width / 2, toggle.Bounds.Height / 2), screen.Window)!.Value;
 

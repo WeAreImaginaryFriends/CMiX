@@ -2,17 +2,16 @@
     x:Class="CMiX.Studio.Avalonia.Views.ProjectTreeView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="using:System"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
-    xmlns:Compositing="clr-namespace:CMiX.Core.Compositing;assembly=CMiX.Core"
     xmlns:Tree="clr-namespace:CMiX.Studio.Avalonia.ViewModels.Tree"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
 
     <!-- The sizes of a row for a screen of 100%: ControlHeightMD and SpacingXXS. The code sets them again in whole pixels of the screen
-         (ProjectTreeView.SnapToPixels), from those two tokens. -->
+         (ProjectTreeView.SnapToPixels), from those two tokens. The width of the toggle column comes from them too. -->
     <UserControl.Resources>
         <x:Double x:Key="TreeRowHeight">24</x:Double>
         <x:Double x:Key="TreeRowSpacing">1</x:Double>
+        <x:Double x:Key="TreeToggleWidth">50</x:Double>
     </UserControl.Resources>
 
     <!-- The toolbar is at the bottom, as the toolbar of the lists of compositions and layers. -->
@@ -52,8 +51,8 @@
         <TreeView.DataTemplates>
             <TreeDataTemplate DataType="{x:Type Tree:TreeNode}" ItemsSource="{Binding Children}">
 
-                <!-- The row of a list: an icon in the color of the name (the kind shows in the fill of the row), the name, and on the right the toggles. A composition and a layer
-                     have the visibility toggle and the mask toggle, as in the lists of the Composition and Layers tabs. -->
+                <!-- The row of a list: an icon in the color of the name (the kind shows in the fill of the row) and the name.
+                     The toggles are not here: they are at the right of the colored row (see RowToggles and the theme of the item). -->
                 <DockPanel>
 
                     <ui:AppIcon
@@ -61,44 +60,8 @@
                         IconKey="{Binding IconKey}"
                         Size="{DynamicResource IconSizeXS}" />
 
-                    <StackPanel
-                        Margin="4,0"
-                        DockPanel.Dock="Right"
-                        Orientation="Horizontal"
-                        Spacing="{DynamicResource SpacingSM}"
-                        IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}">
-
-                        <!-- The mask toggle (a composition and a layer only), then the visibility toggle on the far right,
-                             as in the rows of the lists. -->
-                        <ContentControl Content="{Binding Item}">
-                            <ContentControl.DataTemplates>
-                                <DataTemplate DataType="{x:Type Compositing:Composition}">
-                                    <ToggleButton
-                                        IsChecked="{Binding Mask.IsMask.Value}"
-                                        Theme="{DynamicResource ToggleButtonMask}"
-                                        ToolTip.Tip="Mask" />
-                                </DataTemplate>
-                                <DataTemplate DataType="{x:Type Compositing:Layer}">
-                                    <ToggleButton
-                                        IsChecked="{Binding Mask.IsMask.Value}"
-                                        Theme="{DynamicResource ToggleButtonMask}"
-                                        ToolTip.Tip="Mask" />
-                                </DataTemplate>
-                                <DataTemplate DataType="{x:Type sys:Object}">
-                                    <Panel />
-                                </DataTemplate>
-                            </ContentControl.DataTemplates>
-                        </ContentControl>
-
-                        <ToggleButton
-                            IsChecked="{Binding Item.PrefabService.Visibility.Value}"
-                            Theme="{DynamicResource ToggleButtonVisibility}" />
-
-                    </StackPanel>
-
-                    <!-- The last child of the dock panel: the name takes all the room between the icon and the toggles,
-                         as the name of a row of a list does. A group has a text, an item has a name that can be edited. -->
-                    <!-- A collapsed row shows what it holds (KindCountBadges) right after its name. -->
+                    <!-- The last child of the dock panel: the name takes all the room after the icon. A group has a text, an item has
+                         a name that can be edited. A collapsed row shows what it holds (KindCountBadges) right after its name. -->
                     <Panel>
                         <ui:TextBoxEditable
                             Text="{Binding Item.PrefabService.Name.Value, Mode=TwoWay}"

@@ -1,0 +1,65 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.RowToggles"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="using:System"
+    xmlns:Compositing="clr-namespace:CMiX.Core.Compositing;assembly=CMiX.Core">
+
+    <!-- The toggles of a row of the tree, outside the colored row, at its right end. The DataContext is the tree node.
+         Each toggle sits on its own square, as high as a row, with the space of the rows (TreeRowSpacing) between two squares.
+         The visibility toggle is always the first square, since every item has one, so the visibility toggles line up down the
+         tree. The other toggles follow it, to the right. The column has the width of the space and all the squares (TreeToggleWidth, see
+         ProjectTreeView), so the colored rows all end at the same place. A new toggle is a new square here, and a wider column.
+         A group has no toggle. -->
+    <UserControl.Styles>
+        <Style Selector="Border.slot">
+            <Setter Property="Width" Value="{DynamicResource TreeRowHeight}" />
+            <Setter Property="Height" Value="{DynamicResource TreeRowHeight}" />
+            <Setter Property="Background" Value="{DynamicResource PanelBackgroundLevel2Brush}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusAll}" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel
+        Width="{DynamicResource TreeToggleWidth}"
+        HorizontalAlignment="Left"
+        Orientation="Horizontal"
+        Spacing="{DynamicResource TreeRowSpacing}">
+
+        <!-- It has no width: with the space between the children, it makes the space between the colored row and the first square. -->
+        <Border Width="0" />
+
+        <Border Classes="slot" IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <ToggleButton
+                IsChecked="{Binding Item.PrefabService.Visibility.Value}"
+                Theme="{DynamicResource ToggleButtonVisibility}" />
+        </Border>
+
+        <!-- The mask toggle: a composition and a layer only. -->
+        <ContentControl Content="{Binding Item}">
+            <ContentControl.DataTemplates>
+                <DataTemplate DataType="{x:Type Compositing:Composition}">
+                    <Border Classes="slot">
+                        <ToggleButton
+                            IsChecked="{Binding Mask.IsMask.Value}"
+                            Theme="{DynamicResource ToggleButtonMask}"
+                            ToolTip.Tip="Mask" />
+                    </Border>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type Compositing:Layer}">
+                    <Border Classes="slot">
+                        <ToggleButton
+                            IsChecked="{Binding Mask.IsMask.Value}"
+                            Theme="{DynamicResource ToggleButtonMask}"
+                            ToolTip.Tip="Mask" />
+                    </Border>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type sys:Object}">
+                    <Panel />
+                </DataTemplate>
+            </ContentControl.DataTemplates>
+        </ContentControl>
+
+    </StackPanel>
+
+</UserControl>

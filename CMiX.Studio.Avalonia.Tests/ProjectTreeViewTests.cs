@@ -103,11 +103,11 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Border HeaderOf(TreeViewItem row) =>
             row.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
 
-        // The toggles of a row, without the chevron and without the toggles of its children.
+        // The toggles of a row: the ones in its toggle column, from the left. The column of the first row found is its own.
         private static List<ToggleButton> TogglesOf(TreeViewItem row) =>
-            row.GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "RowContent")
+            row.GetVisualDescendants().OfType<RowToggles>().First()
                 .GetVisualDescendants().OfType<ToggleButton>()
-                .Where(toggle => toggle.Name != "PART_ExpandCollapseChevron" && toggle.IsEffectivelyVisible).ToList();
+                .Where(toggle => toggle.IsEffectivelyVisible).ToList();
 
         private static IEnumerable<TreeNode> AllNodes(IEnumerable<TreeNode> nodes) =>
             nodes.SelectMany(node => new[] { node }.Concat(AllNodes(node.Children)));
@@ -475,20 +475,19 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheNameBox_FillsTheRowBetweenTheIconAndTheToggles()
+        public void TheNameBox_FillsTheColoredRowAfterTheIcon()
         {
             var screen = Show();
             var row = screen.RowOf(screen.Tree.Roots[0]);
             var content = row.GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "RowContent");
             var box = NameBoxOf(row);
-            var toggles = TogglesOf(row);
+            var colored = HeaderOf(row);
 
-            var boxLeft = box.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X;
-            var boxRight = boxLeft + box.Bounds.Width;
-            var togglesLeft = toggles.Min(toggle => toggle.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X);
+            var boxRight = box.TranslatePoint(new Point(box.Bounds.Width, 0), screen.Window)!.Value.X;
+            var coloredRight = colored.TranslatePoint(new Point(colored.Bounds.Width, 0), screen.Window)!.Value.X;
 
-            // The box reaches the toggles: only the margin of the toggles is between them.
-            Assert.True(togglesLeft - boxRight <= 4, $"The name box ends {togglesLeft - boxRight} px before the toggles.");
+            // The box reaches the end of the colored row.
+            Assert.True(coloredRight - boxRight <= 4, $"The name box ends {coloredRight - boxRight} px before the end of the row.");
             Assert.True(box.Bounds.Width > content.Bounds.Width / 2, "The name box is less than half of the row.");
         }
 
@@ -540,8 +539,11 @@ namespace CMiX.Studio.Avalonia.Tests
         private static double RightEdge(Screen screen, Control control) =>
             control.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X + control.Bounds.Width;
 
+        private static double LeftEdge(Screen screen, Control control) =>
+            control.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X;
+
         [AvaloniaFact]
-        public void TheVisibilityToggle_IsOnTheFarRight_AndTheMaskToggleIsLeftOfIt()
+        public void TheVisibilityToggle_IsFirst_AndTheMaskToggleIsRightOfIt()
         {
             var screen = Show();
 
@@ -551,13 +553,13 @@ namespace CMiX.Studio.Avalonia.Tests
                 var visibility = ToggleWithTheme(row, "ToggleButtonVisibility");
                 var mask = ToggleWithTheme(row, "ToggleButtonMask");
 
-                Assert.True(RightEdge(screen, mask) <= visibility.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X,
-                    $"The mask toggle of {node.Header} is not left of the visibility toggle.");
+                Assert.True(RightEdge(screen, visibility) <= mask.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X,
+                    $"The mask toggle of {node.Header} is not right of the visibility toggle.");
             }
         }
 
         [AvaloniaFact]
-        public void TheVisibilityToggleOfEveryRow_HasTheSameRightEdge()
+        public void TheVisibilityToggleOfEveryRow_HasTheSameLeftEdge()
         {
             var screen = Show();
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
@@ -568,7 +570,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var entity = layer.Children[0].Children[0];
 
             var edges = new[] { composition, layer, entity }
-                .Select(node => RightEdge(screen, ToggleWithTheme(screen.RowOf(node), "ToggleButtonVisibility")))
+                .Select(node => LeftEdge(screen, ToggleWithTheme(screen.RowOf(node), "ToggleButtonVisibility")))
                 .ToList();
 
             Assert.All(edges, edge => Assert.Equal(edges[0], edge));

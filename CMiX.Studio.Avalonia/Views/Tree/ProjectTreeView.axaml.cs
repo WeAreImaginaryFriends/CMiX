@@ -69,6 +69,7 @@ namespace CMiX.Studio.Avalonia.Views
             var (snappedHeight, snappedSpacing) = SnapToPixels(height, spacing, scale);
             Resources["TreeRowHeight"] = snappedHeight;
             Resources["TreeRowSpacing"] = snappedSpacing;
+            Resources["TreeToggleWidth"] = RowToggles.WidthFor(snappedHeight, snappedSpacing);
         }
 
         private TopLevel? scaledTopLevel;

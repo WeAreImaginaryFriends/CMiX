@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
     xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
     xmlns:StudioConverters="clr-namespace:CMiX.Studio.Avalonia.Converters">
 
@@ -54,6 +55,8 @@
                 <!-- The marks of a drag are drawn over the whole item: the row and the rows under it. -->
                 <Panel>
                 <StackPanel>
+                    <!-- The toggles are at the right of the colored row, outside it. The column starts with the space of the rows. -->
+                    <Grid ColumnDefinitions="*,Auto">
                     <Border
                         Name="RowBorder"
                         Height="{DynamicResource TreeRowHeight}"
@@ -83,6 +86,8 @@
                             </Grid>
                         </Panel>
                     </Border>
+                    <Views:RowToggles Grid.Column="1" />
+                    </Grid>
                     <!-- The same animation as the expanders. The panel owns the IsVisible of the presenter. -->
                     <!-- The space between the row and its first child is inside the panel. A closed panel has no height, so
                          a closed row is followed by the same space as an open row: every row is one row height plus one space

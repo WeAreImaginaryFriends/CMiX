@@ -37,9 +37,9 @@ namespace CMiX.Studio.Avalonia.Tests
             private TreeViewItem ItemOf(TreeNode node) =>
                 TreeView.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
 
-            // The buttons in the row of a node, not the buttons in the rows below it.
+            // The buttons in the toggle column of a node, not the buttons in the rows below it.
             public ToggleButton ButtonOf(TreeNode node, string group) =>
-                ItemOf(node).GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder")
+                ItemOf(node).GetVisualDescendants().OfType<RowToggles>().First()
                     .GetVisualDescendants().OfType<ToggleButton>().First(button => ToggleDrag.GetGroup(button) == group);
 
             public Point CenterOf(ToggleButton button)
