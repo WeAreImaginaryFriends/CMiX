@@ -102,6 +102,24 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public void ARowShowsItsCounts_OnlyWhileItIsCollapsedAndHoldsSomething()
+        {
+            var scene = CreateScene();
+            var changes = new List<string?>();
+            scene.LayerNode.PropertyChanged += (_, e) => changes.Add(e.PropertyName);
+
+            Assert.False(scene.LayerNode.ShowsKindCounts);
+
+            scene.LayerNode.IsExpanded = false;
+            Assert.True(scene.LayerNode.ShowsKindCounts);
+            Assert.Contains(nameof(TreeNode.ShowsKindCounts), changes);
+
+            var empty = scene.CompositionNode.Children[1];
+            empty.IsExpanded = false;
+            Assert.False(empty.ShowsKindCounts);
+        }
+
+        [Fact]
         public void ALayerAddedToTheComposition_ChangesTheCountOfTheComposition()
         {
             var scene = CreateScene();

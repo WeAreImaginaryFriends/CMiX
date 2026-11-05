@@ -135,11 +135,15 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public bool HasKindCounts => KindCounts.Count > 0;
 
+        // A collapsed row shows what it holds. An open row shows it in the rows under it.
+        public bool ShowsKindCounts => HasKindCounts && !IsExpanded;
+
         // The rows under a group change what its parent holds, so the parent tells its own change too.
         private void RaiseKindCountsChanged()
         {
             OnPropertyChanged(nameof(KindCounts));
             OnPropertyChanged(nameof(HasKindCounts));
+            OnPropertyChanged(nameof(ShowsKindCounts));
             if (Item == null)
                 Parent?.RaiseKindCountsChanged();
         }
@@ -148,6 +152,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private string header;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowsKindCounts))]
         private bool isExpanded = true;
 
         public bool IsOrIsUnder(TreeNode node)

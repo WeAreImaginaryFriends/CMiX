@@ -1,0 +1,41 @@
+// SPDX-FileCopyrightText: 2017-2026 CloneProduction Shanghai Company Limited and CMiX contributors
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+using Avalonia;
+using Avalonia.Controls;
+
+namespace CMiX.Studio.Avalonia.Views
+{
+    // The counts of what a row of the tree holds, by kind (see TreeNode.KindCounts). The row tells the control its state.
+    public partial class KindCountBadges : UserControl
+    {
+        public static readonly StyledProperty<bool> IsSelectedProperty =
+            AvaloniaProperty.Register<KindCountBadges, bool>(nameof(IsSelected));
+
+        public static readonly StyledProperty<bool> IsHoveredProperty =
+            AvaloniaProperty.Register<KindCountBadges, bool>(nameof(IsHovered));
+
+        public bool IsSelected
+        {
+            get => GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
+        }
+
+        public bool IsHovered
+        {
+            get => GetValue(IsHoveredProperty);
+            set => SetValue(IsHoveredProperty, value);
+        }
+
+        static KindCountBadges()
+        {
+            IsSelectedProperty.Changed.AddClassHandler<KindCountBadges>((badges, e) => badges.PseudoClasses.Set(":selected", e.GetNewValue<bool>()));
+            IsHoveredProperty.Changed.AddClassHandler<KindCountBadges>((badges, e) => badges.PseudoClasses.Set(":hovered", e.GetNewValue<bool>()));
+        }
+
+        public KindCountBadges()
+        {
+            InitializeComponent();
+        }
+    }
+}

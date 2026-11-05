@@ -98,16 +98,32 @@
 
                     <!-- The last child of the dock panel: the name takes all the room between the icon and the toggles,
                          as the name of a row of a list does. A group has a text, an item has a name that can be edited. -->
+                    <!-- A collapsed row shows what it holds (KindCountBadges) right after its name. -->
                     <Panel>
                         <ui:TextBoxEditable
                             Text="{Binding Item.PrefabService.Name.Value, Mode=TwoWay}"
-                            IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <ui:TextBoxEditable.Suffix>
+                                <Views:KindCountBadges
+                                    IsVisible="{Binding ShowsKindCounts}"
+                                    IsHovered="{Binding $parent[TreeViewItem].IsPointerOver}"
+                                    IsSelected="{Binding $parent[TreeViewItem].IsSelected}" />
+                            </ui:TextBoxEditable.Suffix>
+                        </ui:TextBoxEditable>
 
-                        <TextBlock
-                            Margin="4,0"
+                        <StackPanel
                             VerticalAlignment="Center"
-                            Text="{Binding Header}"
-                            IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNull}}" />
+                            Orientation="Horizontal"
+                            IsVisible="{Binding Item, Converter={x:Static ObjectConverters.IsNull}}">
+                            <TextBlock
+                                Margin="4,0"
+                                VerticalAlignment="Center"
+                                Text="{Binding Header}" />
+                            <Views:KindCountBadges
+                                IsVisible="{Binding ShowsKindCounts}"
+                                IsHovered="{Binding $parent[TreeViewItem].IsPointerOver}"
+                                IsSelected="{Binding $parent[TreeViewItem].IsSelected}" />
+                        </StackPanel>
                     </Panel>
 
                 </DockPanel>

@@ -1,0 +1,47 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.KindCountBadges"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Tree="clr-namespace:CMiX.Studio.Avalonia.ViewModels.Tree"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
+
+    <!-- What a collapsed row holds: a small square for each kind, in the color of the kind, with how many items of that kind.
+         The DataContext is the tree node. The squares are one step brighter when the pointer is over the row, and at the
+         full color when the row is selected (the pseudo classes hovered and selected, set from IsHovered and IsSelected). -->
+    <UserControl.Styles>
+        <Style Selector="Border.kindcount">
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=Kind}" />
+        </Style>
+        <Style Selector="Views|KindCountBadges:hovered Border.kindcount">
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=KindHover}" />
+        </Style>
+        <Style Selector="Views|KindCountBadges:selected Border.kindcount">
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=KindSelected}" />
+        </Style>
+    </UserControl.Styles>
+
+    <ItemsControl ItemsSource="{Binding KindCounts}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="{DynamicResource SpacingXS}" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type Tree:KindCount}">
+                <Border
+                    Classes="kindcount"
+                    Height="{DynamicResource ControlHeightXS}"
+                    MinWidth="{DynamicResource ControlHeightXS}"
+                    CornerRadius="{DynamicResource CornerRadiusAll}">
+                    <TextBlock
+                        Margin="4,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource ActiveForegroundBrush}"
+                        Text="{Binding Count}" />
+                </Border>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+</UserControl>
