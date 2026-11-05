@@ -170,12 +170,18 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public bool CanDrop(TreeNode source, TreeNode target, DropPosition position) =>
             Resolve(source, target, position) != null;
 
-        // True when the row is a place where the dragged node could go: the row takes the drop, before it, after it or inside it.
-        // These are the rows that the user can drop on, so a drag can show them all.
-        public bool IsTarget(TreeNode source, TreeNode target) =>
+        // True when the dragged node can go inside the row: a group takes an item of its kind, and a composition takes a layer.
+        // A drag shows these rows, since the drop on them has no bar between two rows to tell the place.
+        public bool IsInsideTarget(TreeNode source, TreeNode target) =>
             source.Item != null && source.Owner != null
             && TakesDropOf(source, target)
-            && Enum.GetValues<DropPosition>().Any(position => Resolve(source, target, position) != null);
+            && Resolve(source, target, DropPosition.Inside) != null;
+
+        // True when the dragged node can go before or after the row, in the list of the row. The place is shown by a bar between two rows.
+        public bool IsNeighbor(TreeNode source, TreeNode target) =>
+            source.Item != null && source.Owner != null
+            && TakesDropOf(source, target)
+            && (Resolve(source, target, DropPosition.Before) != null || Resolve(source, target, DropPosition.After) != null);
 
         public DropOutcome Drop(TreeNode source, TreeNode target, DropPosition position)
         {

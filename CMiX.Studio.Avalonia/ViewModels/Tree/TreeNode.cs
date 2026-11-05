@@ -165,25 +165,29 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         [NotifyPropertyChangedFor(nameof(IsDimmed))]
         private bool isExpanded = true;
 
-        // The state of the row during a drag of a node (see ProjectTree.BeginDrag). The rows that can take the node are candidates.
-        // A collapsed row that has a candidate under it gives a hint, so the user knows to open it. The other rows are dimmed.
+        // The state of the row during a drag of a node (see ProjectTree.BeginDrag). The rows that take the node inside are candidates: they
+        // are lit. The rows that the node can go next to are neighbors: they stay as they are, and the bar shows the place. A collapsed row
+        // that has such a row under it gives a hint, so the user knows to open it. The other rows are dimmed.
         public bool IsDragActive { get; private set; }
         public bool IsDragSource { get; private set; }
         public bool IsDropCandidate { get; private set; }
-        public bool HasDropCandidateBelow { get; private set; }
-        public bool IsDropHint => IsDragActive && HasDropCandidateBelow && !IsDropCandidate && !IsExpanded;
-        public bool IsDimmed => IsDragActive && !IsDragSource && !IsDropCandidate && !IsDropHint;
+        public bool IsDropNeighbor { get; private set; }
+        public bool HasDropTargetBelow { get; private set; }
+        public bool IsDropHint => IsDragActive && HasDropTargetBelow && !IsDropCandidate && !IsDropNeighbor && !IsExpanded;
+        public bool IsDimmed => IsDragActive && !IsDragSource && !IsDropCandidate && !IsDropNeighbor && !IsDropHint;
 
-        internal void SetDragState(bool active, bool isSource, bool isCandidate, bool hasCandidateBelow)
+        internal void SetDragState(bool active, bool isSource, bool isCandidate, bool isNeighbor, bool hasTargetBelow)
         {
             IsDragActive = active;
             IsDragSource = isSource;
             IsDropCandidate = isCandidate;
-            HasDropCandidateBelow = hasCandidateBelow;
+            IsDropNeighbor = isNeighbor;
+            HasDropTargetBelow = hasTargetBelow;
             OnPropertyChanged(nameof(IsDragActive));
             OnPropertyChanged(nameof(IsDragSource));
             OnPropertyChanged(nameof(IsDropCandidate));
-            OnPropertyChanged(nameof(HasDropCandidateBelow));
+            OnPropertyChanged(nameof(IsDropNeighbor));
+            OnPropertyChanged(nameof(HasDropTargetBelow));
             OnPropertyChanged(nameof(IsDropHint));
             OnPropertyChanged(nameof(IsDimmed));
         }

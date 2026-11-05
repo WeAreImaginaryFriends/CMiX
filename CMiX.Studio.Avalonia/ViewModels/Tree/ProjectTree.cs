@@ -206,8 +206,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public bool CanDrop(TreeNode source, TreeNode target, DropPosition position) =>
             dropService.CanDrop(source, target, position);
 
-        // A node is being dragged: every row that can take it is a candidate, a collapsed row with a candidate under it gives a hint,
-        // and the other rows are dimmed (see TreeNode.IsDropCandidate). The rules are the ones of the drop itself.
+        // A node is being dragged: the rows that take it inside are candidates, the rows next to which it can go are neighbors, a collapsed row
+        // with such a row under it gives a hint, and the other rows are dimmed (see TreeNode.IsDropCandidate). The rules are the ones of the
+        // drop itself.
         public bool IsDragging { get; private set; }
 
         public void BeginDrag(TreeNode source)
@@ -222,16 +223,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             ClearDrag(root);
         }
 
-        // Sets the drag state of a row and of the rows under it. It tells whether a candidate is at or under the row.
+        // Sets the drag state of a row and of the rows under it. It tells whether a row that takes the node is at or under the row.
         private bool MarkDrag(TreeNode node, TreeNode source)
         {
             var below = false;
             foreach (var child in node.Children)
                 below |= MarkDrag(child, source);
 
-            var candidate = node != root && dropService.IsTarget(source, node);
-            node.SetDragState(true, ReferenceEquals(node, source), candidate, below);
-            return below || candidate;
+            var candidate = node != root && dropService.IsInsideTarget(source, node);
+            var neighbor = node != root && dropService.IsNeighbor(source, node);
+            node.SetDragState(true, ReferenceEquals(node, source), candidate, neighbor, below);
+            return below || candidate || neighbor;
         }
 
         private static void ClearDrag(TreeNode node)
@@ -239,7 +241,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             foreach (var child in node.Children)
                 ClearDrag(child);
 
-            node.SetDragState(false, false, false, false);
+            node.SetDragState(false, false, false, false, false);
         }
 
         public DropPlace? Locate(TreeNode source, TreeNode hovered, double fraction) =>

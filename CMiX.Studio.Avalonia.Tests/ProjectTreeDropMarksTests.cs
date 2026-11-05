@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Media;
 using AvaloniaColor = Avalonia.Media.Color;
 using Avalonia.Threading;
@@ -40,6 +41,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var first = (Layer)composition.LayerManager.ManagerData.Items[0];
             first.ModelEntityManager.AddItem(typeof(Entity));
             first.ModelEntityManager.AddItem(typeof(Entity));
+            first.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
             ((Layer)composition.LayerManager.ManagerData.Items[1]).ModelEntityManager.AddItem(typeof(Entity));
 
             var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
@@ -173,6 +175,34 @@ namespace CMiX.Studio.Avalonia.Tests
             var during = All(tree.Roots).Select(node => (Part(view, node, "RowBorder").Bounds, Part(view, node, "RowBorder").TranslatePoint(new Point(0, 0), window!))).ToList();
 
             Assert.Equal(before, during);
+        }
+
+        // The group that is lit takes the node: a drop on it moves the filter to the list of that group.
+        [AvaloniaFact]
+        public void ADropOnTheLitGroupOfFilters_MovesTheFilterThere()
+        {
+            var (view, tree) = Show();
+            var firstLayer = tree.Roots[0].Children[0];
+            var secondLayer = tree.Roots[0].Children[1];
+            var filter = firstLayer.Children.Single(child => child.Header == "Filters").Children[0];
+            var target = secondLayer.Children.Single(child => child.Header == "Filters");
+            var lists = ((Layer)firstLayer.Item!, (Layer)secondLayer.Item!);
+            var data = new DataObject();
+            data.Set(ProjectTreeView.NodeFormat, filter);
+            tree.BeginDrag(filter);
+            Settle();
+            var row = Part(view, target, "RowBorder");
+            var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window!)!.Value;
+
+            window!.DragDrop(point, RawDragEventType.DragEnter, data, DragDropEffects.Move);
+            window.DragDrop(point, RawDragEventType.DragOver, data, DragDropEffects.Move);
+            Assert.Contains(":droptarget", ItemOf(view, target).Classes);
+            Assert.Equal(ToneOf(target).FillSelected, FillOf(view, target));
+            window.DragDrop(point, RawDragEventType.Drop, data, DragDropEffects.Move);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Empty(lists.Item1.TextureModifierManager.ManagerData.Items);
+            Assert.Single(lists.Item2.TextureModifierManager.ManagerData.Items);
         }
 
         [AvaloniaFact]

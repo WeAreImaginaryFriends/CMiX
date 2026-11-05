@@ -177,9 +177,9 @@
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
             <Setter Property="TextElement.Foreground" Value="{DynamicResource ActiveForegroundBrush}" />
         </Style>
-        <!-- Files dragged over the tree: the row that takes them looks as if the pointer was over it. -->
+        <!-- The row that takes the node or the files that are dragged over it, inside it: it is brighter than the other rows that take it. -->
         <Style Selector="^:droptarget /template/ Border#RowBorder">
-            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillHover}" />
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
         </Style>
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
             <Setter Property="IsVisible" Value="False" />

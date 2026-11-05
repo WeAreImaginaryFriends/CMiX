@@ -10,7 +10,8 @@ using Project = CMiX.Core.Compositing.Project;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // During a drag, every row that can take the node is a candidate. The rules are the ones of the drop itself.
+    // During a drag, the rows that take the node inside are lit (candidates), the rows that it can go next to keep their look (neighbors,
+    // the bar shows the place), and the other rows are dimmed. The rules are the ones of the drop itself.
     public class ProjectTreeDropTargetsTests
     {
         private sealed class Scene
@@ -30,9 +31,11 @@ namespace CMiX.Studio.Avalonia.Tests
             private static IEnumerable<TreeNode> Flatten(IEnumerable<TreeNode> nodes) =>
                 nodes.SelectMany(node => new[] { node }.Concat(Flatten(node.Children)));
             public IEnumerable<TreeNode> Candidates() => All().Where(node => node.IsDropCandidate);
+            public IEnumerable<TreeNode> Neighbors() => All().Where(node => node.IsDropNeighbor);
         }
 
-        // Composition A: layer 1 has two entities, a camera and modifiers on the first entity. Layer 2 has one entity. B has one layer.
+        // Composition A: layer 1 has two entities, a camera, modifiers on the entities and two filters. Layer 2 has one entity and one
+        // filter. B has one layer.
         private static Scene CreateScene()
         {
             var provider = TestServiceProviderFactory.Create();
@@ -55,6 +58,9 @@ namespace CMiX.Studio.Avalonia.Tests
             first.ModifierManager.AddItem(typeof(ScaleModifier));
             var second = (Entity)layer1.ModelEntityManager.ManagerData.Items[1];
             second.ModifierManager.AddItem(typeof(TranslateModifier));
+            layer1.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
+            layer1.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
+            layer2.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
 
             return new Scene { Tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>()) };
         }
@@ -69,22 +75,55 @@ namespace CMiX.Studio.Avalonia.Tests
             {
                 Assert.False(node.IsDragActive);
                 Assert.False(node.IsDropCandidate);
+                Assert.False(node.IsDropNeighbor);
                 Assert.False(node.IsDimmed);
             });
         }
 
         [Fact]
-        public void DraggingAnEntity_MakesCandidatesOfTheRowsThatCanTakeIt()
+        public void DraggingAnEntity_LightsOnlyTheGroupsOfEntitiesOfOtherLayers()
         {
             var scene = CreateScene();
 
             scene.Tree.BeginDrag(scene.Entity1);
 
-            // The other entity of its list, the group of entities of another layer and the entities in it.
-            Assert.Equal(
-                new[] { scene.Entity2, Scene.Group(scene.Layer2, "Entities"), scene.EntityOfLayer2, Scene.Group(scene.LayerOfB, "Entities") },
-                scene.Candidates());
+            Assert.Equal(new[] { Scene.Group(scene.Layer2, "Entities"), Scene.Group(scene.LayerOfB, "Entities") }, scene.Candidates());
             Assert.True(scene.Tree.IsDragging);
+        }
+
+        [Fact]
+        public void DraggingAnEntity_LeavesTheEntitiesNextToWhichItCanGoAsNeighbors_NotLit()
+        {
+            var scene = CreateScene();
+
+            scene.Tree.BeginDrag(scene.Entity1);
+
+            Assert.Equal(new[] { scene.Entity2, scene.EntityOfLayer2 }, scene.Neighbors());
+            Assert.All(scene.Neighbors(), node =>
+            {
+                Assert.False(node.IsDropCandidate);
+                Assert.False(node.IsDimmed);
+            });
+        }
+
+        // The case of a filter: only the groups of filters light up. The filters themselves keep their look, and the bar shows the place.
+        [Fact]
+        public void DraggingAFilter_LightsOnlyTheGroupsOfFilters_NotTheFilters()
+        {
+            var scene = CreateScene();
+            var filters = Scene.Group(scene.Layer1, "Filters");
+            var filter = filters.Children[0];
+
+            scene.Tree.BeginDrag(filter);
+
+            Assert.Equal(
+                new[] { Scene.Group(scene.Layer2, "Filters"), Scene.Group(scene.CompositionA, "Filters"), Scene.Group(scene.LayerOfB, "Filters"), Scene.Group(scene.CompositionB, "Filters") },
+                scene.Candidates());
+            Assert.All(scene.Candidates(), node => Assert.Null(node.Item));
+            Assert.False(filters.IsDropCandidate);
+
+            // The other filter of the list and the filter of the other layer: next to them, not inside.
+            Assert.Equal(new[] { filters.Children[1], Scene.Group(scene.Layer2, "Filters").Children[0] }, scene.Neighbors());
         }
 
         [Fact]
@@ -96,24 +135,24 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.True(scene.Entity1.IsDragSource);
             Assert.False(scene.Entity1.IsDropCandidate);
+            Assert.False(scene.Entity1.IsDropNeighbor);
             Assert.False(Scene.Group(scene.Layer1, "Entities").IsDropCandidate);
             Assert.False(Scene.Group(scene.Layer1, "Cameras").IsDropCandidate);
         }
 
         [Fact]
-        public void DraggingALayer_MakesCandidatesOfTheOtherLayersAndOfEveryComposition()
+        public void DraggingALayer_LightsTheCompositions_AndLeavesTheOtherLayersAsNeighbors()
         {
             var scene = CreateScene();
 
             scene.Tree.BeginDrag(scene.Layer1);
 
-            Assert.Equal(
-                new[] { scene.CompositionA, scene.Layer2, scene.CompositionB, scene.LayerOfB },
-                scene.Candidates());
+            Assert.Equal(new[] { scene.CompositionA, scene.CompositionB }, scene.Candidates());
+            Assert.Equal(new[] { scene.Layer2, scene.LayerOfB }, scene.Neighbors());
         }
 
         [Fact]
-        public void DraggingAModifier_MakesCandidatesOfTheModifiersOfOtherEntities_AndNotOfOtherKinds()
+        public void DraggingAModifier_LightsTheGroupOfModifiersOfOtherEntities_AndNotOtherKinds()
         {
             var scene = CreateScene();
             var firstModifier = Scene.Group(scene.Entity1, "Modifiers").Children[0];
@@ -121,16 +160,16 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.Tree.BeginDrag(firstModifier);
 
-            Assert.Contains(Scene.Group(scene.Entity1, "Modifiers").Children[1], scene.Candidates());
-            Assert.Contains(secondEntityGroup, scene.Candidates());
-            Assert.Contains(secondEntityGroup.Children[0], scene.Candidates());
+            Assert.Equal(new[] { secondEntityGroup, Scene.Group(scene.EntityOfLayer2, "Modifiers") }, scene.Candidates());
+            Assert.Contains(Scene.Group(scene.Entity1, "Modifiers").Children[1], scene.Neighbors());
+            Assert.Contains(secondEntityGroup.Children[0], scene.Neighbors());
             Assert.DoesNotContain(Scene.Group(scene.Layer1, "Filters"), scene.Candidates());
             Assert.DoesNotContain(Scene.Group(scene.Entity1, "Modifiers"), scene.Candidates());
-            Assert.All(scene.Candidates(), node => Assert.Equal(TreeCategory.Modifier, node.Category));
+            Assert.All(scene.Candidates().Concat(scene.Neighbors()), node => Assert.Equal(TreeCategory.Modifier, node.Category));
         }
 
         [Fact]
-        public void EveryRowThatIsNotACandidate_IsDimmed_ExceptTheDraggedRowAndTheHints()
+        public void EveryRowThatIsNeitherLitNorANeighbor_IsDimmed_ExceptTheDraggedRowAndTheHints()
         {
             var scene = CreateScene();
 
@@ -138,7 +177,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             foreach (var node in scene.All())
             {
-                if (node.IsDropCandidate || node.IsDragSource || node.IsDropHint)
+                if (node.IsDropCandidate || node.IsDropNeighbor || node.IsDragSource || node.IsDropHint)
                     Assert.False(node.IsDimmed);
                 else
                     Assert.True(node.IsDimmed, $"{node.Header} is not dimmed.");
@@ -146,14 +185,14 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ACollapsedRowWithACandidateUnderIt_GivesAHint_AndAnOpenRowDoesNot()
+        public void ACollapsedRowWithATargetUnderIt_GivesAHint_AndAnOpenRowDoesNot()
         {
             var scene = CreateScene();
             scene.Layer2.IsExpanded = false;
 
             scene.Tree.BeginDrag(scene.Entity1);
 
-            Assert.True(scene.Layer2.HasDropCandidateBelow);
+            Assert.True(scene.Layer2.HasDropTargetBelow);
             Assert.True(scene.Layer2.IsDropHint);
             Assert.False(scene.Layer2.IsDimmed);
             Assert.False(scene.CompositionA.IsDropHint);
@@ -164,7 +203,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ARowWithNoCandidateUnderIt_GivesNoHint()
+        public void ARowWithNoTargetUnderIt_GivesNoHint()
         {
             var scene = CreateScene();
             scene.Tree.BeginDrag(scene.Entity1);
@@ -172,7 +211,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var cameras = Scene.Group(scene.Layer1, "Cameras");
             cameras.IsExpanded = false;
 
-            Assert.False(cameras.HasDropCandidateBelow);
+            Assert.False(cameras.HasDropTargetBelow);
             Assert.False(cameras.IsDropHint);
         }
 
@@ -182,7 +221,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             var changes = new List<string?>();
             scene.Tree.BeginDrag(scene.Entity1);
-            scene.Entity2.PropertyChanged += (_, e) => changes.Add(e.PropertyName);
+            Scene.Group(scene.Layer2, "Entities").PropertyChanged += (_, e) => changes.Add(e.PropertyName);
 
             scene.Tree.EndDrag();
 
@@ -192,6 +231,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 Assert.False(node.IsDragActive);
                 Assert.False(node.IsDragSource);
                 Assert.False(node.IsDropCandidate);
+                Assert.False(node.IsDropNeighbor);
                 Assert.False(node.IsDimmed);
             });
             Assert.Contains(nameof(TreeNode.IsDropCandidate), changes);
@@ -207,22 +247,25 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.Tree.BeginDrag(scene.Layer1);
 
-            Assert.DoesNotContain(scene.Entity2, scene.Candidates());
-            Assert.Contains(scene.Layer2, scene.Candidates());
+            Assert.DoesNotContain(scene.Entity2, scene.Neighbors());
+            Assert.Contains(scene.Layer2, scene.Neighbors());
         }
 
         [Fact]
-        public void TheCandidates_AreTheRowsThatTheDropCanUse()
+        public void EveryLitRow_TakesTheDropInside_AndEveryNeighborTakesItBeforeOrAfter()
         {
             var scene = CreateScene();
             var service = new TreeDropService();
-            scene.Tree.BeginDrag(scene.Entity1);
+            var filter = Scene.Group(scene.Layer1, "Filters").Children[0];
+            scene.Tree.BeginDrag(filter);
 
-            foreach (var node in scene.All().Where(node => !ReferenceEquals(node, scene.Entity1)))
+            foreach (var node in scene.All().Where(node => !ReferenceEquals(node, filter)))
             {
-                var canDrop = new[] { DropPosition.Before, DropPosition.After, DropPosition.Inside }.Any(position => service.CanDrop(scene.Entity1, node, position));
                 if (node.IsDropCandidate)
-                    Assert.True(canDrop, $"{node.Header} is a candidate but takes no drop.");
+                    Assert.True(service.CanDrop(filter, node, DropPosition.Inside), $"{node.Header} is lit but takes no drop inside.");
+
+                if (node.IsDropNeighbor)
+                    Assert.True(service.CanDrop(filter, node, DropPosition.Before) || service.CanDrop(filter, node, DropPosition.After), $"{node.Header} is a neighbor but takes no drop.");
             }
         }
     }
