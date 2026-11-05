@@ -1,0 +1,131 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
+using CMiX.Studio.Avalonia.Views;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+using Composition = CMiX.Core.Compositing.Composition;
+using Layer = CMiX.Core.Compositing.Layer;
+using Project = CMiX.Core.Compositing.Project;
+
+namespace CMiX.Studio.Avalonia.Tests
+{
+    // A drop changes the number of rows above and under the view. The view must not jump.
+    public class ProjectTreeDropJumpTests : IDisposable
+    {
+        private Window? window;
+
+        public void Dispose() => window?.Close();
+
+        private void Settle()
+        {
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
+            window!.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        // Two compositions with six open layers each: a tree that is much higher than the window.
+        private (ProjectTreeView View, ProjectTree Tree, ScrollViewer Scroller) Show()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var project = provider.GetRequiredService<Project>();
+            project.CompositionManager.AddItem(typeof(Composition));
+            project.CompositionManager.AddItem(typeof(Composition));
+            foreach (var item in project.CompositionManager.ManagerData.Items.OfType<Composition>())
+                for (var i = 0; i < 6; i++)
+                    item.LayerManager.AddItem(typeof(Layer));
+
+            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
+            TestServiceProviderFactory.ExpandAll(tree);
+            var view = new ProjectTreeView { DataContext = tree };
+            window = new Window { Content = view, Width = 500, Height = 500 };
+            window.Show();
+            Settle();
+            tree.SelectedNode = null;
+            Settle();
+            return (view, tree, view.GetVisualDescendants().OfType<ScrollViewer>().First());
+        }
+
+        private Border RowOf(ProjectTreeView view, TreeNode node) =>
+            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node))
+                .GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
+
+        private double Top(ProjectTreeView view, TreeNode node) => RowOf(view, node).TranslatePoint(new Point(0, 0), window!)!.Value.Y;
+
+        private static IEnumerable<TreeNode> All(IEnumerable<TreeNode> nodes) =>
+            nodes.SelectMany(node => new[] { node }.Concat(All(node.Children)));
+
+        private void Drop(ProjectTreeView view, ProjectTree tree, TreeNode source, TreeNode target)
+        {
+            var data = new DataObject();
+            data.Set(ProjectTreeView.NodeFormat, source);
+            var row = RowOf(view, target);
+            var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window!)!.Value;
+            tree.BeginDrag(source);
+            window!.DragDrop(point, RawDragEventType.DragEnter, data, DragDropEffects.Move);
+            window.DragDrop(point, RawDragEventType.DragOver, data, DragDropEffects.Move);
+            window.DragDrop(point, RawDragEventType.DragOver, data, DragDropEffects.Move);
+            window.DragDrop(point, RawDragEventType.Drop, data, DragDropEffects.Move);
+            tree.EndDrag();
+            Settle();
+        }
+
+        [AvaloniaFact]
+        public void ALayerDroppedOnAnotherComposition_DoesNotMoveTheView_AndTheRowsAboveStayWhereTheyWere()
+        {
+            var (view, tree, scroller) = Show();
+            scroller.Offset = new Vector(0, 800);
+            Settle();
+
+            var source = tree.Roots[0].Children.Where(node => node.Item != null).Last(layer => Top(view, layer) is > 20 and < 440);
+            var target = tree.Roots[1];
+            var kept = All(tree.Roots).Where(node => !node.IsOrIsUnder(source)).First(node => Top(view, node) >= 0);
+            var offset = scroller.Offset.Y;
+            var top = Top(view, kept);
+
+            Drop(view, tree, source, target);
+
+            Assert.Equal(7, target.Children.Count(node => node.Item != null));
+            Assert.Equal(offset, scroller.Offset.Y, 1);
+            Assert.Equal(top, Top(view, kept), 1);
+        }
+
+        [AvaloniaFact]
+        public void ALayerMovedInItsOwnList_DoesNotMoveTheView()
+        {
+            var (view, tree, scroller) = Show();
+            scroller.Offset = new Vector(0, 300);
+            Settle();
+
+            var layers = tree.Roots[0].Children.Where(node => node.Item != null).Where(layer => Top(view, layer) is > 20 and < 440).ToList();
+            var source = layers[0];
+            var target = layers[^1];
+            var offset = scroller.Offset.Y;
+
+            Drop(view, tree, source, target);
+
+            Assert.Equal(offset, scroller.Offset.Y, 1);
+        }
+
+        [AvaloniaFact]
+        public void TheTree_CanScrollUntilItsLastRowIsNearTheTop()
+        {
+            var (view, tree, scroller) = Show();
+            var last = All(tree.Roots).Last();
+
+            scroller.Offset = new Vector(0, scroller.Extent.Height);
+            Settle();
+
+            Assert.True(Top(view, last) < 150, $"The last row is at {Top(view, last)}.");
+        }
+    }
+}

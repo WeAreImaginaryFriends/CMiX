@@ -53,6 +53,7 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(DragDrop.DropEvent, OnDrop);
             treeView.AddHandler(ContextRequestedEvent, OnContextRequested, RoutingStrategies.Bubble);
             treeView.AddHandler(DoubleTappedEvent, OnDoubleTapped, RoutingStrategies.Bubble);
+            treeView.AddHandler(ScrollViewer.ScrollChangedEvent, (_, _) => SetEndRoom());
         }
 
         // The tree does not scroll by itself when the user chooses a row: a click on a row that is at the edge of the view would scroll to
@@ -112,6 +113,21 @@ namespace CMiX.Studio.Avalonia.Views
 
         // The space between two rows, one above the other, at a screen of 100%. The drop line (SplitterIndicatorSize) sits in it.
         public const double RowGap = 3;
+
+        // A tree that is higher than its view can scroll until its last row is near the top of the view. When a drop takes rows away,
+        // the view can then stay where it was, since there is always room under the rows. A tree that fits in its view has no room.
+        private void SetEndRoom()
+        {
+            if (ScrollerOfTree is not { } scroller)
+                return;
+
+            var content = scroller.Extent.Height - treeView.Padding.Bottom;
+            var room = content > scroller.Viewport.Height + 0.5
+                ? Math.Max(0, scroller.Viewport.Height - 3 * (Convert.ToDouble(Resources["TreeRowHeight"]) + Convert.ToDouble(Resources["TreeRowGap"])))
+                : 0;
+            if (Math.Abs(treeView.Padding.Bottom - room) > 0.5)
+                treeView.Padding = new Thickness(0, 0, 0, room);
+        }
 
         private void SetRowMetrics(double scale)
         {
@@ -456,7 +472,55 @@ namespace CMiX.Studio.Avalonia.Views
             if (DataContext is not ProjectTree tree || source == null || target == null || position == null)
                 return;
 
-            await tree.DropAsync(source, target, position.Value);
+            // A drop changes the number of rows above and under the view. The tree must not jump: the first row in view stays where it
+            // is, and the tree does not scroll to the moved row. The move is done before the first await of DropAsync.
+            var anchor = CaptureAnchor(source);
+            chosenByClick = true;
+            Dispatcher.UIThread.Post(() => chosenByClick = false, DispatcherPriority.Background);
+
+            var dropping = tree.DropAsync(source, target, position.Value);
+            RestoreAnchor(anchor);
+            Dispatcher.UIThread.Post(() => RestoreAnchor(anchor), DispatcherPriority.Loaded);
+            await dropping;
+        }
+
+        // The first row that is fully in view and is not the dragged node or under it, and its place in the view.
+        private (TreeNode Node, double Top)? CaptureAnchor(TreeNode dragged)
+        {
+            if (ScrollerOfTree is not { } scroller)
+                return null;
+
+            foreach (var item in treeView.GetVisualDescendants().OfType<TreeViewItem>())
+            {
+                if (item.DataContext is not TreeNode node || node.IsOrIsUnder(dragged))
+                    continue;
+
+                var top = RowTopIn(item, scroller);
+                if (top is >= 0)
+                    return (node, top.Value);
+            }
+
+            return null;
+        }
+
+        private static double? RowTopIn(TreeViewItem item, ScrollViewer scroller) =>
+            item.GetVisualDescendants().OfType<Border>().FirstOrDefault(border => border.Name == "RowBorder") is { } row
+                ? row.TranslatePoint(new Point(0, 0), scroller)?.Y
+                : null;
+
+        // Scrolls so that the anchor row is where it was.
+        private void RestoreAnchor((TreeNode Node, double Top)? anchor)
+        {
+            if (anchor is not { } kept || ScrollerOfTree is not { } scroller)
+                return;
+
+            treeView.UpdateLayout();
+            var item = FindItem(kept.Node);
+            if (item == null || RowTopIn(item, scroller) is not { } top)
+                return;
+
+            var maxOffset = Math.Max(0, scroller.Extent.Height - scroller.Viewport.Height);
+            scroller.Offset = scroller.Offset.WithY(Math.Clamp(scroller.Offset.Y + top - kept.Top, 0, maxOffset));
         }
 
         // The dragged node, the item that takes the drop, its node, and the place of the drop. The item that takes the drop
