@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
@@ -133,6 +134,55 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.True(scroller.Offset.Y > 0);
             Assert.InRange(RowTop(view, far), 0, 500);
+        }
+
+        private void DragAt(ProjectTreeView view, ProjectTree tree, ScrollViewer scroller, double y, RawDragEventType type)
+        {
+            var data = new DataObject();
+            data.Set(ProjectTreeView.NodeFormat, tree.Roots[0].Children[0]);
+            var point = scroller.TranslatePoint(new Point(40, y), window!)!.Value;
+            window!.DragDrop(point, type, data, DragDropEffects.Move);
+            Settle();
+        }
+
+        [AvaloniaFact]
+        public void ADragNearTheBottomEdge_ScrollsDown_AndADragNearTheTopEdge_ScrollsUp()
+        {
+            var (view, tree, scroller) = Show();
+            tree.BeginDrag(tree.Roots[0].Children[0]);
+            DragAt(view, tree, scroller, scroller.Bounds.Height / 2, RawDragEventType.DragEnter);
+            DragAt(view, tree, scroller, scroller.Bounds.Height / 2, RawDragEventType.DragOver);
+            DragAt(view, tree, scroller, scroller.Bounds.Height - 4, RawDragEventType.DragOver);
+            DragAt(view, tree, scroller, scroller.Bounds.Height - 4, RawDragEventType.DragOver);
+            Assert.True(view.AutoScrollStep() > 0);
+            Assert.True(scroller.Offset.Y > 0);
+
+            var down = scroller.Offset.Y;
+            DragAt(view, tree, scroller, 4, RawDragEventType.DragOver);
+            DragAt(view, tree, scroller, 4, RawDragEventType.DragOver);
+            Assert.True(view.AutoScrollStep() < 0);
+            Assert.True(scroller.Offset.Y < down);
+
+            DragAt(view, tree, scroller, scroller.Bounds.Height + 20, RawDragEventType.DragLeave);
+            tree.EndDrag();
+        }
+
+        [AvaloniaFact]
+        public void ADragAwayFromTheEdges_DoesNotScroll_AndADragThatLeavesTheTree_Stops()
+        {
+            var (view, tree, scroller) = Show();
+            tree.BeginDrag(tree.Roots[0].Children[0]);
+            DragAt(view, tree, scroller, scroller.Bounds.Height / 2, RawDragEventType.DragEnter);
+
+            DragAt(view, tree, scroller, scroller.Bounds.Height / 2, RawDragEventType.DragOver);
+            Assert.Equal(0, view.AutoScrollStep());
+
+            DragAt(view, tree, scroller, scroller.Bounds.Height - 4, RawDragEventType.DragOver);
+            DragAt(view, tree, scroller, scroller.Bounds.Height - 4, RawDragEventType.DragOver);
+            Assert.True(view.AutoScrollStep() > 0);
+            DragAt(view, tree, scroller, scroller.Bounds.Height + 20, RawDragEventType.DragLeave);
+            Assert.Equal(0, view.AutoScrollStep());
+            tree.EndDrag();
         }
     }
 }

@@ -288,6 +288,7 @@ namespace CMiX.Studio.Avalonia.Views
             finally
             {
                 tree?.EndDrag();
+                StopAutoScroll();
                 Mark(null, null);
             }
         }
@@ -328,8 +329,61 @@ namespace CMiX.Studio.Avalonia.Views
                 tree.DropPaths(ItemOf(e.Source)?.DataContext as TreeNode, PathsOf(e));
         }
 
+        // The tree scrolls while a drag is near its top or bottom edge. The system gives no mouse wheel during a drag,
+        // so a timer scrolls as long as the pointer stays in the edge zone.
+        private const double EdgeZone = 28.0;
+        private const double MaxScrollStep = 18.0;
+        private readonly DispatcherTimer autoScrollTimer = new() { Interval = TimeSpan.FromMilliseconds(30) };
+        private double? dragY;
+
+        private ScrollViewer? ScrollerOfTree =>
+            treeView.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+
+        private void TrackDragPointer(DragEventArgs e)
+        {
+            dragY = ScrollerOfTree is { } scroller ? e.GetPosition(scroller).Y : null;
+            if (!autoScrollTimer.IsEnabled)
+            {
+                autoScrollTimer.Tick -= OnAutoScrollTick;
+                autoScrollTimer.Tick += OnAutoScrollTick;
+                autoScrollTimer.Start();
+            }
+        }
+
+        private void StopAutoScroll()
+        {
+            autoScrollTimer.Stop();
+            dragY = null;
+        }
+
+        private void OnAutoScrollTick(object? sender, EventArgs e) => AutoScrollStep();
+
+        // One step of the scroll of a drag. The step is larger when the pointer is closer to the edge, or beyond it.
+        // Returns the distance that the view moved.
+        public double AutoScrollStep()
+        {
+            if (dragY is not { } y || ScrollerOfTree is not { } scroller)
+                return 0;
+
+            var step = 0.0;
+            if (y < EdgeZone)
+                step = -MaxScrollStep * Math.Min(1, (EdgeZone - y) / EdgeZone);
+            else if (y > scroller.Bounds.Height - EdgeZone)
+                step = MaxScrollStep * Math.Min(1, (y - (scroller.Bounds.Height - EdgeZone)) / EdgeZone);
+
+            if (step == 0)
+                return 0;
+
+            var before = scroller.Offset.Y;
+            var maxOffset = Math.Max(0, scroller.Extent.Height - scroller.Viewport.Height);
+            scroller.Offset = scroller.Offset.WithY(Math.Clamp(before + step, 0, maxOffset));
+            return scroller.Offset.Y - before;
+        }
+
         private void OnDragOver(object? sender, DragEventArgs e)
         {
+            TrackDragPointer(e);
+
             if (e.Data.Contains(DataFormats.Files))
             {
                 OnFilesDragOver(e);
@@ -356,10 +410,19 @@ namespace CMiX.Studio.Avalonia.Views
             Mark(item, position);
         }
 
-        private void OnDragLeave(object? sender, DragEventArgs e) => Mark(null, null);
+        private void OnDragLeave(object? sender, DragEventArgs e)
+        {
+            // A leave also comes each time the pointer goes from one row to the next. The scroll stops only when the pointer is out of the tree.
+            if (!new Rect(treeView.Bounds.Size).Contains(e.GetPosition(treeView)))
+                StopAutoScroll();
+
+            Mark(null, null);
+        }
 
         private async void OnDrop(object? sender, DragEventArgs e)
         {
+            StopAutoScroll();
+
             if (e.Data.Contains(DataFormats.Files))
             {
                 OnFilesDrop(e);
