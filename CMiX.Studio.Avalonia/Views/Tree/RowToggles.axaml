@@ -23,6 +23,7 @@
 
     <StackPanel
         Width="{DynamicResource TreeToggleWidth}"
+        Background="Transparent"
         HorizontalAlignment="Left"
         Orientation="Horizontal"
         Spacing="{DynamicResource TreeRowSpacing}">

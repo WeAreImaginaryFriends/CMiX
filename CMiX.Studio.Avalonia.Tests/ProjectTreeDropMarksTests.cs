@@ -228,5 +228,25 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(tree.IsDragging);
             Assert.All(All(tree.Roots), node => Assert.False(node.IsDragActive));
         }
+
+        [AvaloniaFact]
+        public void APressOnTheToggleColumn_NeverStartsADrag_EvenAwayFromTheButtons()
+        {
+            var (view, tree) = Show();
+            var source = FirstEntity(tree);
+            var toggles = ItemOf(view, source).GetVisualDescendants().OfType<RowToggles>().First();
+
+            // The right end of the column: an entity has no mask toggle there, so it is the space around the buttons.
+            var point = toggles.TranslatePoint(new Point(toggles.Bounds.Width - 3, toggles.Bounds.Height / 2), window!)!.Value;
+            window!.MouseDown(point, MouseButton.Left);
+            window.MouseMove(point + new Vector(30, 0), RawInputModifiers.LeftMouseButton);
+            Dispatcher.UIThread.RunJobs();
+
+            var started = tree.IsDragging;
+            window.MouseUp(point + new Vector(30, 0), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(started);
+        }
     }
 }
