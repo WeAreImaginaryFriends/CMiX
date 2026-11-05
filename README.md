@@ -59,6 +59,22 @@ The emergency save in the temp folder holds paths relative to that folder. Open 
 
 The start check reports "Not in sync" when you open a project on a machine other than the one that pushed the Redis snapshot, because the absolute paths differ. Click Push on that machine.
 
+## Project tree
+
+The tree shows the project as rows. A row is a composition, a layer, an item of a layer, or a group of items. An item can hold textures, filters, modifiers and modulators. They are groups under the item.
+
+Each row has a kind: composable (a composition and a layer), entity, camera, light, texture, filter, modifier or modulator. A group has the kind of its items. The kind sets the color of the row.
+
+- The colors of the kinds are in `Colors.axaml`, with the names `Category` and the kind. A composable inside a composable has one more color for each level, `CategoryComposableLevel1` to `CategoryComposableLevel3`.
+- A row is filled with its color over the panel background. The fill is one step brighter under the pointer, and one more step when the row is selected. `CategoryPalette` holds the strength of each step.
+- A collapsed row shows what it holds: a small square for each kind, in the color of the kind, with the number of items. An open row shows none.
+- The toggles are at the right of the colored row. The visibility toggle is the first square. The mask toggle follows it on a composition and a layer. A new toggle is a new square in `RowToggles`.
+- The title bar of the inspector shows the icon of the selected row on a square in the color of its kind (`CategoryBadge`).
+
+While you drag a row, each row that can take it has a frame. A collapsed row with such a row inside has a fainter frame. The other rows are covered. The rows use the rules of the drop itself (`TreeDropService`), so a framed row always takes the drop.
+
+A row can move inside its list. It can also move to a list of the same kind of another owner: an entity to another layer, a modifier to another entity, a filter, a texture or a modulator to another owner of the same kind of list.
+
 ## Redis addresses
 
 The Settings tab holds the list of Redis addresses of the project. Click an address to edit it. The buttons at the side add, remove and move addresses. The project file stores the list.
