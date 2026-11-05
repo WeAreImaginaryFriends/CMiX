@@ -62,6 +62,9 @@ namespace CMiX.Studio.Avalonia.Views
             return (heightPixels / scale, spacingPixels / scale);
         }
 
+        // The space between two rows, one above the other, at a screen of 100%. The drop line (SplitterIndicatorSize) sits in it.
+        public const double RowGap = 3;
+
         private void SetRowMetrics(double scale)
         {
             var height = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
@@ -70,6 +73,15 @@ namespace CMiX.Studio.Avalonia.Views
             Resources["TreeRowHeight"] = snappedHeight;
             Resources["TreeRowSpacing"] = snappedSpacing;
             Resources["TreeToggleWidth"] = RowToggles.WidthFor(snappedHeight, snappedSpacing);
+
+            // The space between rows is a space of its own, not the space between a row and its toggles.
+            var (_, snappedGap) = SnapToPixels(height, RowGap, scale);
+            Resources["TreeRowGap"] = snappedGap;
+
+            // The drop line is in the space between two rows: over the space above a row, or under it.
+            var line = Convert.ToDouble(Application.Current!.FindResource("SplitterIndicatorSize"));
+            Resources["TreeDropLineBeforeMargin"] = new Thickness(0, -line, 0, 0);
+            Resources["TreeDropLineAfterMargin"] = new Thickness(0, 0, 0, -line);
         }
 
         private TopLevel? scaledTopLevel;

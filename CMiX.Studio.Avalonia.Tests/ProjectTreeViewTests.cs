@@ -144,10 +144,10 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TwoRowsNextToEachOther_AreOnePixelApart()
+        public void TwoRowsNextToEachOther_AreOneRowGapApart()
         {
             var screen = Show();
-            var spacing = Convert.ToDouble(Application.Current!.FindResource("SpacingXXS"));
+            var spacing = Convert.ToDouble(screen.View.Resources["TreeRowGap"]);
             var layerNode = screen.Tree.Roots[0].Children[0];
             var firstGroup = HeaderOf(screen.RowOf(layerNode.Children[0]));
             var secondGroup = HeaderOf(screen.RowOf(layerNode.Children[1]));
@@ -155,15 +155,15 @@ namespace CMiX.Studio.Avalonia.Tests
             var gap = secondGroup.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y
                 - (firstGroup.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y + firstGroup.Bounds.Height);
 
-            Assert.Equal(1, spacing);
+            Assert.Equal(3, spacing);
             Assert.Equal(spacing, gap);
         }
 
         [AvaloniaFact]
-        public void AChildRow_IsOnePixelBelowItsParentRow()
+        public void AChildRow_IsOneRowGapBelowItsParentRow()
         {
             var screen = Show();
-            var spacing = Convert.ToDouble(Application.Current!.FindResource("SpacingXXS"));
+            var spacing = Convert.ToDouble(screen.View.Resources["TreeRowGap"]);
             var parent = HeaderOf(screen.RowOf(screen.Tree.Roots[0]));
             var child = HeaderOf(screen.RowOf(screen.Tree.Roots[0].Children[0]));
 
@@ -278,9 +278,11 @@ namespace CMiX.Studio.Avalonia.Tests
             var line = DropLineOf(item);
             var lastRowHeader = HeaderOf(screen.RowOf(lastRow));
             Assert.True(line.IsVisible);
-            Assert.InRange(Top(screen, line) + line.Bounds.Height, Top(screen, item) + item.Bounds.Height - 0.5, Top(screen, item) + item.Bounds.Height + 0.5);
-            Assert.True(Top(screen, line) + line.Bounds.Height >= Top(screen, lastRowHeader) + lastRowHeader.Bounds.Height - 0.5,
+            // The bar is in the space under the block: it starts at the bottom of the last row and is not higher than the space.
+            Assert.InRange(Top(screen, line), Top(screen, item) + item.Bounds.Height - 0.5, Top(screen, item) + item.Bounds.Height + 0.5);
+            Assert.True(Top(screen, line) >= Top(screen, lastRowHeader) + lastRowHeader.Bounds.Height - 0.5,
                 "The bar is above the bottom of the last row of the block.");
+            Assert.True(line.Bounds.Height <= Convert.ToDouble(screen.View.Resources["TreeRowGap"]));
         }
 
         [AvaloniaFact]
@@ -294,7 +296,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var item = screen.RowOf(last);
             var line = DropLineOf(item);
             Assert.True(line.IsVisible);
-            Assert.InRange(Top(screen, line), Top(screen, item) - 0.5, Top(screen, item) + 0.5);
+            // The bar is in the space above the block: it ends at the top of the first row and is not higher than the space.
+            Assert.InRange(Top(screen, line) + line.Bounds.Height, Top(screen, item) - 0.5, Top(screen, item) + 0.5);
+            Assert.True(line.Bounds.Height <= Convert.ToDouble(screen.View.Resources["TreeRowGap"]));
         }
 
         [AvaloniaFact]

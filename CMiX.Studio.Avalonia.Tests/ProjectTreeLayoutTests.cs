@@ -1,0 +1,198 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
+using CMiX.Studio.Avalonia.Views;
+using CMiX.UI.Panels;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+using Composition = CMiX.Core.Compositing.Composition;
+using Entity = CMiX.Core.Compositing.Entity;
+using Layer = CMiX.Core.Compositing.Layer;
+using Project = CMiX.Core.Compositing.Project;
+
+namespace CMiX.Studio.Avalonia.Tests
+{
+    // The left side of the tree: a gutter, the indent outside the fill of a row, and a space between two rows.
+    public class ProjectTreeLayoutTests : IDisposable
+    {
+        private Window? window;
+
+        public void Dispose() => window?.Close();
+
+        private static void SetScaling(Window target, double scale)
+        {
+            var impl = target.PlatformImpl!;
+            impl.GetType().GetField("<RenderScaling>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(impl, scale);
+            ((Action<double>?)impl.GetType().GetProperty("ScalingChanged")!.GetValue(impl))?.Invoke(scale);
+        }
+
+        private void Settle()
+        {
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
+            window!.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        // A composition with a layer that has an entity.
+        private (ProjectTreeView View, ProjectTree Tree) Show(double scale = 1.0)
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var project = provider.GetRequiredService<Project>();
+            project.CompositionManager.AddItem(typeof(Composition));
+            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
+            composition.LayerManager.AddItem(typeof(Layer));
+            composition.LayerManager.AddItem(typeof(Layer));
+            ((Layer)composition.LayerManager.ManagerData.Items[0]).ModelEntityManager.AddItem(typeof(Entity));
+
+            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
+            var view = new ProjectTreeView { DataContext = tree };
+            window = new Window { Content = view, Width = 500, Height = 600 };
+            window.Show();
+            SetScaling(window, scale);
+            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
+                panel.Duration = TimeSpan.Zero;
+            Settle();
+            return (view, tree);
+        }
+
+        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
+            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+
+        private static Border RowOf(ProjectTreeView view, TreeNode node) =>
+            ItemOf(view, node).GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
+
+        private Rect BoundsIn(Control control) => new(control.TranslatePoint(new Point(0, 0), window!)!.Value, control.Bounds.Size);
+
+        private static IEnumerable<TreeNode> All(IEnumerable<TreeNode> nodes) =>
+            nodes.SelectMany(node => new[] { node }.Concat(All(node.Children)));
+
+        [AvaloniaFact]
+        public void NoFill_TouchesTheLeftBorderOfTheTree_AndTheTopRowStartsAfterTheGutter()
+        {
+            var (view, tree) = Show();
+            var tops = All(tree.Roots).Select(node => BoundsIn(RowOf(view, node)).Left).ToList();
+
+            Assert.All(tops, left => Assert.True(left >= 8, $"A fill starts at {left}, inside the gutter."));
+            Assert.Equal(8, BoundsIn(RowOf(view, tree.Roots[0])).Left);
+        }
+
+        [AvaloniaFact]
+        public void TheFillOfAChild_StartsOneIndentToTheRightOfTheFillOfItsParent()
+        {
+            var (view, tree) = Show();
+            var composition = tree.Roots[0];
+            var layer = composition.Children[0];
+            var entities = layer.Children.Single(child => child.Header == "Entities");
+
+            var compositionLeft = BoundsIn(RowOf(view, composition)).Left;
+            var layerLeft = BoundsIn(RowOf(view, layer)).Left;
+            var entitiesLeft = BoundsIn(RowOf(view, entities)).Left;
+
+            Assert.Equal(16, layerLeft - compositionLeft);
+            Assert.Equal(16, entitiesLeft - layerLeft);
+        }
+
+        [AvaloniaFact]
+        public void EveryFill_EndsAtTheSamePlace_WhateverItsLevel()
+        {
+            var (view, tree) = Show();
+
+            var rights = All(tree.Roots).Select(node => BoundsIn(RowOf(view, node)).Right).Distinct().ToList();
+
+            Assert.Single(rights);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(1.0)]
+        [InlineData(1.25)]
+        [InlineData(1.5)]
+        [InlineData(2.0)]
+        public void TheSpaceBetweenTwoRows_IsAWholeNumberOfPixels_AtEveryScaling(double scale)
+        {
+            var (view, tree) = Show(scale);
+            var layers = tree.Roots[0].Children;
+            var first = BoundsIn(RowOf(view, layers[0]));
+            var gap = Convert.ToDouble(view.Resources["TreeRowGap"]);
+
+            Assert.Equal(Math.Round(gap * scale), gap * scale, 3);
+            Assert.True(gap * scale >= 3 * Math.Min(scale, 1) - 1e-6);
+            Assert.Equal(gap, BoundsIn(RowOf(view, layers[0].Children[0])).Top - (first.Top + first.Height), 3);
+        }
+
+        [Theory]
+        [InlineData(1.0, 3.0)]
+        [InlineData(1.25, 3.2)]
+        [InlineData(1.5, 10.0 / 3.0)]
+        [InlineData(2.0, 3.0)]
+        public void TheGap_IsSnappedToWholePixels(double scale, double expected)
+        {
+            var (_, gap) = ProjectTreeView.SnapToPixels(24, ProjectTreeView.RowGap, scale);
+
+            Assert.Equal(expected, gap, 6);
+            Assert.Equal(Math.Round(gap * scale), gap * scale, 6);
+        }
+
+        [AvaloniaFact]
+        public void TheSpaceBetweenARowAndItsToggles_StaysOnePixel_AndIsNotTheSpaceBetweenRows()
+        {
+            var (view, tree) = Show();
+
+            Assert.Equal(1, Convert.ToDouble(view.Resources["TreeRowSpacing"]));
+            Assert.Equal(3, Convert.ToDouble(view.Resources["TreeRowGap"]));
+        }
+
+        [AvaloniaFact]
+        public void TheDropLine_StartsAtTheIndentOfItsRow_AndIsInTheSpaceBetweenRows()
+        {
+            var (view, tree) = Show();
+            var layer = tree.Roots[0].Children[0];
+            var item = ItemOf(view, layer);
+            var line = item.GetVisualDescendants().OfType<Border>().Last(border => border.Name == "DropLine");
+            var row = RowOf(view, layer);
+
+            ((IPseudoClasses)item.Classes).Set(":dropbefore", true);
+            Settle();
+
+            Assert.True(line.IsVisible, "line.IsVisible");
+            Assert.True(line.IsEffectivelyVisible, "line.IsEffectivelyVisible");
+            Assert.Equal(BoundsIn(row).Left, BoundsIn(line).Left, 3);
+            Assert.Equal(BoundsIn(row).Top, BoundsIn(line).Bottom, 3);
+            Assert.True(line.Bounds.Height <= Convert.ToDouble(view.Resources["TreeRowGap"]));
+
+            ((IPseudoClasses)item.Classes).Set(":dropbefore", false);
+            ((IPseudoClasses)item.Classes).Set(":dropafter", true);
+            Settle();
+            var after = BoundsIn(line);
+            var itemBounds = BoundsIn(item);
+
+            Assert.Equal(itemBounds.Bottom, after.Top, 3);
+        }
+
+        [AvaloniaFact]
+        public void TheNameOfASelectedRow_IsWhite_AndOtherRowsHaveTheLightText()
+        {
+            var (view, tree) = Show();
+            var layer = tree.Roots[0].Children[0];
+            var other = tree.Roots[0].Children[1];
+
+            tree.SelectedNode = layer;
+            Settle();
+
+            static Color NameColor(ProjectTreeView view, TreeNode node) =>
+                ((ISolidColorBrush)ItemOf(view, node).GetVisualDescendants().OfType<TextBlock>().First(text => text.Name == "TextDisplay").Foreground!).Color;
+
+            var white = ((ISolidColorBrush)Application.Current!.FindResource("ActiveForegroundBrush")!).Color;
+            var light = ((ISolidColorBrush)Application.Current!.FindResource("ForegroundBrush")!).Color;
+            Assert.Equal(white, NameColor(view, layer));
+            Assert.Equal(light, NameColor(view, other));
+        }
+    }
+}

@@ -11,6 +11,9 @@
     <UserControl.Resources>
         <x:Double x:Key="TreeRowHeight">24</x:Double>
         <x:Double x:Key="TreeRowSpacing">1</x:Double>
+        <x:Double x:Key="TreeRowGap">3</x:Double>
+        <Thickness x:Key="TreeDropLineBeforeMargin">0,-2,0,0</Thickness>
+        <Thickness x:Key="TreeDropLineAfterMargin">0,0,0,-2</Thickness>
         <x:Double x:Key="TreeToggleWidth">50</x:Double>
     </UserControl.Resources>
 
@@ -33,7 +36,7 @@
 
         <TreeView.ItemsPanel>
             <ItemsPanelTemplate>
-                <StackPanel Spacing="{DynamicResource TreeRowSpacing}" />
+                <StackPanel Spacing="{DynamicResource TreeRowGap}" />
             </ItemsPanelTemplate>
         </TreeView.ItemsPanel>
 

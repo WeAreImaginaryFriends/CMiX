@@ -51,7 +51,7 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
-                <StackPanel Spacing="{DynamicResource TreeRowSpacing}" />
+                <StackPanel Spacing="{DynamicResource TreeRowGap}" />
             </ItemsPanelTemplate>
         </Setter>
         <Setter Property="Template">
@@ -64,6 +64,7 @@
                     <Border
                         Name="RowBorder"
                         Height="{DynamicResource TreeRowHeight}"
+                        Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeLevelIndent}}"
                         Padding="2,0,0,0"
                         CornerRadius="{DynamicResource CornerRadiusAll}"
                         TextElement.Foreground="{DynamicResource ForegroundBrush}">
@@ -73,7 +74,6 @@
                                  renames it. Only the chevron expands a row. -->
                             <Grid
                                 Name="RowContent"
-                                Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeLevelIndent}}"
                                 ColumnDefinitions="16,*">
                                 <ToggleButton
                                     Name="PART_ExpandCollapseChevron"
@@ -123,7 +123,7 @@
                          from the next, whatever is open, so the pitch of the rows never changes. -->
                     <ui:CollapsePanel Name="PART_Collapse" IsExpanded="{TemplateBinding IsExpanded}">
                         <Panel>
-                            <StackPanel Spacing="{DynamicResource TreeRowSpacing}">
+                            <StackPanel Spacing="{DynamicResource TreeRowGap}">
                                 <Border />
                                 <ItemsPresenter
                                     Name="PART_ItemsPresenter"
@@ -146,13 +146,19 @@
                         </Panel>
                     </ui:CollapsePanel>
                 </StackPanel>
-                <Border
-                    Name="DropLine"
-                    Height="{DynamicResource SplitterIndicatorSize}"
-                    VerticalAlignment="Top"
-                    Background="{DynamicResource AccentBrush}"
-                    IsHitTestVisible="False"
-                    IsVisible="False" />
+                <!-- The line starts at the indent of the row, as the colored row does. It is in the space between two rows: before a row,
+                     it is over the row, in the space above it, and after a row, in the space under it (the margins TreeDropLine...). -->
+                <Panel
+                    Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeLevelIndent}}"
+                    IsHitTestVisible="False">
+                    <Border
+                        Name="DropLine"
+                        Height="{DynamicResource SplitterIndicatorSize}"
+                        VerticalAlignment="Top"
+                        Background="{DynamicResource AccentBrush}"
+                        IsHitTestVisible="False"
+                        IsVisible="False" />
+                </Panel>
                 </Panel>
             </ControlTemplate>
         </Setter>
@@ -168,6 +174,7 @@
         </Style>
         <Style Selector="^:selected /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource ActiveForegroundBrush}" />
         </Style>
         <!-- Files dragged over the tree: the row that takes them looks as if the pointer was over it. -->
         <Style Selector="^:droptarget /template/ Border#RowBorder">
@@ -184,10 +191,12 @@
         <Style Selector="^:dropbefore /template/ Border#DropLine">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Margin" Value="{DynamicResource TreeDropLineBeforeMargin}" />
         </Style>
         <Style Selector="^:dropafter /template/ Border#DropLine">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="Margin" Value="{DynamicResource TreeDropLineAfterMargin}" />
         </Style>
     </ControlTheme>
 
