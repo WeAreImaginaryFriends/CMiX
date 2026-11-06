@@ -264,10 +264,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 if (outcome.Moved)
                 {
                     // The rows that hold the item open, so the user sees the result.
-                    for (var holder = position == DropPosition.Inside ? target : target.Parent; holder != null; holder = holder.Parent)
+                    var owner = position == DropPosition.Inside ? target : target.Parent;
+                    for (var holder = owner; holder != null; holder = holder.Parent)
                         holder.IsExpanded = true;
 
-                    if (FindNode(root, source.Item!) is { } moved)
+                    // Search under the holder only. A shared item is also under other layers.
+                    if (FindNode(owner ?? root, source.Item!) is { } moved)
                         SelectedNode = moved;
                 }
             }

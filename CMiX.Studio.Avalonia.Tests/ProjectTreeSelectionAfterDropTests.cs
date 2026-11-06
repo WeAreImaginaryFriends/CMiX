@@ -135,6 +135,22 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public async Task Drop_AnEntityThatTwoLayersShare_SelectsTheNodeInTheTargetLayer()
+        {
+            var scene = CreateScene();
+            scene.A.LayerManager.AddItem(typeof(Layer));
+            var entity = (Core.Prefabs.IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            scene.LayerOfA(2).ModelEntityManager.AddExistingItem(entity);
+            var node = Scene.Group(scene.LayerNodeOfA(2), "Entities").Children[0];
+
+            await scene.Tree.DropAsync(node, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside);
+
+            var selected = scene.Tree.SelectedNode;
+            Assert.Same(entity, selected!.Item);
+            Assert.Same(scene.LayerNodeOfA(1), selected.Parent!.Parent);
+        }
+
+        [Fact]
         public async Task ABlockedMove_ChangesNoSelection()
         {
             var scene = CreateScene();
