@@ -11,6 +11,7 @@
          whole pixels of the screen (see ProjectTreeView), so the rows are always one same pitch apart.
          It has a fill in the color of its kind (see CategoryPalette), one step brighter when the pointer is over the row itself
          (not over its children), and one more step when it is selected. A child is indented by its level.
+         TreeDropMark sets the classes droptarget, dropgap and droptop.
          The classes dropgap and droptop show the place of a drag between rows. The class droptarget shows the row
          that takes a drop inside it: it looks as if the pointer was over it. The class dropblocked shows a row that takes the
          kind of the dragged node but refuses it by a rule: a thin frame, and the reason in the tooltip. The marks are drawn

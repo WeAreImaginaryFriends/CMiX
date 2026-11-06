@@ -181,6 +181,14 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Border DropLineOf(TreeViewItem row) =>
             row.GetVisualDescendants().OfType<Border>().Last(border => border.Name == "DropLine");
 
+        // The place of the drop that the marker keeps for the node. It is null when the marker does not mark the node.
+        private static DropPosition? MarkOf(Screen screen, TreeNode node) =>
+            ReferenceEquals(screen.View.Marker.Marked?.DataContext, node) ? screen.View.Marker.MarkedPosition : null;
+
+        // True when the marker marks a drop before or after the node.
+        private static bool IsMarkedBetween(Screen screen, TreeNode node) =>
+            MarkOf(screen, node) is DropPosition.Before or DropPosition.After;
+
         private static double Top(Screen screen, Control control) => control.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
 
         // Three compositions. The last one holds a layer, so its block is the composition, the layer and the three groups of the layer.
@@ -205,7 +213,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0], last, fraction, RawDragEventType.DragOver);
 
-            Assert.Contains(":dropbefore", screen.RowOf(last).Classes);
+            Assert.Equal(DropPosition.Before, MarkOf(screen, last));
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(LastVisibleOf(screen.Tree.Roots[1]))));
         }
 
         [AvaloniaTheory]
@@ -220,8 +229,9 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0], lastRow, fraction, RawDragEventType.DragOver);
 
-            Assert.Contains(":dropafter", screen.RowOf(last).Classes);
-            Assert.DoesNotContain(":dropafter", screen.RowOf(lastRow).Classes);
+            Assert.Equal(DropPosition.After, MarkOf(screen, last));
+            Assert.Null(MarkOf(screen, lastRow));
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(lastRow)));
         }
 
         [AvaloniaTheory]
@@ -234,8 +244,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0], last, fraction, RawDragEventType.DragOver);
 
-            Assert.DoesNotContain(":dropbefore", screen.RowOf(last).Classes);
-            Assert.DoesNotContain(":dropafter", screen.RowOf(last).Classes);
+            Assert.False(IsMarkedBetween(screen, last));
             Assert.DoesNotContain(":droptarget", screen.RowOf(last).Classes);
         }
 
@@ -249,8 +258,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0], last.Children[0], fraction, RawDragEventType.DragOver);
 
-            Assert.DoesNotContain(":dropbefore", screen.RowOf(last).Classes);
-            Assert.DoesNotContain(":dropafter", screen.RowOf(last).Classes);
+            Assert.False(IsMarkedBetween(screen, last));
         }
 
         [AvaloniaFact]
@@ -264,7 +272,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(screen.Tree.Roots[0], last, 0.9, RawDragEventType.DragOver);
 
-            Assert.Contains(":dropafter", screen.RowOf(last).Classes);
+            Assert.Equal(DropPosition.After, MarkOf(screen, last));
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(last)));
         }
 
         [AvaloniaFact]
@@ -313,7 +322,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(first, lastRow, 0.9, RawDragEventType.DragOver);
 
-            Assert.Contains(":dropafter", screen.RowOf(second).Classes);
+            Assert.Equal(DropPosition.After, MarkOf(screen, second));
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(lastRow)));
         }
 
         [AvaloniaFact]
@@ -325,8 +335,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(first, second.Children[0], 0.9, RawDragEventType.DragOver);
 
-            Assert.DoesNotContain(":dropafter", screen.RowOf(second).Classes);
-            Assert.DoesNotContain(":dropbefore", screen.RowOf(second).Classes);
+            Assert.False(IsMarkedBetween(screen, second));
         }
 
         [AvaloniaTheory]
@@ -642,12 +651,14 @@ namespace CMiX.Studio.Avalonia.Tests
             var lastRow = LastVisibleOf(screen.Tree.Roots[1]);
 
             screen.Drag(screen.Tree.Roots[0], lastRow, 0.9, RawDragEventType.DragOver);
-            Assert.Contains(":dropafter", row.Classes);
+            Assert.Equal(DropPosition.After, MarkOf(screen, screen.Tree.Roots[1]));
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(lastRow)));
 
             screen.Window.DragDrop(screen.PointIn(lastRow, 0.9), RawDragEventType.DragLeave,
                 new DataObject(), DragDropEffects.Move);
             Dispatcher.UIThread.RunJobs();
-            Assert.DoesNotContain(":dropafter", row.Classes);
+            Assert.Null(screen.View.Marker.Marked);
+            Assert.Equal(DropMark.None, TreeDropMark.GetMark(screen.RowOf(lastRow)));
         }
 
         [AvaloniaFact]
@@ -671,8 +682,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Drag(node, node, fraction, RawDragEventType.DragOver);
 
-            Assert.DoesNotContain(":dropbefore", screen.RowOf(node).Classes);
-            Assert.DoesNotContain(":dropafter", screen.RowOf(node).Classes);
+            Assert.False(IsMarkedBetween(screen, node));
             Assert.DoesNotContain(":droptarget", screen.RowOf(node).Classes);
         }
 
@@ -685,7 +695,7 @@ namespace CMiX.Studio.Avalonia.Tests
             // The first composition before the second one: the same place.
             screen.Drag(screen.Tree.Roots[0], next, 0.1, RawDragEventType.DragOver);
 
-            Assert.DoesNotContain(":dropbefore", screen.RowOf(next).Classes);
+            Assert.NotEqual(DropPosition.Before, MarkOf(screen, next));
         }
 
         [AvaloniaTheory]
@@ -714,8 +724,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Drag(screen.Tree.Roots[0], group, 0.5, RawDragEventType.DragOver);
 
             Assert.DoesNotContain(":droptarget", screen.RowOf(group).Classes);
-            Assert.DoesNotContain(":dropbefore", screen.RowOf(group).Classes);
-            Assert.DoesNotContain(":dropafter", screen.RowOf(group).Classes);
+            Assert.False(IsMarkedBetween(screen, group));
         }
 
         [AvaloniaFact]
@@ -728,7 +737,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Drag(nodeA, LastVisibleOf(nodeB), 0.9, RawDragEventType.Drop);
 
             Assert.Equal(new IControl[] { screen.B, screen.A }, screen.Project.CompositionManager.ManagerData.Items);
-            Assert.DoesNotContain(":dropafter", screen.RowOf(nodeB).Classes);
+            Assert.NotEqual(DropPosition.After, MarkOf(screen, nodeB));
         }
 
         [AvaloniaFact]

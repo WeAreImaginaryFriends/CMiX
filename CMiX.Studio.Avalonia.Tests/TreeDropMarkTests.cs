@@ -1,0 +1,157 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
+using CMiX.Studio.Avalonia.Views;
+using CMiX.UI.Panels;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+using Composition = CMiX.Core.Compositing.Composition;
+using Layer = CMiX.Core.Compositing.Layer;
+using Project = CMiX.Core.Compositing.Project;
+
+namespace CMiX.Studio.Avalonia.Tests
+{
+    // The drop mark of a row sets the pseudo classes of the row. The marker puts the bar on the right row.
+    public class TreeDropMarkTests : IDisposable
+    {
+        private Window? window;
+
+        public void Dispose() => window?.Close();
+
+        // Two compositions. The first has a layer, so the row above the second composition is a row of that layer.
+        private (ProjectTreeView View, ProjectTree Tree) Show()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var project = provider.GetRequiredService<Project>();
+            project.CompositionManager.AddItem(typeof(Composition));
+            project.CompositionManager.AddItem(typeof(Composition));
+            ((Composition)project.CompositionManager.ManagerData.Items[0]).LayerManager.AddItem(typeof(Layer));
+
+            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
+            TestServiceProviderFactory.ExpandAll(tree);
+            var view = new ProjectTreeView { DataContext = tree };
+            window = new Window { Content = view, Width = 500, Height = 700 };
+            window.Show();
+            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
+                panel.Duration = TimeSpan.Zero;
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
+            window.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+            return (view, tree);
+        }
+
+        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
+            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+
+        // The own mark line of an item: the last one in the tree order, because the rows under the item come before it.
+        private static Border DropLineOf(TreeViewItem item) =>
+            item.GetVisualDescendants().OfType<Border>().Last(border => border.Name == "DropLine");
+
+        private static bool HasClass(TreeViewItem item, string name) => item.Classes.Contains(name);
+
+        [AvaloniaFact]
+        public void SetMark_Target_SetsTheDropTargetClass()
+        {
+            var item = new TreeViewItem();
+
+            TreeDropMark.SetMark(item, DropMark.Target);
+
+            Assert.True(HasClass(item, ":droptarget"));
+            Assert.False(HasClass(item, ":dropgap"));
+            Assert.False(HasClass(item, ":droptop"));
+        }
+
+        [AvaloniaFact]
+        public void SetMark_GapBelow_SetsTheDropGapClass()
+        {
+            var item = new TreeViewItem();
+
+            TreeDropMark.SetMark(item, DropMark.GapBelow);
+
+            Assert.True(HasClass(item, ":dropgap"));
+            Assert.False(HasClass(item, ":droptarget"));
+            Assert.False(HasClass(item, ":droptop"));
+        }
+
+        [AvaloniaFact]
+        public void SetMark_None_ClearsEveryClass()
+        {
+            var item = new TreeViewItem();
+            TreeDropMark.SetMark(item, DropMark.GapTop);
+            Assert.True(HasClass(item, ":droptop"));
+
+            TreeDropMark.SetMark(item, DropMark.None);
+
+            Assert.False(HasClass(item, ":droptarget"));
+            Assert.False(HasClass(item, ":dropgap"));
+            Assert.False(HasClass(item, ":droptop"));
+        }
+
+        [AvaloniaFact]
+        public void Mark_BeforeARow_PutsTheGapBelowOnTheRowAbove()
+        {
+            var (view, tree) = Show();
+            var node = tree.Roots[1];
+            var above = TreeDropService.RowAbove(node)!;
+            Assert.NotSame(tree.Roots[0], above);
+
+            view.Marker.Mark(ItemOf(view, node), DropPosition.Before);
+
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(ItemOf(view, above)));
+            Assert.Equal(DropMark.None, TreeDropMark.GetMark(ItemOf(view, node)));
+            Assert.Same(ItemOf(view, node), view.Marker.Marked);
+            Assert.Equal(DropPosition.Before, view.Marker.MarkedPosition);
+        }
+
+        [AvaloniaFact]
+        public void Mark_BeforeTheFirstRow_PutsTheGapTopOnTheRow()
+        {
+            var (view, tree) = Show();
+            var item = ItemOf(view, tree.Roots[0]);
+
+            view.Marker.Mark(item, DropPosition.Before);
+
+            Assert.Equal(DropMark.GapTop, TreeDropMark.GetMark(item));
+        }
+
+        [AvaloniaFact]
+        public void Mark_None_ClearsTheMarksOfTheRowAndTheBar()
+        {
+            var (view, tree) = Show();
+            var node = tree.Roots[1];
+            var above = TreeDropService.RowAbove(node)!;
+            view.Marker.Mark(ItemOf(view, node), DropPosition.Before);
+
+            view.Marker.Mark(null, null);
+
+            Assert.Equal(DropMark.None, TreeDropMark.GetMark(ItemOf(view, above)));
+            Assert.Equal(DropMark.None, TreeDropMark.GetMark(ItemOf(view, node)));
+            Assert.Null(view.Marker.Marked);
+            Assert.Null(view.Marker.MarkedPosition);
+        }
+
+        [AvaloniaFact]
+        public void Mark_BeforeARow_ShowsTheDropLineOfTheRowAbove()
+        {
+            var (view, tree) = Show();
+            var node = tree.Roots[1];
+            var above = TreeDropService.RowAbove(node)!;
+
+            view.Marker.Mark(ItemOf(view, node), DropPosition.Before);
+            window!.UpdateLayout();
+
+            var line = DropLineOf(ItemOf(view, above));
+            var accent = ((ISolidColorBrush)Application.Current!.FindResource("AccentBrush")!).Color;
+            Assert.True(line.IsVisible);
+            Assert.Equal(accent, ((ISolidColorBrush)line.Background!).Color);
+            Assert.False(DropLineOf(ItemOf(view, node)).IsVisible);
+        }
+    }
+}

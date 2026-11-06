@@ -104,13 +104,17 @@ namespace CMiX.Studio.Avalonia.Tests
             // Before the third row. Before the second row is where the row is: no place, no bar.
             DragOver(view, source, group.Children[2], 0.2);
             var item = ItemOf(view, group.Children[2]);
-            Assert.Contains(":dropbefore", item.Classes);
+            Assert.Same(item, view.Marker.Marked);
+            Assert.Equal(DropPosition.Before, view.Marker.MarkedPosition);
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(ItemOf(view, TreeDropService.LastVisible(group.Children[1]))));
             Assert.True(SeenArea(LineOf(ItemOf(view, TreeDropService.LastVisible(group.Children[1])))) > 0, "The bar before the row is cut.");
 
             tree.EndDrag();
             tree.BeginDrag(group.Children[2]);
             DragOver(view, group.Children[2], group.Children[0], 0.2);
-            Assert.Contains(":dropbefore", ItemOf(view, group.Children[0]).Classes);
+            Assert.Same(ItemOf(view, group.Children[0]), view.Marker.Marked);
+            Assert.Equal(DropPosition.Before, view.Marker.MarkedPosition);
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(ItemOf(view, group)));
             Assert.True(SeenArea(LineOf(ItemOf(view, group))) > 0, "The bar before the first row is cut.");
         }
 
@@ -126,7 +130,9 @@ namespace CMiX.Studio.Avalonia.Tests
             DragOver(view, source, last.Children[0], 0.9);
 
             var item = ItemOf(view, last);
-            Assert.Contains(":dropafter", item.Classes);
+            Assert.Same(item, view.Marker.Marked);
+            Assert.Equal(DropPosition.After, view.Marker.MarkedPosition);
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(ItemOf(view, TreeDropService.LastVisible(last))));
             Assert.True(SeenArea(LineOf(ItemOf(view, TreeDropService.LastVisible(last)))) > 0, "The bar after the last row is cut.");
         }
 

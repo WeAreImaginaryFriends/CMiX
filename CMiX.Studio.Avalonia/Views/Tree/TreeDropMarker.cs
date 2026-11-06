@@ -6,15 +6,9 @@ using CMiX.Studio.Avalonia.ViewModels.Tree;
 
 namespace CMiX.Studio.Avalonia.Views
 {
-    // Shows the place of a drop on the rows of the project tree with pseudo classes. It keeps the marked row and its place.
+    // Shows the place of a drop on the rows of the project tree with TreeDropMark. It keeps the marked row and its place.
     public sealed class TreeDropMarker
     {
-        private const string DropBefore = ":dropbefore";
-        private const string DropAfter = ":dropafter";
-        private const string DropTarget = ":droptarget";
-        private const string DropGap = ":dropgap";
-        private const string DropTop = ":droptop";
-
         private readonly TreeRowIndex rows;
         private TreeViewItem? barItem;
 
@@ -31,18 +25,11 @@ namespace CMiX.Studio.Avalonia.Views
         public void Mark(TreeViewItem? item, DropPosition? position)
         {
             if (Marked != null)
-            {
-                var old = (IPseudoClasses)Marked.Classes;
-                old.Set(DropBefore, false);
-                old.Set(DropAfter, false);
-                old.Set(DropTarget, false);
-            }
+                TreeDropMark.SetMark(Marked, DropMark.None);
 
             if (barItem != null)
             {
-                var oldBar = (IPseudoClasses)barItem.Classes;
-                oldBar.Set(DropGap, false);
-                oldBar.Set(DropTop, false);
+                TreeDropMark.SetMark(barItem, DropMark.None);
                 barItem = null;
             }
 
@@ -51,18 +38,20 @@ namespace CMiX.Studio.Avalonia.Views
             if (item == null || position == null)
                 return;
 
-            ((IPseudoClasses)item.Classes).Set(
-                position == DropPosition.Before ? DropBefore : position == DropPosition.After ? DropAfter : DropTarget,
-                true);
+            if (position == DropPosition.Inside)
+            {
+                TreeDropMark.SetMark(item, DropMark.Target);
+                return;
+            }
 
-            if (position == DropPosition.Inside || item.DataContext is not TreeNode node)
+            if (item.DataContext is not TreeNode node)
                 return;
 
             // The bar is in the space under the row above the place: the last visible row of the block for a drop after the node.
             var above = position == DropPosition.After ? TreeDropService.LastVisible(node) : TreeDropService.RowAbove(node);
             var aboveItem = above == null ? null : TreeRows.ItemOfNode(item, above) ?? rows.FindItem(above);
             barItem = aboveItem ?? item;
-            ((IPseudoClasses)barItem.Classes).Set(aboveItem != null ? DropGap : DropTop, true);
+            TreeDropMark.SetMark(barItem, aboveItem != null ? DropMark.GapBelow : DropMark.GapTop);
         }
     }
 }

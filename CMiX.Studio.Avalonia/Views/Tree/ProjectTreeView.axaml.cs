@@ -48,6 +48,9 @@ namespace CMiX.Studio.Avalonia.Views
         // The item of each node. A test reads it.
         internal TreeRowIndex RowIndex => rowIndex;
 
+        // The mark of the drop. A test reads it.
+        internal TreeDropMarker Marker => marker;
+
         public ProjectTreeView()
         {
             InitializeComponent();
