@@ -63,6 +63,7 @@ namespace CMiX.Studio.Avalonia.Views
         // peer selects is brought into view here, and only its own row, not the rows under it.
         private ProjectTree? watched;
         private bool chosenByClick;
+        private bool attached;
 
         // A row asks to be brought into view when it gets the focus or the selection. For the choice of the user the request stops here:
         // it would scroll to show the whole block of the row.
@@ -79,11 +80,11 @@ namespace CMiX.Studio.Avalonia.Views
         {
             base.OnDataContextChanged(e);
 
-            if (watched != null)
+            if (attached && watched != null)
                 watched.PropertyChanged -= OnWatchedPropertyChanged;
 
             watched = DataContext as ProjectTree;
-            if (watched != null)
+            if (attached && watched != null)
                 watched.PropertyChanged += OnWatchedPropertyChanged;
         }
 
@@ -156,6 +157,12 @@ namespace CMiX.Studio.Avalonia.Views
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
+
+            // The tree view model listens only while the view is attached.
+            attached = true;
+            if (watched != null)
+                watched.PropertyChanged += OnWatchedPropertyChanged;
+
             scaledTopLevel = TopLevel.GetTopLevel(this);
             if (scaledTopLevel == null)
                 return;
@@ -166,6 +173,10 @@ namespace CMiX.Studio.Avalonia.Views
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            if (watched != null)
+                watched.PropertyChanged -= OnWatchedPropertyChanged;
+
+            attached = false;
             if (scaledTopLevel != null)
                 scaledTopLevel.ScalingChanged -= OnScalingChanged;
 

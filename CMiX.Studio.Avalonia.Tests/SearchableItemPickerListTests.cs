@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
@@ -434,6 +436,66 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(Search(list).IsFocused);
+        }
+
+        // A source that counts the handlers on its change event.
+        private sealed class CountingSource : IEnumerable<Item>, INotifyCollectionChanged
+        {
+            private NotifyCollectionChangedEventHandler? changed;
+            public List<Item> Items { get; } = new() { new Item("Cube"), new Item("Sphere") };
+            public int HandlerCount => changed?.GetInvocationList().Length ?? 0;
+
+            public event NotifyCollectionChangedEventHandler? CollectionChanged
+            {
+                add => changed += value;
+                remove => changed -= value;
+            }
+
+            public void Add(Item item)
+            {
+                Items.Add(item);
+                changed?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            public IEnumerator<Item> GetEnumerator() => Items.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [AvaloniaFact]
+        public void Detach_WhileWatchingAList_RemovesTheHandler()
+        {
+            var source = new CountingSource();
+            var list = new SearchableItemPickerList { ItemsSource = source, TextPath = nameof(Item.Name) };
+            var window = new Window { Content = list, Width = 400, Height = 600 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(1, source.HandlerCount);
+
+            window.Content = null;
+            Dispatcher.UIThread.RunJobs();
+            source.Add(new Item("Plane"));
+
+            Assert.Equal(0, source.HandlerCount);
+            Assert.Equal(2, list.Matches.Count);
+        }
+
+        [AvaloniaFact]
+        public void Attach_Again_WatchesTheListAgain()
+        {
+            var source = new CountingSource();
+            var list = new SearchableItemPickerList { ItemsSource = source, TextPath = nameof(Item.Name) };
+            var window = new Window { Content = list, Width = 400, Height = 600 };
+            window.Show();
+            window.Content = null;
+            Dispatcher.UIThread.RunJobs();
+            source.Add(new Item("Plane"));
+
+            window.Content = list;
+            Dispatcher.UIThread.RunJobs();
+            source.Add(new Item("Cone"));
+
+            Assert.Equal(1, source.HandlerCount);
+            Assert.Equal(4, list.Matches.Count);
         }
     }
 }

@@ -802,5 +802,39 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(new IControl[] { screen.A, screen.B }, screen.Project.CompositionManager.ManagerData.Items);
         }
+
+        // The number of handlers of the change event of the tree that belong to the view.
+        private static int HandlersOfView(ProjectTree tree, ProjectTreeView view)
+        {
+            var field = typeof(CommunityToolkit.Mvvm.ComponentModel.ObservableObject)
+                .GetField("PropertyChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var handler = (Delegate?)field.GetValue(tree);
+            return handler?.GetInvocationList().Count(item => ReferenceEquals(item.Target, view)) ?? 0;
+        }
+
+        [AvaloniaFact]
+        public void Detach_RemovesTheViewModelHandlers()
+        {
+            var screen = Show();
+            Assert.Equal(1, HandlersOfView(screen.Tree, screen.View));
+
+            screen.Window.Content = null;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(0, HandlersOfView(screen.Tree, screen.View));
+        }
+
+        [AvaloniaFact]
+        public void Attach_Again_ListensToTheViewModelAgain()
+        {
+            var screen = Show();
+            screen.Window.Content = null;
+            Dispatcher.UIThread.RunJobs();
+
+            screen.Window.Content = screen.View;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(1, HandlersOfView(screen.Tree, screen.View));
+        }
     }
 }

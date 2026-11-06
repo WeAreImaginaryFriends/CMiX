@@ -18,6 +18,7 @@ namespace CMiX.UI.Controls.Collection
     public partial class SearchableItemPickerList : ItemPickerBase
     {
         private INotifyCollectionChanged? _watched;
+        private bool _attached;
 
         static SearchableItemPickerList()
         {
@@ -60,18 +61,33 @@ namespace CMiX.UI.Controls.Collection
 
             // Each time the list appears it starts without a filter, with the cursor in the field.
             SearchText = string.Empty;
+            _attached = true;
+            if (_watched != null)
+                _watched.CollectionChanged += OnItemsChanged;
+
             Filter();
             Dispatcher.UIThread.Post(() => PART_Search.Focus(), DispatcherPriority.Input);
         }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            // The source list can outlive the control, so it must not keep the handler.
+            if (_watched != null)
+                _watched.CollectionChanged -= OnItemsChanged;
+
+            _attached = false;
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        // The control listens to the source only while it is attached.
         private void WatchItems(INotifyCollectionChanged? items)
         {
-            if (_watched != null)
+            if (_attached && _watched != null)
                 _watched.CollectionChanged -= OnItemsChanged;
 
             _watched = items;
 
-            if (_watched != null)
+            if (_attached && _watched != null)
                 _watched.CollectionChanged += OnItemsChanged;
 
             Filter();
