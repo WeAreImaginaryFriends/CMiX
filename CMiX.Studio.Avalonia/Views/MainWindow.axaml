@@ -78,7 +78,7 @@
                 <ColumnDefinition MinWidth="240" Width="*" />
             </Grid.ColumnDefinitions>
 
-        <!-- Each side shows what the user picks in the combo box at its top: the tree, the tabs, or the same thing on both sides. -->
+        <!-- Each side shows what the user picks with the icon button at its top: the tree, the tabs, or the same thing on both sides. -->
         <Views:SidePanelHost
             Grid.Column="0"
             Choice="{Binding LeftPanel, Mode=TwoWay}"
@@ -92,12 +92,12 @@
             Context="{Binding}" />
 
         <!-- The splitter lies over the edge between the two columns, on top of them, so it takes no room: there is no gap between
-             the panels. It is in the left column, at its right edge, and moves that edge. 2 of its width are in the tree, where the
-             scroll bar of the tree ends, and 6 in the right column. -->
+             the panels. It is in the left column, at its right edge, and moves that edge. The part as wide as the scroll bar margin is over the tree,
+             where the scroll bar of the tree ends. The rest is in the right column (see SplitterColumnOverlap). -->
         <GridSplitter
             Grid.Column="0"
             Width="{DynamicResource SplitterSize}"
-            Margin="0,0,-6,0"
+            Margin="{DynamicResource SplitterColumnOverlap}"
             HorizontalAlignment="Right"
             ResizeDirection="Columns"
             Theme="{StaticResource GridSplitterCMiX}" />

@@ -42,5 +42,19 @@ namespace CMiX.UI.Tests
             Assert.Equal(new Thickness(sm, 0), Space("TreeHeaderMargin"));
             Assert.Equal(new Thickness(sm), Space("TreeToolbarPadding"));
         }
+
+        [AvaloniaFact]
+        public void SplitterRowOverlap_IsMinusHalfTheSplitterSize()
+        {
+            Assert.Equal(new Thickness(0, -Size("SplitterSize") / 2), Space("SplitterRowOverlap"));
+        }
+
+        [AvaloniaFact]
+        public void SplitterColumnOverlap_IsMinusTheSplitterSizeLessTheScrollBarMargin()
+        {
+            var margin = Space("ScrollBarMargin");
+
+            Assert.Equal(new Thickness(0, 0, -(Size("SplitterSize") - margin.Right), 0), Space("SplitterColumnOverlap"));
+        }
     }
 }

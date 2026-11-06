@@ -27,6 +27,10 @@
     <x:Double x:Key="IndicatorSize">8</x:Double>
     <x:Double x:Key="SplitterSize">8</x:Double>
     <x:Double x:Key="SplitterIndicatorSize">2</x:Double>
+    <!-- A horizontal splitter lies over the edge between two rows: half of its height in each row. -->
+    <Thickness x:Key="SplitterRowOverlap">0,-4</Thickness>
+    <!-- A vertical splitter lies over the edge between two columns: SplitterSize less the scroll bar margin is in the right column. -->
+    <Thickness x:Key="SplitterColumnOverlap">0,0,-6,0</Thickness>
     <!-- The room of a scroll bar: ScrollBarThickness plus the two sides of ScrollBarMargin. A test pins the sum. -->
     <x:Double x:Key="ScrollBarSize">8</x:Double>
     <!-- The width of the vertical bar itself. -->

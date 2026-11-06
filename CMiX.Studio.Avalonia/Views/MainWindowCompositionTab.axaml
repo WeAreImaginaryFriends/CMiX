@@ -32,7 +32,7 @@
       <GridSplitter
           Grid.Row="0"
           Height="{DynamicResource SplitterSize}"
-          Margin="0,-4"
+          Margin="{DynamicResource SplitterRowOverlap}"
           VerticalAlignment="Bottom"
           Theme="{StaticResource GridSplitterCMiX}" />
     </Grid>
