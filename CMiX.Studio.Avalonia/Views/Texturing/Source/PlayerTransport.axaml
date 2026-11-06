@@ -1,0 +1,30 @@
+<Modulation:UserControlModulatable
+    x:Class="CMiX.Studio.Avalonia.Views.PlayerTransport"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
+    x:Name="playerTransport">
+
+    <!-- One panel: the rows share the corners and the spacing. The code behind adds or removes the Loop row. -->
+    <ui:StackPanelPositioned x:Name="transportPanel" Spacing="{DynamicResource SpacingXXS}">
+
+        <Modulation:ToggleButtonModulatable
+            Caption="Play"
+            DataContext="{Binding Playing}"
+            ModulatorManager="{Binding ModulatorManager, ElementName=playerTransport}" />
+
+        <Modulation:ToggleButtonModulatable
+            x:Name="loopRow"
+            Caption="Loop"
+            DataContext="{Binding Looping}"
+            ModulatorManager="{Binding ModulatorManager, ElementName=playerTransport}" />
+
+        <Modulation:ButtonMomentaryModulatable
+            Caption="Do Seek"
+            DataContext="{Binding DoSeek}"
+            ModulatorManager="{Binding ModulatorManager, ElementName=playerTransport}" />
+
+    </ui:StackPanelPositioned>
+
+</Modulation:UserControlModulatable>

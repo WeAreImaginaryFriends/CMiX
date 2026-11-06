@@ -2,7 +2,8 @@
     x:Class="CMiX.Studio.Avalonia.Views.BubbleNoise"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
 
     <StackPanel Spacing="{DynamicResource SpacingMD}">
 
@@ -37,16 +38,7 @@
 
         </ui:StackPanelPositioned>
 
-        <ui:ToggleButtonCaptioned
-            Caption="Use Composition Resolution"
-            IsChecked="{Binding UseCompositionResolution.Value}"
-            ResetCommand="{Binding UseCompositionResolution.ResetCommand}" />
-
-        <Border IsEnabled="{Binding !UseCompositionResolution.Value}">
-            <ui:Integer2
-                Caption="Resolution"
-                DataContext="{Binding Resolution}" />
-        </Border>
+        <Views:TextureResolution />
 
     </StackPanel>
 

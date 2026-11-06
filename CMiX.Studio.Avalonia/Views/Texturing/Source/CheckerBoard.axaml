@@ -26,16 +26,7 @@
         <Views:Transform2D
             DataContext="{Binding Transform2D}" />
 
-        <ui:ToggleButtonCaptioned
-            Caption="Use Composition Resolution"
-            IsChecked="{Binding UseCompositionResolution.Value}"
-            ResetCommand="{Binding UseCompositionResolution.ResetCommand}" />
-
-        <Border IsEnabled="{Binding !UseCompositionResolution.Value}">
-            <ui:Integer2
-                Caption="Resolution"
-                DataContext="{Binding Resolution}" />
-        </Border>
+        <Views:TextureResolution />
 
     </StackPanel>
 

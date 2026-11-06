@@ -1,0 +1,23 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.TextureResolution"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
+
+    <!-- The DataContext is the texture source. -->
+    <StackPanel Spacing="{DynamicResource SpacingMD}">
+
+        <ui:ToggleButtonCaptioned
+            Caption="Use Composition Resolution"
+            IsChecked="{Binding UseCompositionResolution.Value}"
+            ResetCommand="{Binding UseCompositionResolution.ResetCommand}" />
+
+        <Border IsEnabled="{Binding !UseCompositionResolution.Value}">
+            <ui:Integer2
+                Caption="Resolution"
+                DataContext="{Binding Resolution}" />
+        </Border>
+
+    </StackPanel>
+
+</UserControl>

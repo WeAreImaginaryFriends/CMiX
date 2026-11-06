@@ -2,30 +2,16 @@
     x:Class="CMiX.Studio.Avalonia.Views.VideoPlayer"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
     xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
     x:Name="videoPlayer">
 
-    <StackPanel>
+    <StackPanel Spacing="{DynamicResource SpacingMD}">
 
-        <!-- One panel: the rows share the corners and the spacing, like the Resolution below. -->
-        <ui:StackPanelPositioned Margin="0,0,0,8" Spacing="{DynamicResource SpacingXXS}">
-
-            <Modulation:ToggleButtonModulatable
-                Caption="Play"
-                DataContext="{Binding Playing}"
-                ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=videoPlayer}" />
-
-            <Modulation:ButtonMomentaryModulatable
-                Caption="Do Seek"
-                DataContext="{Binding DoSeek}"
-                ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=videoPlayer}" />
-
-        </ui:StackPanelPositioned>
+        <Views:PlayerTransport
+            ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=videoPlayer}" />
 
         <Views:AssetPathSelector
-            Margin="0,0,0,8"
             DataContext="{Binding AssetSelector}"
             ItemsSource="{Binding AssetRepository.Videos}"
             SelectedItem="{Binding Asset}" />
@@ -36,17 +22,7 @@
             Minimum="0"
             ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=videoPlayer}" />
 
-        <ui:ToggleButtonCaptioned
-            Margin="0,8"
-            Caption="Use Composition Resolution"
-            IsChecked="{Binding UseCompositionResolution.Value}"
-            ResetCommand="{Binding UseCompositionResolution.ResetCommand}" />
-
-        <Border IsEnabled="{Binding !UseCompositionResolution.Value}">
-            <ui:Integer2
-                Caption="Resolution"
-                DataContext="{Binding Resolution}" />
-        </Border>
+        <Views:TextureResolution />
 
     </StackPanel>
 
