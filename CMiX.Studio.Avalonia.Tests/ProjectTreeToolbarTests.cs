@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -510,6 +511,43 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Click(screen.ButtonOf("RemoveButton"));
             Assert.Equal(2, screen.Scene.A.LayerManager.ManagerData.Items.Count);
+        }
+
+        [AvaloniaFact]
+        public void EveryToolbarButton_HasATip()
+        {
+            var screen = Show();
+            var expected = new Dictionary<string, string>
+            {
+                ["AddButton"] = "Add",
+                ["DuplicateButton"] = "Duplicate",
+                ["MoveUpButton"] = "Move up",
+                ["MoveDownButton"] = "Move down",
+                ["RemoveButton"] = "Remove"
+            };
+
+            foreach (var (name, tip) in expected)
+                Assert.Equal(tip, ToolTip.GetTip(screen.ButtonOf(name)));
+        }
+
+        // The look of the buttons before the change to ButtonIcon: 24 by 24, a transparent corner of 2, an icon of 16 at 0.9.
+        [AvaloniaFact]
+        public void TheButtons_KeepTheLookOfTheToolbar()
+        {
+            var screen = Show();
+
+            foreach (var name in new[] { "AddButton", "DuplicateButton", "MoveUpButton", "MoveDownButton", "RemoveButton" })
+            {
+                var button = screen.ButtonOf(name);
+                var border = button.GetVisualDescendants().OfType<Border>().First();
+                var icon = button.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>().Single();
+
+                Assert.Equal(new Size(24, 24), button.Bounds.Size);
+                Assert.Equal(Colors.Transparent, ((ISolidColorBrush)border.Background!).Color);
+                Assert.Equal(new CornerRadius(2), border.CornerRadius);
+                Assert.Equal(0.9, icon.Opacity);
+                Assert.Equal(new Size(16, 16), icon.Bounds.Size);
+            }
         }
     }
 }

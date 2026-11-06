@@ -159,6 +159,7 @@
     <ControlTheme x:Key="ToggleButtonVisibility" BasedOn="{StaticResource ToggleButtonIcon}" TargetType="ToggleButton">
         <!-- A drag over these buttons sets them all to one state (see ToggleDragBehavior). -->
         <Setter Property="behaviors:ToggleDrag.Group" Value="visibility" />
+        <Setter Property="ToolTip.Tip" Value="Visible" />
 
         <Style Selector="^ /template/ ui|AppIcon#icon">
             <Setter Property="IconKey" Value="Visible" />

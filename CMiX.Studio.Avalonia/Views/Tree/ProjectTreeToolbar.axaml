@@ -8,67 +8,37 @@
          of the tree. A button is disabled when the selected node has nothing to do for it. -->
     <DockPanel LastChildFill="False">
 
-        <Button
+        <ui:ButtonIcon
             x:Name="AddButton"
-            Height="{DynamicResource ControlHeightMD}"
-            Width="{DynamicResource ControlHeightMD}"
-            Background="Transparent"
             Click="OnAddClick"
             IsEnabled="{Binding HasAdds}"
-            Theme="{StaticResource ButtonRounded}">
-            <Button.Content>
-                <ui:AppIcon Opacity="0.9" IconKey="Add" Size="{DynamicResource IconSizeXS}" />
-            </Button.Content>
-        </Button>
+            IconKey="Add"
+            Tip="Add" />
 
-        <Button
+        <ui:ButtonIcon
             x:Name="DuplicateButton"
-            Height="{DynamicResource ControlHeightMD}"
-            Width="{DynamicResource ControlHeightMD}"
-            Background="Transparent"
             Command="{Binding DuplicateItemCommand}"
-            Theme="{StaticResource ButtonRounded}">
-            <Button.Content>
-                <ui:AppIcon Opacity="0.9" IconKey="Duplicate" Size="{DynamicResource IconSizeXS}" />
-            </Button.Content>
-        </Button>
+            IconKey="Duplicate"
+            Tip="Duplicate" />
 
-        <Button
+        <ui:ButtonIcon
             x:Name="MoveUpButton"
-            Height="{DynamicResource ControlHeightMD}"
-            Width="{DynamicResource ControlHeightMD}"
-            Background="Transparent"
             Command="{Binding MoveItemUpCommand}"
-            Theme="{StaticResource ButtonRounded}">
-            <Button.Content>
-                <ui:AppIcon Opacity="0.9" IconKey="ArrowUp" Size="{DynamicResource IconSizeXS}" />
-            </Button.Content>
-        </Button>
+            IconKey="ArrowUp"
+            Tip="Move up" />
 
-        <Button
+        <ui:ButtonIcon
             x:Name="MoveDownButton"
-            Height="{DynamicResource ControlHeightMD}"
-            Width="{DynamicResource ControlHeightMD}"
-            Background="Transparent"
             Command="{Binding MoveItemDownCommand}"
-            Theme="{StaticResource ButtonRounded}">
-            <Button.Content>
-                <ui:AppIcon Opacity="0.9" IconKey="ArrowDown" Size="{DynamicResource IconSizeXS}" />
-            </Button.Content>
-        </Button>
+            IconKey="ArrowDown"
+            Tip="Move down" />
 
-        <Button
+        <ui:ButtonIcon
             x:Name="RemoveButton"
-            Height="{DynamicResource ControlHeightMD}"
-            Width="{DynamicResource ControlHeightMD}"
-            Background="Transparent"
             Command="{Binding RemoveItemCommand}"
             DockPanel.Dock="Right"
-            Theme="{StaticResource ButtonRounded}">
-            <Button.Content>
-                <ui:AppIcon Opacity="0.9" IconKey="Remove" Size="{DynamicResource IconSizeXS}" />
-            </Button.Content>
-        </Button>
+            IconKey="Remove"
+            Tip="Remove" />
 
     </DockPanel>
 </UserControl>

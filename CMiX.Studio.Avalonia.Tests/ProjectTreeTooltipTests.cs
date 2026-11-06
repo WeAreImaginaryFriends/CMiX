@@ -89,7 +89,7 @@ namespace CMiX.Studio.Avalonia.Tests
             foreach (var node in new[] { tree.Roots[0], tree.Roots[0].Children[0] })
             {
                 var toggle = ItemOf(view, node).GetVisualDescendants().OfType<RowToggles>().First()
-                    .GetVisualDescendants().OfType<ToggleButton>().Single(button => ToolTip.GetTip(button) != null);
+                    .GetVisualDescendants().OfType<ToggleButton>().Single(button => Equals(ToolTip.GetTip(button), "Mask"));
 
                 Assert.Equal(new[] { "Mask" }, TextOfTooltip(toggle));
             }
@@ -100,8 +100,21 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (view, tree) = Show();
             var toggle = ItemOf(view, tree.Roots[0]).GetVisualDescendants().OfType<RowToggles>().First()
-                .GetVisualDescendants().OfType<ToggleButton>().Single(button => ToolTip.GetTip(button) != null);
+                .GetVisualDescendants().OfType<ToggleButton>().Single(button => Equals(ToolTip.GetTip(button), "Mask"));
 
+            Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(toggle));
+        }
+
+        [AvaloniaFact]
+        public void VisibilityToggle_HasTheVisibleTip()
+        {
+            var (view, tree) = Show();
+            var toggle = ItemOf(view, tree.Roots[0]).GetVisualDescendants().OfType<RowToggles>().First()
+                .GetVisualDescendants().OfType<ToggleButton>()
+                .First(button => ReferenceEquals(button.Theme, Application.Current!.FindResource("ToggleButtonVisibility")));
+
+            Assert.Equal("Visible", ToolTip.GetTip(toggle));
+            Assert.Equal(new[] { "Visible" }, TextOfTooltip(toggle));
             Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(toggle));
         }
 
