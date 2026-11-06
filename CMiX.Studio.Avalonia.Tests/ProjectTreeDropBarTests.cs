@@ -2,11 +2,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
@@ -69,13 +68,17 @@ namespace CMiX.Studio.Avalonia.Tests
             return row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height * fraction), window!)!.Value;
         }
 
+        // Drags the source row over the target and keeps the button down.
         private void DragOver(ProjectTreeView view, TreeNode source, TreeNode target, double fraction)
         {
-            var data = new DataObject();
-            data.Set(ProjectTreeView.NodeFormat, source);
-            var point = PointIn(view, target, fraction);
-            window!.DragDrop(point, RawDragEventType.DragEnter, data, DragDropEffects.Move);
-            window.DragDrop(point, RawDragEventType.DragOver, data, DragDropEffects.Move);
+            TreeDrag.Over(window!, PointIn(view, source, 0.5), PointIn(view, target, fraction));
+            Settle();
+        }
+
+        // Ends the drag without a drop.
+        private void Cancel(ProjectTreeView view, TreeNode under)
+        {
+            TreeDrag.Cancel(window!, PointIn(view, under, 0.5));
             Settle();
         }
 
@@ -97,9 +100,8 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void TheBarBeforeARowOfAList_IsSeen_ForTheFirstRowAndForTheOthers()
         {
-            var (view, tree, _, group) = Show();
+            var (view, _, _, group) = Show();
             var source = group.Children[0];
-            tree.BeginDrag(source);
 
             // Before the third row. Before the second row is where the row is: no place, no bar.
             DragOver(view, source, group.Children[2], 0.2);
@@ -109,8 +111,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(ItemOf(view, TreeDropService.LastVisible(group.Children[1]))));
             Assert.True(SeenArea(LineOf(ItemOf(view, TreeDropService.LastVisible(group.Children[1])))) > 0, "The bar before the row is cut.");
 
-            tree.EndDrag();
-            tree.BeginDrag(group.Children[2]);
+            Cancel(view, group.Children[2]);
             DragOver(view, group.Children[2], group.Children[0], 0.2);
             Assert.Same(ItemOf(view, group.Children[0]), view.Marker.Marked);
             Assert.Equal(DropPosition.Before, view.Marker.MarkedPosition);
@@ -122,10 +123,9 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void TheBarAfterTheLastRowOfAList_IsSeen()
         {
-            var (view, tree, _, group) = Show();
+            var (view, _, _, group) = Show();
             var source = group.Children[0];
             var last = group.Children[2];
-            tree.BeginDrag(source);
 
             DragOver(view, source, last.Children[0], 0.9);
 
@@ -139,20 +139,15 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void ARowOfModifiers_CanBeDroppedOnTheGroupModifiers_AndGoesToTheEnd()
         {
-            var (view, tree, entity, group) = Show();
+            var (view, _, entity, group) = Show();
             var source = group.Children[0];
             var moved = source.Item;
-            var data = new DataObject();
-            data.Set(ProjectTreeView.NodeFormat, source);
-            tree.BeginDrag(source);
-            Settle();
 
-            Assert.True(group.IsDropCandidate);
             DragOver(view, source, group, 0.5);
+            Assert.True(group.IsDropCandidate);
             Assert.Contains(":droptarget", ItemOf(view, group).Classes);
 
-            window!.DragDrop(PointIn(view, group, 0.5), RawDragEventType.Drop, data, DragDropEffects.Move);
-            Dispatcher.UIThread.RunJobs();
+            TreeDrag.Release(window!, PointIn(view, group, 0.5));
 
             Assert.Same(moved, entity.ModifierManager.ManagerData.Items[^1]);
             Assert.Equal(3, entity.ModifierManager.ManagerData.Items.Count);

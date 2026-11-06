@@ -39,16 +39,23 @@ namespace CMiX.Studio.Avalonia.Views
         // True while the timer runs or the wheel source is active.
         public bool IsRunning => timer.IsEnabled || wheelSource.IsActive;
 
-        // The pointer of the drag, in the coordinates of the scroll viewer. Null when the pointer is not known.
-        // A Track cancels a stop that StopDeferred posted.
-        public void Track(double? y)
+        // The pointer of a file drag, in the coordinates of the scroll viewer. Null when the pointer is not known.
+        // The system sends no wheel during a file drag, so the wheel source starts. A Track cancels a stop that StopDeferred posted.
+        public void Track(double? y) => Track(y, true);
+
+        // The pointer of a row drag. The wheel of a row drag comes as a pointer event (see TreeRowDrag), so the wheel source stays off.
+        public void TrackRows(double? y) => Track(y, false);
+
+        private void Track(double? y, bool withWheelSource)
         {
             if (disposed)
                 return;
 
             pendingStop = null;
             dragY = y;
-            wheelSource.Start(steps => Dispatcher.UIThread.Post(() => ScrollByWheel(steps)));
+            if (withWheelSource)
+                wheelSource.Start(steps => Dispatcher.UIThread.Post(() => ScrollByWheel(steps)));
+
             if (!timer.IsEnabled)
                 timer.Start();
         }

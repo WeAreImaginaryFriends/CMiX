@@ -4,10 +4,8 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -26,30 +24,30 @@ using LayerModel = CMiX.Core.Compositing.Layer;
 
 namespace CMiX.Studio.Avalonia.Views
 {
-    // The tree of the project. A node is dragged to reorder it in its list.
-    // A layer can also go to another composition. TreeDropService holds the rules.
+    // The tree of the project. A row is dragged with the pointer to reorder it in its list (see TreeRowDrag).
+    // A layer can also go to another composition. TreeDropService holds the rules. Files from the file manager drop on the tree too.
     public partial class ProjectTreeView : UserControl
     {
-        public const string NodeFormat = "CMiX.TreeNode";
-
         // The space between two rows at a screen of 100% (see TreeRowMetrics).
         public const double RowGap = TreeRowMetrics.RowGap;
-
-        private const double DragThreshold = 4.0;
 
         private readonly TreeRowMetrics rowMetrics;
         private readonly TreeRowIndex rowIndex;
         private readonly TreeDropMarker marker;
         private readonly TreeScrollAnchor scrollAnchor;
+        private readonly TreeRowDrag rowDrag;
 
+        // The node of the row that the left button pressed and that can be dragged. A drag clears it.
         private TreeNode? pressedNode;
-        private Point pressPoint;
 
         // The item of each node. A test reads it.
         internal TreeRowIndex RowIndex => rowIndex;
 
         // The mark of the drop. A test reads it.
         internal TreeDropMarker Marker => marker;
+
+        // The drag of a row. A test reads it.
+        internal TreeRowDrag RowDrag => rowDrag;
 
         public ProjectTreeView()
         {
@@ -59,11 +57,14 @@ namespace CMiX.Studio.Avalonia.Views
             rowIndex = new TreeRowIndex(treeView);
             marker = new TreeDropMarker(rowIndex);
             scrollAnchor = new TreeScrollAnchor(treeView, rowIndex, () => ScrollerOfTree);
+            rowDrag = new TreeRowDrag(treeView, () => DataContext as ProjectTree, marker, () => AutoScroller, scrollAnchor, () => ScrollerOfTree);
 
             DragDrop.SetAllowDrop(treeView, true);
             treeView.AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
             treeView.AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Tunnel);
             treeView.AddHandler(PointerReleasedEvent, OnPointerReleased, RoutingStrategies.Tunnel);
+            treeView.AddHandler(PointerCaptureLostEvent, OnPointerCaptureLost);
+            treeView.AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
             treeView.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
             treeView.AddHandler(DragDrop.DragOverEvent, OnDragOver);
             treeView.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
@@ -83,9 +84,6 @@ namespace CMiX.Studio.Avalonia.Views
         private ProjectTree? watched;
         private bool attached;
 
-        // True while the view drops a node. The drop keeps the view where it is (see OnDrop).
-        private bool dropping;
-
         // The row border that RevealRow brings into view.
         private Visual? revealTarget;
 
@@ -97,11 +95,19 @@ namespace CMiX.Studio.Avalonia.Views
                 e.Handled = true;
         }
 
+        // Escape ends a drag of a row without a drop.
         // Avalonia runs the key bindings of the view (the gestures of the map) before this handler. The navigation keys move the soft
         // selection only (see ProjectTree.SoftSelectedNode). The tree view does not see them, so they select nothing. A navigation key
         // with a modifier does nothing. A key in a name box stays in the name box.
         private void OnKeyDownTunnel(object? sender, KeyEventArgs e)
         {
+            if (e.Key == Key.Escape && rowDrag.IsDragging)
+            {
+                rowDrag.Cancel();
+                e.Handled = true;
+                return;
+            }
+
             if (watched is not { } tree || IsInTextBox(e.Source) || !IsNavigationKey(e.Key))
                 return;
 
@@ -197,7 +203,7 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(ProjectTree.SelectedNode) || dropping || watched?.SelectedNode is not { } node
+            if (e.PropertyName != nameof(ProjectTree.SelectedNode) || rowDrag.IsDropping || watched?.SelectedNode is not { } node
                 || watched.Origin is not (SelectionOrigin.Program or SelectionOrigin.Peer))
                 return;
 
@@ -251,6 +257,7 @@ namespace CMiX.Studio.Avalonia.Views
                 scaledTopLevel.ScalingChanged -= OnScalingChanged;
 
             scaledTopLevel = null;
+            rowDrag.Cancel();
             autoScroller?.Dispose();
             autoScroller = null;
             base.OnDetachedFromVisualTree(e);
@@ -348,49 +355,26 @@ namespace CMiX.Studio.Avalonia.Views
         {
             pressedNode = null;
             chosenNode = null;
-            if (!e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed || IsEditor(e.Source))
+            if (rowDrag.IsDragging || !e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed || IsEditor(e.Source))
                 return;
 
             var node = TreeRows.ItemOf(e.Source)?.DataContext as TreeNode;
             // The toggles at the right of a row never start a drag, not even the space around them.
             pressedNode = node != null && !IsInToggles(e.Source) && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
-            pressPoint = e.GetPosition(treeView);
             chosenNode = node;
+            rowDrag.Press(pressedNode, e.GetPosition(treeView));
         }
 
-        private async void OnPointerMoved(object? sender, PointerEventArgs e)
+        private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
-            if (pressedNode == null || !e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed)
+            if (!e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed)
                 return;
 
-            var distance = e.GetPosition(treeView) - pressPoint;
-            if (Math.Abs(distance.X) < DragThreshold && Math.Abs(distance.Y) < DragThreshold)
-                return;
-
-            var node = pressedNode;
-            pressedNode = null;
-            chosenNode = null;
-
-            var data = new DataObject();
-            data.Set(NodeFormat, node);
-
-            // The tree shows every row that can take the node for as long as the drag goes on.
-            var tree = DataContext as ProjectTree;
-            tree?.BeginDrag(node);
-            try
+            rowDrag.Move(e.GetPosition(treeView), e);
+            if (rowDrag.IsDragging)
             {
-                await DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine($"ProjectTreeView: the drag failed. {exception}");
-            }
-            finally
-            {
-                ShowBlockReason(null);
-                tree?.EndDrag();
-                autoScroller?.StopNow();
-                marker.Mark(null, null);
+                pressedNode = null;
+                chosenNode = null;
             }
         }
 
@@ -399,10 +383,25 @@ namespace CMiX.Studio.Avalonia.Views
             var node = chosenNode;
             pressedNode = null;
             chosenNode = null;
+            rowDrag.Release(e.GetPosition(treeView));
             if (node == null || e.InitialPressMouseButton != MouseButton.Left || !IsOverRow(node, e))
                 return;
 
             RaiseEvent(new NodeChosenEventArgs(NodeChosenEvent, this, node));
+        }
+
+        // The capture goes when the window loses the pointer or the tree leaves the window: the drag ends without a drop.
+        private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e) => rowDrag.Cancel();
+
+        // The wheel during a drag of a row scrolls the tree by rows (see DragAutoScroller). The scroll viewer does not see it.
+        private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+        {
+            if (!rowDrag.IsDragging)
+                return;
+
+            var steps = (int)Math.Round(e.Delta.Y);
+            rowDrag.Wheel(steps != 0 ? steps : Math.Sign(e.Delta.Y));
+            e.Handled = true;
         }
 
         // True when the pointer is on the row border of the node.
@@ -411,7 +410,29 @@ namespace CMiX.Studio.Avalonia.Views
             && TreeRows.RowBorderOf(item) is { } border
             && new Rect(border.Bounds.Size).Contains(e.GetPosition(border));
 
-        // The local paths of the files and folders of a drag from the file explorer. A drag of a node has none.
+        // The tree scrolls while a drag is near its top or bottom edge, and with the mouse wheel (see DragAutoScroller).
+        // The scroller is made at the first drag and goes away when the view leaves the window.
+        private DragAutoScroller? autoScroller;
+
+        private DragAutoScroller AutoScroller =>
+            autoScroller ??= new DragAutoScroller(
+                (DataContext as ProjectTree)?.DragWheelSource ?? new NoDragWheelSource(), () => ScrollerOfTree, () => rowMetrics.RowPitch);
+
+        private ScrollViewer? ScrollerOfTree =>
+            treeView.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+
+        // True while the scroll of a drag runs.
+        public bool IsAutoScrolling => autoScroller?.IsRunning ?? false;
+
+        public void ScrollByWheel(int steps) => autoScroller?.ScrollByWheel(steps);
+
+        public double AutoScrollStep() => autoScroller?.AutoScrollStep() ?? 0;
+
+        // The files and folders from the file manager come as a drag of the system. The tree is their drop target.
+        // Any other drag of the system does nothing here: a row of the tree is dragged with the pointer (see TreeRowDrag).
+        private static bool IsFileDrag(DragEventArgs e) => e.Data.Contains(DataFormats.Files);
+
+        // The local paths of the files and folders of the drag.
         private static List<string> PathsOf(DragEventArgs e) =>
             (e.Data.GetFiles() ?? Enumerable.Empty<IStorageItem>())
                 .Select(item => item.TryGetLocalPath())
@@ -419,10 +440,24 @@ namespace CMiX.Studio.Avalonia.Views
                 .Select(path => path!)
                 .ToList();
 
+        private void TrackFilesPointer(DragEventArgs e) =>
+            AutoScroller.Track(ScrollerOfTree is { } scroller ? e.GetPosition(scroller).Y : null);
+
+        // A leave of one row comes with the enter of the next row. The enter keeps the scroll of the drag running.
+        private void OnDragEnter(object? sender, DragEventArgs e)
+        {
+            if (IsFileDrag(e))
+                TrackFilesPointer(e);
+        }
+
         // Files over the tree: the row under the pointer looks hovered when that row takes the files itself (see
         // ProjectTree.IsPathTarget). Over a child of a layer, or over the space under the rows, nothing is marked.
-        private void OnFilesDragOver(DragEventArgs e)
+        private void OnDragOver(object? sender, DragEventArgs e)
         {
+            if (!IsFileDrag(e))
+                return;
+
+            TrackFilesPointer(e);
             e.Handled = true;
             e.DragEffects = DragDropEffects.None;
             marker.Mark(null, null);
@@ -436,166 +471,23 @@ namespace CMiX.Studio.Avalonia.Views
                 marker.Mark(hoveredItem, DropPosition.Inside);
         }
 
-        private void OnFilesDrop(DragEventArgs e)
-        {
-            e.Handled = true;
-            marker.Mark(null, null);
-
-            if (DataContext is ProjectTree tree)
-                tree.DropPaths(TreeRows.ItemOf(e.Source)?.DataContext as TreeNode, PathsOf(e));
-        }
-
-        // The tree scrolls while a drag is near its top or bottom edge, and with the mouse wheel (see DragAutoScroller).
-        // The scroller is made at the first drag and goes away when the view leaves the window.
-        private DragAutoScroller? autoScroller;
-
-        private ScrollViewer? ScrollerOfTree =>
-            treeView.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
-
-        // True while the scroll of a drag runs.
-        public bool IsAutoScrolling => autoScroller?.IsRunning ?? false;
-
-        private void TrackDragPointer(DragEventArgs e)
-        {
-            autoScroller ??= new DragAutoScroller(
-                (DataContext as ProjectTree)?.DragWheelSource ?? new NoDragWheelSource(), () => ScrollerOfTree, () => rowMetrics.RowPitch);
-            autoScroller.Track(ScrollerOfTree is { } scroller ? e.GetPosition(scroller).Y : null);
-        }
-
-        public void ScrollByWheel(int steps) => autoScroller?.ScrollByWheel(steps);
-
-        public double AutoScrollStep() => autoScroller?.AutoScrollStep() ?? 0;
-
-        // A leave of one row comes with the enter of the next row. The enter keeps the scroll of the drag running.
-        private void OnDragEnter(object? sender, DragEventArgs e) => TrackDragPointer(e);
-
-        private void OnDragOver(object? sender, DragEventArgs e)
-        {
-            TrackDragPointer(e);
-
-            if (e.Data.Contains(DataFormats.Files))
-            {
-                OnFilesDragOver(e);
-                return;
-            }
-
-            e.DragEffects = DragDropEffects.None;
-            e.Handled = true;
-
-            var (source, item, target, position) = Read(e);
-            ShowBlockReason(source != null ? TreeRows.ItemOf(e.Source) : null);
-
-            // A node of the tree always shows the move cursor. The cursor for a drop that is not possible is a red icon,
-            // which does not fit the look of the app. The mark tells where a drop works: no mark, no move.
-            if (source != null)
-                e.DragEffects = DragDropEffects.Move;
-
-            if (DataContext is not ProjectTree tree || source == null || item == null || target == null || position == null
-                || !tree.CanDrop(source, target, position.Value))
-            {
-                marker.Mark(null, null);
-                return;
-            }
-
-            marker.Mark(item, position);
-        }
-
         private void OnDragLeave(object? sender, DragEventArgs e)
         {
             // A leave also comes each time the pointer goes from one row to the next. The next enter or over cancels the stop.
             autoScroller?.StopDeferred();
-
             marker.Mark(null, null);
-            ShowBlockReason(null);
         }
 
-        // The row whose tooltip gives the reason of its block.
-        private Control? blockTip;
-
-        // A drag sends no pointer events to the rows, so the tooltip of a blocked row under the pointer opens from here. Null closes it.
-        private void ShowBlockReason(TreeViewItem? hovered)
+        private void OnDrop(object? sender, DragEventArgs e)
         {
-            var row = hovered?.DataContext is TreeNode { IsDropBlocked: true } ? TreeRows.RowBorderOf(hovered) : null;
-            if (ReferenceEquals(row, blockTip))
+            if (!IsFileDrag(e))
                 return;
 
-            if (blockTip != null)
-                ToolTip.SetIsOpen(blockTip, false);
-
-            blockTip = row;
-            if (row != null)
-                ToolTip.SetIsOpen(row, true);
-        }
-
-        private async void OnDrop(object? sender, DragEventArgs e)
-        {
-            try
-            {
-                autoScroller?.StopNow();
-
-                if (e.Data.Contains(DataFormats.Files))
-                {
-                    OnFilesDrop(e);
-                    return;
-                }
-
-                e.Handled = true;
-                marker.Mark(null, null);
-                ShowBlockReason(null);
-
-                var (source, _, target, position) = Read(e);
-                // A blocked row shows no mark, so it takes no drop.
-                if (DataContext is not ProjectTree tree || source == null || target == null || position == null
-                    || !tree.CanDrop(source, target, position.Value))
-                    return;
-
-                // A drop changes the number of rows above and under the view. The tree must not jump: the first row in view stays where it
-                // is, and the tree does not scroll to the moved row. The move is done before the first await of DropAsync.
-                var anchor = scrollAnchor.CaptureAnchor(source);
-
-                Task drop;
-                dropping = true;
-                try
-                {
-                    drop = tree.DropAsync(source, target, position.Value);
-                }
-                finally
-                {
-                    dropping = false;
-                }
-
-                scrollAnchor.RestoreAnchor(anchor);
-                Dispatcher.UIThread.Post(() => scrollAnchor.RestoreAnchor(anchor), DispatcherPriority.Loaded);
-                await drop;
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine($"ProjectTreeView: the drop failed. {exception}");
-            }
-        }
-
-        // The dragged node, the item that takes the drop, its node, and the place of the drop. The item that takes the drop
-        // is the row under the pointer or one of its parents (see ProjectTree.Locate). It has no place when no drop is offered here.
-        private (TreeNode? Source, TreeViewItem? Item, TreeNode? Target, DropPosition? Position) Read(DragEventArgs e)
-        {
-            var source = e.Data.Get(NodeFormat) as TreeNode;
-            var hoveredItem = TreeRows.ItemOf(e.Source);
-            if (source == null || hoveredItem?.DataContext is not TreeNode hovered || DataContext is not ProjectTree tree)
-                return (source, null, null, null);
-
-            var header = TreeRows.RowBorderOf(hoveredItem);
-            var fraction = header == null || header.Bounds.Height <= 0
-                ? 0.5
-                : e.GetPosition(header).Y / header.Bounds.Height;
-
-            // The pointer is in the space between two rows, not on a row: the drop stays where it was.
-            if ((fraction < 0 || fraction > 1) && marker.Marked is { DataContext: TreeNode markedNode } marked && marker.MarkedPosition is { } markedPosition)
-                return (source, marked, markedNode, markedPosition);
-
-            if (tree.Locate(source, hovered, fraction) is not { } place)
-                return (source, null, null, null);
-
-            return (source, TreeRows.ItemOfNode(hoveredItem, place.Target), place.Target, place.Position);
+            autoScroller?.StopNow();
+            e.Handled = true;
+            marker.Mark(null, null);
+            if (DataContext is ProjectTree tree)
+                tree.DropPaths(TreeRows.ItemOf(e.Source)?.DataContext as TreeNode, PathsOf(e));
         }
     }
 }

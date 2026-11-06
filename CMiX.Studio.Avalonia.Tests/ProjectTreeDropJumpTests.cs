@@ -2,11 +2,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,18 +63,16 @@ namespace CMiX.Studio.Avalonia.Tests
         private static IEnumerable<TreeNode> All(IEnumerable<TreeNode> nodes) =>
             nodes.SelectMany(node => new[] { node }.Concat(All(node.Children)));
 
-        private void Drop(ProjectTreeView view, ProjectTree tree, TreeNode source, TreeNode target)
+        private Point Center(ProjectTreeView view, TreeNode node)
         {
-            var data = new DataObject();
-            data.Set(ProjectTreeView.NodeFormat, source);
-            var row = RowOf(view, target);
-            var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window!)!.Value;
-            tree.BeginDrag(source);
-            window!.DragDrop(point, RawDragEventType.DragEnter, data, DragDropEffects.Move);
-            window.DragDrop(point, RawDragEventType.DragOver, data, DragDropEffects.Move);
-            window.DragDrop(point, RawDragEventType.DragOver, data, DragDropEffects.Move);
-            window.DragDrop(point, RawDragEventType.Drop, data, DragDropEffects.Move);
-            tree.EndDrag();
+            var row = RowOf(view, node);
+            return row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window!)!.Value;
+        }
+
+        // Drags the source row to the target row and drops it on its middle.
+        private void Drop(ProjectTreeView view, TreeNode source, TreeNode target)
+        {
+            TreeDrag.Drop(window!, Center(view, source), Center(view, target));
             Settle();
         }
 
@@ -92,7 +89,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var offset = scroller.Offset.Y;
             var top = Top(view, kept);
 
-            Drop(view, tree, source, target);
+            Drop(view, source, target);
 
             Assert.Equal(7, target.Children.Count(node => node.Item != null));
             Assert.Equal(offset, scroller.Offset.Y, 1);
@@ -111,7 +108,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var target = layers[^1];
             var offset = scroller.Offset.Y;
 
-            Drop(view, tree, source, target);
+            Drop(view, source, target);
 
             Assert.Equal(offset, scroller.Offset.Y, 1);
         }

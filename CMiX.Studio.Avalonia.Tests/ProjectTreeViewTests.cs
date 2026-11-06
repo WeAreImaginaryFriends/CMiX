@@ -4,13 +4,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls.String;
@@ -47,23 +46,18 @@ namespace CMiX.Studio.Avalonia.Tests
                 return header.TranslatePoint(new Point(header.Bounds.Width / 2, header.Bounds.Height * fraction), Window)!.Value;
             }
 
-            public void Drag(TreeNode source, TreeNode target, double fraction, RawDragEventType last)
+            // Drags the source row over the target and keeps the button down.
+            public void DragOver(TreeNode source, TreeNode target, double fraction)
             {
-                var data = new DataObject();
-                data.Set(ProjectTreeView.NodeFormat, source);
+                TreeDrag.Render(Window);
+                TreeDrag.Over(Window, PointIn(source, 0.5), PointIn(target, fraction));
+            }
 
-                // The hit test of the window reads the last rendered scene. After a change of the rows it must be rendered first.
-                Window.UpdateLayout();
-                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-                Dispatcher.UIThread.RunJobs();
-
-                var point = PointIn(target, fraction);
-                var effects = DragDropEffects.Move;
-                Window.DragDrop(point, RawDragEventType.DragEnter, data, effects);
-                Window.DragDrop(point, RawDragEventType.DragOver, data, effects);
-                if (last == RawDragEventType.Drop)
-                    Window.DragDrop(point, RawDragEventType.Drop, data, effects);
-                Dispatcher.UIThread.RunJobs();
+            // Drags the source row to the target and drops it there.
+            public void Drop(TreeNode source, TreeNode target, double fraction)
+            {
+                TreeDrag.Render(Window);
+                TreeDrag.Drop(Window, PointIn(source, 0.5), PointIn(target, fraction));
             }
         }
 
@@ -138,7 +132,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var before = nodes.Select(node => HeaderOf(screen.RowOf(node)).TranslatePoint(new Point(0, 0), screen.Window)).ToList();
             var heightsBefore = nodes.Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height).ToList();
 
-            screen.Drag(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction);
 
             Assert.Equal(before, nodes.Select(node => HeaderOf(screen.RowOf(node)).TranslatePoint(new Point(0, 0), screen.Window)));
             Assert.Equal(heightsBefore, nodes.Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height));
@@ -211,7 +205,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
 
-            screen.Drag(screen.Tree.Roots[0], last, fraction, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], last, fraction);
 
             Assert.Equal(DropPosition.Before, MarkOf(screen, last));
             Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(LastVisibleOf(screen.Tree.Roots[1]))));
@@ -227,7 +221,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var lastRow = LastVisibleOf(last);
             Assert.NotSame(last, lastRow);
 
-            screen.Drag(screen.Tree.Roots[0], lastRow, fraction, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], lastRow, fraction);
 
             Assert.Equal(DropPosition.After, MarkOf(screen, last));
             Assert.Null(MarkOf(screen, lastRow));
@@ -242,7 +236,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
 
-            screen.Drag(screen.Tree.Roots[0], last, fraction, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], last, fraction);
 
             Assert.False(IsMarkedBetween(screen, last));
             Assert.DoesNotContain(":droptarget", screen.RowOf(last).Classes);
@@ -256,7 +250,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
 
-            screen.Drag(screen.Tree.Roots[0], last.Children[0], fraction, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], last.Children[0], fraction);
 
             Assert.False(IsMarkedBetween(screen, last));
         }
@@ -270,7 +264,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
             screen.Window.UpdateLayout();
 
-            screen.Drag(screen.Tree.Roots[0], last, 0.9, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], last, 0.9);
 
             Assert.Equal(DropPosition.After, MarkOf(screen, last));
             Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(last)));
@@ -283,7 +277,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var last = screen.Tree.Roots[2];
             var lastRow = LastVisibleOf(last);
 
-            screen.Drag(screen.Tree.Roots[0], lastRow, 0.9, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], lastRow, 0.9);
 
             var line = DropLineOf(screen.RowOf(lastRow));
             var lastRowHeader = HeaderOf(screen.RowOf(lastRow));
@@ -300,7 +294,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
 
-            screen.Drag(screen.Tree.Roots[0], last, 0.2, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], last, 0.2);
 
             var above = HeaderOf(screen.RowOf(LastVisibleOf(screen.Tree.Roots[1])));
             var below = HeaderOf(screen.RowOf(last));
@@ -320,7 +314,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var lastRow = LastVisibleOf(second);
             Assert.NotSame(second, lastRow);
 
-            screen.Drag(first, lastRow, 0.9, RawDragEventType.DragOver);
+            screen.DragOver(first, lastRow, 0.9);
 
             Assert.Equal(DropPosition.After, MarkOf(screen, second));
             Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(lastRow)));
@@ -333,7 +327,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var first = screen.Tree.Roots[0].Children[0];
             var second = screen.Tree.Roots[0].Children[1];
 
-            screen.Drag(first, second.Children[0], 0.9, RawDragEventType.DragOver);
+            screen.DragOver(first, second.Children[0], 0.9);
 
             Assert.False(IsMarkedBetween(screen, second));
         }
@@ -346,7 +340,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            screen.Drag(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction);
 
             Assert.Contains(":droptarget", screen.RowOf(screen.Tree.Roots[1]).Classes);
         }
@@ -650,13 +644,11 @@ namespace CMiX.Studio.Avalonia.Tests
             var row = screen.RowOf(screen.Tree.Roots[1]);
             var lastRow = LastVisibleOf(screen.Tree.Roots[1]);
 
-            screen.Drag(screen.Tree.Roots[0], lastRow, 0.9, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], lastRow, 0.9);
             Assert.Equal(DropPosition.After, MarkOf(screen, screen.Tree.Roots[1]));
             Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(lastRow)));
 
-            screen.Window.DragDrop(screen.PointIn(lastRow, 0.9), RawDragEventType.DragLeave,
-                new DataObject(), DragDropEffects.Move);
-            Dispatcher.UIThread.RunJobs();
+            TreeDrag.Cancel(screen.Window, screen.PointIn(lastRow, 0.9));
             Assert.Null(screen.View.Marker.Marked);
             Assert.Equal(DropMark.None, TreeDropMark.GetMark(screen.RowOf(lastRow)));
         }
@@ -667,7 +659,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var layerNode = screen.Tree.Roots[0].Children[0];
 
-            screen.Drag(layerNode, screen.Tree.Roots[1], 0.5, RawDragEventType.DragOver);
+            screen.DragOver(layerNode, screen.Tree.Roots[1], 0.5);
 
             Assert.Contains(":droptarget", screen.RowOf(screen.Tree.Roots[1]).Classes);
         }
@@ -680,7 +672,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var node = screen.Tree.Roots[0];
 
-            screen.Drag(node, node, fraction, RawDragEventType.DragOver);
+            screen.DragOver(node, node, fraction);
 
             Assert.False(IsMarkedBetween(screen, node));
             Assert.DoesNotContain(":droptarget", screen.RowOf(node).Classes);
@@ -693,26 +685,25 @@ namespace CMiX.Studio.Avalonia.Tests
             var next = screen.Tree.Roots[1];
 
             // The first composition before the second one: the same place.
-            screen.Drag(screen.Tree.Roots[0], next, 0.1, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], next, 0.1);
 
             Assert.NotEqual(DropPosition.Before, MarkOf(screen, next));
         }
 
+        // The tree draws the cursor of the drag itself. The cursor for a drop that is not possible does not fit the look of the app:
+        // the mark tells where a drop works.
         [AvaloniaTheory]
         [InlineData(0.5, true)]
         [InlineData(0.1, false)]
         public void ADragOfANodeOfTheTree_ShowsTheMoveCursorAndNeverTheCursorForNotAllowed(double fraction, bool allowed)
         {
             var screen = Show();
-            var effects = new List<DragDropEffects>();
-            screen.Window.AddHandler(DragDrop.DragOverEvent, (_, e) => effects.Add(e.DragEffects), RoutingStrategies.Bubble, handledEventsToo: true);
             var source = screen.Tree.Roots[0];
             var target = allowed ? screen.Tree.Roots[1] : source;
 
-            screen.Drag(source, target, fraction, RawDragEventType.DragOver);
+            screen.DragOver(source, target, fraction);
 
-            Assert.NotEmpty(effects);
-            Assert.All(effects, effect => Assert.Equal(DragDropEffects.Move, effect));
+            Assert.Same(screen.View.RowDrag.MoveCursor, screen.TreeView.Cursor);
         }
 
         [AvaloniaFact]
@@ -721,7 +712,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var group = screen.Tree.Roots[0].Children[0].Children[0];
 
-            screen.Drag(screen.Tree.Roots[0], group, 0.5, RawDragEventType.DragOver);
+            screen.DragOver(screen.Tree.Roots[0], group, 0.5);
 
             Assert.DoesNotContain(":droptarget", screen.RowOf(group).Classes);
             Assert.False(IsMarkedBetween(screen, group));
@@ -734,7 +725,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var nodeA = screen.Tree.Roots[0];
             var nodeB = screen.Tree.Roots[1];
 
-            screen.Drag(nodeA, LastVisibleOf(nodeB), 0.9, RawDragEventType.Drop);
+            screen.Drop(nodeA, LastVisibleOf(nodeB), 0.9);
 
             Assert.Equal(new IControl[] { screen.B, screen.A }, screen.Project.CompositionManager.ManagerData.Items);
             Assert.NotEqual(DropPosition.After, MarkOf(screen, nodeB));
@@ -746,7 +737,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var moved = screen.A.LayerManager.ManagerData.Items[0];
 
-            screen.Drag(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], 0.5, RawDragEventType.Drop);
+            screen.Drop(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], 0.5);
 
             Assert.Single(screen.A.LayerManager.ManagerData.Items);
             Assert.Same(moved, screen.B.LayerManager.ManagerData.Items[1]);
@@ -761,7 +752,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var entity = (IPrefab)layer.ModelEntityManager.ManagerData.Items[0];
             ((Layer)screen.A.LayerManager.ManagerData.Items[1]).ModelEntityManager.AddExistingItem(entity);
 
-            screen.Drag(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], 0.5, RawDragEventType.Drop);
+            screen.Drop(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], 0.5);
 
             Assert.Equal(2, screen.A.LayerManager.ManagerData.Items.Count);
             Assert.Single(screen.B.LayerManager.ManagerData.Items);
@@ -851,7 +842,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var group = screen.Tree.Roots[0].Children[0].Children[0];
 
-            screen.Drag(screen.Tree.Roots[1], group, 0.5, RawDragEventType.Drop);
+            screen.Drop(screen.Tree.Roots[1], group, 0.5);
 
             Assert.Equal(new IControl[] { screen.A, screen.B }, screen.Project.CompositionManager.ManagerData.Items);
         }

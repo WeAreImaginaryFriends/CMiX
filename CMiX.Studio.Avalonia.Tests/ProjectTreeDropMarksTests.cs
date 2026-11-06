@@ -2,13 +2,12 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Media;
 using AvaloniaColor = Avalonia.Media.Color;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
@@ -216,22 +215,23 @@ namespace CMiX.Studio.Avalonia.Tests
             var filter = firstLayer.Children.Single(child => child.Group is FiltersGroup).Children[0];
             var target = secondLayer.Children.Single(child => child.Group is FiltersGroup);
             var lists = ((Layer)firstLayer.Item!, (Layer)secondLayer.Item!);
-            var data = new DataObject();
-            data.Set(ProjectTreeView.NodeFormat, filter);
-            tree.BeginDrag(filter);
-            Settle();
-            var row = Part(view, target, "RowBorder");
-            var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window!)!.Value;
+            var point = Center(view, target);
 
-            window!.DragDrop(point, RawDragEventType.DragEnter, data, DragDropEffects.Move);
-            window.DragDrop(point, RawDragEventType.DragOver, data, DragDropEffects.Move);
+            TreeDrag.Over(window!, Center(view, filter), point);
+            Assert.True(tree.IsDragging);
             Assert.Contains(":droptarget", ItemOf(view, target).Classes);
             Assert.Equal(ToneOf(target).FillSelected, FillOf(view, target));
-            window.DragDrop(point, RawDragEventType.Drop, data, DragDropEffects.Move);
-            Dispatcher.UIThread.RunJobs();
+            TreeDrag.Release(window!, point);
 
             Assert.Empty(lists.Item1.TextureModifierManager.ManagerData.Items);
             Assert.Single(lists.Item2.TextureModifierManager.ManagerData.Items);
+        }
+
+        // The center of the row of the node, in the window.
+        private Point Center(ProjectTreeView view, TreeNode node)
+        {
+            var row = Part(view, node, "RowBorder");
+            return row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window!)!.Value;
         }
 
         [AvaloniaFact]
@@ -239,21 +239,16 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (view, tree) = Show();
             var source = FirstEntity(tree);
-            var row = Part(view, source, "RowBorder");
-            var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window!)!.Value;
+            var point = Center(view, source);
 
-            window!.MouseDown(point, MouseButton.Left);
-            window.MouseMove(point + new Vector(30, 0), RawInputModifiers.LeftMouseButton);
-            Dispatcher.UIThread.RunJobs();
+            TreeDrag.Over(window!, point, point + new Vector(30, 0));
 
-            // The drag of the headless platform goes on: it has no pointer that drops. The end of the drag is tested on the tree.
             Assert.True(tree.IsDragging);
             Assert.True(source.IsDragSource);
             Assert.True(All(tree.Roots).Any(node => node.IsDropCandidate));
 
-            // The pointer is released away from any row: the drag ends, so no row keeps a mark.
-            window.MouseUp(point + new Vector(30, 0), MouseButton.Left);
-            Dispatcher.UIThread.RunJobs();
+            // The pointer is released on the dragged row itself: no drop, the drag ends, and no row keeps a mark.
+            TreeDrag.Release(window!, point + new Vector(30, 0));
             Assert.False(tree.IsDragging);
             Assert.All(All(tree.Roots), node => Assert.False(node.IsDragActive));
         }
@@ -267,13 +262,10 @@ namespace CMiX.Studio.Avalonia.Tests
 
             // The right end of the column: an entity has no mask toggle there, so it is the space around the buttons.
             var point = toggles.TranslatePoint(new Point(toggles.Bounds.Width - 3, toggles.Bounds.Height / 2), window!)!.Value;
-            window!.MouseDown(point, MouseButton.Left);
-            window.MouseMove(point + new Vector(30, 0), RawInputModifiers.LeftMouseButton);
-            Dispatcher.UIThread.RunJobs();
+            TreeDrag.Over(window!, point, point + new Vector(30, 0));
 
             var started = tree.IsDragging;
-            window.MouseUp(point + new Vector(30, 0), MouseButton.Left);
-            Dispatcher.UIThread.RunJobs();
+            TreeDrag.Release(window!, point + new Vector(30, 0));
 
             Assert.False(started);
         }
