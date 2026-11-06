@@ -76,6 +76,37 @@ While you drag a row, the rows that take it inside are lit, with no border: for 
 
 A row can move inside its list. It can also move to a list of the same kind of another owner: an entity to another layer, a modifier to another entity, a filter, a texture or a modulator to another owner of the same kind of list.
 
+## Keyboard shortcuts
+
+The Studio reads its keyboard shortcuts from `%AppData%\CMiX\studio-shortcuts.json`. This file is separate from `studio-settings.json`. When the file is missing, the Studio writes it with the defaults. When the Studio cannot write it, the Studio starts with the defaults.
+
+The file maps a command name to a gesture:
+
+    {
+      "Shortcuts": {
+        "Edit.Undo": "Ctrl+Z",
+        "Tree.Rename": "F2"
+      }
+    }
+
+| Name | Default | Action |
+| --- | --- | --- |
+| `Edit.Undo` | Ctrl+Z | Undo |
+| `Edit.Redo` | Ctrl+Shift+Z | Redo |
+| `Edit.RedoAlt` | Ctrl+Y | Redo |
+| `Tree.Rename` | F2 | Rename the selected row |
+| `Tree.Remove` | Delete | Remove the selected item |
+| `Tree.Duplicate` | Ctrl+D | Duplicate the selected item |
+| `Tree.MoveUp` | Alt+Up | Move the selected item up |
+| `Tree.MoveDown` | Alt+Down | Move the selected item down |
+| `Tree.Open` | Enter | Select the row that has the keyboard focus |
+
+The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut.
+
+While a text box has the focus, the text box gets the keys first. In the tree, the shortcuts do nothing while a name is edited.
+
+In the tree, the arrow keys, Page Up, Page Down, Home and End move the keyboard focus from row to row. Left collapses a row or goes to its parent. Right expands a row or goes to its first child. The row with the focus has a thin border in the bright color of its kind. The keyboard focus does not select the row: it writes no undo step and sends nothing to the peers. Enter or a click selects the row.
+
 ## Redis addresses
 
 The Settings tab holds the list of Redis addresses of the project. Click an address to edit it. The buttons at the side add, remove and move addresses. The project file stores the list.

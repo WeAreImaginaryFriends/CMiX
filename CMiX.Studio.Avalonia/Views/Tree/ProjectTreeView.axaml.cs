@@ -20,6 +20,7 @@ using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.Platform;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Managers;
+using CMiX.UI.Controls.String;
 using CompositionModel = CMiX.Core.Compositing.Composition;
 using LayerModel = CMiX.Core.Compositing.Layer;
 
@@ -65,7 +66,7 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.TemplateApplied += (_, e) =>
                 e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter")?.AddHandler(RequestBringIntoViewEvent, OnRequestBringIntoView);
             treeView.AddHandler(KeyDownEvent, OnKeyDownTunnel, RoutingStrategies.Tunnel);
-            treeView.AddHandler(KeyDownEvent, OnKeyDownBubble, RoutingStrategies.Bubble, handledEventsToo: true);
+            KeyBindingTextGuard.Install(this);
         }
 
         // The tree does not scroll by itself when the user clicks a row: a click on a row that is at the edge of the view would scroll to
@@ -88,30 +89,102 @@ namespace CMiX.Studio.Avalonia.Views
                 e.Handled = true;
         }
 
-        // A key that moves the selection: the tree marks the selection as a keyboard selection and brings the row into view.
-        private TreeNode? nodeBeforeKey;
-
-        private void OnKeyDownTunnel(object? sender, KeyEventArgs e) => nodeBeforeKey = watched?.SelectedNode;
-
-        private void OnKeyDownBubble(object? sender, KeyEventArgs e)
+        // Avalonia runs the key bindings of the view (the gestures of the map) before this handler. The navigation keys move the soft
+        // selection only (see ProjectTree.SoftSelectedNode). The tree view does not see them, so they select nothing. A navigation key
+        // with a modifier does nothing. A key in a name box stays in the name box.
+        private void OnKeyDownTunnel(object? sender, KeyEventArgs e)
         {
-            if (watched?.SelectedNode is not { } node || ReferenceEquals(node, nodeBeforeKey))
+            if (watched is not { } tree || IsInTextBox(e.Source) || !IsNavigationKey(e.Key))
                 return;
 
-            watched.Select(node, SelectionOrigin.Keyboard);
-            Dispatcher.UIThread.Post(() => RevealRow(node), DispatcherPriority.Loaded);
+            e.Handled = true;
+            if (e.KeyModifiers != KeyModifiers.None)
+                return;
+
+            MoveSoftSelection(tree, e.Key);
+            if (tree.SoftSelectedNode is { } node)
+                Dispatcher.UIThread.Post(() => FocusRow(node), DispatcherPriority.Loaded);
+        }
+
+        private static bool IsNavigationKey(Key key) =>
+            key is Key.Up or Key.Down or Key.PageUp or Key.PageDown or Key.Home or Key.End or Key.Left or Key.Right;
+
+        private void MoveSoftSelection(ProjectTree tree, Key key)
+        {
+            switch (key)
+            {
+                case Key.Up: tree.MoveSoftSelection(-1); break;
+                case Key.Down: tree.MoveSoftSelection(1); break;
+                case Key.PageUp: tree.MoveSoftSelection(-RowsInView()); break;
+                case Key.PageDown: tree.MoveSoftSelection(RowsInView()); break;
+                case Key.Home: tree.MoveSoftSelectionToEnd(false); break;
+                case Key.End: tree.MoveSoftSelectionToEnd(true); break;
+                case Key.Left: tree.MoveSoftSelectionOut(); break;
+                case Key.Right: tree.MoveSoftSelectionIn(); break;
+            }
+        }
+
+        private int RowsInView() =>
+            ScrollerOfTree is { } scroller && rowMetrics.RowPitch > 0 ? Math.Max(1, (int)(scroller.Viewport.Height / rowMetrics.RowPitch)) : 1;
+
+        // Moves the keyboard focus to the row of the node and brings the row into view. The focus shows the focus look of the row
+        // (:focus-visible, see ProjectTree.axaml). It does not select the row.
+        private void FocusRow(TreeNode node)
+        {
+            if (TreeRows.FindItem(treeView, node) is not { } item)
+                return;
+
+            item.Focus(NavigationMethod.Tab);
+            RevealRow(node);
+        }
+
+        // Starts the rename of the row of the node: the name box of the row goes to edit mode.
+        private void OnRenameRequested(object? sender, TreeNode node)
+        {
+            if (TreeRows.FindItem(treeView, node) is not { } item || TreeRows.RowBorderOf(item) is not { } row)
+                return;
+
+            if (row.GetVisualDescendants().OfType<TextBoxEditable>().FirstOrDefault() is { } box)
+                box.IsEditing = true;
+        }
+
+        private static bool IsInTextBox(object? source)
+        {
+            for (var visual = source as Visual; visual != null; visual = visual.GetVisualParent())
+                if (visual is TextBox)
+                    return true;
+
+            return false;
         }
 
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
 
-            if (attached && watched != null)
-                watched.PropertyChanged -= OnWatchedPropertyChanged;
+            if (attached)
+                Unwatch();
 
             watched = DataContext as ProjectTree;
-            if (attached && watched != null)
-                watched.PropertyChanged += OnWatchedPropertyChanged;
+            if (attached)
+                Watch();
+        }
+
+        private void Watch()
+        {
+            if (watched == null)
+                return;
+
+            watched.PropertyChanged += OnWatchedPropertyChanged;
+            watched.RenameRequested += OnRenameRequested;
+        }
+
+        private void Unwatch()
+        {
+            if (watched == null)
+                return;
+
+            watched.PropertyChanged -= OnWatchedPropertyChanged;
+            watched.RenameRequested -= OnRenameRequested;
         }
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -151,8 +224,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             // The tree view model listens only while the view is attached.
             attached = true;
-            if (watched != null)
-                watched.PropertyChanged += OnWatchedPropertyChanged;
+            Watch();
 
             scaledTopLevel = TopLevel.GetTopLevel(this);
             if (scaledTopLevel == null)
@@ -164,8 +236,7 @@ namespace CMiX.Studio.Avalonia.Views
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            if (watched != null)
-                watched.PropertyChanged -= OnWatchedPropertyChanged;
+            Unwatch();
 
             attached = false;
             if (scaledTopLevel != null)

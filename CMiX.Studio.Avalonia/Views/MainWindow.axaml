@@ -24,6 +24,13 @@
     Focusable="True"
     WindowStartupLocation="CenterScreen">
 
+    <!-- The gestures come from the shortcut map (see ShortcutMap). A change of the map changes the binding. -->
+    <Window.KeyBindings>
+        <KeyBinding Command="{Binding UndoCommand}" Gesture="{Binding Shortcuts[Edit.Undo]}" />
+        <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.Redo]}" />
+        <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.RedoAlt]}" />
+    </Window.KeyBindings>
+
     <DockPanel Background="{DynamicResource Grey100Brush}" LastChildFill="True">
 
         <Border

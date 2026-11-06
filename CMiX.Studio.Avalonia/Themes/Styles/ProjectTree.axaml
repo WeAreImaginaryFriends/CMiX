@@ -110,6 +110,14 @@
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
                                 IsHitTestVisible="False"
                                 IsVisible="False" />
+                            <!-- The soft selected row has the keyboard focus (:focus-visible): a thin border in the bright color of its kind,
+                                 with no fill change. The style sets the thickness, so the hidden frame has none. The arrow keys move it. Enter or a click selects the row. -->
+                            <Border
+                                Name="FocusFrame"
+                                BorderBrush="{Binding Converter={StaticResource TreeTone}, ConverterParameter=KindSelected}"
+                                CornerRadius="{DynamicResource CornerRadiusAll}"
+                                IsHitTestVisible="False"
+                                IsVisible="False" />
                             <!-- The frame of a row that refuses the dragged node (the class dropblocked). It is drawn over the row, as the selection frame. -->
                             <Border
                                 Name="BlockedFrame"
@@ -170,6 +178,10 @@
         </Style>
         <Style Selector="^:selected /template/ Border#SelectionFrame">
             <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^:focus-visible /template/ Border#FocusFrame">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
         </Style>
         <Style Selector="^:selected /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />

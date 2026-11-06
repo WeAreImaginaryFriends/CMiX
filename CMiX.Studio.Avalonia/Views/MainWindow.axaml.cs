@@ -29,6 +29,8 @@ namespace CMiX.Studio.Avalonia.Views
             titleBar.PointerPressed += TitleBar_PointerPressed;
             Closing += OnClosing;
             InstallToggleDrag();
+            // A text box gets Ctrl+Z first. A key that it does not handle still undoes or redoes the project.
+            KeyBindingTextGuard.Install(this, afterTextBox: true);
             AddHandler(ProjectTreeView.NodeChosenEvent, (_, e) => ShowInspector(e.Source as Visual));
         }
 
@@ -80,30 +82,6 @@ namespace CMiX.Studio.Avalonia.Views
 
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
                 BeginMoveDrag(e);
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-
-            if (_undoManager is null)
-                return; // design-time instance, nothing to undo/redo
-
-            if (e.Key == Key.Z && e.KeyModifiers == KeyModifiers.Control)
-            {
-                _undoManager.Undo();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Z && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
-            {
-                _undoManager.Redo();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Y && e.KeyModifiers == KeyModifiers.Control)
-            {
-                _undoManager.Redo();
-                e.Handled = true;
-            }
         }
     }
 }

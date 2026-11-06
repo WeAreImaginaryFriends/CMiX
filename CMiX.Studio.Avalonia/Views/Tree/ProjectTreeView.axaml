@@ -17,6 +17,17 @@
         <x:Double x:Key="TreeToggleWidth">50</x:Double>
     </UserControl.Resources>
 
+    <!-- The gestures come from the shortcut map (the names Tree.*). The bindings pause while a name box is edited (KeyBindingTextGuard).
+         The arrow keys move the soft selection (see OnKeyDownTunnel). -->
+    <UserControl.KeyBindings>
+        <KeyBinding Command="{Binding RenameSelectedCommand}" Gesture="{Binding Shortcuts[Tree.Rename]}" />
+        <KeyBinding Command="{Binding RemoveItemCommand}" Gesture="{Binding Shortcuts[Tree.Remove]}" />
+        <KeyBinding Command="{Binding DuplicateItemCommand}" Gesture="{Binding Shortcuts[Tree.Duplicate]}" />
+        <KeyBinding Command="{Binding MoveItemUpCommand}" Gesture="{Binding Shortcuts[Tree.MoveUp]}" />
+        <KeyBinding Command="{Binding MoveItemDownCommand}" Gesture="{Binding Shortcuts[Tree.MoveDown]}" />
+        <KeyBinding Command="{Binding OpenSelectedCommand}" Gesture="{Binding Shortcuts[Tree.Open]}" />
+    </UserControl.KeyBindings>
+
     <!-- The toolbar is at the bottom, as the toolbar of the lists of compositions and layers. -->
     <DockPanel>
 

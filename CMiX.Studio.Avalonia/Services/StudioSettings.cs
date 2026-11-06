@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Text.Json;
 using CMiX.Core.Networking;
 
 namespace CMiX.Studio.Avalonia.Services
@@ -48,36 +47,15 @@ namespace CMiX.Studio.Avalonia.Services
 
         public RedisSettings Redis { get; set; } = new();
 
-        private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
-
         public static StudioSettings Load() => Load(DefaultPath);
 
         // A missing, empty, broken or locked file falls back to defaults. The Studio must start
         // in every case.
-        public static StudioSettings Load(string path)
-        {
-            try
-            {
-                if (!File.Exists(path)) return new StudioSettings();
-
-                var json = File.ReadAllText(path);
-                if (string.IsNullOrWhiteSpace(json)) return new StudioSettings();
-
-                return JsonSerializer.Deserialize<StudioSettings>(json, Options) ?? new StudioSettings();
-            }
-            catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
-            {
-                return new StudioSettings();
-            }
-        }
+        public static StudioSettings Load(string path) => JsonSettingsFile.Load<StudioSettings>(path);
 
         public void Save() => Save(DefaultPath);
 
-        public void Save(string path)
-        {
-            var json = JsonSerializer.Serialize(this, Options);
-            File.WriteAllText(path, json);
-        }
+        public void Save(string path) => JsonSettingsFile.Save(path, this);
 
         // The file values with fallbacks. Resolve adds the Credential Manager.
         // WithFallbacks would give the machine name, so the Studio sets its own default first.

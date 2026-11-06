@@ -35,10 +35,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private IReadOnlyList<TreeAdd> selectedAdds;
         private bool selecting;
 
-        public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null, IDragWheelSource? dragWheelSource = null)
+        public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null, IDragWheelSource? dragWheelSource = null,
+            ShortcutMap? shortcuts = null)
         {
             this.undoManager = undoManager;
             this.notice = notice;
+            Shortcuts = shortcuts ?? new ShortcutMap();
             DragWheelSource = dragWheelSource ?? new NoDragWheelSource();
             compositions = project.CompositionManager;
             root = new TreeNode(this, null, null, null, "Project", compositions);
@@ -57,6 +59,108 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             RemoveItemCommand = new RelayCommand(
                 () => { if (SelectedPlace() is var (list, item, _)) list.RemoveItem(item); },
                 () => SelectedPlace() != null);
+            RenameSelectedCommand = new RelayCommand(
+                () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
+                () => selectedNode?.Item != null);
+            OpenSelectedCommand = new RelayCommand(
+                () => Select(softSelectedNode, SelectionOrigin.Keyboard),
+                () => softSelectedNode != null);
+        }
+
+        // The gestures of the key bindings of the tree view (the names Tree.*).
+        public ShortcutMap Shortcuts { get; }
+
+        // Starts the rename of the selected row. The view sets the name box of the row to edit mode (see RenameRequested).
+        public IRelayCommand RenameSelectedCommand { get; }
+
+        // Selects the soft selected node and its chain in the lists.
+        public IRelayCommand OpenSelectedCommand { get; }
+
+        // The view handles this request: it starts the rename of the row of the node.
+        public event EventHandler<TreeNode>? RenameRequested;
+
+        private TreeNode? softSelectedNode;
+
+        // The row that the arrow keys move to. It does not select the chain: no undo step and no wire message.
+        // Enter (OpenSelectedCommand) or a click selects the chain. A change of SelectedNode moves it to the selected node.
+        public TreeNode? SoftSelectedNode
+        {
+            get => softSelectedNode;
+            set
+            {
+                if (SetProperty(ref softSelectedNode, value))
+                    OpenSelectedCommand?.NotifyCanExecuteChanged();
+            }
+        }
+
+        // The nodes that show a row, from the top: a child shows when all its parents are expanded.
+        public IReadOnlyList<TreeNode> VisibleNodes()
+        {
+            var nodes = new List<TreeNode>();
+            void Add(IEnumerable<TreeNode> children)
+            {
+                foreach (var child in children)
+                {
+                    nodes.Add(child);
+                    if (child.IsExpanded)
+                        Add(child.Children);
+                }
+            }
+
+            Add(Roots);
+            return nodes;
+        }
+
+        // Moves the soft selection by a number of visible rows. It stops at the first and the last row.
+        public void MoveSoftSelection(int rows)
+        {
+            var nodes = VisibleNodes();
+            if (nodes.Count == 0)
+                return;
+
+            var index = softSelectedNode == null ? -1 : IndexOf(nodes, softSelectedNode);
+            var next = index < 0 ? (rows >= 0 ? 0 : nodes.Count - 1) : Math.Clamp(index + rows, 0, nodes.Count - 1);
+            SoftSelectedNode = nodes[next];
+        }
+
+        public void MoveSoftSelectionToEnd(bool last)
+        {
+            var nodes = VisibleNodes();
+            if (nodes.Count > 0)
+                SoftSelectedNode = last ? nodes[^1] : nodes[0];
+        }
+
+        // Left: an expanded row collapses, else the soft selection goes to the parent row.
+        public void MoveSoftSelectionOut()
+        {
+            if (softSelectedNode is not { } node)
+                return;
+
+            if (node.IsExpanded && node.Children.Count > 0)
+                node.IsExpanded = false;
+            else if (node.Parent is { } parent && !ReferenceEquals(parent, root))
+                SoftSelectedNode = parent;
+        }
+
+        // Right: a collapsed row expands, else the soft selection goes to the first child row.
+        public void MoveSoftSelectionIn()
+        {
+            if (softSelectedNode is not { Children.Count: > 0 } node)
+                return;
+
+            if (!node.IsExpanded)
+                node.IsExpanded = true;
+            else
+                SoftSelectedNode = node.Children[0];
+        }
+
+        private static int IndexOf(IReadOnlyList<TreeNode> nodes, TreeNode node)
+        {
+            for (var i = 0; i < nodes.Count; i++)
+                if (ReferenceEquals(nodes[i], node))
+                    return i;
+
+            return -1;
         }
 
         public ObservableCollection<TreeNode> Roots => root.Children;
@@ -175,6 +279,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             MoveItemUpCommand?.NotifyCanExecuteChanged();
             MoveItemDownCommand?.NotifyCanExecuteChanged();
             RemoveItemCommand?.NotifyCanExecuteChanged();
+            RenameSelectedCommand?.NotifyCanExecuteChanged();
         }
 
         // A list of the tree changed: a place in a list, and so the commands, may have changed.
@@ -192,6 +297,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 if (hadAdds != HasAdds)
                     OnPropertyChanged(nameof(HasAdds));
 
+                SoftSelectedNode = selectedNode;
                 RefreshCommands();
             }
         }
@@ -413,6 +519,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // A node leaves the tree. A selection inside it moves to the parent.
         internal void NodeRemoved(TreeNode node)
         {
+            if (softSelectedNode != null && softSelectedNode.IsOrIsUnder(node))
+                SoftSelectedNode = selectedNode != null && !selectedNode.IsOrIsUnder(node) ? selectedNode : null;
+
             if (selectedNode == null || !selectedNode.IsOrIsUnder(node))
                 return;
 

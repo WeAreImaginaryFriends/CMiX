@@ -69,6 +69,12 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<UnsavedChanges>();
                 serviceCollection.AddSingleton<IUnsavedChangesPrompt, UnsavedChangesPrompt>();
                 serviceCollection.AddSingleton<IMoveBlockedNotice, MoveBlockedNotice>();
+                serviceCollection.AddSingleton(_ =>
+                {
+                    var shortcuts = new ShortcutMap();
+                    shortcuts.Load();
+                    return shortcuts;
+                });
                 if (OperatingSystem.IsWindows())
                     serviceCollection.AddSingleton<IDragWheelSource, WindowsDragWheelSource>();
                 else

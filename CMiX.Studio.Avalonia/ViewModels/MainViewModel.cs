@@ -13,6 +13,7 @@ using CMiX.Studio.Avalonia.Platform;
 using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CMiX.Studio.Avalonia.ViewModels
 {
@@ -35,7 +36,8 @@ namespace CMiX.Studio.Avalonia.ViewModels
                              ControlActivationService activationService,
                              UndoManager undoManager,
                              IMoveBlockedNotice moveBlockedNotice,
-                             IDragWheelSource dragWheelSource)
+                             IDragWheelSource dragWheelSource,
+                             ShortcutMap shortcuts)
         {
             _undoManager = undoManager;
             TextureManager = SetupManager(textureManager, ManagerIDs.TextureManager);
@@ -46,7 +48,10 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ColorPaletteManager = SetupManager(colorPaletteManager, ManagerIDs.ColorPaletteManager);
 
             Project = project;
-            ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice, dragWheelSource);
+            Shortcuts = shortcuts;
+            UndoCommand = new RelayCommand(undoManager.Undo);
+            RedoCommand = new RelayCommand(undoManager.Redo);
+            ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice, dragWheelSource, shortcuts);
             Sync = sync;
             MainWindowController = mainWindowController;
             AssetManager = assetManager;
@@ -110,6 +115,12 @@ namespace CMiX.Studio.Avalonia.ViewModels
         public ControlRepository ControlRepository { get; set; }
         public Project Project { get; set; }
         public ProjectTree ProjectTree { get; }
+
+        // The keyboard shortcuts. The key bindings of the window and of the tree read their gestures here.
+        public ShortcutMap Shortcuts { get; }
+
+        public IRelayCommand UndoCommand { get; }
+        public IRelayCommand RedoCommand { get; }
 
         // What the left and the right panel of the window show. The user changes them in the combo box at the top of each panel.
         // The tree can be on the left, on the right or on both sides.
