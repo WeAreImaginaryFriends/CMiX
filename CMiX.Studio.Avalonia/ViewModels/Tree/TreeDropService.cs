@@ -35,6 +35,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     // It can also go to a list of the same kind of another owner: an entity to another layer, a modifier to another entity,
     // a filter, a texture or a modulator to another owner of the same kind of list.
     // A layer can also go to the layer list of another composition, if no item of it is shared with a layer that stays.
+    // A layer row passes an item that is dropped on it to the group of the item's kind under it (see InsideOf).
     public sealed class TreeDropService
     {
         // Where a drop lands when the pointer is over a row. The fraction is the height of the pointer on that row,
@@ -48,6 +49,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         {
             if (source.Item == null || source.Owner == null || hovered.IsOrIsUnder(source))
                 return null;
+
+            // A layer row takes an item of its groups inside it, wherever the pointer is on the row.
+            if (GroupUnder(source, hovered) is { } forwarded && TakesDropOf(source, forwarded))
+                return new DropPlace(hovered, DropPosition.Inside);
 
             var target = hovered;
             while (target != null && !TakesDropOf(source, target))
@@ -71,7 +76,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         }
 
         // True when the node is a row that the dragged node can go before, after, or (a layer on a composition) inside.
-        private static bool TakesDropOf(TreeNode source, TreeNode target)
+        // With rules false, only the kind counts: ListRules.CanHold does not.
+        private static bool TakesDropOf(TreeNode source, TreeNode target, bool rules = true)
         {
             if (target.IsOrIsUnder(source))
                 return false;
@@ -83,15 +89,28 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                     && KindOfItem(source) is { } kind
                     && KindOfGroup(target) == kind
                     && (ReferenceEquals(target.ChildManager, source.Owner) || !target.ChildManager.ManagerData.Items.Contains(source.Item!))
-                    && Accepts(source.Item!, target.Group);
+                    && (!rules || Accepts(source.Item!, target.Group));
 
             if (target.Owner == null)
                 return false;
 
             return ReferenceEquals(source.Owner, target.Owner)
                 || (source.Item is Layer && (target.Item is Layer || target.Item is Composition))
-                || CanMoveBetweenLists(source, target);
+                || CanMoveBetweenLists(source, target, rules);
         }
+
+        // The group of the kind of the dragged item under a layer row. Null for another row, for a layer, or when the layer has no such group.
+        private static TreeNode? GroupUnder(TreeNode source, TreeNode target)
+        {
+            if (target.Item is not Layer || source.Item is Layer || KindOfItem(source) is not { } kind)
+                return null;
+
+            return target.Children.FirstOrDefault(child => KindOfGroup(child) == kind);
+        }
+
+        // The row whose list takes an item dropped inside the target: the group under a layer row, else the target.
+        public static TreeNode InsideOf(TreeNode source, TreeNode target) =>
+            GroupUnder(source, target) ?? target;
 
         // The kind of a list is the type of its group: entities, cameras, lights, textures, filters, modifiers or modulators.
         // An item moves between the lists of two owners only into a list of its own kind.
@@ -106,13 +125,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             group == null || ListRules.CanHold(group.OwnerType, item.GetType());
 
         // The item is in a list of the same kind as the row of another owner, and that list does not have it yet.
-        private static bool CanMoveBetweenLists(TreeNode source, TreeNode target) =>
+        private static bool CanMoveBetweenLists(TreeNode source, TreeNode target, bool rules = true) =>
             KindOfItem(source) is { } kind
             && kind == KindOfItem(target)
             && target.Owner != null
             && !ReferenceEquals(source.Owner, target.Owner)
             && !target.Owner.ManagerData.Items.Contains(source.Item!)
-            && Accepts(source.Item!, target.Parent?.Group);
+            && (!rules || Accepts(source.Item!, target.Parent?.Group));
 
         private static TreeNode? CompositionOf(TreeNode node)
         {
@@ -163,8 +182,89 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // A drag shows these rows, since the drop on them has no bar between two rows to tell the place.
         public bool IsInsideTarget(TreeNode source, TreeNode target) =>
             source.Item != null && source.Owner != null
-            && TakesDropOf(source, target)
+            && TakesDropOf(source, InsideOf(source, target))
             && Resolve(source, target, DropPosition.Inside) != null;
+
+        // True when the row is a target by the kind of the dragged node alone, before the rules of the list (see BlockReason).
+        public bool IsTargetByKind(TreeNode source, TreeNode target) =>
+            source.Item != null && source.Owner != null
+            && TakesDropOf(source, InsideOf(source, target), rules: false);
+
+        // The reason why a drop on the row does not go through, in one line, or null when it goes through.
+        // The list of the row (inside it, or next to it) must hold the kind of the item (ListRules.CanHold) and take it
+        // (CanAddExistingItem). An entity, a camera or a light cannot go to another composition while another layer holds it,
+        // and a layer cannot go there while it shares items with another layer.
+        public string? BlockReason(TreeNode source, TreeNode target)
+        {
+            if (source.Item == null || source.Owner == null || target.IsOrIsUnder(source) || ListOf(source, target) is not { } place)
+                return null;
+
+            var (list, group) = place;
+            if (ReferenceEquals(list, source.Owner))
+                return null;
+
+            if (group != null && !ListRules.CanHold(group.OwnerType, source.Item.GetType()))
+                return $"{Capitalized(WithArticle(ItemName(source.Item)))} cannot go to {WithArticle(OwnerName(group.OwnerType))}";
+
+            if (list.CanAddExistingItem?.Invoke(source.Item) == false)
+                return $"\"{NameOfList(source, target)}\" cannot take \"{source.Header}\"";
+
+            if (ReferenceEquals(CompositionOf(source), CompositionOf(target)))
+                return null;
+
+            if (source.Item is not Layer && LayersSharing(source) is { Count: > 0 } sharing)
+            {
+                var names = string.Join(" and ", sharing.Select(layer => $"\"{layer.PrefabService.Name.Value}\""));
+                return sharing.Count == 1 ? $"Layer {names} also holds it" : $"Layers {names} also hold it";
+            }
+
+            if (source.Item is IMoveRestricted restricted && restricted.GetItemsBlockingMove(source.Owner.ManagerData.Items) is { Count: > 0 } blocking)
+                return $"It shares {string.Join(", ", blocking.Select(item => $"\"{item.PrefabService.Name.Value}\""))} with other layers";
+
+            return null;
+        }
+
+        // The list that takes an item dropped on the row, and its group: inside a group, a layer row or a composition, else next to the row.
+        private static (PrefabManager List, TreeGroup? Group)? ListOf(TreeNode source, TreeNode target)
+        {
+            var inside = InsideOf(source, target);
+            if (inside.Item == null)
+                return inside.ChildManager == null ? null : (inside.ChildManager, inside.Group);
+
+            if (inside.Item is Composition && source.Item is Layer)
+                return (inside.ChildManager!, null);
+
+            return inside.Owner == null ? null : (inside.Owner, inside.Parent?.Group);
+        }
+
+        // The name of the item that holds the list of the drop.
+        private static string NameOfList(TreeNode source, TreeNode target)
+        {
+            var inside = InsideOf(source, target);
+            var holder = inside.Item == null || (inside.Item is Composition && source.Item is Layer) ? inside : inside.Parent;
+            return (holder?.Item == null ? holder?.Parent : holder)?.Header ?? string.Empty;
+        }
+
+        // The name of a type of item, without the word of its kind at the end: TranslateModifier is Translate.
+        private static string ItemName(IControl item)
+        {
+            var name = item.GetType().Name;
+            foreach (var suffix in new[] { "Modifier", "Modulator", "Filter" })
+                if (name.Length > suffix.Length && name.EndsWith(suffix, StringComparison.Ordinal))
+                    return name[..^suffix.Length];
+
+            return name;
+        }
+
+        // The name of a type of owner in small letters, with a space between its words: LightEntity is light entity.
+        private static string OwnerName(System.Type type) =>
+            string.Concat(type.Name.Select((letter, index) => index > 0 && char.IsUpper(letter) ? " " + char.ToLowerInvariant(letter) : char.ToLowerInvariant(letter).ToString()));
+
+        private static string WithArticle(string name) =>
+            (name.Length > 0 && "aeiouAEIOU".Contains(name[0]) ? "an " : "a ") + name;
+
+        private static string Capitalized(string text) =>
+            text.Length > 0 ? char.ToUpperInvariant(text[0]) + text[1..] : text;
 
         // True when the dragged node can go before or after the row, in the list of the row. The place is shown by a bar between two rows.
         public bool IsNeighbor(TreeNode source, TreeNode target) =>
@@ -200,7 +300,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         {
             if (source.Item is not Layer)
             {
-                var toLayer = (target.Item == null ? target.Parent : target.Parent?.Parent)?.Header ?? string.Empty;
+                var toLayer = (target.Item is Layer ? target : target.Item == null ? target.Parent : target.Parent?.Parent)?.Header ?? string.Empty;
                 var fromComposition = CompositionOf(source)?.Header ?? string.Empty;
                 var layers = string.Join(", ", blocking.Select(layer => $"\"{layer.PrefabService.Name.Value}\""));
 
@@ -234,15 +334,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             (PrefabManager List, int Index)? place;
             if (position == DropPosition.Inside)
             {
-                // A composition takes a layer inside it, and a group takes an item of its kind, at the end.
-                if (target.ChildManager == null)
+                // A composition takes a layer inside it, and a group takes an item of its kind, at the end. A layer row passes the item to its group.
+                var inside = InsideOf(source, target);
+                if (inside.ChildManager == null)
                     return null;
 
-                var takes = target.Item is Composition ? source.Item is Layer : TakesDropOf(source, target);
+                var takes = inside.Item is Composition ? source.Item is Layer : TakesDropOf(source, inside);
                 if (!takes)
                     return null;
 
-                place = (target.ChildManager, target.ChildManager.ManagerData.Items.Count);
+                place = (inside.ChildManager, inside.ChildManager.ManagerData.Items.Count);
             }
             else
             {

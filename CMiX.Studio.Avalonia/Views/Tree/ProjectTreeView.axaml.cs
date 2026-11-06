@@ -275,6 +275,7 @@ namespace CMiX.Studio.Avalonia.Views
             }
             finally
             {
+                ShowBlockReason(null);
                 tree?.EndDrag();
                 autoScroller?.StopNow();
                 marker.Mark(null, null);
@@ -355,6 +356,7 @@ namespace CMiX.Studio.Avalonia.Views
             e.Handled = true;
 
             var (source, item, target, position) = Read(e);
+            ShowBlockReason(source != null ? TreeRows.ItemOf(e.Source) : null);
 
             // A node of the tree always shows the move cursor. The cursor for a drop that is not possible is a red icon,
             // which does not fit the look of the app. The mark tells where a drop works: no mark, no move.
@@ -377,6 +379,25 @@ namespace CMiX.Studio.Avalonia.Views
             autoScroller?.StopDeferred();
 
             marker.Mark(null, null);
+            ShowBlockReason(null);
+        }
+
+        // The row whose tooltip gives the reason of its block.
+        private Control? blockTip;
+
+        // A drag sends no pointer events to the rows, so the tooltip of a blocked row under the pointer opens from here. Null closes it.
+        private void ShowBlockReason(TreeViewItem? hovered)
+        {
+            var row = hovered?.DataContext is TreeNode { IsDropBlocked: true } ? TreeRows.RowBorderOf(hovered) : null;
+            if (ReferenceEquals(row, blockTip))
+                return;
+
+            if (blockTip != null)
+                ToolTip.SetIsOpen(blockTip, false);
+
+            blockTip = row;
+            if (row != null)
+                ToolTip.SetIsOpen(row, true);
         }
 
         private async void OnDrop(object? sender, DragEventArgs e)
@@ -393,9 +414,12 @@ namespace CMiX.Studio.Avalonia.Views
 
                 e.Handled = true;
                 marker.Mark(null, null);
+                ShowBlockReason(null);
 
                 var (source, _, target, position) = Read(e);
-                if (DataContext is not ProjectTree tree || source == null || target == null || position == null)
+                // A blocked row shows no mark, so it takes no drop.
+                if (DataContext is not ProjectTree tree || source == null || target == null || position == null
+                    || !tree.CanDrop(source, target, position.Value))
                     return;
 
                 // A drop changes the number of rows above and under the view. The tree must not jump: the first row in view stays where it

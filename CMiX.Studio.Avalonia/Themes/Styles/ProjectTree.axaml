@@ -12,7 +12,8 @@
          It has a fill in the color of its kind (see CategoryPalette), one step brighter when the pointer is over the row itself
          (not over its children), and one more step when it is selected. A child is indented by its level.
          The classes dropgap and droptop show the place of a drag between rows. The class droptarget shows the row
-         that takes a drop inside it: it looks as if the pointer was over it. The marks are drawn
+         that takes a drop inside it: it looks as if the pointer was over it. The class dropblocked shows a row that takes the
+         kind of the dragged node but refuses it by a rule: a thin frame, and the reason in the tooltip. The marks are drawn
          over the row and take no room, so the rows never move during a drag. -->
     <converters:MarginMultiplierConverter x:Key="TreeLevelIndent" Indent="16" Left="True" />
 
@@ -72,8 +73,10 @@
                         Grid.Column="1"
                         Height="{DynamicResource TreeRowHeight}"
                         Classes.candidate="{Binding IsDropCandidate}"
+                        Classes.dropblocked="{Binding IsDropBlocked}"
                         CornerRadius="{DynamicResource CornerRadiusAll}"
-                        TextElement.Foreground="{DynamicResource ForegroundBrush}">
+                        TextElement.Foreground="{DynamicResource ForegroundBrush}"
+                        ToolTip.Tip="{Binding DropBlockReason}">
                         <Panel>
                             <!-- The header has no part names that TreeViewItem knows (PART_Header, PART_HeaderPresenter):
                                  it expands and collapses the row on a double tap of such a part, and a double tap on a row
@@ -104,6 +107,13 @@
                                 Name="SelectionFrame"
                                 BorderBrush="{Binding Converter={StaticResource TreeTone}, ConverterParameter=KindSelected}"
                                 BorderThickness="{DynamicResource TreeSelectionThickness}"
+                                CornerRadius="{DynamicResource CornerRadiusAll}"
+                                IsHitTestVisible="False"
+                                IsVisible="False" />
+                            <!-- The frame of a row that refuses the dragged node (the class dropblocked). It is drawn over the row, as the selection frame. -->
+                            <Border
+                                Name="BlockedFrame"
+                                BorderBrush="{DynamicResource DropBlockedBrush}"
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
                                 IsHitTestVisible="False"
                                 IsVisible="False" />
@@ -168,6 +178,11 @@
         <!-- The row that takes the node or the files that are dragged over it, inside it: it is brighter than the other rows that take it. -->
         <Style Selector="^:droptarget /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
+        </Style>
+        <!-- A row that refuses the dragged node keeps its fill and shows a thin frame in a muted warning tone. -->
+        <Style Selector="^ /template/ Border#RowBorder.dropblocked Border#BlockedFrame">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
         </Style>
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
             <!-- The chevron keeps its room: it holds the indent of the row, so an empty row stays aligned with the rows around it. -->

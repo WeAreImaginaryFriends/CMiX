@@ -138,16 +138,45 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ACollapsedRowWithACandidateUnderIt_IsNotCovered_AndHasNoOtherMark()
         {
             var (view, tree) = Show();
-            var secondLayer = tree.Roots[0].Children[1];
-            secondLayer.IsExpanded = false;
+            var composition = tree.Roots[0];
+            composition.IsExpanded = false;
             Settle();
 
             tree.BeginDrag(FirstEntity(tree));
             Settle();
 
-            Assert.True(secondLayer.IsDropHint);
-            Assert.False(Part(view, secondLayer, "DimLayer").IsEffectivelyVisible);
-            Assert.Equal(ToneOf(secondLayer).Fill, FillOf(view, secondLayer));
+            Assert.True(composition.IsDropHint);
+            Assert.False(Part(view, composition, "DimLayer").IsEffectivelyVisible);
+            Assert.Equal(ToneOf(composition).Fill, FillOf(view, composition));
+        }
+
+        // A modifier of an entity: a layer cannot hold it, so the layer rows are blocked.
+        [AvaloniaFact]
+        public void BlockedRow_DuringADrag_HasTheBlockedBorder()
+        {
+            var (view, tree) = Show();
+            ((Entity)FirstEntity(tree).Item!).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
+            Settle();
+            var modifier = FirstEntity(tree).Children.Single(child => child.Group is ModifiersGroup).Children[0];
+            var layer = tree.Roots[0].Children[1];
+            Assert.False(Part(view, layer, "BlockedFrame").IsEffectivelyVisible);
+
+            tree.BeginDrag(modifier);
+            Settle();
+            var frame = Part(view, layer, "BlockedFrame");
+
+            Assert.True(layer.IsDropBlocked);
+            Assert.True(frame.IsEffectivelyVisible);
+            Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("DropBlockedBrush")!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
+            Assert.Equal((Thickness)view.FindResource("TreeSelectionThickness")!, frame.BorderThickness);
+            Assert.True(frame.BorderThickness.Top > 0);
+            Assert.False(frame.IsHitTestVisible);
+            Assert.Equal(ToneOf(layer).Fill, FillOf(view, layer));
+            Assert.False(Part(view, layer, "DimLayer").IsEffectivelyVisible);
+
+            tree.EndDrag();
+            Settle();
+            Assert.False(Part(view, layer, "BlockedFrame").IsEffectivelyVisible);
         }
 
         [AvaloniaFact]

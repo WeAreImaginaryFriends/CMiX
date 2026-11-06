@@ -81,14 +81,14 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void DraggingAnEntity_LightsOnlyTheGroupsOfEntities_ItsOwnAndThoseOfOtherLayers()
+        public void DraggingAnEntity_LightsOnlyTheGroupsOfEntitiesAndTheLayers_ItsOwnAndThoseOfOtherLayers()
         {
             var scene = CreateScene();
 
             scene.Tree.BeginDrag(scene.Entity1);
 
             Assert.Equal(
-                new[] { Scene.Group<EntitiesGroup>(scene.Layer1), Scene.Group<EntitiesGroup>(scene.Layer2), Scene.Group<EntitiesGroup>(scene.LayerOfB) },
+                new[] { scene.Layer1, Scene.Group<EntitiesGroup>(scene.Layer1), scene.Layer2, Scene.Group<EntitiesGroup>(scene.Layer2), scene.LayerOfB, Scene.Group<EntitiesGroup>(scene.LayerOfB) },
                 scene.Candidates());
             Assert.True(scene.Tree.IsDragging);
         }
@@ -108,9 +108,9 @@ namespace CMiX.Studio.Avalonia.Tests
             });
         }
 
-        // The case of a filter: only the groups of filters light up. The filters themselves keep their look, and the bar shows the place.
+        // The case of a filter: only the groups of filters and the layers light up. The filters themselves keep their look, and the bar shows the place.
         [Fact]
-        public void DraggingAFilter_LightsOnlyTheGroupsOfFilters_NotTheFilters()
+        public void DraggingAFilter_LightsOnlyTheGroupsOfFiltersAndTheLayers_NotTheFilters()
         {
             var scene = CreateScene();
             var filters = Scene.Group<FiltersGroup>(scene.Layer1);
@@ -119,9 +119,9 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.Tree.BeginDrag(filter);
 
             Assert.Equal(
-                new[] { filters, Scene.Group<FiltersGroup>(scene.Layer2), Scene.Group<FiltersGroup>(scene.CompositionA), Scene.Group<FiltersGroup>(scene.LayerOfB), Scene.Group<FiltersGroup>(scene.CompositionB) },
+                new[] { scene.Layer1, filters, scene.Layer2, Scene.Group<FiltersGroup>(scene.Layer2), Scene.Group<FiltersGroup>(scene.CompositionA), scene.LayerOfB, Scene.Group<FiltersGroup>(scene.LayerOfB), Scene.Group<FiltersGroup>(scene.CompositionB) },
                 scene.Candidates());
-            Assert.All(scene.Candidates(), node => Assert.Null(node.Item));
+            Assert.All(scene.Candidates(), node => Assert.True(node.Item == null || node.Item is Layer));
 
             // The other filter of the list and the filter of the other layer: next to them, not inside.
             Assert.Equal(new[] { filters.Children[1], Scene.Group<FiltersGroup>(scene.Layer2).Children[0] }, scene.Neighbors());
@@ -218,18 +218,72 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ACollapsedRowWithATargetUnderIt_GivesAHint_AndAnOpenRowDoesNot()
         {
             var scene = CreateScene();
-            scene.Layer2.IsExpanded = false;
+            scene.CompositionB.IsExpanded = false;
 
             scene.Tree.BeginDrag(scene.Entity1);
 
-            Assert.True(scene.Layer2.HasDropTargetBelow);
-            Assert.True(scene.Layer2.IsDropHint);
-            Assert.False(scene.Layer2.IsDimmed);
+            Assert.True(scene.CompositionB.HasDropTargetBelow);
+            Assert.True(scene.CompositionB.IsDropHint);
+            Assert.False(scene.CompositionB.IsDimmed);
             Assert.False(scene.CompositionA.IsDropHint);
 
-            scene.Layer2.IsExpanded = true;
-            Assert.False(scene.Layer2.IsDropHint);
-            Assert.True(scene.Layer2.IsDimmed);
+            scene.CompositionB.IsExpanded = true;
+            Assert.False(scene.CompositionB.IsDropHint);
+            Assert.True(scene.CompositionB.IsDimmed);
+        }
+
+        [Fact]
+        public void BeginDrag_AnEntity_MarksTheLayerRowAsCandidate()
+        {
+            var scene = CreateScene();
+
+            scene.Tree.BeginDrag(scene.Entity1);
+
+            Assert.True(scene.LayerOfB.IsDropCandidate);
+            Assert.True(scene.Layer2.IsDropCandidate);
+            Assert.False(scene.LayerOfB.IsDimmed);
+            Assert.True(scene.Tree.CanDrop(scene.Entity1, scene.LayerOfB, DropPosition.Inside));
+        }
+
+        [Fact]
+        public void BeginDrag_ASharedEntity_MarksTheOtherLayerBlocked()
+        {
+            var scene = CreateScene();
+            var layer2 = (Layer)scene.Layer2.Item!;
+            layer2.ModelEntityManager.AddExistingItem((CMiX.Core.Prefabs.IPrefab)scene.Entity1.Item!);
+
+            scene.Tree.BeginDrag(scene.Entity1);
+
+            foreach (var node in new[] { scene.LayerOfB, Scene.Group<EntitiesGroup>(scene.LayerOfB) })
+            {
+                Assert.True(node.IsDropBlocked, $"{node.Header} is not blocked.");
+                Assert.False(node.IsDropCandidate);
+                Assert.False(node.IsDimmed);
+                Assert.Equal($"Layer \"{scene.Layer2.Header}\" also holds it", node.DropBlockReason);
+                Assert.False(scene.Tree.CanDrop(scene.Entity1, node, DropPosition.Inside));
+            }
+
+            // The layers of the same composition take the entity: it is in one composition only.
+            Assert.False(scene.Layer2.IsDropBlocked);
+            Assert.False(scene.Layer1.IsDropBlocked);
+
+            scene.Tree.EndDrag();
+            Assert.All(scene.All(), node => Assert.False(node.IsDropBlocked));
+            Assert.All(scene.All(), node => Assert.Null(node.DropBlockReason));
+        }
+
+        [Fact]
+        public void BeginDrag_AModifierThatALayerCannotHold_MarksTheLayersBlocked()
+        {
+            var scene = CreateScene();
+            var modifier = Scene.Group<ModifiersGroup>(scene.Entity1).Children[0];
+
+            scene.Tree.BeginDrag(modifier);
+
+            Assert.True(scene.Layer2.IsDropBlocked);
+            Assert.True(Scene.Group<ModifiersGroup>(scene.Layer2).IsDropBlocked);
+            Assert.Equal("A Translate cannot go to a layer", scene.Layer2.DropBlockReason);
+            Assert.False(scene.Layer2.IsDimmed);
         }
 
         [Fact]

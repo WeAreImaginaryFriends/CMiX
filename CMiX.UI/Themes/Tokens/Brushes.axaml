@@ -46,6 +46,9 @@
     <SolidColorBrush x:Key="StatePressedBrush" Color="{DynamicResource Grey100}" />
     <SolidColorBrush x:Key="RowHoverBrush" Color="{DynamicResource Grey500}" />
 
+    <!-- The frame of a tree row that refuses a dragged node. -->
+    <SolidColorBrush x:Key="DropBlockedBrush" Color="{DynamicResource DropBlocked}" />
+
     <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource Text}" />
     <SolidColorBrush x:Key="ActiveForegroundBrush" Color="{DynamicResource ActiveText}" />
 

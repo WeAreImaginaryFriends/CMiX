@@ -199,12 +199,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // A group (Entities, Cameras, Lights) has a fixed place in its layer. Only an item can be dragged.
         public bool CanDrag(TreeNode node) => node.Item != null && node.Owner != null;
 
+        // A row that the drag marks as blocked takes no drop: the marker shows nothing over it.
         public bool CanDrop(TreeNode source, TreeNode target, DropPosition position) =>
-            dropService.CanDrop(source, target, position);
+            !target.IsDropBlocked && dropService.CanDrop(source, target, position);
 
         // A node is being dragged: the rows that take it inside are candidates, the rows next to which it can go are neighbors, a collapsed row
-        // with such a row under it gives a hint, and the other rows are dimmed (see TreeNode.IsDropCandidate). The rules are the ones of the
-        // drop itself.
+        // with such a row under it gives a hint, a row that refuses the node by a rule is blocked, and the other rows are dimmed
+        // (see TreeNode.IsDropCandidate). The rules are the ones of the drop itself.
         public bool IsDragging { get; private set; }
 
         public void BeginDrag(TreeNode source)
@@ -228,7 +229,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             var candidate = node != root && dropService.IsInsideTarget(source, node);
             var neighbor = node != root && dropService.IsNeighbor(source, node);
-            node.SetDragState(true, ReferenceEquals(node, source), candidate, neighbor, below);
+            var reason = node != root && (candidate || neighbor || dropService.IsTargetByKind(source, node)) ? dropService.BlockReason(source, node) : null;
+            if (reason != null)
+                candidate = neighbor = false;
+
+            node.SetDragState(true, ReferenceEquals(node, source), candidate, neighbor, below, reason);
             return below || candidate || neighbor;
         }
 
@@ -248,6 +253,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         {
             // The move and the selection of the moved item are one undo step.
             DropOutcome outcome;
+            var inside = TreeDropService.InsideOf(source, target);
             undoManager.BeginCapture();
             try
             {
@@ -255,7 +261,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 if (outcome.Moved)
                 {
                     // The rows that hold the item open, so the user sees the result.
-                    var owner = position == DropPosition.Inside ? target : target.Parent;
+                    // A layer row passes the item to its group, so the group opens too.
+                    var owner = position == DropPosition.Inside ? inside : target.Parent;
                     for (var holder = owner; holder != null; holder = holder.Parent)
                         holder.IsExpanded = true;
 

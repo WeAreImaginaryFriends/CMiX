@@ -337,7 +337,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var entity = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
 
             Assert.Null(service.Locate(entity, Scene.Group<CamerasGroup>(scene.LayerNodeOfA(0)), 0.9));
-            Assert.Null(service.Locate(entity, scene.LayerNodeOfB(0), 0.2));
+            Assert.Null(service.Locate(entity, Scene.Group<FiltersGroup>(scene.LayerNodeOfB(0)), 0.2));
         }
 
         [Fact]
@@ -624,6 +624,86 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(ListRules.CanHold(typeof(Layer), typeof(TranslateModifier)));
             Assert.False(service.CanDrop(modifier, layerModifiers, DropPosition.Inside));
             Assert.True(service.CanDrop(modifier, entityModifiers, DropPosition.Inside));
+        }
+
+        [Fact]
+        public void BlockReason_AnEntityThatAnotherLayerShares_NamesTheLayer()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var expected = $"Layer \"{scene.LayerOfA(1).PrefabService.Name.Value}\" also holds it";
+
+            Assert.Equal(expected, service.BlockReason(source, Scene.Group<EntitiesGroup>(scene.LayerNodeOfB(0))));
+            Assert.Equal(expected, service.BlockReason(source, scene.LayerNodeOfB(0)));
+        }
+
+        [Fact]
+        public void BlockReason_AModifierForAnOwnerThatCannotHoldIt_GivesTheReason()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (Entity)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            entity.ModifierManager.AddItem(typeof(TranslateModifier));
+            var modifier = Scene.Group<ModifiersGroup>(Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0]).Children[0];
+
+            Assert.Equal("A Translate cannot go to a layer", service.BlockReason(modifier, Scene.Group<ModifiersGroup>(scene.LayerNodeOfB(0))));
+            Assert.True(service.IsTargetByKind(modifier, Scene.Group<ModifiersGroup>(scene.LayerNodeOfB(0))));
+            Assert.False(service.IsInsideTarget(modifier, Scene.Group<ModifiersGroup>(scene.LayerNodeOfB(0))));
+        }
+
+        [Fact]
+        public void BlockReason_ATargetListThatRefusesTheItem_NamesTheList()
+        {
+            var scene = CreateScene();
+            scene.B.LayerManager.CanAddExistingItem = _ => false;
+
+            Assert.Equal($"\"{scene.NodeB.Header}\" cannot take \"{scene.LayerNodeOfA(0).Header}\"", service.BlockReason(scene.LayerNodeOfA(0), scene.NodeB));
+        }
+
+        [Fact]
+        public void BlockReason_AnAllowedDrop_IsNull()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+
+            Assert.Null(service.BlockReason(source, Scene.Group<EntitiesGroup>(scene.LayerNodeOfB(0))));
+            Assert.Null(service.BlockReason(source, scene.LayerNodeOfB(0)));
+            Assert.Null(service.BlockReason(source, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0))));
+            Assert.Null(service.BlockReason(scene.LayerNodeOfA(0), scene.NodeB));
+        }
+
+        [Fact]
+        public void Locate_AnEntityOverALayerRow_GoesToTheEntitiesGroup()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var layerRow = scene.LayerNodeOfB(0);
+
+            Assert.Equal(new DropPlace(layerRow, DropPosition.Inside), service.Locate(source, layerRow, 0.2));
+            Assert.Equal(new DropPlace(layerRow, DropPosition.Inside), service.Locate(source, layerRow, 0.9));
+            Assert.Same(Scene.Group<EntitiesGroup>(layerRow), TreeDropService.InsideOf(source, layerRow));
+            Assert.True(service.IsInsideTarget(source, layerRow));
+
+            var outcome = service.Drop(source, layerRow, DropPosition.Inside);
+
+            Assert.True(outcome.Moved);
+            Assert.Same(entity, Assert.Single(scene.LayerOfB().ModelEntityManager.ManagerData.Items));
+            Assert.Empty(scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
+        }
+
+        [Fact]
+        public void Locate_ALayerOverALayerRow_StaysBeforeOrAfter()
+        {
+            var scene = CreateScene();
+
+            Assert.Equal(new DropPlace(scene.LayerNodeOfB(0), DropPosition.Before), service.Locate(scene.LayerNodeOfA(0), scene.LayerNodeOfB(0), 0.2));
         }
 
         [Fact]

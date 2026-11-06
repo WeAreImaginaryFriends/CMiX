@@ -42,6 +42,9 @@
     <Color x:Key="CategoryModifier">#FF68B6D4</Color>
     <Color x:Key="CategoryModulator">#FF9A8BE4</Color>
 
+    <!-- A muted warning tone, not a full red: the frame of a tree row that refuses a dragged node. -->
+    <Color x:Key="DropBlocked">#FFB0675C</Color>
+
     <Color x:Key="Text">#FFE0E0E0</Color>
     <Color x:Key="ActiveText">#FFFFFFFF</Color>
 

@@ -154,6 +154,30 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(expected, new KindCount(category, count).Description);
         }
 
+        // A layer cannot hold a modifier of an entity: during its drag the layer row gives the reason in its tooltip.
+        [AvaloniaFact]
+        public void BlockedRow_DuringADrag_ShowsTheReason()
+        {
+            var (view, tree) = Show();
+            var layer = tree.Roots[0].Children[0];
+            var entity = layer.Children.Single(child => child.Group is EntitiesGroup).Children[0];
+            ((Entity)entity.Item!).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
+            Settle();
+            var modifier = entity.Children.Single(child => child.Group is ModifiersGroup).Children[0];
+            var row = ItemOf(view, layer).GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
+            Assert.Null(ToolTip.GetTip(row));
+
+            tree.BeginDrag(modifier);
+            Settle();
+
+            Assert.Equal(new[] { "A Translate cannot go to a layer" }, TextOfTooltip(row));
+            Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(row));
+
+            tree.EndDrag();
+            Settle();
+            Assert.Null(ToolTip.GetTip(row));
+        }
+
         [Fact]
         public void OnlyACompositionAndALayer_HaveAMaskOwner()
         {
