@@ -9,7 +9,6 @@ using CMiX.Core.Networking;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Undo;
-using CMiX.Studio.Avalonia.Platform;
 using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -36,7 +35,6 @@ namespace CMiX.Studio.Avalonia.ViewModels
                              ControlActivationService activationService,
                              UndoManager undoManager,
                              IMoveBlockedNotice moveBlockedNotice,
-                             IDragWheelSource dragWheelSource,
                              ShortcutMap shortcuts)
         {
             _undoManager = undoManager;
@@ -52,7 +50,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ShortcutSettings = new ShortcutSettings(shortcuts);
             UndoCommand = new RelayCommand(undoManager.Undo);
             RedoCommand = new RelayCommand(undoManager.Redo);
-            ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice, dragWheelSource, shortcuts);
+            ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice, shortcuts);
             Sync = sync;
             MainWindowController = mainWindowController;
             AssetManager = assetManager;

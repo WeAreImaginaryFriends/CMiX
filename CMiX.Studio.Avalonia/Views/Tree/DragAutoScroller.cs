@@ -4,82 +4,50 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using CMiX.Studio.Avalonia.Platform;
 
 namespace CMiX.Studio.Avalonia.Views
 {
     // Scrolls a view during a drag. A timer scrolls while the pointer is near the top or bottom edge.
-    // The wheel source gives the mouse wheel, which the system does not send during a drag. A wheel step is three rows.
-    // This class is the only owner of the timer and of the wheel source.
+    // The wheel of a row drag comes as a pointer event (see TreeRowDrag). A wheel step is three rows.
+    // This class is the only owner of the timer.
     public sealed class DragAutoScroller : IDisposable
     {
         private const double EdgeZone = 28.0;
         private const double MaxScrollStep = 18.0;
 
-        private readonly IDragWheelSource wheelSource;
         private readonly Func<ScrollViewer?> scroller;
         private readonly Func<double> rowPitch;
         private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(30) };
         private double? dragY;
-        private object? pendingStop;
         private bool disposed;
 
         // scroller gives the scroll viewer of the view. rowPitch gives the height of a row plus the space under it.
-        public DragAutoScroller(IDragWheelSource wheelSource, Func<ScrollViewer?> scroller, Func<double> rowPitch)
+        public DragAutoScroller(Func<ScrollViewer?> scroller, Func<double> rowPitch)
         {
-            this.wheelSource = wheelSource;
             this.scroller = scroller;
             this.rowPitch = rowPitch;
             timer.Tick += (_, _) => AutoScrollStep();
         }
 
         // True while the timer runs.
-        public bool IsTimerRunning => timer.IsEnabled;
+        public bool IsRunning => timer.IsEnabled;
 
-        // True while the timer runs or the wheel source is active.
-        public bool IsRunning => timer.IsEnabled || wheelSource.IsActive;
-
-        // The pointer of a file drag, in the coordinates of the scroll viewer. Null when the pointer is not known.
-        // The system sends no wheel during a file drag, so the wheel source starts. A Track cancels a stop that StopDeferred posted.
-        public void Track(double? y) => Track(y, true);
-
-        // The pointer of a row drag. The wheel of a row drag comes as a pointer event (see TreeRowDrag), so the wheel source stays off.
-        public void TrackRows(double? y) => Track(y, false);
-
-        private void Track(double? y, bool withWheelSource)
+        // The pointer of a drag, in the coordinates of the scroll viewer. Null when the pointer is not known.
+        // The timer starts if it does not run.
+        public void Track(double? y)
         {
             if (disposed)
                 return;
 
-            pendingStop = null;
             dragY = y;
-            if (withWheelSource)
-                wheelSource.Start(steps => Dispatcher.UIThread.Post(() => ScrollByWheel(steps)));
-
             if (!timer.IsEnabled)
                 timer.Start();
         }
 
-        // Stops the timer at once and the wheel source one dispatcher pass later.
-        // A leave of one row comes just before the enter of the next row, so the next Track cancels the stop.
-        public void StopDeferred()
-        {
-            timer.Stop();
-            var token = new object();
-            pendingStop = token;
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (ReferenceEquals(pendingStop, token))
-                    StopNow();
-            });
-        }
-
-        // Stops the timer and the wheel source at once.
+        // Stops the timer at once. The next Track starts it again.
         public void StopNow()
         {
-            pendingStop = null;
             timer.Stop();
-            wheelSource.Stop();
             dragY = null;
         }
 
@@ -121,7 +89,6 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             StopNow();
-            wheelSource.Dispose();
             disposed = true;
         }
     }

@@ -129,7 +129,7 @@ namespace CMiX.Studio.Avalonia.Views
             else
                 marker.Mark(null, null);
 
-            autoScroller().TrackRows(scroller() is { } view ? treeView.TranslatePoint(position, view)?.Y : null);
+            autoScroller().Track(scroller() is { } view ? treeView.TranslatePoint(position, view)?.Y : null);
         }
 
         private bool CanDrop(TreeNode target, DropPosition position) =>

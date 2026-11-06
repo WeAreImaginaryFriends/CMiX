@@ -50,7 +50,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var undo = provider.GetRequiredService<UndoManager>();
             var shortcuts = provider.GetRequiredService<ShortcutMap>();
-            var tree = new ProjectTree(project, undo, null, null, shortcuts);
+            var tree = new ProjectTree(project, undo, null, shortcuts);
             var view = new ProjectTreeView { DataContext = tree };
             window = new Window { Content = view, Width = 500, Height = 700 };
             window.Show();

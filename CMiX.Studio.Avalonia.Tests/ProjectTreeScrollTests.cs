@@ -29,7 +29,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Dispose() => window?.Close();
 
         // A composition with twelve layers: a tree that is much higher than the window.
-        private (ProjectTreeView View, ProjectTree Tree, ScrollViewer Scroller) Show(FakeDragWheelSource? wheelSource = null)
+        private (ProjectTreeView View, ProjectTree Tree, ScrollViewer Scroller) Show()
         {
             var provider = TestServiceProviderFactory.Create();
             var project = provider.GetRequiredService<Project>();
@@ -38,7 +38,7 @@ namespace CMiX.Studio.Avalonia.Tests
             for (var i = 0; i < 12; i++)
                 composition.LayerManager.AddItem(typeof(Layer));
 
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>(), null, wheelSource);
+            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
             var view = new ProjectTreeView { DataContext = tree };
             window = new Window { Content = view, Width = 500, Height = 500 };
             window.Show();
@@ -222,7 +222,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(view.IsAutoScrolling);
         }
 
-        // A file drag comes from the system (see ProjectTreeView.OnDragOver). The wheel source serves it.
+        // A file drag comes from the system (see ProjectTreeView.OnDragOver). The edge zone serves it.
         private void FilesAt(ScrollViewer scroller, double y, RawDragEventType type)
         {
             var data = new DataObject();
@@ -232,14 +232,12 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void DragLeave_AfterAFileDragOverNearTheEdge_StopsTheScrollAfterOneDispatcherPass()
+        public void DragLeave_AfterAFileDragOverNearTheEdge_StopsTheScrollAtOnce()
         {
-            var source = new FakeDragWheelSource();
-            var (view, _, scroller) = Show(source);
+            var (view, _, scroller) = Show();
             FilesAt(scroller, scroller.Bounds.Height / 2, RawDragEventType.DragEnter);
             FilesAt(scroller, scroller.Bounds.Height - 4, RawDragEventType.DragOver);
             Assert.True(view.IsAutoScrolling);
-            Assert.True(source.IsActive);
 
             // A file drag that is cancelled ends with a leave inside the tree, and with no drop. The headless DragDrop runs the
             // dispatcher jobs, so the leave is raised here on a row.
@@ -247,26 +245,8 @@ namespace CMiX.Studio.Avalonia.Tests
             data.Set(DataFormats.Files, Array.Empty<IStorageItem>());
             var row = view.GetVisualDescendants().OfType<TreeViewItem>().First();
             row.RaiseEvent(new DragEventArgs(DragDrop.DragLeaveEvent, data, row, new Point(40, 4), KeyModifiers.None));
-            Assert.True(source.IsActive);
 
-            Dispatcher.UIThread.RunJobs();
             Assert.False(view.IsAutoScrolling);
-            Assert.False(source.IsActive);
-        }
-
-        // A row drag gets the wheel as a pointer event: the wheel source of the system stays off.
-        [AvaloniaFact]
-        public void ARowDrag_DoesNotStartTheWheelSource()
-        {
-            var source = new FakeDragWheelSource();
-            var (view, tree, scroller) = Show(source);
-
-            DragTo(view, tree, scroller, scroller.Bounds.Height - 4);
-
-            Assert.True(view.IsAutoScrolling);
-            Assert.Equal(0, source.StartCount);
-            Assert.False(source.IsActive);
-            TreeDrag.Cancel(window!, PointAt(scroller, scroller.Bounds.Height - 4));
         }
     }
 }

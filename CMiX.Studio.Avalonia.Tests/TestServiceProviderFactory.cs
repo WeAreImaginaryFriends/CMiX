@@ -3,7 +3,6 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.DependencyInjection;
 using CMiX.Core.Prefabs.Managers;
-using CMiX.Studio.Avalonia.Platform;
 using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.ViewModels;
 using HanumanInstitute.MvvmDialogs;
@@ -34,7 +33,6 @@ namespace CMiX.Studio.Avalonia.Tests
             // The defaults, with a file path in the temp folder. A test never reads or writes the file of the user.
             serviceCollection.AddSingleton(_ => new ShortcutMap(Path.Combine(Path.GetTempPath(), $"cmix-shortcuts-{Guid.NewGuid():N}", ShortcutMap.FileName)));
             // A test sets no mouse hook on the desktop.
-            serviceCollection.AddSingleton<IDragWheelSource, NoDragWheelSource>();
             serviceCollection.AddSingleton<IDialogService>(provider => new DialogService(
                 new MainWindowDialogManager(new EmptyViewLocator(), new DialogFactory().AddMessageBox()),
                 viewModelFactory: type => provider.GetService(type)));

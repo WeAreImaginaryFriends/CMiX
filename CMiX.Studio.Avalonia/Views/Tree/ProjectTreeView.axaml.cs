@@ -15,7 +15,6 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using CMiX.Studio.Avalonia.Platform;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.Controls.String;
@@ -410,13 +409,13 @@ namespace CMiX.Studio.Avalonia.Views
             && TreeRows.RowBorderOf(item) is { } border
             && new Rect(border.Bounds.Size).Contains(e.GetPosition(border));
 
-        // The tree scrolls while a drag is near its top or bottom edge, and with the mouse wheel (see DragAutoScroller).
+        // The tree scrolls while a drag is near its top or bottom edge (see DragAutoScroller).
         // The scroller is made at the first drag and goes away when the view leaves the window.
         private DragAutoScroller? autoScroller;
 
         private DragAutoScroller AutoScroller =>
             autoScroller ??= new DragAutoScroller(
-                (DataContext as ProjectTree)?.DragWheelSource ?? new NoDragWheelSource(), () => ScrollerOfTree, () => rowMetrics.RowPitch);
+                () => ScrollerOfTree, () => rowMetrics.RowPitch);
 
         private ScrollViewer? ScrollerOfTree =>
             treeView.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
@@ -443,7 +442,7 @@ namespace CMiX.Studio.Avalonia.Views
         private void TrackFilesPointer(DragEventArgs e) =>
             AutoScroller.Track(ScrollerOfTree is { } scroller ? e.GetPosition(scroller).Y : null);
 
-        // A leave of one row comes with the enter of the next row. The enter keeps the scroll of the drag running.
+        // A leave of one row comes with the enter of the next row. The next enter or over starts the timer again.
         private void OnDragEnter(object? sender, DragEventArgs e)
         {
             if (IsFileDrag(e))
@@ -473,8 +472,7 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void OnDragLeave(object? sender, DragEventArgs e)
         {
-            // A leave also comes each time the pointer goes from one row to the next. The next enter or over cancels the stop.
-            autoScroller?.StopDeferred();
+            autoScroller?.StopNow();
             marker.Mark(null, null);
         }
 
