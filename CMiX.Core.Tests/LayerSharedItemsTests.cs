@@ -83,5 +83,40 @@ namespace CMiX.Core.Tests
 
             Assert.Empty(first.GetSharedItems(new[] { first }));
         }
+
+        [Fact]
+        public void GetLayersHolding_AnEntityHeldByTwoOtherLayers_ListsBoth()
+        {
+            var (first, second, third) = CreateLayers();
+            first.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)first.ModelEntityManager.SelectedItem;
+            second.ModelEntityManager.AddExistingItem(entity);
+            third.ModelEntityManager.AddExistingItem(entity);
+
+            var layers = first.GetLayersHolding(entity, new[] { first, second, third });
+
+            Assert.Equal(new[] { second, third }, layers);
+        }
+
+        [Fact]
+        public void GetLayersHolding_TheLayerItselfInTheList_IsIgnored()
+        {
+            var (first, _, _) = CreateLayers();
+            first.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)first.ModelEntityManager.SelectedItem;
+
+            Assert.Empty(first.GetLayersHolding(entity, new[] { first }));
+        }
+
+        [Fact]
+        public void GetLayersHolding_AnItemNobodyElseHolds_IsEmpty()
+        {
+            var (first, second, third) = CreateLayers();
+            first.ModelEntityManager.AddItem(typeof(Entity));
+            second.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)first.ModelEntityManager.ManagerData.Items[0];
+
+            Assert.Empty(first.GetLayersHolding(entity, new[] { first, second, third }));
+        }
     }
 }

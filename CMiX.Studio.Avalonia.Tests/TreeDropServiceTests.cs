@@ -499,7 +499,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void Drop_AnEntityThatAnotherLayerUsesToAnotherComposition_StaysAndReturnsItAsBlocking()
+        public void Drop_AnEntityThatAnotherLayerUsesToAnotherComposition_StaysAndReturnsTheSharingLayers()
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -512,10 +512,32 @@ namespace CMiX.Studio.Avalonia.Tests
             var outcome = service.Drop(source, target, DropPosition.Inside);
 
             Assert.False(outcome.Moved);
-            Assert.Same(entity, Assert.Single(outcome.Blocking));
+            Assert.Same(scene.LayerOfA(1), Assert.Single(outcome.Blocking));
             Assert.Contains(entity, scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
             Assert.Empty(scene.LayerOfB().ModelEntityManager.ManagerData.Items);
-            Assert.Contains("also used by other layers", service.DescribeBlock(source, target, outcome.Blocking));
+            var text = service.DescribeBlock(source, target, outcome.Blocking);
+            Assert.Contains("also used by other layers", text);
+            Assert.Contains($"\"{scene.LayerOfA(1).PrefabService.Name.Value}\"", text);
+        }
+
+        [Fact]
+        public void Drop_AnEntityThatTwoOtherLayersUseToAnotherComposition_ReturnsBothLayers()
+        {
+            var scene = CreateScene();
+            scene.A.LayerManager.AddItem(typeof(Layer));
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
+            scene.LayerOfA(2).ModelEntityManager.AddExistingItem(entity);
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var target = Scene.Group<EntitiesGroup>(scene.LayerNodeOfB(0));
+
+            var outcome = service.Drop(source, target, DropPosition.Inside);
+
+            Assert.False(outcome.Moved);
+            Assert.Equal(new IPrefab[] { scene.LayerOfA(1), scene.LayerOfA(2) }, outcome.Blocking);
+            var text = service.DescribeBlock(source, target, outcome.Blocking);
+            Assert.Contains($"\"{scene.LayerOfA(1).PrefabService.Name.Value}\", \"{scene.LayerOfA(2).PrefabService.Name.Value}\"", text);
         }
 
         [Fact]

@@ -123,18 +123,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             return null;
         }
 
-        // True when a layer of the composition, other than the layer of the source, has the item in a list of the same kind.
-        private static bool IsUsedByOtherLayers(TreeNode source)
+        // The other layers of the composition that hold the item of the source. Empty when the source is not in an entity, camera or light list.
+        private static IReadOnlyList<Layer> LayersSharing(TreeNode source)
         {
             if (CompositionOf(source) is not { Item: Composition composition } || source.Parent?.Parent?.Item is not Layer ownLayer)
-                return false;
+                return Array.Empty<Layer>();
 
-            if (source.Item == null || source.Parent?.Group is not LayerGroup kind)
-                return false;
+            if (source.Item == null || source.Parent?.Group is not LayerGroup)
+                return Array.Empty<Layer>();
 
-            return composition.LayerManager.ManagerData.Items.OfType<Layer>().Any(layer =>
-                !ReferenceEquals(layer, ownLayer)
-                && TreeGroup.GroupsOf(layer).Any(group => group.GetType() == kind.GetType() && group.Manager.ManagerData.Items.Contains(source.Item)));
+            return ownLayer.GetLayersHolding(source.Item, composition.LayerManager.ManagerData.Items.OfType<Layer>());
         }
 
         // The last row that is shown in the block of a node: itself when it is collapsed or has no children.
@@ -190,23 +188,24 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             }
 
             // An item of a layer can go to a layer of another composition only if no other layer of its composition uses it.
-            if (item is IPrefab prefab && source.Item is not Layer
-                && !ReferenceEquals(CompositionOf(source), CompositionOf(target)) && IsUsedByOtherLayers(source))
-                return new DropOutcome(false, new List<IPrefab> { prefab });
+            if (source.Item is not Layer && !ReferenceEquals(CompositionOf(source), CompositionOf(target))
+                && LayersSharing(source) is { Count: > 0 } sharing)
+                return new DropOutcome(false, sharing.Cast<IPrefab>().ToList());
 
             return DropOutcome.From(list.MoveItemToManager(item, owner, index));
         }
 
-        // The text for a move that shared items block.
+        // The text for a move that shared items block. For an entity, a camera or a light, blocking gives the layers that share it.
         public string DescribeBlock(TreeNode source, TreeNode target, IReadOnlyList<IPrefab> blocking)
         {
             if (source.Item is not Layer)
             {
                 var toLayer = (target.Item == null ? target.Parent : target.Parent?.Parent)?.Header ?? string.Empty;
                 var fromComposition = CompositionOf(source)?.Header ?? string.Empty;
+                var layers = string.Join(", ", blocking.Select(layer => $"\"{layer.PrefabService.Name.Value}\""));
 
                 return $"Cannot move \"{source.Header}\" to \"{toLayer}\".\n"
-                    + $"This item is also used by other layers of \"{fromComposition}\".\n"
+                    + $"This item is also used by other layers of \"{fromComposition}\": {layers}.\n"
                     + "An item can belong to one composition only. "
                     + "Remove the item from the other layers first, or duplicate it, then move it.";
             }

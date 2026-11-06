@@ -119,6 +119,10 @@ namespace CMiX.Core.Compositing
                 .ToList();
         }
 
+        // The other layers that also hold an item of this layer.
+        public IReadOnlyList<Layer> GetLayersHolding(IControl item, IEnumerable<Layer> otherLayers) =>
+            otherLayers.Where(other => !ReferenceEquals(other, this) && other.Holds(item)).ToList();
+
         // A layer cannot leave its composition while another layer there holds the same items.
         public IReadOnlyList<IPrefab> GetItemsBlockingMove(IEnumerable<IControl> siblings) =>
             GetSharedItems(siblings.OfType<Layer>());
