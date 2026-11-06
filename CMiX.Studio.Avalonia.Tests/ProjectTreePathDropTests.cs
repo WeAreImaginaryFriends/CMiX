@@ -1,21 +1,23 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
-using Avalonia.Controls.Templates;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 using Composition = CMiX.Core.Compositing.Composition;
 using Entity = CMiX.Core.Compositing.Entity;
 using FullscreenQuad = CMiX.Core.Compositing.FullscreenQuad;
@@ -69,27 +71,14 @@ namespace CMiX.Studio.Avalonia.Tests
 
         private Screen Show(int compositions = 0, int layersEach = 0)
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            for (var i = 0; i < compositions; i++)
-            {
-                project.CompositionManager.AddItem(typeof(Composition));
-                var composition = (Composition)project.CompositionManager.ManagerData.Items[i];
-                for (var j = 0; j < layersEach; j++)
-                    composition.LayerManager.AddItem(typeof(Layer));
-            }
-
-            var undo = provider.GetRequiredService<UndoManager>();
-            var tree = new ProjectTree(project, undo);
-            var view = new ProjectTreeView { DataContext = tree };
-            var window = new Window { Content = view, Width = 400, Height = 600 };
-            windows.Add(window);
-            window.Show();
+            var scene = CreateScene(Enumerable.Repeat(layersEach, compositions).ToArray());
+            var screen = TreeTestScreen.Show(scene.Tree, 400, 600, instant: false, settle: false);
+            windows.Add(screen.Window);
             Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
-            undo.Clear();
-            return new Screen { Window = window, View = view, Tree = tree, Project = project, Undo = undo };
+            scene.Undo.Clear();
+            return new Screen { Window = screen.Window, View = screen.View, Tree = scene.Tree, Project = scene.Project, Undo = scene.Undo };
         }
 
         private static Composition CompositionAt(Screen screen, int index) =>
@@ -271,9 +260,9 @@ namespace CMiX.Studio.Avalonia.Tests
             return data;
         }
 
-        private static TreeViewItem ItemOf(Screen screen, TreeNode node) =>
-            screen.View.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+        private static TreeViewItem ItemOf(Screen screen, TreeNode node) => TreeTestScreen.ItemOf(screen.View, node);
 
+        // The template child, not a border of the rows under the node.
         private static Border RowOf(Screen screen, TreeNode node) =>
             ItemOf(screen, node).GetTemplateChildren().OfType<Border>().First(border => border.Name == "RowBorder");
 

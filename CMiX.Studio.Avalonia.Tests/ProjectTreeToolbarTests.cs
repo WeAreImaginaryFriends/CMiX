@@ -3,18 +3,20 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
-using Avalonia.Media;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls.Parts;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 using Camera = CMiX.Core.Rendering.Cameras.Camera;
 using Composition = CMiX.Core.Compositing.Composition;
 using Entity = CMiX.Core.Compositing.Entity;
@@ -39,36 +41,6 @@ namespace CMiX.Studio.Avalonia.Tests
 
                 window.Close();
             }
-        }
-
-        private sealed class Scene
-        {
-            public Project Project { get; init; } = null!;
-            public ProjectTree Tree { get; init; } = null!;
-            public Composition A { get; init; } = null!;
-            public Composition B { get; init; } = null!;
-
-            public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
-            public TreeNode LayerNodeOfA(int index) => Tree.Roots[0].Children[index];
-            public TreeNode Group<T>(int layerIndex) where T : TreeGroup => LayerNodeOfA(layerIndex).Children.Single(group => group.Group is T);
-            public TreeNode Group(int layerIndex, System.Type kind) => LayerNodeOfA(layerIndex).Children.Single(group => kind.IsInstanceOfType(group.Group));
-        }
-
-        // A holds two layers, B holds one.
-        private static Scene CreateScene()
-        {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            project.CompositionManager.AddItem(typeof(Composition));
-            var a = (Composition)project.CompositionManager.ManagerData.Items[0];
-            var b = (Composition)project.CompositionManager.ManagerData.Items[1];
-            a.LayerManager.AddItem(typeof(Layer));
-            a.LayerManager.AddItem(typeof(Layer));
-            b.LayerManager.AddItem(typeof(Layer));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            return new Scene { Project = project, Tree = tree, A = a, B = b };
         }
 
         // The state of the five commands: add, duplicate, move up, move down, remove.
@@ -302,9 +274,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             var view = new ProjectTreeView { DataContext = scene.Tree, Margin = new Thickness(leftRoom, 0, 0, 0) };
-            var window = new Window { Content = view, Width = 400, Height = 900 };
+            var window = TreeTestScreen.Show(view, 400, 900, instant: false, settle: false).Window;
             windows.Add(window);
-            window.Show();
             Dispatcher.UIThread.RunJobs();
             return new Screen { Window = window, View = view, Scene = scene };
         }

@@ -6,11 +6,14 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 using Project = CMiX.Core.Compositing.Project;
@@ -26,24 +29,16 @@ namespace CMiX.Studio.Avalonia.Tests
 
         private (ProjectTreeView View, ProjectTree Tree) Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 400, Height = 400 };
-            window.Show();
+            var tree = CreateScene([1]).Tree;
+            var screen = TreeTestScreen.Show(tree, 400, 400, instant: false, settle: false);
+            window = screen.Window;
+            var view = screen.View;
             Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
             Dispatcher.UIThread.RunJobs();
             return (view, tree);
         }
 
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
 
         private static Color ColorOf(IBrush? brush) => ((ISolidColorBrush)brush!).Color;
 

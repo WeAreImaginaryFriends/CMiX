@@ -2,9 +2,10 @@ using CMiX.Core.Compositing;
 using CMiX.Core.Modulation.Modifiers;
 using CMiX.Core.Texturing.Filters;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 using Project = CMiX.Core.Compositing.Project;
@@ -14,34 +15,8 @@ namespace CMiX.Studio.Avalonia.Tests
     // A row knows what it holds, by kind, so a collapsed row can tell the user.
     public class ProjectTreeKindCountsTests
     {
-        private sealed class Scene
-        {
-            public ProjectTree Tree { get; init; } = null!;
-            public Composition Composition { get; init; } = null!;
-            public Layer Layer { get; init; } = null!;
-            public TreeNode CompositionNode => Tree.Roots[0];
-            public TreeNode LayerNode => CompositionNode.Children[0];
-            public static TreeNode Group<T>(TreeNode node) where T : TreeGroup => node.Children.Single(child => child.Group is T);
-        }
-
         // A composition with two layers. The first layer has two entities, one filter and three modifiers.
-        private static Scene CreateScene()
-        {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-            composition.LayerManager.AddItem(typeof(Layer));
-            var layer = (Layer)composition.LayerManager.ManagerData.Items[0];
-            layer.ModelEntityManager.AddItem(typeof(Entity));
-            layer.ModelEntityManager.AddItem(typeof(Entity));
-            layer.TextureModifierManager.AddItem(typeof(Blur));
-            for (var i = 0; i < 3; i++)
-                layer.ModifierManager.AddItem(typeof(TranslateModifier));
-
-            return new Scene { Tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>()), Composition = composition, Layer = layer };
-        }
+        private static Scene CreateScene() => TreeFixtures.CreateScene([2], scene => AddKinds(scene.Layer));
 
         [Fact]
         public void ALayer_HoldsItsItemsByKind_InTheOrderOfItsRows()

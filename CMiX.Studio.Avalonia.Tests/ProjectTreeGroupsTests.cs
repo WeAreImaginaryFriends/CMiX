@@ -8,9 +8,10 @@ using CMiX.Core.Rendering.Lights;
 using CMiX.Core.Texturing.Filters;
 using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 using Project = CMiX.Core.Compositing.Project;
@@ -20,31 +21,8 @@ namespace CMiX.Studio.Avalonia.Tests
     // The tree shows what an item holds: its textures, its filters and its modifiers, as groups under it.
     public class ProjectTreeGroupsTests
     {
-        private sealed class Scene
-        {
-            public Project Project { get; init; } = null!;
-            public ProjectTree Tree { get; init; } = null!;
-            public Composition Composition { get; init; } = null!;
-            public Layer Layer { get; init; } = null!;
-
-            public TreeNode CompositionNode => Tree.Roots[0];
-            public TreeNode LayerNode => CompositionNode.Children[0];
-            public static TreeNode Group<T>(TreeNode node) where T : TreeGroup => node.Children.Single(child => child.Item == null && child.Group is T);
-            public static string[] Headers(TreeNode node) => node.Children.Where(child => child.Item == null).Select(child => child.Header).ToArray();
-        }
-
         // A composition with two layers.
-        private static Scene CreateScene()
-        {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-            composition.LayerManager.AddItem(typeof(Layer));
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            return new Scene { Project = project, Tree = tree, Composition = composition, Layer = (Layer)composition.LayerManager.ManagerData.Items[0] };
-        }
+        private static Scene CreateScene() => TreeFixtures.CreateScene([2]);
 
         [Fact]
         public void ACompositionNode_HasTheLayersThenTheGroupsOfFiltersAndModifiers()

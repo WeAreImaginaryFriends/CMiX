@@ -15,6 +15,7 @@ using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls.String;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 using Composition = CMiX.Core.Compositing.Composition;
 using Entity = CMiX.Core.Compositing.Entity;
 using Layer = CMiX.Core.Compositing.Layer;
@@ -36,8 +37,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             public TreeView TreeView => View.GetVisualDescendants().OfType<TreeView>().First();
 
-            public TreeViewItem RowOf(TreeNode node) =>
-                View.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+            public TreeViewItem RowOf(TreeNode node) => TreeTestScreen.ItemOf(View, node);
 
             // A point in the header of a row, as a fraction of its height.
             public Point PointIn(TreeNode node, double fraction)
@@ -64,22 +64,10 @@ namespace CMiX.Studio.Avalonia.Tests
         // A holds two layers, B holds one.
         private static Screen Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            project.CompositionManager.AddItem(typeof(Composition));
-            var a = (Composition)project.CompositionManager.ManagerData.Items[0];
-            var b = (Composition)project.CompositionManager.ManagerData.Items[1];
-            a.LayerManager.AddItem(typeof(Layer));
-            a.LayerManager.AddItem(typeof(Layer));
-            b.LayerManager.AddItem(typeof(Layer));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            var window = new Window { Content = view, Width = 400, Height = 1100 };
-            window.Show();
+            var scene = CreateScene();
+            var screen = TreeTestScreen.Show(scene.Tree, 400, 1100, instant: false, settle: false);
             Dispatcher.UIThread.RunJobs();
-            return new Screen { Window = window, View = view, Tree = tree, Project = project, A = a, B = b };
+            return new Screen { Window = screen.Window, View = screen.View, Tree = scene.Tree, Project = scene.Project, A = scene.A, B = scene.B };
         }
 
         private static int CountNodes(TreeNode node) => 1 + node.Children.Sum(CountNodes);
@@ -103,8 +91,6 @@ namespace CMiX.Studio.Avalonia.Tests
                 .GetVisualDescendants().OfType<ToggleButton>()
                 .Where(toggle => toggle.IsEffectivelyVisible).ToList();
 
-        private static IEnumerable<TreeNode> AllNodes(IEnumerable<TreeNode> nodes) =>
-            nodes.SelectMany(node => new[] { node }.Concat(AllNodes(node.Children)));
 
         [AvaloniaFact]
         public void EveryRow_HasTheHeightOfARowOfTheOtherLists()
@@ -115,7 +101,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
             var expected = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
 
-            var heights = AllNodes(screen.Tree.Roots).Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height).ToList();
+            var heights = TreeTestScreen.All(screen.Tree.Roots).Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height).ToList();
 
             Assert.NotEmpty(heights);
             Assert.All(heights, height => Assert.Equal(expected, height));
@@ -128,7 +114,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ADragOverARow_MovesNoRow(double fraction)
         {
             var screen = Show();
-            var nodes = AllNodes(screen.Tree.Roots).ToList();
+            var nodes = TreeTestScreen.All(screen.Tree.Roots).ToList();
             var before = nodes.Select(node => HeaderOf(screen.RowOf(node)).TranslatePoint(new Point(0, 0), screen.Window)).ToList();
             var heightsBefore = nodes.Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height).ToList();
 

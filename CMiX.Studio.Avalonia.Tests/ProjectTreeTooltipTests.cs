@@ -6,11 +6,14 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using Composition = CMiX.Core.Compositing.Composition;
 using Entity = CMiX.Core.Compositing.Entity;
 using Layer = CMiX.Core.Compositing.Layer;
@@ -29,36 +32,13 @@ namespace CMiX.Studio.Avalonia.Tests
         // A composition with a layer that has two entities, a filter and three modifiers.
         private (ProjectTreeView View, ProjectTree Tree) Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-            var layer = (Layer)composition.LayerManager.ManagerData.Items[0];
-            layer.ModelEntityManager.AddItem(typeof(Entity));
-            layer.ModelEntityManager.AddItem(typeof(Entity));
-            layer.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
-            for (var i = 0; i < 3; i++)
-                layer.ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 500, Height = 600 };
-            window.Show();
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
-            Settle();
-            return (view, tree);
+            var scene = CreateScene([1], s => AddKinds(s.Layer));
+            var screen = TreeTestScreen.Show(scene.Tree, 500, 600);
+            window = screen.Window;
+            return (screen.View, scene.Tree);
         }
 
-        private void Settle()
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window!.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
+        private void Settle() => TreeTestScreen.Settle(window!);
 
         // Opens the tooltip of a control and returns the texts that it shows. The tooltip control is an internal value of the control,
         // so it is read by its property: the test needs what the user would see.
@@ -74,8 +54,6 @@ namespace CMiX.Studio.Avalonia.Tests
             return texts;
         }
 
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
 
         private static List<Border> SquaresOf(ProjectTreeView view, TreeNode node) =>
             ItemOf(view, node).GetVisualDescendants().OfType<KindCountBadges>().First()

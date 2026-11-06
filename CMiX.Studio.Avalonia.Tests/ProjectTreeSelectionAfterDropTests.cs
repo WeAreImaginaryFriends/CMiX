@@ -1,46 +1,22 @@
 using CMiX.Core;
 using CMiX.Core.Compositing;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
     // An item that is moved to another list stays selected, in the tree and in the lists.
     public class ProjectTreeSelectionAfterDropTests
     {
-        private sealed class Scene
-        {
-            public Project Project { get; init; } = null!;
-            public ProjectTree Tree { get; init; } = null!;
-            public UndoManager Undo { get; init; } = null!;
-            public Composition A { get; init; } = null!;
-            public Composition B { get; init; } = null!;
-            public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
-            public TreeNode LayerNodeOfA(int index) => Tree.Roots[0].Children[index];
-            public static TreeNode Group<T>(TreeNode layerNode) where T : TreeGroup => layerNode.Children.Single(group => group.Group is T);
-        }
-
         // A holds two layers, the first with two entities. B holds one layer.
-        private static Scene CreateScene()
+        private static Scene CreateScene() => TreeFixtures.CreateScene(fill: scene =>
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            project.CompositionManager.AddItem(typeof(Composition));
-            var a = (Composition)project.CompositionManager.ManagerData.Items[0];
-            var b = (Composition)project.CompositionManager.ManagerData.Items[1];
-            a.LayerManager.AddItem(typeof(Layer));
-            a.LayerManager.AddItem(typeof(Layer));
-            b.LayerManager.AddItem(typeof(Layer));
-            var first = (Layer)a.LayerManager.ManagerData.Items[0];
-            first.ModelEntityManager.AddItem(typeof(Entity));
-            first.ModelEntityManager.AddItem(typeof(Entity));
-
-            var undo = provider.GetRequiredService<UndoManager>();
-            return new Scene { Project = project, Tree = new ProjectTree(project, undo), Undo = undo, A = a, B = b };
-        }
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+        });
 
         [Fact]
         public async Task AnEntityMovedToAnotherLayer_IsSelectedInTheTree_AndInTheNewList()

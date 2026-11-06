@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
-using AvaloniaColor = Avalonia.Media.Color;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
@@ -14,6 +13,9 @@ using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
+using AvaloniaColor = Avalonia.Media.Color;
 using Composition = CMiX.Core.Compositing.Composition;
 using Entity = CMiX.Core.Compositing.Entity;
 using Layer = CMiX.Core.Compositing.Layer;
@@ -31,51 +33,23 @@ namespace CMiX.Studio.Avalonia.Tests
         // A composition with two layers. The first has two entities. The second has one.
         private (ProjectTreeView View, ProjectTree Tree) Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-            composition.LayerManager.AddItem(typeof(Layer));
-            var first = (Layer)composition.LayerManager.ManagerData.Items[0];
-            first.ModelEntityManager.AddItem(typeof(Entity));
-            first.ModelEntityManager.AddItem(typeof(Entity));
-            first.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
-            ((Layer)composition.LayerManager.ManagerData.Items[1]).ModelEntityManager.AddItem(typeof(Entity));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 500, Height = 700 };
-            window.Show();
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
-            Settle();
-            return (view, tree);
+            var scene = CreateScene([2], s =>
+            {
+                s.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+                s.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+                s.LayerOfA(0).TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
+                s.LayerOfA(1).ModelEntityManager.AddItem(typeof(Entity));
+            });
+            var screen = TreeTestScreen.Show(scene.Tree, 500, 700);
+            window = screen.Window;
+            return (screen.View, scene.Tree);
         }
 
-        private void Settle()
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window!.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
-
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
-
-        private static Border Part(ProjectTreeView view, TreeNode node, string name) =>
-            ItemOf(view, node).GetVisualDescendants().OfType<Border>().First(border => border.Name == name);
-
-        private static IEnumerable<TreeNode> All(IEnumerable<TreeNode> nodes) =>
-            nodes.SelectMany(node => new[] { node }.Concat(All(node.Children)));
+        private void Settle() => TreeTestScreen.Settle(window!);
 
         private static TreeNode FirstEntity(ProjectTree tree) =>
             tree.Roots[0].Children[0].Children.Single(child => child.Group is EntitiesGroup).Children[0];
 
-        private static AvaloniaColor FillOf(ProjectTreeView view, TreeNode node) =>
-            ((ISolidColorBrush)Part(view, node, "RowBorder").Background!).Color;
 
         private static CategoryTone ToneOf(TreeNode node) =>
             CategoryPalette.FromApplication().For(node.Category!.Value, node.ComposableDepth, node.KindDepth);

@@ -6,11 +6,14 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 using Project = CMiX.Core.Compositing.Project;
@@ -27,19 +30,11 @@ namespace CMiX.Studio.Avalonia.Tests
         // Two compositions. The first has a layer, so the row above the second composition is a row of that layer.
         private (ProjectTreeView View, ProjectTree Tree) Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            project.CompositionManager.AddItem(typeof(Composition));
-            ((Composition)project.CompositionManager.ManagerData.Items[0]).LayerManager.AddItem(typeof(Layer));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
+            var tree = CreateScene([1, 0]).Tree;
             TestServiceProviderFactory.ExpandAll(tree);
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 500, Height = 700 };
-            window.Show();
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
+            var screen = TreeTestScreen.Show(tree, 500, 700, settle: false);
+            window = screen.Window;
+            var view = screen.View;
             Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
             window.UpdateLayout();
@@ -47,8 +42,6 @@ namespace CMiX.Studio.Avalonia.Tests
             return (view, tree);
         }
 
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
 
         // The own mark line of an item: the last one in the tree order, because the rows under the item come before it.
         private static Border DropLineOf(TreeViewItem item) =>

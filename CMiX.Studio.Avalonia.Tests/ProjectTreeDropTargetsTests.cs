@@ -1,54 +1,42 @@
 using CMiX.Core.Compositing;
 using CMiX.Core.Modulation.Modifiers;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Composition = CMiX.Core.Compositing.Composition;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 using Layer = CMiX.Core.Compositing.Layer;
-using Project = CMiX.Core.Compositing.Project;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
+    // The nodes of the scene of ProjectTreeDropTargetsTests.
+    file static class DropTargetsNodes
+    {
+        extension(Scene scene)
+        {
+            public TreeNode CompositionA => scene.NodeA;
+            public TreeNode CompositionB => scene.NodeB;
+            public TreeNode Layer1 => scene.LayerNodeOfA(0);
+            public TreeNode Layer2 => scene.LayerNodeOfA(1);
+            public TreeNode LayerOfB => scene.LayerNodeOfB(0);
+            public TreeNode Entity1 => Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            public TreeNode Entity2 => Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[1];
+            public TreeNode EntityOfLayer2 => Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)).Children[0];
+        }
+    }
+
     // During a drag, the rows that take the node inside are lit (candidates), the rows that it can go next to keep their look (neighbors,
     // the bar shows the place), and the other rows are dimmed. The rules are the ones of the drop itself.
     public class ProjectTreeDropTargetsTests
     {
-        private sealed class Scene
-        {
-            public ProjectTree Tree { get; init; } = null!;
-            public TreeNode CompositionA => Tree.Roots[0];
-            public TreeNode CompositionB => Tree.Roots[1];
-            public TreeNode Layer1 => CompositionA.Children[0];
-            public TreeNode Layer2 => CompositionA.Children[1];
-            public TreeNode LayerOfB => CompositionB.Children[0];
-            public static TreeNode Group<T>(TreeNode node) where T : TreeGroup => node.Children.Single(child => child.Group is T);
-            public TreeNode Entity1 => Group<EntitiesGroup>(Layer1).Children[0];
-            public TreeNode Entity2 => Group<EntitiesGroup>(Layer1).Children[1];
-            public TreeNode EntityOfLayer2 => Group<EntitiesGroup>(Layer2).Children[0];
-
-            public IEnumerable<TreeNode> All() => Flatten(Tree.Roots);
-            private static IEnumerable<TreeNode> Flatten(IEnumerable<TreeNode> nodes) =>
-                nodes.SelectMany(node => new[] { node }.Concat(Flatten(node.Children)));
-            public IEnumerable<TreeNode> Candidates() => All().Where(node => node.IsDropCandidate);
-            public IEnumerable<TreeNode> Neighbors() => All().Where(node => node.IsDropNeighbor);
-        }
-
         // Composition A: layer 1 has two entities, a camera, modifiers on the entities and two filters. Layer 2 has one entity and one
         // filter. B has one layer.
-        private static Scene CreateScene()
+        private static Scene CreateScene() => TreeFixtures.CreateScene(fill: Fill);
+
+        private static void Fill(Scene scene)
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            project.CompositionManager.AddItem(typeof(Composition));
-            var a = (Composition)project.CompositionManager.ManagerData.Items[0];
-            var b = (Composition)project.CompositionManager.ManagerData.Items[1];
-            a.LayerManager.AddItem(typeof(Layer));
-            a.LayerManager.AddItem(typeof(Layer));
-            b.LayerManager.AddItem(typeof(Layer));
-            var layer1 = (Layer)a.LayerManager.ManagerData.Items[0];
-            var layer2 = (Layer)a.LayerManager.ManagerData.Items[1];
+            var layer1 = scene.LayerOfA(0);
+            var layer2 = scene.LayerOfA(1);
             layer1.ModelEntityManager.AddItem(typeof(Entity));
             layer1.ModelEntityManager.AddItem(typeof(Entity));
             layer1.CameraManager.AddItem(typeof(CMiX.Core.Rendering.Cameras.Camera));
@@ -61,8 +49,6 @@ namespace CMiX.Studio.Avalonia.Tests
             layer1.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
             layer1.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
             layer2.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
-
-            return new Scene { Tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>()) };
         }
 
         [Fact]

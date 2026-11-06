@@ -5,11 +5,14 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 using Project = CMiX.Core.Compositing.Project;
@@ -28,43 +31,13 @@ namespace CMiX.Studio.Avalonia.Tests
                 window.Close();
         }
 
-        // The window of the test gets a scaling of the screen. The headless window has no setting for it.
-        private static void SetScaling(Window window, double scale)
-        {
-            var impl = window.PlatformImpl!;
-            impl.GetType().GetField("<RenderScaling>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(impl, scale);
-            ((Action<double>?)impl.GetType().GetProperty("ScalingChanged")!.GetValue(impl))?.Invoke(scale);
-        }
-
-        // Lets the animation of the rows end and the layout run.
-        private static void Settle(Window window)
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
-
+        // The window of the test gets a scaling of the screen.
         private (Window Window, ProjectTreeView View, ProjectTree Tree) Show(double scale, int layers)
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            for (var i = 0; i < layers; i++)
-                composition.LayerManager.AddItem(typeof(Layer));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            var window = new Window { Content = view, Width = 400, Height = 900 };
-            windows.Add(window);
-            window.Show();
-            SetScaling(window, scale);
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
-            Settle(window);
-            return (window, view, tree);
+            var tree = CreateScene([layers]).Tree;
+            var screen = TreeTestScreen.Show(tree, 400, 900, scale);
+            windows.Add(screen.Window);
+            return (screen.Window, screen.View, tree);
         }
 
         private static List<Border> RowsOf(ProjectTreeView view) =>

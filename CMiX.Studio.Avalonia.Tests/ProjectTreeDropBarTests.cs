@@ -11,6 +11,8 @@ using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using Composition = CMiX.Core.Compositing.Composition;
 using Entity = CMiX.Core.Compositing.Entity;
 using Layer = CMiX.Core.Compositing.Layer;
@@ -28,39 +30,23 @@ namespace CMiX.Studio.Avalonia.Tests
         // A composition with a layer, an entity, and three modifiers on it.
         private (ProjectTreeView View, ProjectTree Tree, Entity Entity, TreeNode Group) Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-            var layer = (Layer)composition.LayerManager.ManagerData.Items[0];
-            layer.ModelEntityManager.AddItem(typeof(Entity));
-            var entity = (Entity)layer.ModelEntityManager.ManagerData.Items[0];
-            for (var i = 0; i < 3; i++)
-                entity.ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 500, Height = 900 };
-            window.Show();
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
-            Settle();
+            var scene = CreateScene([1], s =>
+            {
+                s.Layer.ModelEntityManager.AddItem(typeof(Entity));
+                var added = (Entity)s.Layer.ModelEntityManager.ManagerData.Items[0];
+                for (var i = 0; i < 3; i++)
+                    added.ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
+            });
+            var tree = scene.Tree;
+            var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
+            var screen = TreeTestScreen.Show(tree, 500, 900);
+            window = screen.Window;
+            var view = screen.View;
             var group = tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(child => child.Group is ModifiersGroup);
             return (view, tree, entity, group);
         }
 
-        private void Settle()
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window!.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
-
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+        private void Settle() => TreeTestScreen.Settle(window!);
 
         private Point PointIn(ProjectTreeView view, TreeNode node, double fraction)
         {

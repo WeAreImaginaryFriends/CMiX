@@ -8,12 +8,15 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Services;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls.String;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 using Project = CMiX.Core.Compositing.Project;
@@ -29,33 +32,17 @@ namespace CMiX.Studio.Avalonia.Tests
 
         private sealed record Screen(ProjectTreeView View, ProjectTree Tree, UndoManager Undo, Composition Composition, ShortcutMap Shortcuts);
 
-        private void Settle()
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window!.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
+        private void Settle() => TreeTestScreen.Settle(window!);
 
         // One composition with three layers. The first layer is selected, the undo history is empty.
         private Screen Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            for (var i = 0; i < 3; i++)
-                composition.LayerManager.AddItem(typeof(Layer));
-
-            var undo = provider.GetRequiredService<UndoManager>();
-            var shortcuts = provider.GetRequiredService<ShortcutMap>();
-            var tree = new ProjectTree(project, undo, null, shortcuts);
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 500, Height = 700 };
-            window.Show();
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
+            var scene = CreateScene([3], withShortcuts: true);
+            var (tree, undo, composition) = (scene.Tree, scene.Undo, scene.A);
+            var shortcuts = scene.Provider.GetRequiredService<ShortcutMap>();
+            var screen = TreeTestScreen.Show(tree, 500, 700, settle: false);
+            window = screen.Window;
+            var view = screen.View;
             tree.Roots[0].IsExpanded = true;
             foreach (var layer in tree.Roots[0].Children)
                 layer.IsExpanded = false;
@@ -69,11 +56,6 @@ namespace CMiX.Studio.Avalonia.Tests
             return new Screen(view, tree, undo, composition, shortcuts);
         }
 
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
-
-        private static Border Part(ProjectTreeView view, TreeNode node, string name) =>
-            ItemOf(view, node).GetVisualDescendants().OfType<Border>().First(border => border.Name == name);
 
         private void Press(PhysicalKey key, RawInputModifiers modifiers = RawInputModifiers.None)
         {

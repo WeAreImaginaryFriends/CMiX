@@ -5,47 +5,19 @@ using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Rendering.Cameras;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
+    file static class SceneOfB
+    {
+        public static Layer LayerOfB(this Scene scene) => (Layer)scene.B.LayerManager.ManagerData.Items[0];
+    }
+
     // The rules for a drag in the project tree: the same type in the same list, a layer to another composition.
     public class TreeDropServiceTests
     {
-        private sealed class Scene
-        {
-            public Project Project { get; init; } = null!;
-            public ProjectTree Tree { get; init; } = null!;
-            public Composition A { get; init; } = null!;
-            public Composition B { get; init; } = null!;
-
-            public TreeNode NodeA => Tree.Roots[0];
-            public TreeNode NodeB => Tree.Roots[1];
-            public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
-            public Layer LayerOfB() => (Layer)B.LayerManager.ManagerData.Items[0];
-            public TreeNode LayerNodeOfA(int index) => NodeA.Children[index];
-            public TreeNode LayerNodeOfB(int index) => NodeB.Children[index];
-            public static TreeNode Group<T>(TreeNode layerNode) where T : TreeGroup => layerNode.Children.Single(group => group.Group is T);
-        }
-
-        // A holds two layers, B holds one.
-        private static Scene CreateScene()
-        {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            project.CompositionManager.AddItem(typeof(Composition));
-            var a = (Composition)project.CompositionManager.ManagerData.Items[0];
-            var b = (Composition)project.CompositionManager.ManagerData.Items[1];
-            a.LayerManager.AddItem(typeof(Layer));
-            a.LayerManager.AddItem(typeof(Layer));
-            b.LayerManager.AddItem(typeof(Layer));
-
-            var undo = provider.GetRequiredService<CMiX.Core.Undo.UndoManager>();
-            return new Scene { Project = project, Tree = new ProjectTree(project, undo), A = a, B = b };
-        }
-
         private readonly TreeDropService service = new();
 
         [Fact]

@@ -7,12 +7,15 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Compositing;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using AvaloniaColor = Avalonia.Media.Color;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
@@ -31,42 +34,16 @@ namespace CMiX.Studio.Avalonia.Tests
         // A composition with two layers. The first layer has two entities, one filter and three modifiers.
         private (ProjectTreeView View, ProjectTree Tree, TreeNode Layer, TreeNode Empty) Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-            composition.LayerManager.AddItem(typeof(Layer));
-            var layer = (Layer)composition.LayerManager.ManagerData.Items[0];
-            layer.ModelEntityManager.AddItem(typeof(Entity));
-            layer.ModelEntityManager.AddItem(typeof(Entity));
-            layer.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
-            for (var i = 0; i < 3; i++)
-                layer.ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 500, Height = 600 };
-            window.Show();
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
-            Settle();
+            var tree = CreateScene([2], s => AddKinds(s.Layer)).Tree;
+            var screen = TreeTestScreen.Show(tree, 500, 600);
+            window = screen.Window;
+            var view = screen.View;
             tree.SelectedNode = null;
             Settle();
             return (view, tree, tree.Roots[0].Children[0], tree.Roots[0].Children[1]);
         }
 
-        private void Settle()
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window!.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
-
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+        private void Settle() => TreeTestScreen.Settle(window!);
 
         private static KindCountBadges BadgesOf(ProjectTreeView view, TreeNode node) =>
             ItemOf(view, node).GetVisualDescendants().OfType<KindCountBadges>().First(badges => ReferenceEquals(badges.DataContext, node));
@@ -74,7 +51,6 @@ namespace CMiX.Studio.Avalonia.Tests
         private static List<Border> SquaresOf(KindCountBadges badges) =>
             badges.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("kindcount")).ToList();
 
-        private static AvaloniaColor FillOf(Border square) => ((ISolidColorBrush)square.Background!).Color;
 
         private static string NumberIn(Border square) => square.GetVisualDescendants().OfType<TextBlock>().Single().Text!;
 

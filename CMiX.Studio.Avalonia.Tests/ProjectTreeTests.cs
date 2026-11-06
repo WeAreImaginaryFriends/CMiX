@@ -5,43 +5,18 @@ using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Rendering.Cameras;
 using CMiX.Core.Rendering.Lights;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
     // The tree of compositions, layers and the items of a layer follows the lists and selects through them.
     public class ProjectTreeTests
     {
-        private sealed class Scene
-        {
-            public Project Project { get; init; } = null!;
-            public UndoManager Undo { get; init; } = null!;
-            public ProjectTree Tree { get; init; } = null!;
-            public Composition A { get; init; } = null!;
-            public Composition B { get; init; } = null!;
-
-            public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
-        }
-
         // Composition A holds two layers, composition B holds one. B is the selected composition.
-        private static Scene CreateScene()
-        {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            project.CompositionManager.AddItem(typeof(Composition));
-            var a = (Composition)project.CompositionManager.ManagerData.Items[0];
-            var b = (Composition)project.CompositionManager.ManagerData.Items[1];
-            a.LayerManager.AddItem(typeof(Layer));
-            a.LayerManager.AddItem(typeof(Layer));
-            b.LayerManager.AddItem(typeof(Layer));
-
-            var undo = provider.GetRequiredService<UndoManager>();
-            undo.Clear();
-            return new Scene { Project = project, Undo = undo, Tree = new ProjectTree(project, undo), A = a, B = b };
-        }
+        private static Scene CreateScene() => TreeFixtures.CreateScene(clearUndo: true);
 
         private static string NameOf(IControl item) => ((IPrefab)item).PrefabService.Name.Value;
 

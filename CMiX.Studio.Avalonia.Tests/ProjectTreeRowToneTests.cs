@@ -6,11 +6,14 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using AvaloniaColor = Avalonia.Media.Color;
 using Composition = CMiX.Core.Compositing.Composition;
 using Entity = CMiX.Core.Compositing.Entity;
@@ -33,45 +36,15 @@ namespace CMiX.Studio.Avalonia.Tests
 
         private (Window Window, ProjectTreeView View, ProjectTree Tree) Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-            composition.LayerManager.AddItem(typeof(Layer));
-            var layer = (Layer)composition.LayerManager.ManagerData.Items[0];
-            layer.ModelEntityManager.AddItem(typeof(Entity));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            var window = new Window { Content = view, Width = 400, Height = 600 };
-            windows.Add(window);
-            window.Show();
-            Settle(window);
+            var tree = CreateScene([2], s => s.Layer.ModelEntityManager.AddItem(typeof(Entity))).Tree;
+            var screen = TreeTestScreen.Show(tree, 400, 600, instant: false);
+            windows.Add(screen.Window);
             tree.SelectedNode = null;
-            Settle(window);
-            return (window, view, tree);
+            Settle(screen.Window);
+            return (screen.Window, screen.View, tree);
         }
-
-        private static void Settle(Window window)
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
-
-        private static Border RowOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node))
-                .GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
-
-        private static AvaloniaColor FillOf(Border row) => ((ISolidColorBrush)row.Background!).Color;
 
         private CategoryTone ToneOf(TreeNode node) => palette.For(node.Category!.Value, node.ComposableDepth, node.KindDepth);
-
-        private static IEnumerable<TreeNode> All(IEnumerable<TreeNode> nodes) =>
-            nodes.SelectMany(node => new[] { node }.Concat(All(node.Children)));
 
         private static Point CenterOf(Window window, Border row) =>
             row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window)!.Value;

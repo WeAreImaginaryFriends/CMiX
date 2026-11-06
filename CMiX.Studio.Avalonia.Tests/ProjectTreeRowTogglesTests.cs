@@ -7,11 +7,14 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using Composition = CMiX.Core.Compositing.Composition;
 using Entity = CMiX.Core.Compositing.Entity;
 using Layer = CMiX.Core.Compositing.Layer;
@@ -27,48 +30,16 @@ namespace CMiX.Studio.Avalonia.Tests
 
         public void Dispose() => window?.Close();
 
-        private static void SetScaling(Window target, double scale)
-        {
-            var impl = target.PlatformImpl!;
-            impl.GetType().GetField("<RenderScaling>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(impl, scale);
-            ((Action<double>?)impl.GetType().GetProperty("ScalingChanged")!.GetValue(impl))?.Invoke(scale);
-        }
-
-        private void Settle()
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window!.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
+        private void Settle() => TreeTestScreen.Settle(window!);
 
         // A composition with a layer, which has an entity.
         private (ProjectTreeView View, ProjectTree Tree) Show(double scale = 1.0)
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            composition.LayerManager.AddItem(typeof(Layer));
-            ((Layer)composition.LayerManager.ManagerData.Items[0]).ModelEntityManager.AddItem(typeof(Entity));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 500, Height = 600 };
-            window.Show();
-            SetScaling(window, scale);
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
-            Settle();
-            return (view, tree);
+            var scene = CreateScene([1], s => s.Layer.ModelEntityManager.AddItem(typeof(Entity)));
+            var screen = TreeTestScreen.Show(scene.Tree, 500, 600, scale);
+            window = screen.Window;
+            return (screen.View, scene.Tree);
         }
-
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
-
-        private static Border RowOf(ProjectTreeView view, TreeNode node) =>
-            ItemOf(view, node).GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
 
         private static RowToggles ColumnOf(ProjectTreeView view, TreeNode node) =>
             ItemOf(view, node).GetVisualDescendants().OfType<RowToggles>().First();
@@ -77,9 +48,6 @@ namespace CMiX.Studio.Avalonia.Tests
             column.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("slot") && border.IsEffectivelyVisible).ToList();
 
         private Rect BoundsIn(Control control) => new(control.TranslatePoint(new Point(0, 0), window!)!.Value, control.Bounds.Size);
-
-        private static IEnumerable<TreeNode> All(IEnumerable<TreeNode> nodes) =>
-            nodes.SelectMany(node => new[] { node }.Concat(All(node.Children)));
 
         [AvaloniaFact]
         public void TheSquares_AreOutsideTheColoredRow_AtItsRight()

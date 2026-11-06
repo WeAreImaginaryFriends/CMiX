@@ -3,8 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
-using Avalonia.Platform.Storage;
 using Avalonia.Input.Raw;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
@@ -14,6 +14,8 @@ using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using static CMiX.Studio.Avalonia.Tests.Support.TreeTestScreen;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 using Project = CMiX.Core.Compositing.Project;
@@ -31,36 +33,16 @@ namespace CMiX.Studio.Avalonia.Tests
         // A composition with twelve layers: a tree that is much higher than the window.
         private (ProjectTreeView View, ProjectTree Tree, ScrollViewer Scroller) Show()
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            var composition = (Composition)project.CompositionManager.ManagerData.Items[0];
-            for (var i = 0; i < 12; i++)
-                composition.LayerManager.AddItem(typeof(Layer));
-
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            window = new Window { Content = view, Width = 500, Height = 500 };
-            window.Show();
-            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
-                panel.Duration = TimeSpan.Zero;
-            Settle();
+            var tree = CreateScene([12]).Tree;
+            var screen = TreeTestScreen.Show(tree, 500, 500);
+            window = screen.Window;
+            var view = screen.View;
             tree.SelectedNode = null;
             Settle();
             return (view, tree, view.GetVisualDescendants().OfType<ScrollViewer>().First());
         }
 
-        private void Settle()
-        {
-            Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick(60);
-            window!.UpdateLayout();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Dispatcher.UIThread.RunJobs();
-        }
-
-        private static TreeViewItem ItemOf(ProjectTreeView view, TreeNode node) =>
-            view.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+        private void Settle() => TreeTestScreen.Settle(window!);
 
         private double RowTop(ProjectTreeView view, TreeNode node) =>
             ItemOf(view, node).GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder").TranslatePoint(new Point(0, 0), window!)!.Value.Y;

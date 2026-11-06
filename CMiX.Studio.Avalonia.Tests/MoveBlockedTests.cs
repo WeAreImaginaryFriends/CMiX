@@ -9,6 +9,7 @@ using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Services;
+using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,19 +22,8 @@ namespace CMiX.Studio.Avalonia.Tests
     {
         private static (ProjectTree Tree, FakeMoveBlockedNotice Notice, Composition A, Composition B) CreateScene(bool withNotice = true)
         {
-            var provider = TestServiceProviderFactory.Create();
-            var project = provider.GetRequiredService<Project>();
-            project.CompositionManager.AddItem(typeof(Composition));
-            project.CompositionManager.AddItem(typeof(Composition));
-            var a = (Composition)project.CompositionManager.ManagerData.Items[0];
-            var b = (Composition)project.CompositionManager.ManagerData.Items[1];
-            a.LayerManager.AddItem(typeof(Layer));
-            a.LayerManager.AddItem(typeof(Layer));
-            b.LayerManager.AddItem(typeof(Layer));
-
-            var notice = provider.GetRequiredService<FakeMoveBlockedNotice>();
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>(), withNotice ? notice : null);
-            return (tree, notice, a, b);
+            var scene = TreeFixtures.CreateScene(withNotice: withNotice);
+            return (scene.Tree, scene.Provider.GetRequiredService<FakeMoveBlockedNotice>(), scene.A, scene.B);
         }
 
         // The first layer of A shares an entity with the second.
