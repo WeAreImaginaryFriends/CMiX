@@ -1,6 +1,8 @@
 using CMiX.Core;
 using CMiX.Core.Compositing;
+using CMiX.Core.Modulation.Modifiers;
 using CMiX.Core.Prefabs;
+using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Rendering.Cameras;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using Microsoft.Extensions.DependencyInjection;
@@ -554,6 +556,52 @@ namespace CMiX.Studio.Avalonia.Tests
             var group = Scene.Group(scene.LayerNodeOfA(0), "Entities");
 
             Assert.False(service.CanDrop(group, scene.LayerNodeOfA(1), DropPosition.Before));
+        }
+
+        [Fact]
+        public void Drop_ALayerThatTheTargetRefuses_ReportsNothingHappened()
+        {
+            var scene = CreateScene();
+            var moved = scene.LayerOfA(0);
+            scene.B.LayerManager.CanAddExistingItem = _ => false;
+
+            var outcome = service.Drop(scene.LayerNodeOfA(0), scene.LayerNodeOfB(0), DropPosition.After);
+
+            Assert.Equal(DropOutcome.None, outcome);
+            Assert.Contains(moved, scene.A.LayerManager.ManagerData.Items);
+            Assert.DoesNotContain(moved, scene.B.LayerManager.ManagerData.Items);
+        }
+
+        [Fact]
+        public void Drop_ALayerSharedWithAnotherLayer_ReportsTheBlockingItems()
+        {
+            var scene = CreateScene();
+            var moved = scene.LayerOfA(0);
+            moved.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (IPrefab)moved.ModelEntityManager.ManagerData.Items[0];
+            scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
+
+            var outcome = service.Drop(scene.LayerNodeOfA(0), scene.LayerNodeOfB(0), DropPosition.After);
+
+            Assert.False(outcome.Moved);
+            Assert.Same(entity, Assert.Single(outcome.Blocking));
+        }
+
+        [Fact]
+        public void Accepts_AnOwnerThatCannotHoldTheType_IsFalse()
+        {
+            var scene = CreateScene();
+            scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            scene.LayerOfA(1).ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (Entity)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
+            entity.ModifierManager.AddItem(typeof(TranslateModifier));
+            var modifier = Scene.Group(Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0], "Modifiers").Children[0];
+            var entityModifiers = Scene.Group(Scene.Group(scene.LayerNodeOfA(1), "Entities").Children[0], "Modifiers");
+            var layerModifiers = Scene.Group(scene.LayerNodeOfB(0), "Modifiers");
+
+            Assert.False(ListRules.CanHold(typeof(Layer), typeof(TranslateModifier)));
+            Assert.False(service.CanDrop(modifier, layerModifiers, DropPosition.Inside));
+            Assert.True(service.CanDrop(modifier, entityModifiers, DropPosition.Inside));
         }
 
         [Fact]

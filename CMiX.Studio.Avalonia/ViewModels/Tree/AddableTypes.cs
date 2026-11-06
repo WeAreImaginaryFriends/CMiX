@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs;
+using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Texturing.Filters;
 using CMiX.Core.Texturing.Sources;
 
@@ -17,14 +18,14 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     {
         private static readonly Dictionary<Type, IReadOnlyList<Type>> cache = new();
 
-        // The modifiers that an owner of this type can take, by the ModifierPanel attribute of the modifier.
+        // The modifiers that an owner of this type can take. ListRules.CanHold decides.
         public static IReadOnlyList<Type> ForOwner(Type ownerType) =>
             Cached(ownerType, () => typeof(ModifierPanelAttribute).Assembly
                 .GetTypes()
                 .Concat(ownerType.Assembly.GetTypes())
                 .Distinct()
                 .Where(IsAddable)
-                .Where(type => type.GetCustomAttributes<ModifierPanelAttribute>().Any(attribute => attribute.PanelOwner == ownerType)));
+                .Where(type => type.IsDefined(typeof(ModifierPanelAttribute), true) && ListRules.CanHold(ownerType, type)));
 
         // The types that implement an interface, in the assembly of the interface.
         public static IReadOnlyList<Type> ForInterface(Type interfaceType) =>

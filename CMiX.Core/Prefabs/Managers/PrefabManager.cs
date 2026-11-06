@@ -241,18 +241,20 @@ namespace CMiX.Core.Prefabs.Managers
         }
 
         // Moves an item from the source list into this list at an index, as one undo step that peers also see.
-        // An item that cannot move stays in the source list, and the items that block it are returned.
-        public IReadOnlyList<IPrefab> MoveItemToManager(IControl item, PrefabManager source, int index)
+        // An item that this list refuses, or that is not in the source, stays where it is, and the result is None.
+        // An item that other items block stays in the source list, and the result gives the items that block it.
+        public MoveResult MoveItemToManager(IControl item, PrefabManager source, int index)
         {
             if (item == null || source == null || ReferenceEquals(source, this) || UndoManager?.IsApplying == true
-                || !source.ManagerData.Items.Contains(item))
-                return Array.Empty<IPrefab>();
+                || !source.ManagerData.Items.Contains(item)
+                || CanAddExistingItem?.Invoke(item) == false)
+                return MoveResult.None;
 
             if (item is IMoveRestricted restricted)
             {
                 var blocking = restricted.GetItemsBlockingMove(source.ManagerData.Items);
                 if (blocking.Count > 0)
-                    return blocking;
+                    return MoveResult.BlockedBy(blocking);
             }
 
             UndoManager?.BeginCapture();
@@ -267,7 +269,7 @@ namespace CMiX.Core.Prefabs.Managers
                 UndoManager?.EndCapture();
             }
 
-            return Array.Empty<IPrefab>();
+            return MoveResult.Done;
         }
 
         private void Run(IUndoCommand command)

@@ -50,9 +50,10 @@ namespace CMiX.Core.Tests
             var stays = scene.LayerOfA(1);
             var other = scene.LayerOfB(0);
 
-            var blocking = scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
+            var result = scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
 
-            Assert.Empty(blocking);
+            Assert.True(result.Moved);
+            Assert.Empty(result.Blocking);
             Assert.Equal(new IControl[] { stays }, scene.A.LayerManager.ManagerData.Items);
             Assert.Equal(new IControl[] { moved, other }, scene.B.LayerManager.ManagerData.Items);
         }
@@ -127,9 +128,10 @@ namespace CMiX.Core.Tests
             stays.ModelEntityManager.AddExistingItem(entity);
             scene.Undo.Clear();
 
-            var blocking = scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
+            var result = scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
 
-            Assert.Same(entity, Assert.Single(blocking));
+            Assert.False(result.Moved);
+            Assert.Same(entity, Assert.Single(result.Blocking));
             Assert.Equal(2, scene.A.LayerManager.ManagerData.Items.Count);
             Assert.Single(scene.B.LayerManager.ManagerData.Items);
             Assert.Equal(scene.A.ID, moved.CompositionID);
@@ -145,9 +147,9 @@ namespace CMiX.Core.Tests
             var entity = (IPrefab)moved.ModelEntityManager.ManagerData.Items[0];
             scene.LayerOfB(0).ModelEntityManager.AddExistingItem(entity);
 
-            var blocking = scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
+            var result = scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
 
-            Assert.Empty(blocking);
+            Assert.True(result.Moved);
             Assert.Contains(moved, scene.B.LayerManager.ManagerData.Items);
         }
 
@@ -157,9 +159,9 @@ namespace CMiX.Core.Tests
             var scene = CreateScene();
             var moved = scene.LayerOfA(0);
 
-            var blocking = scene.A.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 1);
+            var result = scene.A.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 1);
 
-            Assert.Empty(blocking);
+            Assert.Same(MoveResult.None, result);
             Assert.Equal(2, scene.A.LayerManager.ManagerData.Items.Count);
             Assert.False(scene.Undo.CanUndo);
         }
@@ -174,6 +176,34 @@ namespace CMiX.Core.Tests
 
             Assert.Single(scene.B.LayerManager.ManagerData.Items);
             Assert.Equal(2, scene.A.LayerManager.ManagerData.Items.Count);
+            Assert.False(scene.Undo.CanUndo);
+        }
+
+        [Fact]
+        public void MoveItemToManager_ASourceWithoutTheItem_ReportsNothingHappened()
+        {
+            var scene = CreateScene();
+            var notInA = scene.LayerOfB(0);
+
+            var result = scene.B.LayerManager.MoveItemToManager(notInA, scene.A.LayerManager, 0);
+
+            Assert.Same(MoveResult.None, result);
+            Assert.False(result.Moved);
+            Assert.Empty(result.Blocking);
+        }
+
+        [Fact]
+        public void MoveItemToManager_ARefusedItem_IsNotMovedAndWritesNoUndoStep()
+        {
+            var scene = CreateScene();
+            var moved = scene.LayerOfA(0);
+            scene.B.LayerManager.CanAddExistingItem = control => !ReferenceEquals(control, moved);
+
+            var result = scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
+
+            Assert.Same(MoveResult.None, result);
+            Assert.Equal(2, scene.A.LayerManager.ManagerData.Items.Count);
+            Assert.DoesNotContain(moved, scene.B.LayerManager.ManagerData.Items);
             Assert.False(scene.Undo.CanUndo);
         }
 

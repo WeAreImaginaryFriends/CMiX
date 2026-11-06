@@ -21,10 +21,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     // The row that takes a drop, and where the drop goes in relation to it.
     public sealed record DropPlace(TreeNode Target, DropPosition Position);
 
-    // What a drop did. Blocking lists the items that stopped a move of a layer.
+    // What a drop did: the item moved, items blocked the move (Blocking gives them), or nothing happened (None).
     public sealed record DropOutcome(bool Moved, IReadOnlyList<IPrefab> Blocking)
     {
-        public static DropOutcome None { get; } = new(false, new List<IPrefab>());
+        public static DropOutcome None { get; } = new(false, Array.Empty<IPrefab>());
+
+        public static DropOutcome From(MoveResult result) =>
+            new(result.Moved, result.Blocking);
     }
 
     // The rules for a drag in the project tree.
@@ -117,9 +120,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private static System.Type? KindOfGroup(TreeNode group) =>
             group.Item == null ? group.Group?.GetType() : null;
 
-        // The list of the group can hold the item. A modifier goes only to an owner that can take it. The other kinds take any item of the kind.
+        // The list of the group can hold the item. ListRules.CanHold decides.
         private static bool Accepts(IControl item, TreeGroup? group) =>
-            group is not ModifiersGroup || AddableTypes.ForOwner(group.OwnerType).Contains(item.GetType());
+            group == null || ListRules.CanHold(group.OwnerType, item.GetType());
 
         // The item is in a list of the same kind as the row of another owner, and that list does not have it yet.
         private static bool CanMoveBetweenLists(TreeNode source, TreeNode target) =>
@@ -218,8 +221,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 && !ReferenceEquals(CompositionOf(source), CompositionOf(target)) && IsUsedByOtherLayers(source))
                 return new DropOutcome(false, new List<IPrefab> { prefab });
 
-            var blocking = list.MoveItemToManager(item, owner, index);
-            return new DropOutcome(blocking.Count == 0, blocking);
+            return DropOutcome.From(list.MoveItemToManager(item, owner, index));
         }
 
         // The text for a move that shared items block.
