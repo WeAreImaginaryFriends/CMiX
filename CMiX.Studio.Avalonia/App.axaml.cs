@@ -16,6 +16,7 @@ using CMiX.Core.Networking;
 using CMiX.Core.Persistence;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Studio.Avalonia.Animations;
+using CMiX.Studio.Avalonia.Platform;
 using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels;
@@ -68,6 +69,10 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<UnsavedChanges>();
                 serviceCollection.AddSingleton<IUnsavedChangesPrompt, UnsavedChangesPrompt>();
                 serviceCollection.AddSingleton<IMoveBlockedNotice, MoveBlockedNotice>();
+                if (OperatingSystem.IsWindows())
+                    serviceCollection.AddSingleton<IDragWheelSource, WindowsDragWheelSource>();
+                else
+                    serviceCollection.AddSingleton<IDragWheelSource, NoDragWheelSource>();
                 serviceCollection.AddSingleton<IDialogService>(provider => new DialogService(
                     new MainWindowDialogManager(new Services.EmptyViewLocator(), new DialogFactory().AddMessageBox()),
                     viewModelFactory: type => provider.GetService(type)));

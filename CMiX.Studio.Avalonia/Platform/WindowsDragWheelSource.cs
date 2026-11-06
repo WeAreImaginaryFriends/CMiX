@@ -5,11 +5,12 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace CMiX.Studio.Avalonia.Views
+namespace CMiX.Studio.Avalonia.Platform
 {
     // Gives the mouse wheel during a drag. Windows runs its own loop for a drag and sends no wheel message to the window,
     // so a low level mouse hook reads the wheel. It exists only while a drag is over the tree. Other systems have no hook.
-    public sealed class DragWheelHook : IDisposable
+    // Dispose removes the hook. A later Start can set it again.
+    public sealed class WindowsDragWheelSource : IDragWheelSource
     {
         private const int WhMouseLl = 14;
         private const int WmMouseWheel = 0x020A;
@@ -39,21 +40,20 @@ namespace CMiX.Studio.Avalonia.Views
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         private static extern IntPtr GetModuleHandle(string? name);
 
-        private readonly Action<int> onWheel;
         private readonly HookProc proc;
+        private Action<int>? onWheel;
         private IntPtr hook;
 
-        // onWheel gets the wheel steps: positive when the wheel turns away from the user (scroll up).
-        public DragWheelHook(Action<int> onWheel)
+        public WindowsDragWheelSource()
         {
-            this.onWheel = onWheel;
             proc = Callback;
         }
 
         public bool IsActive => hook != IntPtr.Zero;
 
-        public void Start()
+        public void Start(Action<int> onWheel)
         {
+            this.onWheel = onWheel;
             if (hook != IntPtr.Zero || !OperatingSystem.IsWindows())
                 return;
 
@@ -84,7 +84,7 @@ namespace CMiX.Studio.Avalonia.Views
                 var data = Marshal.PtrToStructure<MouseHookData>(lParam);
                 var steps = (short)(data.MouseData >> 16) / 120;
                 if (steps != 0)
-                    onWheel(steps);
+                    onWheel?.Invoke(steps);
             }
 
             return CallNextHookEx(hook, code, wParam, lParam);

@@ -17,6 +17,7 @@ using CMiX.Core.Texturing;
 using CMiX.Core.Rendering.Cameras;
 using CMiX.Core.Rendering.Lights;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Platform;
 using CMiX.Studio.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -37,10 +38,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private TreeNode? selectedNode;
         private bool selecting;
 
-        public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null)
+        public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null, IDragWheelSource? dragWheelSource = null)
         {
             this.undoManager = undoManager;
             this.notice = notice;
+            DragWheelSource = dragWheelSource ?? new NoDragWheelSource();
             compositions = project.CompositionManager;
             root = new TreeNode(this, null, null, null, "Project", compositions);
 
@@ -60,6 +62,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         }
 
         public ObservableCollection<TreeNode> Roots => root.Children;
+
+        // The mouse wheel during a drag over the tree (see DragAutoScroller).
+        public IDragWheelSource DragWheelSource { get; }
 
         // The commands of the toolbar. They act on the selected node, and they are disabled when it has nothing to do.
         // AddItemCommand adds when there is only one thing to add. With several, the toolbar asks (see GetAddChoices).

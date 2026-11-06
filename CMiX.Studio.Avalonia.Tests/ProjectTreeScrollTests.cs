@@ -27,7 +27,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Dispose() => window?.Close();
 
         // A composition with twelve layers: a tree that is much higher than the window.
-        private (ProjectTreeView View, ProjectTree Tree, ScrollViewer Scroller) Show()
+        private (ProjectTreeView View, ProjectTree Tree, ScrollViewer Scroller) Show(FakeDragWheelSource? wheelSource = null)
         {
             var provider = TestServiceProviderFactory.Create();
             var project = provider.GetRequiredService<Project>();
@@ -36,7 +36,7 @@ namespace CMiX.Studio.Avalonia.Tests
             for (var i = 0; i < 12; i++)
                 composition.LayerManager.AddItem(typeof(Layer));
 
-            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
+            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>(), null, wheelSource);
             var view = new ProjectTreeView { DataContext = tree };
             window = new Window { Content = view, Width = 500, Height = 500 };
             window.Show();
@@ -203,6 +203,30 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(view.AutoScrollStep() > 0);
             DragAt(view, tree, scroller, scroller.Bounds.Height + 20, RawDragEventType.DragLeave);
             Assert.Equal(0, view.AutoScrollStep());
+            tree.EndDrag();
+        }
+
+        [AvaloniaFact]
+        public void DragLeave_AfterADragOverNearTheEdge_StopsTheScrollAfterOneDispatcherPass()
+        {
+            var source = new FakeDragWheelSource();
+            var (view, tree, scroller) = Show(source);
+            tree.BeginDrag(tree.Roots[0].Children[0]);
+            DragAt(view, tree, scroller, scroller.Bounds.Height / 2, RawDragEventType.DragEnter);
+            DragAt(view, tree, scroller, scroller.Bounds.Height - 4, RawDragEventType.DragOver);
+            Assert.True(view.IsAutoScrolling);
+
+            // A file drag that is cancelled ends with a leave inside the tree, and with no drop. The headless DragDrop runs the
+            // dispatcher jobs, so the leave is raised here on a row.
+            var data = new DataObject();
+            data.Set(ProjectTreeView.NodeFormat, tree.Roots[0].Children[0]);
+            var row = view.GetVisualDescendants().OfType<TreeViewItem>().First();
+            row.RaiseEvent(new DragEventArgs(DragDrop.DragLeaveEvent, data, row, new Point(40, 4), KeyModifiers.None));
+            Assert.True(source.IsActive);
+
+            Dispatcher.UIThread.RunJobs();
+            Assert.False(view.IsAutoScrolling);
+            Assert.False(source.IsActive);
             tree.EndDrag();
         }
     }

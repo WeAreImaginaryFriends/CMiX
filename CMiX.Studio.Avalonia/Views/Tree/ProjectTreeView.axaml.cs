@@ -14,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CMiX.Studio.Avalonia.Platform;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Managers;
 using CompositionModel = CMiX.Core.Compositing.Composition;
@@ -48,6 +49,7 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
             treeView.AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Tunnel);
             treeView.AddHandler(PointerReleasedEvent, OnPointerReleased, RoutingStrategies.Tunnel);
+            treeView.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
             treeView.AddHandler(DragDrop.DragOverEvent, OnDragOver);
             treeView.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
             treeView.AddHandler(DragDrop.DropEvent, OnDrop);
@@ -168,6 +170,8 @@ namespace CMiX.Studio.Avalonia.Views
                 scaledTopLevel.ScalingChanged -= OnScalingChanged;
 
             scaledTopLevel = null;
+            autoScroller?.Dispose();
+            autoScroller = null;
             base.OnDetachedFromVisualTree(e);
         }
 
@@ -308,7 +312,7 @@ namespace CMiX.Studio.Avalonia.Views
             finally
             {
                 tree?.EndDrag();
-                StopAutoScroll();
+                autoScroller?.StopNow();
                 Mark(null, null);
             }
         }
@@ -349,72 +353,31 @@ namespace CMiX.Studio.Avalonia.Views
                 tree.DropPaths(ItemOf(e.Source)?.DataContext as TreeNode, PathsOf(e));
         }
 
-        // The tree scrolls while a drag is near its top or bottom edge. The system gives no mouse wheel during a drag,
-        // so a timer scrolls as long as the pointer stays in the edge zone.
-        private const double EdgeZone = 28.0;
-        private const double MaxScrollStep = 18.0;
-        private readonly DispatcherTimer autoScrollTimer = new() { Interval = TimeSpan.FromMilliseconds(30) };
-        private double? dragY;
+        // The tree scrolls while a drag is near its top or bottom edge, and with the mouse wheel (see DragAutoScroller).
+        // The scroller is made at the first drag and goes away when the view leaves the window.
+        private DragAutoScroller? autoScroller;
 
         private ScrollViewer? ScrollerOfTree =>
             treeView.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
 
+        private double RowPitch => Convert.ToDouble(Resources["TreeRowHeight"]) + Convert.ToDouble(Resources["TreeRowGap"]);
+
+        // True while the scroll of a drag runs.
+        public bool IsAutoScrolling => autoScroller?.IsRunning ?? false;
+
         private void TrackDragPointer(DragEventArgs e)
         {
-            dragY = ScrollerOfTree is { } scroller ? e.GetPosition(scroller).Y : null;
-            wheelHook ??= new DragWheelHook(steps => Dispatcher.UIThread.Post(() => ScrollByWheel(steps)));
-            wheelHook.Start();
-            if (!autoScrollTimer.IsEnabled)
-            {
-                autoScrollTimer.Tick -= OnAutoScrollTick;
-                autoScrollTimer.Tick += OnAutoScrollTick;
-                autoScrollTimer.Start();
-            }
+            autoScroller ??= new DragAutoScroller(
+                (DataContext as ProjectTree)?.DragWheelSource ?? new NoDragWheelSource(), () => ScrollerOfTree, () => RowPitch);
+            autoScroller.Track(ScrollerOfTree is { } scroller ? e.GetPosition(scroller).Y : null);
         }
 
-        private void StopAutoScroll()
-        {
-            autoScrollTimer.Stop();
-            wheelHook?.Stop();
-            dragY = null;
-        }
+        public void ScrollByWheel(int steps) => autoScroller?.ScrollByWheel(steps);
 
-        // The mouse wheel also scrolls the tree during a drag (see DragWheelHook). A step is three rows.
-        private DragWheelHook? wheelHook;
+        public double AutoScrollStep() => autoScroller?.AutoScrollStep() ?? 0;
 
-        public void ScrollByWheel(int steps)
-        {
-            if (dragY == null || ScrollerOfTree is not { } scroller)
-                return;
-
-            var maxOffset = Math.Max(0, scroller.Extent.Height - scroller.Viewport.Height);
-            var rows = steps * 3 * (Convert.ToDouble(Resources["TreeRowHeight"]) + Convert.ToDouble(Resources["TreeRowGap"]));
-            scroller.Offset = scroller.Offset.WithY(Math.Clamp(scroller.Offset.Y - rows, 0, maxOffset));
-        }
-
-        private void OnAutoScrollTick(object? sender, EventArgs e) => AutoScrollStep();
-
-        // One step of the scroll of a drag. The step is larger when the pointer is closer to the edge, or beyond it.
-        // Returns the distance that the view moved.
-        public double AutoScrollStep()
-        {
-            if (dragY is not { } y || ScrollerOfTree is not { } scroller)
-                return 0;
-
-            var step = 0.0;
-            if (y < EdgeZone)
-                step = -MaxScrollStep * Math.Min(1, (EdgeZone - y) / EdgeZone);
-            else if (y > scroller.Bounds.Height - EdgeZone)
-                step = MaxScrollStep * Math.Min(1, (y - (scroller.Bounds.Height - EdgeZone)) / EdgeZone);
-
-            if (step == 0)
-                return 0;
-
-            var before = scroller.Offset.Y;
-            var maxOffset = Math.Max(0, scroller.Extent.Height - scroller.Viewport.Height);
-            scroller.Offset = scroller.Offset.WithY(Math.Clamp(before + step, 0, maxOffset));
-            return scroller.Offset.Y - before;
-        }
+        // A leave of one row comes with the enter of the next row. The enter keeps the scroll of the drag running.
+        private void OnDragEnter(object? sender, DragEventArgs e) => TrackDragPointer(e);
 
         private void OnDragOver(object? sender, DragEventArgs e)
         {
@@ -448,16 +411,15 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void OnDragLeave(object? sender, DragEventArgs e)
         {
-            // A leave also comes each time the pointer goes from one row to the next. The scroll stops only when the pointer is out of the tree.
-            if (!new Rect(treeView.Bounds.Size).Contains(e.GetPosition(treeView)))
-                StopAutoScroll();
+            // A leave also comes each time the pointer goes from one row to the next. The next enter or over cancels the stop.
+            autoScroller?.StopDeferred();
 
             Mark(null, null);
         }
 
         private async void OnDrop(object? sender, DragEventArgs e)
         {
-            StopAutoScroll();
+            autoScroller?.StopNow();
 
             if (e.Data.Contains(DataFormats.Files))
             {
