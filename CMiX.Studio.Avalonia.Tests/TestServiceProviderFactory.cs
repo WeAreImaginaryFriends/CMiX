@@ -5,6 +5,7 @@ using CMiX.Core.DependencyInjection;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.ViewModels;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,7 @@ namespace CMiX.Studio.Avalonia.Tests
             serviceCollection.AddSingleton<FakeMessageNotice>();
             serviceCollection.AddSingleton<IMessageNotice>(provider => provider.GetRequiredService<FakeMessageNotice>());
             serviceCollection.AddSingleton<PathDropService>();
+            serviceCollection.AddSingleton<ProjectTree>();
             // The defaults, with a file path in the temp folder. A test never reads or writes the file of the user.
             serviceCollection.AddSingleton(_ => new ShortcutMap(Path.Combine(Path.GetTempPath(), $"cmix-shortcuts-{Guid.NewGuid():N}", ShortcutMap.FileName)));
             // A test sets no mouse hook on the desktop.

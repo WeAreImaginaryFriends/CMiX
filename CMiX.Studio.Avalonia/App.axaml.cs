@@ -19,6 +19,7 @@ using CMiX.Studio.Avalonia.Animations;
 using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.UI.Interaction;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
@@ -70,6 +71,7 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<IMoveBlockedNotice, MoveBlockedNotice>();
                 serviceCollection.AddSingleton<IMessageNotice, Services.MessageNotice>();
                 serviceCollection.AddSingleton<PathDropService>();
+                serviceCollection.AddSingleton<ProjectTree>();
                 serviceCollection.AddSingleton(_ =>
                 {
                     var shortcuts = new ShortcutMap();

@@ -11,7 +11,7 @@
     <!-- A panel of the window with an icon button at the top. The button shows the icon of what the panel shows. A click opens the list
          of the choices (a PanelChoice), each with its icon and its name, as the list of the swap button of the prefab slots does.
          Use it for every panel that can show different things: the Choice is the choice of the user, the Choices are the options.
-         The views of the choices get their data from the DataContext of the window (the MainViewModel). -->
+         The views of the choices get their data from the Context (the MainViewModel). The window sets it. -->
     <DockPanel>
 
         <Border
@@ -70,11 +70,11 @@
             <ContentControl.DataTemplates>
 
                 <DataTemplate DataType="{x:Type StudioViewModels:TreePanelChoice}">
-                    <Views:ProjectTreeView DataContext="{Binding $parent[Window].DataContext.ProjectTree}" />
+                    <Views:ProjectTreeView DataContext="{Binding Context.ProjectTree, ElementName=sidePanelHost}" />
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type StudioViewModels:TabsPanelChoice}">
-                    <Views:MainTabsPanel DataContext="{Binding $parent[Window].DataContext}" />
+                    <Views:MainTabsPanel DataContext="{Binding Context, ElementName=sidePanelHost}" />
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type StudioViewModels:AssetsPanelChoice}">
@@ -82,7 +82,7 @@
                         <i:Interaction.Behaviors>
                             <ui:ScrollViewerBehavior />
                         </i:Interaction.Behaviors>
-                        <Views:AssetManager DataContext="{Binding $parent[Window].DataContext.AssetManager}" />
+                        <Views:AssetManager DataContext="{Binding Context.AssetManager, ElementName=sidePanelHost}" />
                     </ScrollViewer>
                 </DataTemplate>
 

@@ -33,6 +33,16 @@ namespace CMiX.Studio.Avalonia.Views
             set => SetValue(ChoicesProperty, value);
         }
 
+        public static readonly StyledProperty<MainViewModel?> ContextProperty =
+            AvaloniaProperty.Register<SidePanelHost, MainViewModel?>(nameof(Context));
+
+        // The view model that the views of the choices show.
+        public MainViewModel? Context
+        {
+            get => GetValue(ContextProperty);
+            set => SetValue(ContextProperty, value);
+        }
+
         // The command of the rows of the list: it makes the picked choice the choice of the panel.
         public ICommand PickCommand { get; }
 

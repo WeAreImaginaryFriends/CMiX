@@ -34,9 +34,9 @@ namespace CMiX.Studio.Avalonia.ViewModels
                              MainMenu mainMenu,
                              ControlActivationService activationService,
                              UndoManager undoManager,
-                             IMoveBlockedNotice moveBlockedNotice,
                              ShortcutMap shortcuts,
-                             PathDropService pathDropService)
+                             PathDropService pathDropService,
+                             ProjectTree projectTree)
         {
             _undoManager = undoManager;
             TextureManager = SetupManager(textureManager, ManagerIDs.TextureManager);
@@ -52,7 +52,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             UndoCommand = new RelayCommand(undoManager.Undo);
             RedoCommand = new RelayCommand(undoManager.Redo);
             PathDropService = pathDropService;
-            ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice, shortcuts, pathDropService);
+            ProjectTree = projectTree;
             Sync = sync;
             MainWindowController = mainWindowController;
             AssetManager = assetManager;

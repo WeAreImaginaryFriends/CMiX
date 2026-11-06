@@ -82,12 +82,14 @@
         <Views:SidePanelHost
             Grid.Column="0"
             Choice="{Binding LeftPanel, Mode=TwoWay}"
-            Choices="{Binding PanelChoices}" />
+            Choices="{Binding PanelChoices}"
+            Context="{Binding}" />
 
         <Views:SidePanelHost
             Grid.Column="1"
             Choice="{Binding RightPanel, Mode=TwoWay}"
-            Choices="{Binding PanelChoices}" />
+            Choices="{Binding PanelChoices}"
+            Context="{Binding}" />
 
         <!-- The splitter lies over the edge between the two columns, on top of them, so it takes no room: there is no gap between
              the panels. It is in the left column, at its right edge, and moves that edge. 2 of its width are in the tree, where the
