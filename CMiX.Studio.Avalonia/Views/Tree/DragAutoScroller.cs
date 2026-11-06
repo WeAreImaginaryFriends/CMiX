@@ -12,8 +12,9 @@ namespace CMiX.Studio.Avalonia.Views
     // This class is the only owner of the timer.
     public sealed class DragAutoScroller : IDisposable
     {
-        private const double EdgeZone = 28.0;
-        private const double MaxScrollStep = 18.0;
+        // The tokens DragScrollEdge and DragScrollStep. A test pins them.
+        internal const double EdgeZone = 28.0;
+        internal const double MaxScrollStep = 18.0;
 
         private readonly Func<ScrollViewer?> scroller;
         private readonly Func<double> rowPitch;

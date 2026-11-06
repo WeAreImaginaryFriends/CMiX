@@ -16,7 +16,7 @@
          that takes a drop inside it: it looks as if the pointer was over it. The class dropblocked shows a row that takes the
          kind of the dragged node but refuses it by a rule: a thin frame, and the reason in the tooltip. The marks are drawn
          over the row and take no room, so the rows never move during a drag. -->
-    <converters:MarginMultiplierConverter x:Key="TreeLevelIndent" Indent="16" Left="True" />
+    <converters:MarginMultiplierConverter x:Key="TreeLevelIndent" Indent="{StaticResource TreeIndent}" Left="True" />
 
     <!-- The tones of a row: the fill behind it and the colors of its count squares, by the kind of the row (see CategoryPalette). -->
     <StudioConverters:TreeToneConverter x:Key="TreeTone" />
@@ -25,7 +25,7 @@
     <x:Double x:Key="TreeDimOpacity">0.6</x:Double>
 
     <ControlTheme x:Key="TreeChevronToggle" TargetType="ToggleButton">
-        <Setter Property="Width" Value="16" />
+        <Setter Property="Width" Value="{DynamicResource TreeIndent}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
@@ -84,7 +84,7 @@
                                  renames it. -->
                             <Grid
                                 Name="RowContent"
-                                Margin="2,0,0,0">
+                                Margin="{DynamicResource TreeRowContentMargin}">
                                 <ContentPresenter
                                     Name="RowHeaderPresenter"
                                     HorizontalContentAlignment="Stretch"
@@ -143,7 +143,7 @@
                         </Panel>
                     </ui:CollapsePanel>
                 </StackPanel>
-                <!-- The line starts where the colored row starts: after the indent of the row and its chevron (16). It is inside the item:
+                <!-- The line starts where the colored row starts: after the indent of the row and its chevron (TreeIndent). It is inside the item:
                      at its top for a drop before the row, and at its bottom for a drop after it. An item cuts what is drawn outside it,
                      so a line in the space between two rows would not be seen. -->
                 <Panel
@@ -152,7 +152,7 @@
                     <Border
                         Name="DropLine"
                         Height="{DynamicResource SplitterIndicatorSize}"
-                        Margin="16,0,0,0"
+                        Margin="{DynamicResource TreeIndentMargin}"
                         VerticalAlignment="Top"
                         Background="{DynamicResource AccentBrush}"
                         IsHitTestVisible="False"

@@ -27,9 +27,14 @@
     <x:Double x:Key="IndicatorSize">8</x:Double>
     <x:Double x:Key="SplitterSize">8</x:Double>
     <x:Double x:Key="SplitterIndicatorSize">2</x:Double>
+    <!-- The room of a scroll bar: ScrollBarThickness plus the two sides of ScrollBarMargin. A test pins the sum. -->
     <x:Double x:Key="ScrollBarSize">8</x:Double>
-    <!-- The room that the content of an overlay scroll viewer leaves on the right for the bar: the width of the bar (4) and its
-         margins (2 and 2). The bar lies in this room, so the content has one width with a bar and without one. -->
+    <!-- The width of the vertical bar itself. -->
+    <x:Double x:Key="ScrollBarThickness">4</x:Double>
+    <!-- The space at the two sides of a bar. -->
+    <Thickness x:Key="ScrollBarMargin">2,0,2,0</Thickness>
+    <!-- The room that the content of an overlay scroll viewer leaves on the right for the bar: ScrollBarSize.
+         The bar lies in this room, so the content has one width with a bar and without one. -->
     <Thickness x:Key="ScrollBarGutter">0,0,8,0</Thickness>
     <x:Double x:Key="SeparatorSize">0.5</x:Double>
     <x:Double x:Key="ContextMenuIconSize">10</x:Double>
@@ -72,5 +77,29 @@
     <x:Double x:Key="SpacingXS">2</x:Double>
     <x:Double x:Key="SpacingSM">4</x:Double>
     <x:Double x:Key="SpacingMD">8</x:Double>
+
+    <!-- The project tree. Tests pin the numbers that the code also holds. -->
+    <!-- The indent of one level, and the width of the chevron. -->
+    <x:Double x:Key="TreeIndent">16</x:Double>
+    <!-- TreeIndent at the left: the drop line starts after the chevron. -->
+    <Thickness x:Key="TreeIndentMargin">16,0,0,0</Thickness>
+    <!-- The space between two rows at a screen of 100%. The view sets it again in whole pixels. -->
+    <x:Double x:Key="TreeRowGap">3</x:Double>
+    <!-- The space around the tree: SpacingMD at the left, top and bottom. The scroll bar gutter is at the right. -->
+    <Thickness x:Key="TreeMargin">8,8,0,8</Thickness>
+    <!-- The space before the content of a row: SpacingXS. -->
+    <Thickness x:Key="TreeRowContentMargin">2,0,0,0</Thickness>
+    <!-- The space at the two sides of the icon and the name of a row: SpacingSM. -->
+    <Thickness x:Key="TreeHeaderMargin">4,0</Thickness>
+    <!-- The space inside the toolbar of the tree: SpacingSM. -->
+    <Thickness x:Key="TreeToolbarPadding">4</Thickness>
+
+    <!-- A drag near the edge of a view. -->
+    <!-- The height of the zone at the top and the bottom edge that scrolls the view. -->
+    <x:Double x:Key="DragScrollEdge">28</x:Double>
+    <!-- The largest scroll of one step of the timer. -->
+    <x:Double x:Key="DragScrollStep">18</x:Double>
+    <!-- The distance that a press moves before a drag starts. -->
+    <x:Double x:Key="DragThreshold">4</x:Double>
 
 </ResourceDictionary>

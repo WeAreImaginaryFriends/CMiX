@@ -153,8 +153,9 @@ the tokens too.
 
 ### The scale of sizes
 
-All the sizes of the UI come from one scale in `Themes/Tokens/Geometry.axaml`. No AXAML file holds a height as
-a number: the test `HeightLiteralTests` fails for a new `Height`, `MinHeight` or `MaxHeight` that is a number.
+All the sizes of the UI come from one scale in `Themes/Tokens/Geometry.axaml`. No AXAML file holds a size as
+a number: the test `SizeLiteralTests` fails for a new `Height`, `MinHeight`, `MaxHeight`, `Width`, `MinWidth` or `MaxWidth` that is a number.
+In the files of the tree and of the scroll bar, it also fails for a `Margin` or a `Padding` that is a number.
 It has a short list of exceptions, each with its reason, and the size of a `Window` is not checked.
 
 XAML cannot add two tokens, so the tokens that follow `ControlHeightMD` are numbers, and `ScaleTokensTests` keeps

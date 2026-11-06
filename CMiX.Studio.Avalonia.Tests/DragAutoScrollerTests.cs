@@ -1,3 +1,5 @@
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using CMiX.Studio.Avalonia.Views;
 using Xunit;
@@ -53,6 +55,15 @@ namespace CMiX.Studio.Avalonia.Tests
             scroller.Dispose();
 
             Assert.False(scroller.IsRunning);
+        }
+
+        [AvaloniaFact]
+        public void DragAutoScroller_EdgeAndStep_EqualTheTokens()
+        {
+            var application = Application.Current!;
+
+            Assert.Equal(DragAutoScroller.EdgeZone, Convert.ToDouble(application.FindResource("DragScrollEdge")));
+            Assert.Equal(DragAutoScroller.MaxScrollStep, Convert.ToDouble(application.FindResource("DragScrollStep")));
         }
     }
 }

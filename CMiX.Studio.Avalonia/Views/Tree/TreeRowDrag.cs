@@ -18,7 +18,7 @@ namespace CMiX.Studio.Avalonia.Views
     // A file drag from the file manager is not a row drag: the tree takes it as a drop target (see ProjectTreeView).
     public sealed class TreeRowDrag
     {
-        // A press that moves this far starts the drag.
+        // A press that moves this far starts the drag. It is the token DragThreshold. A test pins the two.
         public const double Threshold = 4.0;
 
         // The cursor of a row drag. It stays the same over a blocked row: the frame of the row tells, not the cursor.

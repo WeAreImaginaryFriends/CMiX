@@ -11,6 +11,7 @@ namespace CMiX.Studio.Avalonia.Views
     public sealed class TreeRowMetrics
     {
         // The space between two rows, one above the other, at a screen of 100%. The drop line (SplitterIndicatorSize) sits in it.
+        // It is the token TreeRowGap. A test pins the two.
         public const double RowGap = 3;
 
         private readonly TreeView treeView;
@@ -26,7 +27,9 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         // The height of a row plus the space under it.
-        public double RowPitch => Convert.ToDouble(resources["TreeRowHeight"]) + Convert.ToDouble(resources["TreeRowGap"]);
+        // Before SetRowMetrics, the view has no TreeRowGap of its own, and the gap is RowGap.
+        public double RowPitch =>
+            Convert.ToDouble(resources["TreeRowHeight"]) + (resources.TryGetValue("TreeRowGap", out var gap) ? Convert.ToDouble(gap) : RowGap);
 
         // The height of a row and the space between two rows, in whole pixels of the screen.
         // On a screen with a scaling like 125%, a size of 24 or of 1 is not a whole number of pixels, and every panel rounds its
@@ -53,8 +56,9 @@ namespace CMiX.Studio.Avalonia.Views
             var (_, snappedGap) = SnapToPixels(height, RowGap, scale);
             resources["TreeRowGap"] = snappedGap;
 
-            // The drop line in the space under a row starts at the end of the row and at the start of the colored row (16).
-            resources["TreeDropLineGapMargin"] = new Thickness(16, snappedHeight, 0, 0);
+            // The drop line in the space under a row starts at the end of the row and at the start of the colored row (TreeIndent).
+            var indent = Convert.ToDouble(Application.Current!.FindResource("TreeIndent"));
+            resources["TreeDropLineGapMargin"] = new Thickness(indent, snappedHeight, 0, 0);
 
             // The border of the selected row is one pixel of the screen, so it is as thin on a screen of 150% as on a screen of 100%.
             resources["TreeSelectionThickness"] = new Thickness(1 / scale);

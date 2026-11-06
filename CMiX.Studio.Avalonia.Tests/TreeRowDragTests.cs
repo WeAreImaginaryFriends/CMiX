@@ -297,5 +297,11 @@ namespace CMiX.Studio.Avalonia.Tests
             TreeDrag.Release(screen.Window, screen.PointIn(layer, 0.5));
             Assert.Null(screen.TreeView.Cursor);
         }
+
+        [AvaloniaFact]
+        public void TreeRowDrag_Threshold_EqualsTheToken()
+        {
+            Assert.Equal(TreeRowDrag.Threshold, Convert.ToDouble(Application.Current!.FindResource("DragThreshold")));
+        }
     }
 }

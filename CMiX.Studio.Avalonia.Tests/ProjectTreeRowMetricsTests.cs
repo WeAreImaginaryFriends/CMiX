@@ -137,5 +137,11 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(27 / 1.1, height, 6);
             Assert.Equal(1 / 1.1, spacing, 6);
         }
+
+        [AvaloniaFact]
+        public void TreeRowMetrics_RowGap_EqualsTheToken()
+        {
+            Assert.Equal(TreeRowMetrics.RowGap, Convert.ToDouble(Application.Current!.FindResource("TreeRowGap")));
+        }
     }
 }
