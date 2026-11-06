@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
     d:DesignWidth="400">
 
     <StackPanel Spacing="{DynamicResource SpacingMD}">
@@ -20,14 +21,7 @@
             </ui:ComboBoxCaptioned.ItemTemplate>
         </ui:ComboBoxCaptioned>
 
-        <ui:RangeValue
-            DataContext="{Binding Range}"
-            LeftValue="{Binding Minimum.Value}"
-            LeftCaption="Min"
-            LeftResetCommand="{Binding Minimum.ResetCommand}"
-            RightCaption="Max"
-            RightResetCommand="{Binding Maximum.ResetCommand}"
-            RightValue="{Binding Maximum.Value}"/>
+        <Modulation:FloatRangeEditor DataContext="{Binding Range}" />
 
     </StackPanel>
 </UserControl>

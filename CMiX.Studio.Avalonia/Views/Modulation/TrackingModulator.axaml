@@ -3,32 +3,15 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     d:DesignWidth="400">
 
     <StackPanel Spacing="{DynamicResource SpacingMD}">
 
-        <ui:ContentCaptioned Caption="X">
-            <ui:RangeValue
-                DataContext="{Binding XRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="X" DataContext="{Binding XRange}" />
 
-        <ui:ContentCaptioned Caption="Y">
-            <ui:RangeValue
-                DataContext="{Binding YRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="Y" DataContext="{Binding YRange}" />
 
         <ui:ContentCaptioned Caption="Count" />
 

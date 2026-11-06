@@ -3,76 +3,23 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     d:DesignWidth="400">
 
     <StackPanel Spacing="{DynamicResource SpacingMD}">
 
-        <ui:ContentCaptioned Caption="Heart Rate">
-            <ui:RangeValue
-                DataContext="{Binding HeartRateRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="Heart Rate" DataContext="{Binding HeartRateRange}" />
 
-        <ui:ContentCaptioned Caption="Temperature">
-            <ui:RangeValue
-                DataContext="{Binding TemperatureRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="Temperature" DataContext="{Binding TemperatureRange}" />
 
-        <ui:ContentCaptioned Caption="Conductivity">
-            <ui:RangeValue
-                DataContext="{Binding ConductivityRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="Conductivity" DataContext="{Binding ConductivityRange}" />
 
-        <ui:ContentCaptioned Caption="ETemp">
-            <ui:RangeValue
-                DataContext="{Binding ETempRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="ETemp" DataContext="{Binding ETempRange}" />
 
-        <ui:ContentCaptioned Caption="BlueIOT Pos X">
-            <ui:RangeValue
-                DataContext="{Binding BlueIOTPosXRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="BlueIOT Pos X" DataContext="{Binding BlueIOTPosXRange}" />
 
-        <ui:ContentCaptioned Caption="BlueIOT Pos Y">
-            <ui:RangeValue
-                DataContext="{Binding BlueIOTPosYRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="BlueIOT Pos Y" DataContext="{Binding BlueIOTPosYRange}" />
 
         <ui:ContentCaptioned Caption="Count" />
 

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
     d:DesignWidth="400">
 
     <StackPanel Spacing="{DynamicResource SpacingMD}">
@@ -14,49 +15,13 @@
             Value="{Binding TrackIndex.Value}"
             ResetCommand="{Binding TrackIndex.ResetCommand}" />
 
-        <ui:ContentCaptioned Caption="Bass">
-            <ui:RangeValue
-                DataContext="{Binding BassRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="Bass" DataContext="{Binding BassRange}" />
 
-        <ui:ContentCaptioned Caption="Lower Mid">
-            <ui:RangeValue
-                DataContext="{Binding LowerMidRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="Lower Mid" DataContext="{Binding LowerMidRange}" />
 
-        <ui:ContentCaptioned Caption="Higher Mid">
-            <ui:RangeValue
-                DataContext="{Binding HigherMidRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="Higher Mid" DataContext="{Binding HigherMidRange}" />
 
-        <ui:ContentCaptioned Caption="High">
-            <ui:RangeValue
-                DataContext="{Binding HighRange}"
-                LeftValue="{Binding Minimum.Value}"
-                LeftCaption="Min"
-                LeftResetCommand="{Binding Minimum.ResetCommand}"
-                RightCaption="Max"
-                RightResetCommand="{Binding Maximum.ResetCommand}"
-                RightValue="{Binding Maximum.Value}"/>
-        </ui:ContentCaptioned>
+        <Modulation:FloatRangeEditor Caption="High" DataContext="{Binding HighRange}" />
 
     </StackPanel>
 
