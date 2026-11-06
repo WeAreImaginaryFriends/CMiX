@@ -31,7 +31,6 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         internal TreeNode(ProjectTree tree, TreeNode? parent, PrefabManager? owner, IControl? item, string header, PrefabManager? childManager, TreeGroup? group = null)
         {
             this.tree = tree;
-            Children.CollectionChanged += (_, _) => RaiseKindCountsChanged();
             Parent = parent;
             Owner = owner;
             Item = item;
@@ -63,6 +62,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             // place in the children.
             if (item != null)
                 AddGroups(item);
+
+            // The counts are computed once here, and again only when the children change.
+            kindCounts = ComputeKindCounts();
+            Children.CollectionChanged += (_, _) => RaiseKindCountsChanged();
         }
 
         // The lists that an item holds, as groups (see TreeGroup.GroupsOf). A group row has no item. The inspector shows the panel of the group.
@@ -95,26 +98,31 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The kinds of what the row holds, in the order of the rows under it, each with its number: an item under the row counts for
         // its own kind, and a group under the row counts for the items in it. A collapsed row shows these.
-        public IReadOnlyList<KindCount> KindCounts
+        public IReadOnlyList<KindCount> KindCounts => kindCounts;
+
+        private IReadOnlyList<KindCount> kindCounts;
+
+        // The number of computations of the counts. A test reads it.
+        internal int KindCountsComputations { get; private set; }
+
+        private List<KindCount> ComputeKindCounts()
         {
-            get
+            KindCountsComputations++;
+            var counts = new Dictionary<TreeCategory, int>();
+            foreach (var child in Children)
             {
-                var counts = new Dictionary<TreeCategory, int>();
-                foreach (var child in Children)
-                {
-                    if (child.Category is not { } category)
-                        continue;
+                if (child.Category is not { } category)
+                    continue;
 
-                    var number = child.Item != null ? 1 : child.Children.Count;
-                    if (number > 0)
-                        counts[category] = counts.GetValueOrDefault(category) + number;
-                }
-
-                return counts.Select(count => new KindCount(count.Key, count.Value)).ToList();
+                var number = child.Item != null ? 1 : child.Children.Count;
+                if (number > 0)
+                    counts[category] = counts.GetValueOrDefault(category) + number;
             }
+
+            return counts.Select(count => new KindCount(count.Key, count.Value)).ToList();
         }
 
-        public bool HasKindCounts => KindCounts.Count > 0;
+        public bool HasKindCounts => kindCounts.Count > 0;
 
         // The item that has the mask toggle: a composition or a layer. The other rows have none. The toggle column shows the toggle for it.
         public IControl? MaskOwner => Item is Composition or Layer ? Item : null;
@@ -125,6 +133,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The rows under a group change what its parent holds, so the parent tells its own change too.
         private void RaiseKindCountsChanged()
         {
+            kindCounts = ComputeKindCounts();
             OnPropertyChanged(nameof(KindCounts));
             OnPropertyChanged(nameof(HasKindCounts));
             OnPropertyChanged(nameof(ShowsKindCounts));
@@ -157,23 +166,57 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public bool IsDropHint => IsDragActive && HasDropTargetBelow && !IsDropCandidate && !IsDropNeighbor && !IsDropBlocked && !IsExpanded;
         public bool IsDimmed => IsDragActive && !IsDragSource && !IsDropCandidate && !IsDropNeighbor && !IsDropBlocked && !IsDropHint;
 
+        // Tells only the properties whose value changes.
         internal void SetDragState(bool active, bool isSource, bool isCandidate, bool isNeighbor, bool hasTargetBelow, string? blockReason = null)
         {
-            IsDragActive = active;
-            IsDragSource = isSource;
-            IsDropCandidate = isCandidate;
-            IsDropNeighbor = isNeighbor;
-            HasDropTargetBelow = hasTargetBelow;
-            DropBlockReason = blockReason;
-            OnPropertyChanged(nameof(IsDragActive));
-            OnPropertyChanged(nameof(IsDragSource));
-            OnPropertyChanged(nameof(IsDropCandidate));
-            OnPropertyChanged(nameof(IsDropNeighbor));
-            OnPropertyChanged(nameof(HasDropTargetBelow));
-            OnPropertyChanged(nameof(DropBlockReason));
-            OnPropertyChanged(nameof(IsDropBlocked));
-            OnPropertyChanged(nameof(IsDropHint));
-            OnPropertyChanged(nameof(IsDimmed));
+            var wasBlocked = IsDropBlocked;
+            var wasHint = IsDropHint;
+            var wasDimmed = IsDimmed;
+
+            if (IsDragActive != active)
+            {
+                IsDragActive = active;
+                OnPropertyChanged(nameof(IsDragActive));
+            }
+
+            if (IsDragSource != isSource)
+            {
+                IsDragSource = isSource;
+                OnPropertyChanged(nameof(IsDragSource));
+            }
+
+            if (IsDropCandidate != isCandidate)
+            {
+                IsDropCandidate = isCandidate;
+                OnPropertyChanged(nameof(IsDropCandidate));
+            }
+
+            if (IsDropNeighbor != isNeighbor)
+            {
+                IsDropNeighbor = isNeighbor;
+                OnPropertyChanged(nameof(IsDropNeighbor));
+            }
+
+            if (HasDropTargetBelow != hasTargetBelow)
+            {
+                HasDropTargetBelow = hasTargetBelow;
+                OnPropertyChanged(nameof(HasDropTargetBelow));
+            }
+
+            if (DropBlockReason != blockReason)
+            {
+                DropBlockReason = blockReason;
+                OnPropertyChanged(nameof(DropBlockReason));
+            }
+
+            if (wasBlocked != IsDropBlocked)
+                OnPropertyChanged(nameof(IsDropBlocked));
+
+            if (wasHint != IsDropHint)
+                OnPropertyChanged(nameof(IsDropHint));
+
+            if (wasDimmed != IsDimmed)
+                OnPropertyChanged(nameof(IsDimmed));
         }
 
         public bool IsOrIsUnder(TreeNode node)

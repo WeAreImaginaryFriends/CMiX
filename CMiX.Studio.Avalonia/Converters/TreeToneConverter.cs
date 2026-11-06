@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
@@ -18,6 +19,12 @@ namespace CMiX.Studio.Avalonia.Converters
     {
         private CategoryPalette? palette;
 
+        // One brush for each kind, depth and role. The palette of an instance does not change, so the brushes stay valid.
+        private readonly Dictionary<(TreeCategory Category, int ComposableDepth, int KindDepth, ToneRole Role), IBrush> brushes = new();
+
+        // The number of brushes made. A test reads it.
+        internal int BrushesMade => brushes.Count;
+
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             var (category, composableDepth, kindDepth) = value switch
@@ -30,8 +37,14 @@ namespace CMiX.Studio.Avalonia.Converters
             if (category == null || parameter is not string name || !Enum.TryParse<ToneRole>(name, out var role))
                 return Brushes.Transparent;
 
+            var key = (category.Value, composableDepth, kindDepth, role);
+            if (brushes.TryGetValue(key, out var brush))
+                return brush;
+
             palette ??= CategoryPalette.FromApplication();
-            return new ImmutableSolidColorBrush(palette.For(category.Value, composableDepth, kindDepth).Of(role));
+            brush = new ImmutableSolidColorBrush(palette.For(category.Value, composableDepth, kindDepth).Of(role));
+            brushes[key] = brush;
+            return brush;
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>

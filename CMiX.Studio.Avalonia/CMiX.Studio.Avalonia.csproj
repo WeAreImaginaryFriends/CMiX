@@ -22,6 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="CMiX.Studio.Avalonia.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CMiX.Core\CMiX.Core.csproj" />
     <ProjectReference Include="..\CMiX.UI\CMiX.UI.csproj" />
   </ItemGroup>

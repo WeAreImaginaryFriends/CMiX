@@ -38,19 +38,24 @@ namespace CMiX.Studio.Avalonia.Views
         private const double DragThreshold = 4.0;
 
         private readonly TreeRowMetrics rowMetrics;
+        private readonly TreeRowIndex rowIndex;
         private readonly TreeDropMarker marker;
         private readonly TreeScrollAnchor scrollAnchor;
 
         private TreeNode? pressedNode;
         private Point pressPoint;
 
+        // The item of each node. A test reads it.
+        internal TreeRowIndex RowIndex => rowIndex;
+
         public ProjectTreeView()
         {
             InitializeComponent();
 
             rowMetrics = new TreeRowMetrics(treeView, Resources, () => ScrollerOfTree);
-            marker = new TreeDropMarker(treeView);
-            scrollAnchor = new TreeScrollAnchor(treeView, () => ScrollerOfTree);
+            rowIndex = new TreeRowIndex(treeView);
+            marker = new TreeDropMarker(rowIndex);
+            scrollAnchor = new TreeScrollAnchor(treeView, rowIndex, () => ScrollerOfTree);
 
             DragDrop.SetAllowDrop(treeView, true);
             treeView.AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
@@ -131,7 +136,7 @@ namespace CMiX.Studio.Avalonia.Views
         // (:focus-visible, see ProjectTree.axaml). It does not select the row.
         private void FocusRow(TreeNode node)
         {
-            if (TreeRows.FindItem(treeView, node) is not { } item)
+            if (rowIndex.FindItem(node) is not { } item)
                 return;
 
             item.Focus(NavigationMethod.Tab);
@@ -141,7 +146,7 @@ namespace CMiX.Studio.Avalonia.Views
         // Starts the rename of the row of the node: the name box of the row goes to edit mode.
         private void OnRenameRequested(object? sender, TreeNode node)
         {
-            if (TreeRows.FindItem(treeView, node) is not { } item || TreeRows.RowBorderOf(item) is not { } row)
+            if (rowIndex.FindItem(node) is not { } item || TreeRows.RowBorderOf(item) is not { } row)
                 return;
 
             if (row.GetVisualDescendants().OfType<TextBoxEditable>().FirstOrDefault() is { } box)
@@ -198,7 +203,7 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void RevealRow(TreeNode node)
         {
-            if (TreeRows.FindItem(treeView, node) is not { } item || TreeRows.RowBorderOf(item) is not { } border)
+            if (rowIndex.FindItem(node) is not { } item || TreeRows.RowBorderOf(item) is not { } border)
                 return;
 
             revealTarget = border;
@@ -399,7 +404,7 @@ namespace CMiX.Studio.Avalonia.Views
 
         // True when the pointer is on the row border of the node.
         private bool IsOverRow(TreeNode node, PointerEventArgs e) =>
-            TreeRows.FindItem(treeView, node) is { } item
+            rowIndex.FindItem(node) is { } item
             && TreeRows.RowBorderOf(item) is { } border
             && new Rect(border.Bounds.Size).Contains(e.GetPosition(border));
 

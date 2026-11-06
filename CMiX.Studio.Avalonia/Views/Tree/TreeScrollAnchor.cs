@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
-using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 
 namespace CMiX.Studio.Avalonia.Views
@@ -13,12 +12,14 @@ namespace CMiX.Studio.Avalonia.Views
     public sealed class TreeScrollAnchor
     {
         private readonly TreeView treeView;
+        private readonly TreeRowIndex rows;
         private readonly Func<ScrollViewer?> scroller;
 
         // scroller gives the scroll viewer of the tree.
-        public TreeScrollAnchor(TreeView treeView, Func<ScrollViewer?> scroller)
+        internal TreeScrollAnchor(TreeView treeView, TreeRowIndex rows, Func<ScrollViewer?> scroller)
         {
             this.treeView = treeView;
+            this.rows = rows;
             this.scroller = scroller;
         }
 
@@ -28,7 +29,12 @@ namespace CMiX.Studio.Avalonia.Views
             if (scroller() is not { } view)
                 return null;
 
-            foreach (var item in treeView.GetVisualDescendants().OfType<TreeViewItem>())
+            // A block that ends above the view has no row in view, so the rows under it are skipped too.
+            bool Skip(TreeViewItem item) =>
+                (item.DataContext is TreeNode node && ReferenceEquals(node, dragged))
+                || (item.TranslatePoint(new Point(0, item.Bounds.Height), view) is { } bottom && bottom.Y < 0);
+
+            foreach (var item in rows.InRowOrder(Skip))
             {
                 if (item.DataContext is not TreeNode node || node.IsOrIsUnder(dragged))
                     continue;
@@ -48,7 +54,7 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             treeView.UpdateLayout();
-            var item = TreeRows.FindItem(treeView, kept.Node);
+            var item = rows.FindItem(kept.Node);
             if (item == null || TreeRows.RowTopIn(item, view) is not { } top)
                 return;
 

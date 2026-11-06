@@ -15,12 +15,12 @@ namespace CMiX.Studio.Avalonia.Views
         private const string DropGap = ":dropgap";
         private const string DropTop = ":droptop";
 
-        private readonly TreeView treeView;
+        private readonly TreeRowIndex rows;
         private TreeViewItem? barItem;
 
-        public TreeDropMarker(TreeView treeView)
+        internal TreeDropMarker(TreeRowIndex rows)
         {
-            this.treeView = treeView;
+            this.rows = rows;
         }
 
         public TreeViewItem? Marked { get; private set; }
@@ -60,7 +60,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             // The bar is in the space under the row above the place: the last visible row of the block for a drop after the node.
             var above = position == DropPosition.After ? TreeDropService.LastVisible(node) : TreeDropService.RowAbove(node);
-            var aboveItem = above == null ? null : TreeRows.ItemOfNode(item, above) ?? TreeRows.FindItem(treeView, above);
+            var aboveItem = above == null ? null : TreeRows.ItemOfNode(item, above) ?? rows.FindItem(above);
             barItem = aboveItem ?? item;
             ((IPseudoClasses)barItem.Classes).Set(aboveItem != null ? DropGap : DropTop, true);
         }

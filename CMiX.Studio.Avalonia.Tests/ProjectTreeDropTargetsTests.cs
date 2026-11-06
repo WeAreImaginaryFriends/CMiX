@@ -304,8 +304,11 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             var changes = new List<string?>();
+            var dimmedChanges = new List<string?>();
             scene.Tree.BeginDrag(scene.Entity1);
             Scene.Group<EntitiesGroup>(scene.Layer2).PropertyChanged += (_, e) => changes.Add(e.PropertyName);
+            var dimmed = scene.All().First(node => node.IsDimmed);
+            dimmed.PropertyChanged += (_, e) => dimmedChanges.Add(e.PropertyName);
 
             scene.Tree.EndDrag();
 
@@ -319,7 +322,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 Assert.False(node.IsDimmed);
             });
             Assert.Contains(nameof(TreeNode.IsDropCandidate), changes);
-            Assert.Contains(nameof(TreeNode.IsDimmed), changes);
+            Assert.Contains(nameof(TreeNode.IsDimmed), dimmedChanges);
         }
 
         [Fact]
@@ -351,6 +354,33 @@ namespace CMiX.Studio.Avalonia.Tests
                 if (node.IsDropNeighbor)
                     Assert.True(service.CanDrop(filter, node, DropPosition.Before) || service.CanDrop(filter, node, DropPosition.After), $"{node.Header} is a neighbor but takes no drop.");
             }
+        }
+
+        [Fact]
+        public void SetDragState_WithTheSameValues_RaisesNothing()
+        {
+            var scene = CreateScene();
+            var node = scene.Entity2;
+            node.SetDragState(true, false, false, true, false);
+            var changes = new List<string?>();
+            node.PropertyChanged += (_, e) => changes.Add(e.PropertyName);
+
+            node.SetDragState(true, false, false, true, false);
+
+            Assert.Empty(changes);
+        }
+
+        [Fact]
+        public void SetDragState_WithANewValue_RaisesOnlyTheChangedProperties()
+        {
+            var scene = CreateScene();
+            var node = scene.Entity2;
+            var changes = new List<string?>();
+            node.PropertyChanged += (_, e) => changes.Add(e.PropertyName);
+
+            node.SetDragState(true, false, false, false, false);
+
+            Assert.Equal(new[] { nameof(TreeNode.IsDragActive), nameof(TreeNode.IsDimmed) }, changes);
         }
     }
 }

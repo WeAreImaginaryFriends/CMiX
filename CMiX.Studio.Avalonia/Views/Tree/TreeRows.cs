@@ -9,7 +9,7 @@ using CMiX.Studio.Avalonia.ViewModels.Tree;
 
 namespace CMiX.Studio.Avalonia.Views
 {
-    // Finds the rows of the project tree: the item of a visual or of a node, and the place of a row.
+    // Finds the rows of the project tree: the item of a visual or of a node, and the place of a row. TreeRowIndex finds the item of any node.
     internal static class TreeRows
     {
         // The item that holds the source, or null.
@@ -21,9 +21,6 @@ namespace CMiX.Studio.Avalonia.Views
 
             return null;
         }
-
-        public static TreeViewItem? FindItem(TreeView tree, TreeNode node) =>
-            tree.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(item => ReferenceEquals(item.DataContext, node));
 
         // The item of a node: the item of the row under the pointer, or the first of its parent items that has the node.
         public static TreeViewItem? ItemOfNode(TreeViewItem from, TreeNode node)

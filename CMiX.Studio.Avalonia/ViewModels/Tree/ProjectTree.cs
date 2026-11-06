@@ -314,16 +314,23 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // (see TreeNode.IsDropCandidate). The rules are the ones of the drop itself.
         public bool IsDragging { get; private set; }
 
+        // The rows that BeginDrag marked. EndDrag clears only these.
+        private readonly List<TreeNode> dragMarked = new();
+
         public void BeginDrag(TreeNode source)
         {
             IsDragging = true;
+            dragMarked.Clear();
             MarkDrag(root, source);
         }
 
         public void EndDrag()
         {
             IsDragging = false;
-            ClearDrag(root);
+            foreach (var node in dragMarked)
+                node.SetDragState(false, false, false, false, false);
+
+            dragMarked.Clear();
         }
 
         // Sets the drag state of a row and of the rows under it. It tells whether a row that takes the node is at or under the row.
@@ -340,15 +347,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 candidate = neighbor = false;
 
             node.SetDragState(true, ReferenceEquals(node, source), candidate, neighbor, below, reason);
+            dragMarked.Add(node);
             return below || candidate || neighbor;
-        }
-
-        private static void ClearDrag(TreeNode node)
-        {
-            foreach (var child in node.Children)
-                ClearDrag(child);
-
-            node.SetDragState(false, false, false, false, false);
         }
 
         public DropPlace? Locate(TreeNode source, TreeNode hovered, double fraction) =>
