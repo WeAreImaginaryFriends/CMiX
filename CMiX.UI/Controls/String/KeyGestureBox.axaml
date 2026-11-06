@@ -1,0 +1,32 @@
+<UserControl
+    x:Class="CMiX.UI.Controls.String.KeyGestureBox"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:CMiX.UI.Controls.String"
+    Focusable="True">
+
+    <!-- The brush is in a style and not on the Border: a local value is stronger than a style. -->
+    <UserControl.Styles>
+        <Style Selector="local|KeyGestureBox Border#Frame">
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <!-- While it records, the box has the accent border of the edit mode. -->
+        <Style Selector="local|KeyGestureBox:recording Border#Frame">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border
+        x:Name="Frame"
+        Height="{DynamicResource ControlHeightMD}"
+        Background="{DynamicResource Grey100Brush}"
+        BorderThickness="1"
+        CornerRadius="{DynamicResource CornerRadiusAll}">
+        <TextBlock
+            x:Name="GestureText"
+            Padding="6,0"
+            VerticalAlignment="Center"
+            Foreground="{DynamicResource ForegroundBrush}" />
+    </Border>
+
+</UserControl>
