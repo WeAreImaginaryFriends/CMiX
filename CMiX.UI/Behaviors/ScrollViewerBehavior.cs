@@ -3,11 +3,11 @@
 
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Xaml.Interactivity;
 
 namespace CMiX.UI.Behaviors
 {
+    // Keeps the scroll offset when the content grows. The behavior does not change the visibility of the bars.
     public class ScrollViewerBehavior : Behavior<ScrollViewer>
     {
         private double _savedOffset = 0;
@@ -19,7 +19,6 @@ namespace CMiX.UI.Behaviors
             if (AssociatedObject == null)
                 return;
 
-            AssociatedObject.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
             AssociatedObject.ScrollChanged += AssociatedObject_ScrollChanged;
         }
 

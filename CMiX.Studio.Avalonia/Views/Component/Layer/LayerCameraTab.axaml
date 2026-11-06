@@ -8,7 +8,7 @@
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
     xmlns:Managers="clr-namespace:CMiX.Studio.Avalonia.Views.Managers">
 
-    <ScrollViewer>
+    <ScrollViewer Theme="{DynamicResource ScrollViewerOverlay}">
         <i:Interaction.Behaviors>
             <ui:ScrollViewerBehavior />
         </i:Interaction.Behaviors>

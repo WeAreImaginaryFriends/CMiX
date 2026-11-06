@@ -30,7 +30,7 @@
             ToolTip.Tip="{Binding ToolTipText, ElementName=repositoryTab}" />
     </TabItem.Header>
 
-    <ScrollViewer DataContext="{Binding DataContext, ElementName=repositoryTab}" VerticalScrollBarVisibility="Hidden">
+    <ScrollViewer DataContext="{Binding DataContext, ElementName=repositoryTab}" Theme="{DynamicResource ScrollViewerOverlay}">
         <i:Interaction.Behaviors>
             <ui:ScrollViewerBehavior />
         </i:Interaction.Behaviors>

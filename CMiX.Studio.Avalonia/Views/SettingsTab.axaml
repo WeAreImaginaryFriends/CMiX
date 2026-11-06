@@ -7,7 +7,7 @@
     xmlns:Managers="clr-namespace:CMiX.Studio.Avalonia.Views.Managers"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
 
-    <ScrollViewer VerticalScrollBarVisibility="Hidden">
+    <ScrollViewer Theme="{DynamicResource ScrollViewerOverlay}">
 
         <i:Interaction.Behaviors>
             <ui:ScrollViewerBehavior />

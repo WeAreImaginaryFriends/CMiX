@@ -752,5 +752,30 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal("Settings", SelectedTab(screen));
             Assert.Same(screen.Layer, screen.Tree.SelectedNode!.Item);
         }
+
+        // The layer view is also a tab with its own scroll viewer. In the inspector that viewer is off, so only the inspector scrolls.
+        [AvaloniaFact]
+        public void HostedView_DoesNotScrollOnItsOwn()
+        {
+            var screen = Show();
+            Select(screen, screen.LayerNode);
+            screen.Window.Height = 300;
+            TestServiceProviderFactory.Pump();
+            screen.Window.UpdateLayout();
+
+            var view = screen.Find<LayerPostFXTab>()!;
+            var inner = (ScrollViewer)view.Content!;
+            var innerPresenter = inner.GetVisualDescendants().OfType<global::Avalonia.Controls.Presenters.ScrollContentPresenter>().First(p => p.TemplatedParent == inner);
+
+            Assert.Contains("hosted", view.Classes);
+            Assert.Equal(ScrollBarVisibility.Disabled, inner.VerticalScrollBarVisibility);
+            Assert.Equal(inner.Viewport.Height, inner.Extent.Height, 1);
+            Assert.Equal(inner.Bounds.Width, innerPresenter.Bounds.Width, 1);
+
+            Assert.True(screen.Scroller.Extent.Height > screen.Scroller.Viewport.Height, "The inspector has nothing to scroll, so the test proves nothing.");
+            screen.Scroller.Offset = new Vector(0, 50);
+            TestServiceProviderFactory.Pump();
+            Assert.Equal(50, screen.Scroller.Offset.Y, 1);
+        }
     }
 }

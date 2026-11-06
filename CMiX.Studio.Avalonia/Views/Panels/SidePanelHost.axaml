@@ -78,7 +78,7 @@
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type StudioViewModels:AssetsPanelChoice}">
-                    <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <ScrollViewer Theme="{DynamicResource ScrollViewerOverlay}">
                         <i:Interaction.Behaviors>
                             <ui:ScrollViewerBehavior />
                         </i:Interaction.Behaviors>

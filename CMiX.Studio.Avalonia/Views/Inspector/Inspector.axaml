@@ -19,6 +19,16 @@
     <!-- The editor of the row that is selected in the project tree. The DataContext is the ProjectTree.
          The editors are the views of the other tabs, so an item looks the same here and there. -->
 
+    <UserControl.Styles>
+        <!-- A tab view in the inspector does not scroll. The inspector scrolls it. The view has no gutter: the inspector has one. -->
+        <Style Selector=".hosted > ScrollViewer">
+            <Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
+        </Style>
+        <Style Selector=".hosted > ScrollViewer /template/ ScrollContentPresenter#PART_ContentPresenter">
+            <Setter Property="Margin" Value="0" />
+        </Style>
+    </UserControl.Styles>
+
     <DockPanel>
 
         <!-- The icon of the selected node on a square in the color of its kind, and its name. -->
@@ -69,7 +79,7 @@
 
         <ScrollViewer
             Name="scroller"
-            VerticalScrollBarVisibility="Hidden"
+            Theme="{DynamicResource ScrollViewerOverlay}"
             IsVisible="{Binding SelectedNode.InspectorContent, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
 
             <i:Interaction.Behaviors>
@@ -84,7 +94,7 @@
                             <Border Background="{DynamicResource Grey200Brush}">
                                 <Views:ComposableItemSettings Margin="8" />
                             </Border>
-                            <Views:Composition />
+                            <Views:Composition Classes="hosted" />
                         </StackPanel>
                     </DataTemplate>
 
@@ -93,22 +103,22 @@
                             <Border Background="{DynamicResource Grey200Brush}">
                                 <Views:ComposableItemSettings Margin="8" />
                             </Border>
-                            <Views:LayerPostFXTab />
+                            <Views:LayerPostFXTab Classes="hosted" />
                         </StackPanel>
                     </DataTemplate>
 
                     <!-- A group row of a layer shows the panel of the old tab for that kind: the list of the items and the editor of the
                          one that is chosen in it. The panels take the layer as their DataContext. -->
                     <DataTemplate DataType="{x:Type Tree:EntitiesGroup}">
-                        <Views:LayerEntityTab DataContext="{Binding Layer}" />
+                        <Views:LayerEntityTab Classes="hosted" DataContext="{Binding Layer}" />
                     </DataTemplate>
 
                     <DataTemplate DataType="{x:Type Tree:CamerasGroup}">
-                        <Views:LayerCameraTab DataContext="{Binding Layer}" />
+                        <Views:LayerCameraTab Classes="hosted" DataContext="{Binding Layer}" />
                     </DataTemplate>
 
                     <DataTemplate DataType="{x:Type Tree:LightsGroup}">
-                        <Views:LayerLightTab DataContext="{Binding Layer}" />
+                        <Views:LayerLightTab Classes="hosted" DataContext="{Binding Layer}" />
                     </DataTemplate>
 
                     <!-- The groups of any item: the same panels as in the editors, for the list of the group. The panel that adds an item lists

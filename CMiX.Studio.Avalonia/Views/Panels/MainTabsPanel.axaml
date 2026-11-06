@@ -182,7 +182,7 @@
                         ToolTip.Tip="Network" />
                 </TabItem.Header>
 
-                <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                <ScrollViewer Theme="{DynamicResource ScrollViewerOverlay}">
                     <i:Interaction.Behaviors>
                         <ui:ScrollViewerBehavior />
                     </i:Interaction.Behaviors>
