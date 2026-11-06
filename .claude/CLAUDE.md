@@ -29,10 +29,11 @@ These rules apply to every task in this repository.
 
 ## Plans and execution
 
-- Analyze first and report the findings. Write a plan only when asked.
+- Analyze first and report the findings.
 - A plan has phases and steps. Each step carries a complexity from 1 to 5:
-  1 and 2 go to a Sonnet subagent, 3 to an Opus subagent, 4 and 5 to the main
-  agent. Execute phase by phase and stop after each phase for confirmation.
+  1 goes to a Sonnet subagent, 2 and 3 to an Opus subagent, 4 to a Fable subagent.
+  5 is a step needing the whole context and it goes to the main agent. 
+  Execute phase by phase.
 - Every subagent prompt carries these rules. A subagent reads its step and the
   code it touches first. When it finds a problem that can change other steps
   or the shared design, it stops and asks instead of working around it.
@@ -117,9 +118,8 @@ The compiler does not check these names. Ask the owner before you change one.
 
 - Unit tests use xUnit, TestServiceProviderFactory.Create() for a real object
   graph, and the test doubles in CMiX.Core.Tests/SyncTestHelpers.cs.
-- Per step: build once, then run the fast set with
-  `dotnet test CMiX.Core.Tests/CMiX.Core.Tests.csproj --nologo -v q --no-build --filter "Category!=Redis"`,
-  plus the Redis class the step touches. At the end of a phase: the full Core
+- Per Phase: build once, then run all tests that pertain to the code changes
+  plus the Redis class the Phase touches. At the end of a plan: the full Core
   suite twice with details captured, and the Studio suite once.
 - The Redis tests need a Memurai or Redis on 127.0.0.1:6379 and skip when it
   does not answer. The outage tests start their own Memurai on port 6380 and
