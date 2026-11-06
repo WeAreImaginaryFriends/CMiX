@@ -80,6 +80,30 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void TheIconOfTheButton_HasTheSameSpaceAtTheLeft_AtTheTop_AndAtTheBottom()
+        {
+            var screen = Show();
+
+            foreach (var host in screen.Hosts)
+            {
+                var toggle = Screen.ToggleOf(host);
+                var icon = toggle.GetVisualDescendants().OfType<AppIcon>().First(candidate => candidate.IconKey == host.Choice!.IconKey);
+                var origin = icon.TranslatePoint(new Point(0, 0), toggle)!.Value;
+
+                var left = origin.X;
+                var top = origin.Y;
+                var bottom = toggle.Bounds.Height - (origin.Y + icon.Bounds.Height);
+                Assert.True(left > 0);
+                Assert.Equal(top, left, 1);
+                Assert.Equal(top, bottom, 1);
+
+                var chevron = toggle.GetVisualDescendants().OfType<Chevron>().Single();
+                var right = toggle.Bounds.Width - (chevron.TranslatePoint(new Point(chevron.Bounds.Width, 0), toggle)!.Value.X);
+                Assert.Equal(left, right, 1);
+            }
+        }
+
+        [AvaloniaFact]
         public void EachSide_HasAnIconButtonAtItsTop_ThatShowsTheIconOfTheChoice_AndNoName()
         {
             var screen = Show();
