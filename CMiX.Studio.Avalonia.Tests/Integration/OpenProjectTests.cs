@@ -8,6 +8,7 @@ using Avalonia.Headless.XUnit;
 using CMiX.Core;
 using CMiX.Core.Assets;
 using CMiX.Core.Compositing;
+using CMiX.Core.Networking;
 using CMiX.Core.Persistence;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Rendering;
@@ -518,6 +519,38 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
             var duplicate = (Composition)compositionManager.SelectedItem;
             Assert.NotSame(original, duplicate);
             Assert.Same(slots[1], duplicate.SelectedOutputMapping);
+        }
+
+        // The push after the open is a sync step. The file is open, so a push failure must not
+        // show the "Open Project" message box. In the headless host that box throws an
+        // ArgumentException, so a call that returns shows that no box opened.
+        [AvaloniaFact]
+        public async Task OpenProjectFromPath_WhenThePushFails_KeepsTheOpenAndReportsTheSyncError()
+        {
+            var path = Path.Combine(Path.GetTempPath(), $"cmix-openproject-{Guid.NewGuid():N}.cmix");
+            var (provider, _, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            var peer = provider.GetRequiredService<SyncPeer>();
+            try
+            {
+                ProjectFixtures.WriteProjectWithMaterialTextures(path);
+
+                // Port 1 has no server. The peer has a store, and the dispatcher then fails the push.
+                peer.IsWriter = true;
+                peer.Start(SyncOptions.Defaults with { Port = 1, KeyPrefix = "cmix:test-open-push" }, false);
+                peer.IsJoined = true;
+                peer.SetDispatcher(_ => throw new InvalidOperationException("The push failed."));
+
+                await viewModel.MainMenu.OpenProjectFromPath(path);
+
+                Assert.Equal(path, viewModel.MainMenu.FolderPath);
+                Assert.Equal("The push failed.", peer.ErrorMessage);
+            }
+            finally
+            {
+                peer.SetDispatcher(action => action());
+                peer.Dispose();
+                if (File.Exists(path)) File.Delete(path);
+            }
         }
     }
 }

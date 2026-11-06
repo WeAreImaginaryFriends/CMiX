@@ -246,15 +246,24 @@ namespace CMiX.Studio.Avalonia.ViewModels
 
                 FolderPath = path;
                 _unsavedChanges.MarkSaved();
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowMessageBoxAsync(this, $"{Path.GetFileName(path)}: {ex.Message}", "Open Project");
+                return;
+            }
 
-                // The peers get the whole project in one message. A peer that is not joined has
-                // nobody to tell, and it adopts the store state when it joins.
+            // The peers get the whole project in one message. A peer that is not joined has
+            // nobody to tell, and it adopts the store state when it joins. The file is open, so
+            // a push failure is a sync failure and shows in the sync status.
+            try
+            {
                 if (_sync.IsJoined && _sync.IsWriter)
                     await _sync.PushAsync();
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowMessageBoxAsync(this, $"{Path.GetFileName(path)}: {ex.Message}", "Open Project");
+                _sync.ErrorMessage = ex.Message;
             }
         }
 
