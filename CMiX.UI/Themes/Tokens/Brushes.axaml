@@ -26,6 +26,9 @@
     <!-- The background of every popup, flyout, drop down and context menu. PopupFrame and DropdownFrame read it. -->
     <SolidColorBrush x:Key="PopupBackgroundBrush" Color="{DynamicResource Grey100}" />
 
+    <!-- The background of the project tree and the layer that dims a row. -->
+    <SolidColorBrush x:Key="TreeBackgroundBrush" Color="{DynamicResource TreeBackground}" />
+
 
     <SolidColorBrush x:Key="Grey100Brush" Color="{DynamicResource Grey100}" />
     <SolidColorBrush x:Key="Grey200Brush" Color="{DynamicResource Grey200}" />

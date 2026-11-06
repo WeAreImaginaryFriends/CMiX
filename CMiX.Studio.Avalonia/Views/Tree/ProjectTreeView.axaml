@@ -28,7 +28,7 @@
     </UserControl.KeyBindings>
 
     <!-- The toolbar is at the bottom, as the toolbar of the lists of compositions and layers. -->
-    <DockPanel>
+    <DockPanel Background="{DynamicResource TreeBackgroundBrush}">
 
     <Views:ProjectTreeToolbar
         Background="{DynamicResource Grey300Brush}"

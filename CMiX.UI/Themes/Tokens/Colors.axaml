@@ -12,6 +12,9 @@
     <Color x:Key="Grey800">#FF808087</Color>
     <Color x:Key="Grey900">#FFb0b0b8</Color>
 
+    <!-- The color under the rows of the project tree: the window surface (Grey100). The palette of the rows mixes against it. -->
+    <Color x:Key="TreeBackground">#FF111113</Color>
+
     <Color x:Key="AccentPrimary">#FF5680C2</Color>
     <Color x:Key="AccentSecondary">#FF4d6490</Color>
     <Color x:Key="Active">#FF5680C2</Color>

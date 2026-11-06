@@ -141,5 +141,37 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(Sum(tone.Fill) < Sum(tone.FillHover));
             Assert.True(Sum(tone.FillHover) < Sum(tone.FillSelected));
         }
+
+        // The first background that is not clear, from a control up the tree of controls.
+        private static AvaloniaColor? BackgroundUnder(Visual start)
+        {
+            foreach (var ancestor in start.GetVisualAncestors())
+            {
+                var brush = ancestor switch
+                {
+                    Border border => border.Background,
+                    Panel panel => panel.Background,
+                    global::Avalonia.Controls.Presenters.ContentPresenter presenter => presenter.Background,
+                    _ => null
+                };
+
+                if (brush is ISolidColorBrush solid && solid.Color.A > 0)
+                    return solid.Color;
+            }
+
+            return null;
+        }
+
+        [AvaloniaFact]
+        public void TreeBackground_EqualsTheBackgroundUnderTheRows()
+        {
+            var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
+            var view = window.GetVisualDescendants().OfType<ProjectTreeView>().First();
+            var token = ((ISolidColorBrush)Application.Current!.FindResource("TreeBackgroundBrush")!).Color;
+            var rows = view.GetVisualDescendants().OfType<TreeView>().First();
+
+            Assert.Equal(token, BackgroundUnder(rows));
+            Assert.Equal(token, BackgroundUnder(view));
+        }
     }
 }

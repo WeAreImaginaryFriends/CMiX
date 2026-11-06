@@ -76,7 +76,7 @@ namespace CMiX.Studio.Avalonia.Themes
             this.background = background;
         }
 
-        // The palette of the running application: the colors of the theme over the background of the panels (Grey200).
+        // The palette of the running application: the colors of the theme over the background of the tree (TreeBackground).
         public static CategoryPalette FromApplication()
         {
             var resources = Application.Current!;
@@ -84,7 +84,7 @@ namespace CMiX.Studio.Avalonia.Themes
                 ? color
                 : throw new InvalidOperationException($"The theme has no color named {key}.");
 
-            return new CategoryPalette(Find, Find("Grey200"));
+            return new CategoryPalette(Find, Find("TreeBackground"));
         }
 
         // The name of the color of a kind in the theme. The depth is the number of composables around a composable.

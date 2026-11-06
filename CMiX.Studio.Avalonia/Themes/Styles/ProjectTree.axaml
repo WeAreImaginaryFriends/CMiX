@@ -93,11 +93,11 @@
                                     ContentTemplate="{TemplateBinding HeaderTemplate}" />
                             </Grid>
                             <!-- The marks of a drag over the rows, drawn over the row: they take no room and no click. A row that can not take
-                                 the node is covered with the background of the panel, so it recedes. A row that can take it has a
+                                 the node is covered with the background of the tree, so it recedes. A row that can take it has a
                                  brighter fill (the class candidate, see the styles below), and no border. -->
                             <Border
                                 Name="DimLayer"
-                                Background="{DynamicResource PanelBackgroundLevel1Brush}"
+                                Background="{DynamicResource TreeBackgroundBrush}"
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
                                 IsHitTestVisible="False"
                                 IsVisible="{Binding IsDimmed}"

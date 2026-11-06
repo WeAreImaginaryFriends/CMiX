@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using CMiX.Studio.Avalonia.Themes;
@@ -144,6 +146,19 @@ namespace CMiX.Studio.Avalonia.Tests
 
             for (var depth = 0; depth <= CategoryPalette.LastComposableLevel; depth++)
                 Assert.NotEqual(default, palette.For(TreeCategory.Composable, depth).Fill);
+        }
+
+        [AvaloniaFact]
+        public void FromApplication_MixesAgainstTheTreeBackground()
+        {
+            var colors = Application.Current!;
+            var kind = (Color)colors.FindResource("CategoryLight")!;
+            var background = (Color)colors.FindResource("TreeBackground")!;
+
+            var tone = CategoryPalette.FromApplication().For(TreeCategory.Light);
+
+            Assert.Equal(ColorMix.Over(kind, background, CategoryPalette.FillStrength), tone.Fill);
+            Assert.Equal(ColorMix.Over(kind, background, CategoryPalette.KindStrength), tone.Kind);
         }
     }
 }

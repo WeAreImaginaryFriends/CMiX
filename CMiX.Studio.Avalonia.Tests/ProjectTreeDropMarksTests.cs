@@ -187,7 +187,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Settle();
             var cover = Part(view, tree.Roots[0], "DimLayer");
 
-            Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel1Brush")!).Color, ((ISolidColorBrush)cover.Background!).Color);
+            Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("TreeBackgroundBrush")!).Color, ((ISolidColorBrush)cover.Background!).Color);
             Assert.Equal(Convert.ToDouble(Application.Current!.FindResource("TreeDimOpacity")), cover.Opacity);
             Assert.False(cover.IsHitTestVisible);
         }
