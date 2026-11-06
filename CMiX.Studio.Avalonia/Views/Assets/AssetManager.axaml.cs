@@ -10,7 +10,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using HanumanInstitute.MvvmDialogs;
 
 namespace CMiX.Studio.Avalonia.Views
 {
@@ -73,9 +72,9 @@ namespace CMiX.Studio.Avalonia.Views
             }
             catch (Exception ex)
             {
-                var dialogService = App.DialogService;
-                if (dialogService != null)
-                    await dialogService.ShowMessageBoxAsync(assetManager, ex.Message, "Add Assets");
+                var messageNotice = App.MessageNotice;
+                if (messageNotice != null)
+                    await messageNotice.ShowErrorAsync(ex.Message, "Add Assets");
             }
         }
     }

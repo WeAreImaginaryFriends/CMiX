@@ -28,7 +28,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
     public partial class MainMenu : ObservableRecipient, IControl
     {
         public MainMenu(Project project, ControlFactory controlFactory, UndoManager undoManager, IDialogService dialogService,
-                        UnsavedChanges unsavedChanges, IUnsavedChangesPrompt unsavedChangesPrompt,
+                        UnsavedChanges unsavedChanges, IUnsavedChangesPrompt unsavedChangesPrompt, IMessageNotice messageNotice,
                         ISyncTarget syncTarget, SyncPeer sync)
         {
             _syncTarget = syncTarget;
@@ -36,6 +36,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             _dialogService = dialogService;
             _unsavedChanges = unsavedChanges;
             _unsavedChangesPrompt = unsavedChangesPrompt;
+            _messageNotice = messageNotice;
             Project = project;
             _undoManager = undoManager;
 
@@ -62,6 +63,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
         private readonly IDialogService _dialogService;
         private readonly UnsavedChanges _unsavedChanges;
         private readonly IUnsavedChangesPrompt _unsavedChangesPrompt;
+        private readonly IMessageNotice _messageNotice;
 
         public bool HasUnsavedChanges => _unsavedChanges.HasChanges;
 
@@ -249,7 +251,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowMessageBoxAsync(this, $"{Path.GetFileName(path)}: {ex.Message}", "Open Project");
+                await _messageNotice.ShowErrorAsync($"{Path.GetFileName(path)}: {ex.Message}", "Open Project");
                 return;
             }
 
@@ -301,7 +303,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowMessageBoxAsync(this, $"{Path.GetFileName(path)}: {ex.Message}", "Save Project");
+                await _messageNotice.ShowErrorAsync($"{Path.GetFileName(path)}: {ex.Message}", "Save Project");
             }
         }
 

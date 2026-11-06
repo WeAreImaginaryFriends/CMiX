@@ -1,0 +1,48 @@
+<Window
+    x:Class="CMiX.Studio.Avalonia.Views.Dialogs.MessageDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    Background="Transparent"
+    CanResize="False"
+    ShowInTaskbar="False"
+    SizeToContent="WidthAndHeight"
+    SystemDecorations="None"
+    TransparencyLevelHint="Transparent"
+    WindowStartupLocation="CenterOwner">
+
+    <!-- The frame of the menus and the flyouts: the same panel color and the same window shadow. -->
+    <ui:PopupFrame PanelMinWidth="380">
+
+        <StackPanel Spacing="{DynamicResource SpacingMD}">
+
+            <DockPanel>
+                <ui:AppIcon
+                    x:Name="MessageIcon"
+                    Margin="8"
+                    VerticalAlignment="Top"
+                    DockPanel.Dock="Left"
+                    Opacity="0.9"
+                    Size="{DynamicResource IconSizeLG}" />
+                <StackPanel VerticalAlignment="Center" Spacing="4">
+                    <TextBlock
+                        x:Name="TitleText"
+                        MaxWidth="420"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource ForegroundBrush}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        x:Name="MessageText"
+                        MaxWidth="420"
+                        Foreground="{DynamicResource ForegroundBrush}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </DockPanel>
+
+            <UniformGrid x:Name="ButtonRow" HorizontalAlignment="Right" Rows="1" />
+
+        </StackPanel>
+
+    </ui:PopupFrame>
+
+</Window>

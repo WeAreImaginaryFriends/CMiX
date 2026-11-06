@@ -81,7 +81,7 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
                 ProjectFixtures.WriteProjectWithMaterialTextures(path);
                 File.WriteAllText(corruptPath, "{ this is not a project");
 
-                var (_, _, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+                var (provider, _, viewModel) = TestServiceProviderFactory.ShowMainWindow();
                 var repository = viewModel.ControlRepository;
 
                 await viewModel.MainMenu.OpenProjectFromPath(path);
@@ -90,13 +90,11 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
                 var afterFirstLoad = Counts(repository);
                 var loadedControls = repository.Controls.ToList();
 
-                // The failure is reported through a message box, and the headless host has no
-                // desktop lifetime for the dialog manager to fall back to for an owner window, so
-                // the report itself throws here. It throws after the point the session would have
-                // been swept, which is what the assertions below are about.
-                await Assert.ThrowsAsync<ArgumentException>(
-                    () => viewModel.MainMenu.OpenProjectFromPath(corruptPath));
+                // The failure goes to the message notice. The fake keeps it without a window.
+                await viewModel.MainMenu.OpenProjectFromPath(corruptPath);
                 TestServiceProviderFactory.Pump();
+
+                Assert.Single(provider.GetRequiredService<FakeMessageNotice>().Messages);
 
                 Assert.Equal(afterFirstLoad, Counts(repository));
                 foreach (var control in loadedControls)
@@ -522,8 +520,7 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
         }
 
         // The push after the open is a sync step. The file is open, so a push failure must not
-        // show the "Open Project" message box. In the headless host that box throws an
-        // ArgumentException, so a call that returns shows that no box opened.
+        // show the "Open Project" message. The fake notice shows that no message came.
         [AvaloniaFact]
         public async Task OpenProjectFromPath_WhenThePushFails_KeepsTheOpenAndReportsTheSyncError()
         {
@@ -544,11 +541,34 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
 
                 Assert.Equal(path, viewModel.MainMenu.FolderPath);
                 Assert.Equal("The push failed.", peer.ErrorMessage);
+                Assert.Empty(provider.GetRequiredService<FakeMessageNotice>().Messages);
             }
             finally
             {
                 peer.SetDispatcher(action => action());
                 peer.Dispose();
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+
+        [AvaloniaFact]
+        public async Task OpenProjectFromPath_ABrokenFile_ShowsTheMessage()
+        {
+            var path = Path.Combine(Path.GetTempPath(), $"cmix-broken-{Guid.NewGuid():N}.cmix");
+            try
+            {
+                File.WriteAllText(path, "{ this is not a project");
+                var (provider, _, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+
+                await viewModel.MainMenu.OpenProjectFromPath(path);
+
+                var (text, title) = Assert.Single(provider.GetRequiredService<FakeMessageNotice>().Messages);
+                Assert.Equal("Open Project", title);
+                Assert.StartsWith($"{Path.GetFileName(path)}: ", text);
+                Assert.Null(viewModel.MainMenu.FolderPath);
+            }
+            finally
+            {
                 if (File.Exists(path)) File.Delete(path);
             }
         }

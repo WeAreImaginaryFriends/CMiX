@@ -31,7 +31,7 @@ namespace CMiX.Studio.Avalonia
         // The rule for ambient statics in this app, so the four that exist do not become a
         // habit. A static is acceptable only when the consumer has no injection point at all:
         // either XAML constructs it and its code behind cannot take constructor arguments
-        // (DialogService, reached from AssetManager, and InteractionHost, reached from the value
+        // (MessageNotice, reached from AssetManager, and InteractionHost, reached from the value
         // editors), or it runs at process level after the
         // container is gone (_crashSaveProject, read by the unhandled exception handler).
         // Anything a container builds takes a constructor dependency instead, which is why the
@@ -42,7 +42,7 @@ namespace CMiX.Studio.Avalonia
         // that handle can end the scope it opened. The editors reach it only through
         // InteractionHost, which App.Initialize connects to it.
         private static Project? _crashSaveProject;
-        public static IDialogService? DialogService { get; private set; }
+        public static IMessageNotice? MessageNotice { get; private set; }
 
         public override void Initialize()
         {
@@ -68,6 +68,7 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<UnsavedChanges>();
                 serviceCollection.AddSingleton<IUnsavedChangesPrompt, UnsavedChangesPrompt>();
                 serviceCollection.AddSingleton<IMoveBlockedNotice, MoveBlockedNotice>();
+                serviceCollection.AddSingleton<IMessageNotice, Services.MessageNotice>();
                 serviceCollection.AddSingleton<PathDropService>();
                 serviceCollection.AddSingleton(_ =>
                 {
@@ -76,14 +77,14 @@ namespace CMiX.Studio.Avalonia
                     return shortcuts;
                 });
                 serviceCollection.AddSingleton<IDialogService>(provider => new DialogService(
-                    new MainWindowDialogManager(new Services.EmptyViewLocator(), new DialogFactory().AddMessageBox()),
+                    new MainWindowDialogManager(new Services.EmptyViewLocator(), new DialogFactory()),
                     viewModelFactory: type => provider.GetService(type)));
                 serviceCollection.AddSingleton<ManagerReorderServiceFactory>(
                     _ => (data, move) => new ManagerReorderService(data, move));
 
                 IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
                 _crashSaveProject = serviceProvider.GetRequiredService<Project>();
-                DialogService = serviceProvider.GetRequiredService<IDialogService>();
+                MessageNotice = serviceProvider.GetRequiredService<IMessageNotice>();
                 // Post, not Invoke, so the Redis reader thread never waits for the UI thread.
                 serviceProvider.GetRequiredService<SyncPeer>().StartAsStudio(
                     serviceProvider.GetRequiredService<ControlMessenger>(),

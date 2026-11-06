@@ -13,7 +13,7 @@ using Xunit;
 namespace CMiX.Studio.Avalonia.Tests
 {
     // The question about the unsaved changes: the frame of the menus, a warning, the text, and three buttons.
-    public class UnsavedChangesDialogTests
+    public class UnsavedChangesPromptTests
     {
         private static Window Owner()
         {
@@ -23,13 +23,18 @@ namespace CMiX.Studio.Avalonia.Tests
             return owner;
         }
 
+        private static MessageDialog Dialog() => new(UnsavedChangesPrompt.Options);
+
+        private static async Task<UnsavedChangesChoice> Answer(Task<MessageDialogResult> result) =>
+            UnsavedChangesPrompt.ToChoice(await result);
+
         private static Button ButtonNamed(Control dialog, string name) =>
             dialog.GetVisualDescendants().OfType<Button>().Single(button => button.Name == name);
 
         [AvaloniaFact]
         public void TheDialog_ShowsTheWarningTheQuestionAndThreeButtons()
         {
-            var dialog = new UnsavedChangesDialog();
+            var dialog = Dialog();
             dialog.Show(Owner());
             Dispatcher.UIThread.RunJobs();
 
@@ -44,7 +49,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void TheDialog_UsesTheFrameOfTheMenusAndFlyouts()
         {
-            var dialog = new UnsavedChangesDialog();
+            var dialog = Dialog();
             dialog.Show(Owner());
             Dispatcher.UIThread.RunJobs();
 
@@ -57,8 +62,8 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData("CancelButton", UnsavedChangesChoice.Cancel)]
         public async Task EachButton_ClosesTheDialogWithItsChoice(string buttonName, UnsavedChangesChoice expected)
         {
-            var dialog = new UnsavedChangesDialog();
-            var answer = dialog.ShowDialog<UnsavedChangesChoice>(Owner());
+            var dialog = Dialog();
+            var answer = Answer(dialog.ShowDialog<MessageDialogResult>(Owner()));
             Dispatcher.UIThread.RunJobs();
 
             ButtonNamed(dialog, buttonName).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -70,8 +75,8 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public async Task Escape_IsCancel()
         {
-            var dialog = new UnsavedChangesDialog();
-            var answer = dialog.ShowDialog<UnsavedChangesChoice>(Owner());
+            var dialog = Dialog();
+            var answer = Answer(dialog.ShowDialog<MessageDialogResult>(Owner()));
             Dispatcher.UIThread.RunJobs();
 
             dialog.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape, Source = dialog });
@@ -81,10 +86,23 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public async Task Enter_IsSave()
+        {
+            var dialog = Dialog();
+            var answer = Answer(dialog.ShowDialog<MessageDialogResult>(Owner()));
+            Dispatcher.UIThread.RunJobs();
+
+            dialog.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter, Source = dialog });
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(UnsavedChangesChoice.Save, await answer);
+        }
+
+        [AvaloniaFact]
         public async Task ClosingTheDialogWithoutAnAnswer_IsCancel()
         {
-            var dialog = new UnsavedChangesDialog();
-            var answer = dialog.ShowDialog<UnsavedChangesChoice>(Owner());
+            var dialog = Dialog();
+            var answer = Answer(dialog.ShowDialog<MessageDialogResult>(Owner()));
             Dispatcher.UIThread.RunJobs();
 
             dialog.Close();

@@ -6,7 +6,7 @@ using CMiX.UI.Themes;
 
 namespace CMiX.Studio.Avalonia.Themes
 {
-    // The icon keys that name a part of the Studio. App.Initialize calls Register before the XAML loads.
+    // The icon keys of the Studio: the parts of the Studio and the message icons. App.Initialize calls Register before the XAML loads.
     public static class StudioIcons
     {
         public static void Register()
@@ -44,6 +44,8 @@ namespace CMiX.Studio.Avalonia.Themes
             Icons.Register("Filter", MaterialIconKind.FilterVariant);
             Icons.Register("Modifier", MaterialIconKind.Wrench);
             Icons.Register("Modulator", MaterialIconKind.SineWave);
+            Icons.Register("Error", MaterialIconKind.AlertCircle);
+            Icons.Register("Info", MaterialIconKind.Information);
         }
     }
 }

@@ -8,7 +8,7 @@ using CMiX.Studio.Avalonia.Views.Dialogs;
 
 namespace CMiX.Studio.Avalonia.Services
 {
-    // Shows the message in a dialog over the main window.
+    // Shows the message in a dialog over the main window. OK, Enter or Escape closes it.
     public sealed class MoveBlockedNotice : IMoveBlockedNotice
     {
         public async Task ShowAsync(string message)
@@ -16,7 +16,9 @@ namespace CMiX.Studio.Avalonia.Services
             if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
                 return;
 
-            await new MoveBlockedDialog(message).ShowDialog(owner);
+            await MessageDialog.ShowAsync(owner, Options(message));
         }
+
+        public static MessageDialogOptions Options(string message) => MessageDialogOptions.Notice(message, "Warning");
     }
 }

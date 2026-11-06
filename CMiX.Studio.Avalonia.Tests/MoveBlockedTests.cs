@@ -8,6 +8,7 @@ using CMiX.Core.Compositing;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
@@ -91,7 +92,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void TheDialog_ShowsTheMessage()
         {
-            var dialog = new MoveBlockedDialog("The layer shares items.");
+            var dialog = new MessageDialog(MoveBlockedNotice.Options("The layer shares items."));
             dialog.Show();
             Dispatcher.UIThread.RunJobs();
 
@@ -103,7 +104,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void TheOkButton_ClosesTheDialog()
         {
-            var dialog = new MoveBlockedDialog("The layer shares items.");
+            var dialog = new MessageDialog(MoveBlockedNotice.Options("The layer shares items."));
             var closed = false;
             dialog.Closed += (_, _) => closed = true;
             dialog.Show();
@@ -119,7 +120,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void TheEscapeKey_ClosesTheDialog()
         {
-            var dialog = new MoveBlockedDialog("The layer shares items.");
+            var dialog = new MessageDialog(MoveBlockedNotice.Options("The layer shares items."));
             var closed = false;
             dialog.Closed += (_, _) => closed = true;
             dialog.Show();
