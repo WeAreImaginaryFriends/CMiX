@@ -27,7 +27,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private readonly UndoManager undoManager;
         private readonly IMoveBlockedNotice? notice;
         private readonly TreeDropService dropService = new();
-        private readonly PathDropService pathDrop = new();
+        private readonly PathDropService pathDrop;
         private readonly PrefabManager compositions;
         private readonly TreeNode root;
         private TreeNode? selectedNode;
@@ -35,10 +35,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private bool selecting;
 
         public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null,
-            ShortcutMap? shortcuts = null)
+            ShortcutMap? shortcuts = null, PathDropService? pathDrop = null)
         {
             this.undoManager = undoManager;
             this.notice = notice;
+            this.pathDrop = pathDrop ?? new PathDropService();
             Shortcuts = shortcuts ?? new ShortcutMap();
             compositions = project.CompositionManager;
             root = new TreeNode(this, null, null, null, "Project", compositions);
@@ -400,14 +401,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             node.Item is Composition or Layer
             || node.Group is EntitiesGroup;
 
-        public bool CanDropPaths(IEnumerable<string> paths) => paths.Any(pathDrop.Accepts);
+        // True when DropPaths makes an item from this path.
+        public bool AcceptsPath(string path) => pathDrop.AcceptsItem(path);
+
+        public bool CanDropPaths(IEnumerable<string> paths) => paths.Any(pathDrop.AcceptsItem);
 
         // Makes what the dropped paths need, and adds an item for each path, as one undo step.
         // A composition takes a new layer, and a layer takes the items. With no target, a new composition with a new
         // layer takes them. A drop of nothing that is accepted changes nothing.
         public void DropPaths(TreeNode? hovered, IReadOnlyList<string> paths)
         {
-            var accepted = paths.Where(pathDrop.Accepts).ToList();
+            var accepted = paths.Where(pathDrop.AcceptsItem).ToList();
             if (accepted.Count == 0)
                 return;
 

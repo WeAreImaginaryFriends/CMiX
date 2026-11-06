@@ -35,7 +35,8 @@ namespace CMiX.Studio.Avalonia.ViewModels
                              ControlActivationService activationService,
                              UndoManager undoManager,
                              IMoveBlockedNotice moveBlockedNotice,
-                             ShortcutMap shortcuts)
+                             ShortcutMap shortcuts,
+                             PathDropService pathDropService)
         {
             _undoManager = undoManager;
             TextureManager = SetupManager(textureManager, ManagerIDs.TextureManager);
@@ -50,7 +51,8 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ShortcutSettings = new ShortcutSettings(shortcuts);
             UndoCommand = new RelayCommand(undoManager.Undo);
             RedoCommand = new RelayCommand(undoManager.Redo);
-            ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice, shortcuts);
+            PathDropService = pathDropService;
+            ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice, shortcuts, pathDropService);
             Sync = sync;
             MainWindowController = mainWindowController;
             AssetManager = assetManager;
@@ -114,6 +116,9 @@ namespace CMiX.Studio.Avalonia.ViewModels
         public ControlRepository ControlRepository { get; set; }
         public Project Project { get; set; }
         public ProjectTree ProjectTree { get; }
+
+        // The rules of dropped files. The drop behaviors of the views take it from here.
+        public PathDropService PathDropService { get; }
 
         // The keyboard shortcuts. The key bindings of the window and of the tree read their gestures here.
         public ShortcutMap Shortcuts { get; }

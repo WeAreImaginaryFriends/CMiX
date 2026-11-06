@@ -12,6 +12,7 @@ using CMiX.Core.Texturing;
 using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Behaviors;
+using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.Behaviors;
@@ -64,7 +65,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var provider = TestServiceProviderFactory.Create();
             var entities = provider.GetRequiredService<PrefabManager>();
             var undo = provider.GetRequiredService<UndoManager>();
-            return (entities, undo, new Dropper { PrefabManager = entities });
+            return (entities, undo, new Dropper { PrefabManager = entities, PathDropService = provider.GetRequiredService<PathDropService>() });
         }
 
         private static IAssetTextureSource TextureOf(ITexturable textured) =>
@@ -237,6 +238,19 @@ namespace CMiX.Studio.Avalonia.Tests
             undo.Clear();
 
             dropper.Drop(new[] { NewFile("model.obj") });
+            undo.Undo();
+
+            Assert.Empty(entities.ManagerData.Items);
+        }
+
+        [AvaloniaFact]
+        public void Drop_ThreeFiles_IsOneUndoStep()
+        {
+            var (entities, undo, dropper) = Show();
+            undo.Clear();
+
+            dropper.Drop(new[] { NewFile("one.png"), NewFile("model.obj"), NewFile("notes.txt") });
+            Assert.Equal(3, entities.ManagerData.Items.Count);
             undo.Undo();
 
             Assert.Empty(entities.ManagerData.Items);

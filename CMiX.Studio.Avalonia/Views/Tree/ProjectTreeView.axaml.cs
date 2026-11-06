@@ -18,6 +18,7 @@ using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.Controls.String;
+using CMiX.UI.Behaviors;
 using CompositionModel = CMiX.Core.Compositing.Composition;
 using LayerModel = CMiX.Core.Compositing.Layer;
 
@@ -431,13 +432,19 @@ namespace CMiX.Studio.Avalonia.Views
         // Any other drag of the system does nothing here: a row of the tree is dragged with the pointer (see TreeRowDrag).
         private static bool IsFileDrag(DragEventArgs e) => e.Data.Contains(DataFormats.Files);
 
-        // The local paths of the files and folders of the drag.
-        private static List<string> PathsOf(DragEventArgs e) =>
-            (e.Data.GetFiles() ?? Enumerable.Empty<IStorageItem>())
-                .Select(item => item.TryGetLocalPath())
-                .Where(path => path != null && (File.Exists(path) || Directory.Exists(path)))
-                .Select(path => path!)
-                .ToList();
+        // The paths of the current file drag, classified once. Null when no file drag is over the tree.
+        private DropFiles? dropFiles;
+
+        // The record of the drag. A drag with other data is classified again. DragOver reads no disk.
+        private DropFiles? FilesOf(DragEventArgs e)
+        {
+            if (DataContext is not ProjectTree tree)
+                return null;
+
+            if (dropFiles == null || !ReferenceEquals(dropFiles.Data, e.Data))
+                dropFiles = DropFiles.Classify(e.Data, FileDropMode.FilesAndFolders, tree.AcceptsPath);
+            return dropFiles;
+        }
 
         private void TrackFilesPointer(DragEventArgs e) =>
             AutoScroller.Track(ScrollerOfTree is { } scroller ? e.GetPosition(scroller).Y : null);
@@ -445,8 +452,11 @@ namespace CMiX.Studio.Avalonia.Views
         // A leave of one row comes with the enter of the next row. The next enter or over starts the timer again.
         private void OnDragEnter(object? sender, DragEventArgs e)
         {
-            if (IsFileDrag(e))
-                TrackFilesPointer(e);
+            if (!IsFileDrag(e))
+                return;
+
+            FilesOf(e);
+            TrackFilesPointer(e);
         }
 
         // Files over the tree: the row under the pointer looks hovered when that row takes the files itself (see
@@ -461,7 +471,7 @@ namespace CMiX.Studio.Avalonia.Views
             e.DragEffects = DragDropEffects.None;
             marker.Mark(null, null);
 
-            if (DataContext is not ProjectTree tree || !tree.CanDropPaths(PathsOf(e)))
+            if (DataContext is not ProjectTree tree || FilesOf(e) is not { IsAccepted: true })
                 return;
 
             e.DragEffects = DragDropEffects.Copy;
@@ -474,6 +484,9 @@ namespace CMiX.Studio.Avalonia.Views
         {
             autoScroller?.StopNow();
             marker.Mark(null, null);
+            // A leave of a row inside the tree keeps the record.
+            if (DropFiles.LeavesControl(treeView, e))
+                dropFiles = null;
         }
 
         private void OnDrop(object? sender, DragEventArgs e)
@@ -484,8 +497,10 @@ namespace CMiX.Studio.Avalonia.Views
             autoScroller?.StopNow();
             e.Handled = true;
             marker.Mark(null, null);
-            if (DataContext is ProjectTree tree)
-                tree.DropPaths(TreeRows.ItemOf(e.Source)?.DataContext as TreeNode, PathsOf(e));
+            var files = FilesOf(e);
+            dropFiles = null;
+            if (DataContext is ProjectTree tree && files != null)
+                tree.DropPaths(TreeRows.ItemOf(e.Source)?.DataContext as TreeNode, files.Accepted);
         }
     }
 }

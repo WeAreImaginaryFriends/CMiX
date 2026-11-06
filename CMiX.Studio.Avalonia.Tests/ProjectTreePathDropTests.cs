@@ -357,6 +357,43 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void DropPaths_ThreeFiles_IsOneUndoStep()
+        {
+            var screen = Show(compositions: 1, layersEach: 1);
+            var layer = LayerAt(CompositionAt(screen, 0), 0);
+
+            screen.Tree.DropPaths(screen.Tree.Roots[0].Children[0], new[] { NewFile("one.png"), NewFrames(), NewFile("notes.txt") });
+            Assert.Equal(3, layer.ModelEntityManager.ManagerData.Items.Count);
+            screen.Undo.Undo();
+
+            Assert.Empty(layer.ModelEntityManager.ManagerData.Items);
+        }
+
+        // The view classifies the paths on DragEnter. A DragOver after that reads the record, not the folder:
+        // the folder is gone, but the row still takes the drag.
+        [AvaloniaFact]
+        public void DragOver_AfterDragEnter_ReadsNoFolder()
+        {
+            var screen = Show(compositions: 1);
+            var frames = NewFrames();
+            var data = FilesOf(screen.Window, frames);
+            var composition = screen.Tree.Roots[0];
+            var point = RowPoint(screen, composition);
+            var palette = CategoryPalette.FromApplication();
+            var effects = DragDropEffects.Copy | DragDropEffects.Move;
+
+            screen.Window.DragDrop(point, RawDragEventType.DragEnter, data, effects);
+            Directory.Delete(frames, true);
+            screen.Window.DragDrop(point, RawDragEventType.DragOver, data, effects);
+            Dispatcher.UIThread.RunJobs();
+
+            var row = RowOf(screen, composition);
+            Assert.Equal(
+                palette.For(composition.Category!.Value, composition.ComposableDepth, composition.KindDepth).FillSelected,
+                (row.Background as ISolidColorBrush)?.Color);
+        }
+
+        [AvaloniaFact]
         public void FilesThatTheTreeDoesNotAccept_MakeNothing()
         {
             var screen = Show();

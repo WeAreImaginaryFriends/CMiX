@@ -68,6 +68,7 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<UnsavedChanges>();
                 serviceCollection.AddSingleton<IUnsavedChangesPrompt, UnsavedChangesPrompt>();
                 serviceCollection.AddSingleton<IMoveBlockedNotice, MoveBlockedNotice>();
+                serviceCollection.AddSingleton<PathDropService>();
                 serviceCollection.AddSingleton(_ =>
                 {
                     var shortcuts = new ShortcutMap();

@@ -3,12 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Platform.Storage;
 using Avalonia.Xaml.Interactivity;
 
 namespace CMiX.UI.Behaviors
@@ -57,6 +54,9 @@ namespace CMiX.UI.Behaviors
 
         public event EventHandler<PathsDroppedEventArgs>? PathsDropped;
 
+        // The paths of the current drag, classified on DragEnter. Null when no drag is over the control.
+        private DropFiles? current;
+
         protected override void OnAttached()
         {
             base.OnAttached();
@@ -64,17 +64,22 @@ namespace CMiX.UI.Behaviors
                 return;
 
             DragDrop.SetAllowDrop(AssociatedObject, true);
+            AssociatedObject.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
             AssociatedObject.AddHandler(DragDrop.DragOverEvent, OnDragOver);
+            AssociatedObject.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
             AssociatedObject.AddHandler(DragDrop.DropEvent, OnDrop);
         }
 
         protected override void OnDetaching()
         {
             base.OnDetaching();
+            current = null;
             if (AssociatedObject == null)
                 return;
 
+            AssociatedObject.RemoveHandler(DragDrop.DragEnterEvent, OnDragEnter);
             AssociatedObject.RemoveHandler(DragDrop.DragOverEvent, OnDragOver);
+            AssociatedObject.RemoveHandler(DragDrop.DragLeaveEvent, OnDragLeave);
             AssociatedObject.RemoveHandler(DragDrop.DropEvent, OnDrop);
         }
 
@@ -83,30 +88,43 @@ namespace CMiX.UI.Behaviors
             PathsDropped?.Invoke(this, new PathsDroppedEventArgs(paths));
         }
 
+        // True when the control takes this path. The behavior calls it once per path and drag, on DragEnter.
+        protected virtual bool Accepts(string path) => true;
+
+        // The record of the drag. A drag with other data is classified again.
+        private DropFiles FilesOf(DragEventArgs e)
+        {
+            if (current == null || !ReferenceEquals(current.Data, e.Data))
+                current = DropFiles.Classify(e.Data, Mode, Accepts);
+            return current;
+        }
+
+        private void OnDragEnter(object? sender, DragEventArgs e)
+        {
+            if (e.Data.Contains(DataFormats.Files))
+                FilesOf(e);
+        }
+
         private void OnDragOver(object? sender, DragEventArgs e)
         {
-            e.DragEffects = e.Data.Contains(DataFormats.Files) ? DragEffects : DragDropEffects.None;
+            e.DragEffects = e.Data.Contains(DataFormats.Files) && FilesOf(e).IsAccepted ? DragEffects : DragDropEffects.None;
             e.Handled = true;
         }
 
-        private static bool Accepts(FileDropMode mode, string path) => mode switch
+        // A leave of a child of the control keeps the record.
+        private void OnDragLeave(object? sender, DragEventArgs e)
         {
-            FileDropMode.Folders => Directory.Exists(path),
-            FileDropMode.FilesAndFolders => File.Exists(path) || Directory.Exists(path),
-            _ => File.Exists(path)
-        };
+            if (AssociatedObject == null || DropFiles.LeavesControl(AssociatedObject, e))
+                current = null;
+        }
 
         private void OnDrop(object? sender, DragEventArgs e)
         {
             if (!e.Data.Contains(DataFormats.Files))
                 return;
 
-            var mode = Mode;
-            var paths = (e.Data.GetFiles() ?? Enumerable.Empty<IStorageItem>())
-                .Select(item => item.TryGetLocalPath())
-                .Where(path => path != null && Accepts(mode, path))
-                .Select(path => path!)
-                .ToList();
+            var paths = FilesOf(e).Accepted;
+            current = null;
             if (paths.Count == 0)
                 return;
 

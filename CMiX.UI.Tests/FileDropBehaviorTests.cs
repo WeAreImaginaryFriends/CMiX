@@ -114,6 +114,42 @@ namespace CMiX.UI.Tests
             Assert.Equal(0, calls);
         }
 
+        private sealed class CountingDrop : FileDropBehavior
+        {
+            public int Classified { get; private set; }
+
+            protected override bool Accepts(string path)
+            {
+                Classified++;
+                return true;
+            }
+        }
+
+        [AvaloniaFact]
+        public void DragOver_AfterDragEnter_DoesNotClassifyAgain()
+        {
+            var target = new Border { Background = Avalonia.Media.Brushes.Gray, Width = 200, Height = 100 };
+            var drop = new CountingDrop();
+            Avalonia.Xaml.Interactivity.Interaction.GetBehaviors(target).Add(drop);
+            var window = new Window { Content = target, Width = 300, Height = 200 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            IReadOnlyList<string>? received = null;
+            drop.PathsDropped += (s, e) => received = e.Paths;
+            var data = FakeStorageItem.Drag(window, _file);
+            var point = target.TranslatePoint(new Point(100, 50), window)!.Value;
+            var effects = DragDropEffects.Copy | DragDropEffects.Move;
+
+            window.DragDrop(point, RawDragEventType.DragEnter, data, effects);
+            for (var i = 0; i < 5; i++)
+                window.DragDrop(point, RawDragEventType.DragOver, data, effects);
+            window.DragDrop(point, RawDragEventType.Drop, data, effects);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(1, drop.Classified);
+            Assert.Equal(new[] { _file }, received!);
+        }
+
         [AvaloniaFact]
         public void TheBehavior_AllowsTheDropOnItsControl()
         {

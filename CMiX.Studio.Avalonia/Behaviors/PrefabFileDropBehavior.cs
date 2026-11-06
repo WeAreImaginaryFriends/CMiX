@@ -1,0 +1,72 @@
+// SPDX-FileCopyrightText: 2017-2026 CloneProduction Shanghai Company Limited and CMiX contributors
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+using System.Collections.Generic;
+using Avalonia;
+using Avalonia.Controls;
+using CMiX.Core.Prefabs.Managers;
+using CMiX.Studio.Avalonia.Services;
+using CMiX.Studio.Avalonia.ViewModels;
+using CMiX.UI.Behaviors;
+
+namespace CMiX.Studio.Avalonia.Behaviors
+{
+    // Files and folders dropped on the control become items of the prefab manager.
+    // PathDropService holds the rules. A drop of several paths is one undo step.
+    public abstract class PrefabFileDropBehavior : FileDropBehavior
+    {
+        static PrefabFileDropBehavior()
+        {
+            ModeProperty.OverrideDefaultValue<PrefabFileDropBehavior>(FileDropMode.FilesAndFolders);
+        }
+
+        public static readonly StyledProperty<PrefabManager> PrefabManagerProperty =
+            AvaloniaProperty.Register<PrefabFileDropBehavior, PrefabManager>(nameof(PrefabManager));
+
+        public PrefabManager PrefabManager
+        {
+            get => GetValue(PrefabManagerProperty);
+            set => SetValue(PrefabManagerProperty, value);
+        }
+
+        public static readonly StyledProperty<PathDropService?> PathDropServiceProperty =
+            AvaloniaProperty.Register<PrefabFileDropBehavior, PathDropService?>(nameof(PathDropService));
+
+        // The rules. When this is not set, the behavior uses the service of the view model of the window.
+        public PathDropService? PathDropService
+        {
+            get => GetValue(PathDropServiceProperty);
+            set => SetValue(PathDropServiceProperty, value);
+        }
+
+        protected PathDropService? Service =>
+            PathDropService
+            ?? (TopLevel.GetTopLevel(AssociatedObject)?.DataContext as MainViewModel)?.PathDropService;
+
+        // True when Add makes an item from this path. DragOver uses it, once per path and drag.
+        protected abstract override bool Accepts(string path);
+
+        // Adds the item of one path. Service and PrefabManager are not null here.
+        protected abstract void Add(string path);
+
+        protected override void OnPathsDropped(IReadOnlyList<string> paths)
+        {
+            base.OnPathsDropped(paths);
+
+            if (PrefabManager == null || Service == null)
+                return;
+
+            var undoManager = PrefabManager.UndoManager;
+            undoManager?.BeginCapture();
+            try
+            {
+                foreach (var path in paths)
+                    Add(path);
+            }
+            finally
+            {
+                undoManager?.EndCapture();
+            }
+        }
+    }
+}

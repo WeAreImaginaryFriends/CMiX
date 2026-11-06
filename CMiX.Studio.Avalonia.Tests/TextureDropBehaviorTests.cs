@@ -4,6 +4,7 @@ using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Behaviors;
+using CMiX.Studio.Avalonia.Services;
 using CMiX.UI.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -40,7 +41,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var provider = TestServiceProviderFactory.Create();
             var textures = provider.GetRequiredService<PrefabManager>();
             var undo = provider.GetRequiredService<UndoManager>();
-            return (textures, undo, new Dropper { PrefabManager = textures });
+            return (textures, undo, new Dropper { PrefabManager = textures, PathDropService = provider.GetRequiredService<PathDropService>() });
         }
 
         [AvaloniaFact]
@@ -69,15 +70,16 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TwoDroppedImages_AreTwoUndoSteps()
+        public void Drop_ThreeFiles_IsOneUndoStep()
         {
             var (textures, undo, dropper) = Show();
             undo.Clear();
 
-            dropper.Drop(new[] { NewFile("one.png"), NewFile("two.png") });
+            dropper.Drop(new[] { NewFile("one.png"), NewFile("two.png"), NewFile("clip.mp4") });
+            Assert.Equal(3, textures.ManagerData.Items.Count);
             undo.Undo();
 
-            Assert.Single(textures.ManagerData.Items);
+            Assert.Empty(textures.ManagerData.Items);
         }
 
         private string NewFolder(string name, params string[] files)

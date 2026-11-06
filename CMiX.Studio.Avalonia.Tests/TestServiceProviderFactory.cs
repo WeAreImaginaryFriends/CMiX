@@ -30,6 +30,7 @@ namespace CMiX.Studio.Avalonia.Tests
             serviceCollection.AddSingleton<IUnsavedChangesPrompt>(provider => provider.GetRequiredService<FakeUnsavedChangesPrompt>());
             serviceCollection.AddSingleton<FakeMoveBlockedNotice>();
             serviceCollection.AddSingleton<IMoveBlockedNotice>(provider => provider.GetRequiredService<FakeMoveBlockedNotice>());
+            serviceCollection.AddSingleton<PathDropService>();
             // The defaults, with a file path in the temp folder. A test never reads or writes the file of the user.
             serviceCollection.AddSingleton(_ => new ShortcutMap(Path.Combine(Path.GetTempPath(), $"cmix-shortcuts-{Guid.NewGuid():N}", ShortcutMap.FileName)));
             // A test sets no mouse hook on the desktop.
