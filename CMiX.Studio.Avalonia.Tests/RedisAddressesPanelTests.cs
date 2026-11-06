@@ -86,7 +86,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSettingsTab_ShowsTheOutputMappingsAndTheRedisAddresses()
+        public void TheSettingsTab_ShowsTheOutputMappingsTheRedisAddressesAndTheShortcuts()
         {
             var tab = new Views.SettingsTab();
             new Window { Content = tab, Width = 400, Height = 400 }.Show();
@@ -96,7 +96,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 .Where(expander => expander.IsEffectivelyVisible)
                 .Select(expander => expander.Header);
 
-            Assert.Equal(new object[] { "Output Mappings", "Redis Addresses" }, headers);
+            Assert.Equal(new object[] { "Output Mappings", "Redis Addresses", "Shortcuts" }, headers);
         }
     }
 }

@@ -1,0 +1,71 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.ShortcutSettingsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:conv="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base">
+
+    <!-- The DataContext is a ShortcutSettings. -->
+    <StackPanel Margin="8" Spacing="{DynamicResource SpacingMD}">
+
+        <Button
+            x:Name="ResetAllButton"
+            Height="{DynamicResource ControlHeightMD}"
+            Padding="8,0"
+            HorizontalAlignment="Right"
+            Command="{Binding ResetAllCommand}"
+            Content="Reset All"
+            Theme="{StaticResource ButtonRounded}" />
+
+        <ItemsControl x:Name="ScopeList" ItemsSource="{Binding Scopes}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="0,0,0,8" Spacing="4">
+
+                        <TextBlock
+                            x:Name="ScopeHeader"
+                            Foreground="{DynamicResource ForegroundBrush}"
+                            Text="{Binding Name}" />
+
+                        <ItemsControl ItemsSource="{Binding Rows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ui:ContentCaptioned
+                                        Margin="0,0,0,4"
+                                        Caption="{Binding Label}"
+                                        ToolTip.Tip="{Binding ConflictText}">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <ui:KeyGestureBox
+                                                Grid.Column="0"
+                                                Gesture="{Binding Gesture, Mode=TwoWay}"
+                                                ResetCommand="{Binding ResetCommand}" />
+                                            <!-- Marks a gesture that another command of the scope also has. -->
+                                            <Ellipse
+                                                x:Name="ConflictMark"
+                                                Grid.Column="1"
+                                                Width="{DynamicResource IndicatorSize}"
+                                                Height="{DynamicResource IndicatorSize}"
+                                                Margin="4,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Fill="{DynamicResource DropBlockedBrush}"
+                                                IsVisible="{Binding IsConflict}" />
+                                        </Grid>
+                                    </ui:ContentCaptioned>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock
+            x:Name="SaveErrorText"
+            Foreground="Crimson"
+            TextWrapping="Wrap"
+            Text="{Binding SaveError}"
+            IsVisible="{Binding SaveError, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" />
+
+    </StackPanel>
+</UserControl>

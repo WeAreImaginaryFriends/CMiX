@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace CMiX.Studio.Avalonia.Services
 {
     // The model of the shortcut file. A value is a gesture string, for example "Ctrl+Shift+Z". An empty string means no gesture.
-    public class ShortcutSettings
+    public class ShortcutFile
     {
         public Dictionary<string, string> Shortcuts { get; set; } = new();
     }
@@ -120,7 +120,7 @@ namespace CMiX.Studio.Avalonia.Services
                 return;
             }
 
-            var settings = JsonSettingsFile.Load<ShortcutSettings>(FilePath);
+            var settings = JsonSettingsFile.Load<ShortcutFile>(FilePath);
             foreach (var name in Names)
                 gestures[name] = DefaultOf(name);
 
@@ -133,7 +133,7 @@ namespace CMiX.Studio.Avalonia.Services
 
         public void Save()
         {
-            var settings = new ShortcutSettings();
+            var settings = new ShortcutFile();
             foreach (var name in Names)
                 settings.Shortcuts[name] = gestures[name]?.ToString() ?? string.Empty;
 

@@ -49,6 +49,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
 
             Project = project;
             Shortcuts = shortcuts;
+            ShortcutSettings = new ShortcutSettings(shortcuts);
             UndoCommand = new RelayCommand(undoManager.Undo);
             RedoCommand = new RelayCommand(undoManager.Redo);
             ProjectTree = new ProjectTree(project, undoManager, moveBlockedNotice, dragWheelSource, shortcuts);
@@ -118,6 +119,9 @@ namespace CMiX.Studio.Avalonia.ViewModels
 
         // The keyboard shortcuts. The key bindings of the window and of the tree read their gestures here.
         public ShortcutMap Shortcuts { get; }
+
+        // The settings tab edits the shortcuts with this.
+        public ShortcutSettings ShortcutSettings { get; }
 
         public IRelayCommand UndoCommand { get; }
         public IRelayCommand RedoCommand { get; }

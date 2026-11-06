@@ -1,0 +1,158 @@
+using Avalonia;
+using Avalonia.Controls;
+using Ellipse = Avalonia.Controls.Shapes.Ellipse;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using CMiX.Studio.Avalonia.Services;
+using CMiX.Studio.Avalonia.ViewModels;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
+using CMiX.Studio.Avalonia.Views;
+using CMiX.UI.Controls.String;
+using CMiX.UI.Panels;
+using Xunit;
+
+namespace CMiX.Studio.Avalonia.Tests
+{
+    // The Shortcuts section of the Settings tab.
+    public class ShortcutSettingsViewTests : IDisposable
+    {
+        private readonly string folder = Path.Combine(Path.GetTempPath(), $"cmix-shortcuts-{Guid.NewGuid():N}");
+
+        public void Dispose()
+        {
+            if (Directory.Exists(folder))
+                Directory.Delete(folder, true);
+        }
+
+        private (ShortcutMap Map, ShortcutSettings Settings, ShortcutSettingsView View) Show()
+        {
+            var map = new ShortcutMap(Path.Combine(folder, ShortcutMap.FileName));
+            var settings = new ShortcutSettings(map);
+            var view = new ShortcutSettingsView { DataContext = settings };
+            new Window { Content = view, Width = 400, Height = 600 }.Show();
+            Dispatcher.UIThread.RunJobs();
+            return (map, settings, view);
+        }
+
+        private static KeyGestureBox Box(Control view, string name) =>
+            view.GetVisualDescendants().OfType<KeyGestureBox>().Single(box => box.DataContext is ShortcutRow row && row.Name == name);
+
+        [AvaloniaFact]
+        public void View_ShowsOneKeyGestureBoxPerRow()
+        {
+            var (map, _, view) = Show();
+
+            var boxes = view.GetVisualDescendants().OfType<KeyGestureBox>().ToList();
+
+            Assert.Equal(map.Names, boxes.Select(box => ((ShortcutRow)box.DataContext!).Name));
+            Assert.Equal(map["Tree.Rename"], Box(view, "Tree.Rename").Gesture);
+        }
+
+        [AvaloniaFact]
+        public void Chord_PressedInABox_ChangesTheTreeBinding()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.SelectMainTab(window, "Settings");
+            var expander = window.GetVisualDescendants().OfType<ExpanderIndented>().Single(e => Equals(e.Header, "Shortcuts"));
+            expander.IsExpanded = true;
+            TestServiceProviderFactory.Pump();
+            var box = Box(window, "Tree.Rename");
+            box.Focus();
+            TestServiceProviderFactory.Pump();
+            Assert.True(box.IsFocused);
+
+            window.KeyPress(Key.R, RawInputModifiers.Control | RawInputModifiers.Shift, PhysicalKey.None, null);
+            TestServiceProviderFactory.Pump();
+
+            var gesture = new KeyGesture(Key.R, KeyModifiers.Control | KeyModifiers.Shift);
+            Assert.Equal(gesture, viewModel.Shortcuts["Tree.Rename"]);
+            var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().First();
+            var rename = tree.KeyBindings.Single(binding => ReferenceEquals(binding.Command, ((ProjectTree)tree.DataContext!).RenameSelectedCommand));
+            Assert.Equal(gesture, rename.Gesture);
+        }
+
+        [AvaloniaFact]
+        public void ConflictRow_ShowsTheMark()
+        {
+            var (map, _, view) = Show();
+            map.Set("Tree.Rename", new KeyGesture(Key.Delete));
+            Dispatcher.UIThread.RunJobs();
+
+            var marks = view.GetVisualDescendants().OfType<Ellipse>().Where(e => e.Name == "ConflictMark" && e.IsVisible).ToList();
+
+            Assert.Equal(new[] { "Tree.Rename", "Tree.Remove" }, marks.Select(mark => ((ShortcutRow)mark.DataContext!).Name));
+            var expected = ((ISolidColorBrush)Application.Current!.FindResource("DropBlockedBrush")!).Color;
+            Assert.All(marks, mark => Assert.Equal(expected, ((ISolidColorBrush)mark.Fill!).Color));
+            Assert.Contains("Remove", ToolTip.GetTip(Box(view, "Tree.Rename").GetVisualAncestors().OfType<CMiX.UI.Controls.Parts.ContentCaptioned>().First()) as string);
+        }
+
+        [AvaloniaFact]
+        public void ResetAllButton_HoldsTheResetAllCommand()
+        {
+            var (_, settings, view) = Show();
+
+            var button = view.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "ResetAllButton");
+
+            Assert.Same(settings.ResetAllCommand, button.Command);
+        }
+
+        [AvaloniaFact]
+        public void ResetMenu_OfABox_HoldsTheResetCommand()
+        {
+            var (_, _, view) = Show();
+            var box = Box(view, "Tree.Open");
+            var row = (ShortcutRow)box.DataContext!;
+
+            var reset = box.ContextMenu!.Items.OfType<MenuItem>().Single(item => Equals(item.Header, "Reset"));
+
+            Assert.Same(row.ResetCommand, box.ResetCommand);
+            Assert.Same(row.ResetCommand, reset.Command);
+        }
+
+        [AvaloniaFact]
+        public void SaveError_AfterAFailedSave_ShowsTheTextInCrimson()
+        {
+            var (_, settings, view) = Show();
+            var text = view.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Name == "SaveErrorText");
+            Assert.False(text.IsVisible);
+            // A file in the place of the folder makes each save fail.
+            File.WriteAllText(folder, string.Empty);
+
+            try
+            {
+                Box(view, "Tree.Open").Gesture = new KeyGesture(Key.O);
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.NotNull(settings.SaveError);
+                Assert.True(text.IsVisible);
+                Assert.Equal(settings.SaveError, text.Text);
+                Assert.Equal(Colors.Crimson, ((ISolidColorBrush)text.Foreground!).Color);
+            }
+            finally
+            {
+                File.Delete(folder);
+            }
+        }
+
+        [AvaloniaFact]
+        public void SettingsTab_HasTheShortcutsExpanderClosed()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.SelectMainTab(window, "Settings");
+
+            var tab = window.GetVisualDescendants().OfType<SettingsTab>().Single();
+            var expander = tab.GetVisualDescendants().OfType<ExpanderIndented>().Single(e => Equals(e.Header, "Shortcuts"));
+
+            Assert.False(expander.IsExpanded);
+
+            // A closed expander does not attach its content. The binding resolves when it opens.
+            expander.IsExpanded = true;
+            TestServiceProviderFactory.Pump();
+            Assert.Same(viewModel.ShortcutSettings, ((Control)expander.Content!).DataContext);
+        }
+    }
+}

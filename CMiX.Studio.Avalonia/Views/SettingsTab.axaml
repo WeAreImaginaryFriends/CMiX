@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
-    xmlns:Managers="clr-namespace:CMiX.Studio.Avalonia.Views.Managers">
+    xmlns:Managers="clr-namespace:CMiX.Studio.Avalonia.Views.Managers"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
 
     <ScrollViewer VerticalScrollBarVisibility="Hidden">
 
@@ -20,6 +21,10 @@
 
             <ui:ExpanderIndented Header="Redis Addresses">
                 <Managers:RedisAddressesPanel DataContext="{Binding Project.RedisAddressRegistry}" />
+            </ui:ExpanderIndented>
+
+            <ui:ExpanderIndented Header="Shortcuts" IsExpanded="False">
+                <Views:ShortcutSettingsView DataContext="{Binding ShortcutSettings}" />
             </ui:ExpanderIndented>
 
         </StackPanel>
