@@ -32,6 +32,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private readonly PrefabManager compositions;
         private readonly TreeNode root;
         private TreeNode? selectedNode;
+        private IReadOnlyList<TreeAdd> selectedAdds;
         private bool selecting;
 
         public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null, IDragWheelSource? dragWheelSource = null)
@@ -42,7 +43,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             compositions = project.CompositionManager;
             root = new TreeNode(this, null, null, null, "Project", compositions);
 
-            AddItemCommand = new RelayCommand(AddItem, () => GetAddChoices(selectedNode).Count > 0);
+            selectedAdds = GetAddChoices(null);
+            AddItemCommand = new RelayCommand<TreeAdd?>(add => add?.Execute?.Invoke(), add => add == null ? HasAdds : add.Execute != null);
             DuplicateItemCommand = new RelayCommand(
                 () => { if (SelectedPlace() is var (list, item, _)) list.DuplicateItem(item); },
                 () => SelectedPlace() != null);
@@ -63,8 +65,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public IDragWheelSource DragWheelSource { get; }
 
         // The commands of the toolbar. They act on the selected node, and they are disabled when it has nothing to do.
-        // AddItemCommand adds when there is only one thing to add. With several, the toolbar asks (see GetAddChoices).
-        public IRelayCommand AddItemCommand { get; }
+        // AddItemCommand runs the add that it gets. The toolbar picks the add (see SelectedAdds). With no add, it tells only
+        // whether the selected node has something to add.
+        public IRelayCommand<TreeAdd?> AddItemCommand { get; }
         public IRelayCommand DuplicateItemCommand { get; }
         public IRelayCommand MoveItemUpCommand { get; }
         public IRelayCommand MoveItemDownCommand { get; }
@@ -106,15 +109,22 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The rows that add one thing, for the Add button: the children of a submenu, or the row itself.
         // The composition is under no row, so it can be added whatever is selected. It comes last, after what the row takes.
+        // The menu of a row does not offer it. The space menu and the toolbar do.
         public IReadOnlyList<TreeAdd> GetAddChoices(TreeNode? node)
         {
             // The submenu of the layer is flat. The submenus of textures, filters and modifiers stay submenus: they are long.
             var choices = GetAdds(node).SelectMany(add => add.Id == "row.add" ? add.Children! : new[] { add }).ToList();
             if (node != null)
-                choices.Add(AddOf("row.add-composition", "Add Composition", compositions, typeof(Composition)));
+                choices.AddRange(GetAdds(null));
 
             return choices;
         }
+
+        // The add choices of the selected node. The tree makes them again when the selection changes.
+        public IReadOnlyList<TreeAdd> SelectedAdds => selectedAdds;
+
+        // True when the selected node has something to add. It enables the Add button.
+        public bool HasAdds => selectedAdds.Count > 0;
 
         // The submenus of an item for what it can hold: textures, filters, modifiers and modulators. A submenu is there only when the item
         // can hold the kind.
@@ -147,14 +157,6 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private static TreeAdd AddOf(string id, string header, PrefabManager list, Type type) =>
             new(id, header, () => list.AddItem(type));
 
-        // With nothing selected the button adds a composition at once. With a node selected the toolbar opens a menu (see GetAddChoices).
-        private void AddItem()
-        {
-            var choices = GetAddChoices(selectedNode);
-            if (selectedNode == null && choices.Count == 1)
-                choices[0].Execute?.Invoke();
-        }
-
         // The selected node as an item of a list: the list, the item and its place in the list.
         // A group, or no node, is not an item.
         private (PrefabManager List, IControl Item, int Index)? SelectedPlace()
@@ -183,7 +185,15 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             base.OnPropertyChanged(e);
 
             if (e.PropertyName == nameof(SelectedNode))
+            {
+                var hadAdds = HasAdds;
+                selectedAdds = GetAddChoices(selectedNode);
+                OnPropertyChanged(nameof(SelectedAdds));
+                if (hadAdds != HasAdds)
+                    OnPropertyChanged(nameof(HasAdds));
+
                 RefreshCommands();
+            }
         }
 
         // A group (Entities, Cameras, Lights) has a fixed place in its layer. Only an item can be dragged.

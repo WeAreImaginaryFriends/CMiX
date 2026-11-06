@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using CMiX.Core.Prefabs;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
 
 namespace CMiX.Studio.Avalonia.Converters
 {
@@ -12,25 +12,9 @@ namespace CMiX.Studio.Avalonia.Converters
     {
         public static readonly TypeNameToDisplayLabelConverter Instance = new();
 
-        private static readonly string[] TypeNameSuffixes = { "Modifier", "Modulator" };
-
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-        {
-            var label = (value as Type) is { } type ? ControlFactory.StringHelper.LabelOf(type) : null;
-            if (label != null)
-                return label;
-
-            var name = (value as Type)?.Name ?? "";
-            foreach (var suffix in TypeNameSuffixes)
-            {
-                if (name.Length > suffix.Length && name.EndsWith(suffix, StringComparison.Ordinal))
-                {
-                    name = name[..^suffix.Length];
-                    break;
-                }
-            }
-            return ControlFactory.StringHelper.PascalCaseToDisplay(name);
-        }
+        // AddableTypes.LabelOf gives the label, so the panels and the menus of the tree agree.
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+            value is Type type ? AddableTypes.LabelOf(type) : string.Empty;
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
             throw new NotSupportedException();

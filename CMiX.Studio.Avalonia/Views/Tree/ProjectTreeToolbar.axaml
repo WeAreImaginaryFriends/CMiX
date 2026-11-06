@@ -14,7 +14,7 @@
             Width="{DynamicResource ControlHeightMD}"
             Background="Transparent"
             Click="OnAddClick"
-            Command="{Binding AddItemCommand}"
+            IsEnabled="{Binding HasAdds}"
             Theme="{StaticResource ButtonRounded}">
             <Button.Content>
                 <ui:AppIcon Opacity="0.9" IconKey="Add" Size="{DynamicResource IconSizeXS}" />

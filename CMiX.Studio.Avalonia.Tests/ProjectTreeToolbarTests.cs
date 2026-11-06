@@ -88,7 +88,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(new[] { true, false, false, false, false }, Enabled(scene.Tree));
 
-            scene.Tree.AddItemCommand.Execute(null);
+            scene.Tree.AddItemCommand.Execute(scene.Tree.SelectedAdds.Single());
 
             Assert.Equal(3, scene.Project.CompositionManager.ManagerData.Items.Count);
             Assert.IsType<Composition>(scene.Project.CompositionManager.ManagerData.Items[2]);

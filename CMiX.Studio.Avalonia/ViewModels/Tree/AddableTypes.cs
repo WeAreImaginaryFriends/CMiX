@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CMiX.Core.Modifiers;
+using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 
@@ -31,8 +33,35 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 .Where(IsAddable)
                 .Where(interfaceType.IsAssignableFrom));
 
-        public static string LabelOf(Type type) =>
-            ControlFactory.StringHelper.LabelOf(type) ?? ControlFactory.StringHelper.PascalCaseToDisplay(type.Name);
+        private static readonly string[] Suffixes = { "Modifier", "Modulator" };
+
+        // The label of a type in the add menus and the add panels. A ModifierLabel attribute gives the label. If there is none, the name
+        // of the type gives it. A modifier or a modulator drops the word Modifier or Modulator at the end: TranslateModifier gives "Translate".
+        public static string LabelOf(Type type)
+        {
+            if (ControlFactory.StringHelper.LabelOf(type) is { } label)
+                return label;
+
+            var name = type.Name;
+            if (IsModifierOrModulator(type))
+            {
+                foreach (var suffix in Suffixes)
+                {
+                    if (name.Length > suffix.Length && name.EndsWith(suffix, StringComparison.Ordinal))
+                    {
+                        name = name[..^suffix.Length];
+                        break;
+                    }
+                }
+            }
+
+            return ControlFactory.StringHelper.PascalCaseToDisplay(name);
+        }
+
+        private static bool IsModifierOrModulator(Type type) =>
+            typeof(IModifier).IsAssignableFrom(type)
+            || typeof(IModulator).IsAssignableFrom(type)
+            || type.IsDefined(typeof(ModifierPanelAttribute), true);
 
         private static bool IsAddable(Type type) =>
             !type.IsAbstract && !type.IsInterface && type.GetCustomAttribute<HiddenInMenuAttribute>() == null;

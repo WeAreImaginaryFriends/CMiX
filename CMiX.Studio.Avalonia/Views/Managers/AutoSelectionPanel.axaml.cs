@@ -17,8 +17,6 @@ namespace CMiX.Studio.Avalonia.Views.Managers
 {
     public partial class AutoSelectionPanel : UserControl
     {
-        private static readonly Dictionary<Type, List<ModifierEntry>> _cache = new();
-
         public static readonly StyledProperty<Type> PanelOwnerProperty =
             AvaloniaProperty.Register<AutoSelectionPanel, Type>(nameof(PanelOwner));
 
@@ -53,15 +51,12 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             var key = PanelOwner ?? Interface;
             if (key == null) return;
 
-            if (!_cache.TryGetValue(key, out var entries))
-            {
-                entries = (PanelOwner != null
-                        ? AddableTypes.ForOwner(PanelOwner)
-                        : AddableTypes.ForInterface(Interface))
-                    .Select(type => new ModifierEntry { Type = type })
-                    .ToList();
-                _cache[key] = entries;
-            }
+            // AddableTypes keeps the list of each owner and interface.
+            var entries = (PanelOwner != null
+                    ? AddableTypes.ForOwner(PanelOwner)
+                    : AddableTypes.ForInterface(Interface))
+                .Select(type => new ModifierEntry { Type = type })
+                .ToList();
 
             int columns = entries.Count switch { <= 4 => 1, <= 9 => 2, _ => 3 };
             int rows = (int)Math.Ceiling((double)entries.Count / columns);
@@ -84,7 +79,7 @@ namespace CMiX.Studio.Avalonia.Views.Managers
                 {
                     var button = new Button
                     {
-                        Content = Converters.TypeNameToDisplayLabelConverter.Instance.Convert(entry.Type, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture),
+                        Content = entry.Label,
                         Margin = new Thickness(0),
                         CommandParameter = entry.Type
                     };

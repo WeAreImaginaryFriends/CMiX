@@ -23,17 +23,23 @@ namespace CMiX.Studio.Avalonia.Views
             InitializeComponent();
         }
 
-        // Runs before the command of the button. The command adds only when there is one choice.
+        // The menu shows the add choices of the selected node (ProjectTree.SelectedAdds).
         private void OnAddClick(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not ProjectTree tree)
                 return;
 
-            // With nothing selected the command adds a composition at once. With a node selected the menu opens, also when it has
-            // only the composition to offer: a click on the button must not add a composition by surprise.
-            var choices = tree.GetAddChoices(tree.SelectedNode);
-            if (tree.SelectedNode == null || choices.Count == 0)
+            // With nothing selected the button adds the one choice, a composition, at once. With a node selected the menu opens,
+            // also when it has only the composition to offer: a click on the button must not add a composition by surprise.
+            var choices = tree.SelectedAdds;
+            if (choices.Count == 0)
                 return;
+
+            if (tree.SelectedNode == null && choices.Count == 1)
+            {
+                tree.AddItemCommand.Execute(choices[0]);
+                return;
+            }
 
             AddButton.ContextMenu?.Close();
             var menu = PrefabRowMenu.Create(AddButton, RowMenuKind.Group, () => null, choices.ToRows(), () => tree.SelectedNode?.Header ?? string.Empty);

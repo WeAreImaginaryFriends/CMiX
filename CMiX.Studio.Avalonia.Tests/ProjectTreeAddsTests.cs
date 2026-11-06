@@ -1,0 +1,168 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
+using CMiX.Studio.Avalonia.Views;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+using Composition = CMiX.Core.Compositing.Composition;
+using Entity = CMiX.Core.Compositing.Entity;
+using Layer = CMiX.Core.Compositing.Layer;
+using Project = CMiX.Core.Compositing.Project;
+
+namespace CMiX.Studio.Avalonia.Tests
+{
+    // ProjectTree.GetAdds is the one source of the add rows: the menu of a row, the menu of the space and the toolbar show it.
+    public class ProjectTreeAddsTests : IDisposable
+    {
+        private readonly List<Window> windows = new();
+
+        public void Dispose()
+        {
+            foreach (var window in windows)
+            {
+                foreach (var control in window.GetVisualDescendants().OfType<Control>())
+                    control.ContextMenu?.Close();
+
+                window.Close();
+            }
+        }
+
+        private sealed class Screen
+        {
+            public Window Window { get; init; } = null!;
+            public ProjectTreeView View { get; init; } = null!;
+            public ProjectTree Tree { get; init; } = null!;
+            public Project Project { get; init; } = null!;
+            public Composition A { get; init; } = null!;
+
+            public TreeView TreeView => View.GetVisualDescendants().OfType<TreeView>().First();
+            public Button AddButton => View.GetVisualDescendants().OfType<Button>().First(button => button.Name == "AddButton");
+            public TreeNode LayerNode => Tree.Roots[0].Children[0];
+
+            public TreeViewItem RowOf(TreeNode node) =>
+                View.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
+
+            public void Click(Control control)
+            {
+                Window.UpdateLayout();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                Dispatcher.UIThread.RunJobs();
+                var point = control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), Window)!.Value;
+                Window.MouseDown(point, MouseButton.Left);
+                Window.MouseUp(point, MouseButton.Left);
+                Dispatcher.UIThread.RunJobs();
+            }
+        }
+
+        // One composition with one layer, and one entity in the layer.
+        private Screen Show()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var project = provider.GetRequiredService<Project>();
+            project.CompositionManager.AddItem(typeof(Composition));
+            var a = (Composition)project.CompositionManager.ManagerData.Items[0];
+            a.LayerManager.AddItem(typeof(Layer));
+            ((Layer)a.LayerManager.ManagerData.Items[0]).ModelEntityManager.AddItem(typeof(Entity));
+
+            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
+            var view = new ProjectTreeView { DataContext = tree };
+            var window = new Window { Content = view, Width = 400, Height = 900 };
+            windows.Add(window);
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            return new Screen { Window = window, View = view, Tree = tree, Project = project, A = a };
+        }
+
+        // The headers of the rows that add one thing. A submenu "Add" gives its children.
+        private static List<string> Flat(IEnumerable<TreeAdd> adds) =>
+            adds.SelectMany(add => add.Id == "row.add" ? add.Children! : new[] { add }).Select(add => add.Header).ToList();
+
+        private static List<string> Flat(IEnumerable<MenuItem> rows) =>
+            rows.SelectMany(row => Equals(row.Header, "Add") ? row.Items.OfType<MenuItem>() : new[] { row })
+                .Select(row => row.Header?.ToString() ?? string.Empty)
+                .ToList();
+
+        [AvaloniaFact]
+        public void GetAdds_ALayerRow_ListsTheSameAddsAsTheRowMenuAndTheToolbar()
+        {
+            var screen = Show();
+            var node = screen.LayerNode;
+            var model = Flat(screen.Tree.GetAdds(node));
+
+            // The menu of the row: the title, a separator, then the add rows up to the next separator.
+            var row = screen.RowOf(node);
+            row.RaiseEvent(new ContextRequestedEventArgs { Source = row });
+            Dispatcher.UIThread.RunJobs();
+            var rowMenu = Flat(screen.TreeView.ContextMenu!.Items.OfType<MenuItem>().Skip(2).TakeWhile(item => !Equals(item.Header, "-")));
+            screen.TreeView.ContextMenu!.Close();
+
+            // The menu of the toolbar: the title, a separator, the add rows, then Add Composition.
+            screen.Tree.SelectedNode = node;
+            screen.Click(screen.AddButton);
+            var toolbar = Flat(screen.AddButton.ContextMenu!.Items.OfType<MenuItem>().Skip(2));
+
+            Assert.NotEmpty(model);
+            Assert.Equal(model, rowMenu);
+            Assert.Equal(model.Append("Add Composition"), toolbar);
+        }
+
+        [AvaloniaFact]
+        public void GetAdds_NoNode_OffersAddComposition()
+        {
+            var screen = Show();
+
+            Assert.Equal(new[] { "Add Composition" }, screen.Tree.GetAdds(null).Select(add => add.Header));
+
+            screen.TreeView.RaiseEvent(new ContextRequestedEventArgs { Source = screen.TreeView });
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(new[] { "Add Composition" }, screen.TreeView.ContextMenu!.Items.OfType<MenuItem>().Skip(2).Select(item => item.Header?.ToString()));
+        }
+
+        [AvaloniaFact]
+        public void GetAdds_AnEntityRow_OffersNoAddComposition()
+        {
+            var screen = Show();
+            var entity = screen.Tree.Roots[0].Children[0].Children.Single(group => group.Group is EntitiesGroup).Children[0];
+
+            var adds = screen.Tree.GetAdds(entity);
+
+            Assert.NotEmpty(adds);
+            Assert.DoesNotContain(adds, add => add.Header == "Add Composition");
+        }
+
+        [AvaloniaFact]
+        public void AddButton_NothingSelected_AddsACompositionAtOnce()
+        {
+            var screen = Show();
+            screen.Tree.SelectedNode = null;
+
+            screen.Click(screen.AddButton);
+
+            Assert.Equal(2, screen.Project.CompositionManager.ManagerData.Items.Count);
+            Assert.Null(screen.AddButton.ContextMenu);
+        }
+
+        [Fact]
+        public void HasAdds_SelectionChanges_FollowsTheAddsOfTheSelectedNode()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var project = provider.GetRequiredService<Project>();
+            project.CompositionManager.AddItem(typeof(Composition));
+            var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
+
+            Assert.Equal(new[] { "Add Composition" }, tree.SelectedAdds.Select(add => add.Header));
+            Assert.True(tree.HasAdds);
+
+            tree.SelectedNode = tree.Roots[0];
+
+            Assert.Equal(tree.GetAddChoices(tree.Roots[0]).Select(add => add.Header), tree.SelectedAdds.Select(add => add.Header));
+            Assert.True(tree.AddItemCommand.CanExecute(null));
+        }
+    }
+}
