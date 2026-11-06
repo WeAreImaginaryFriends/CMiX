@@ -55,7 +55,7 @@ namespace CMiX.Studio.Avalonia.Tests
             // The name of an item is in its name editor (TextDisplay), the name of a group is in a text block called title.
             public TextBlock Title => Header.GetVisualDescendants().OfType<TextBlock>().First(t => t.Name is "title" or "TextDisplay" && t.IsEffectivelyVisible);
             public ToggleButton? VisibilityToggle => Inspector.GetVisualDescendants().OfType<ToggleButton>().FirstOrDefault(t => t.Name == "visibilityToggle");
-            public ToggleButton? MaskToggle => Inspector.FindControl<ContentControl>("maskToggle")!.GetVisualDescendants().OfType<ToggleButton>().FirstOrDefault();
+            public ToggleButton? MaskToggle => Inspector.GetVisualDescendants().OfType<ToggleButton>().FirstOrDefault(t => t.Name == "maskToggle");
             public TextBoxEditable NameEditor => Inspector.FindControl<TextBoxEditable>("nameEditor")!;
             public TextBlock Placeholder => Inspector.GetVisualDescendants().OfType<TextBlock>().First(t => t.Name == "placeholder");
             public Border Header => Inspector.GetVisualDescendants().OfType<Border>().First(b => b.Name == "header");

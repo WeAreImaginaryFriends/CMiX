@@ -18,15 +18,6 @@
 
     <!-- The editor of the row that is selected in the project tree. The DataContext is the ProjectTree.
          The editors are the views of the other tabs, so an item looks the same here and there. -->
-    <!-- The toggles sit on squares, as in the rows of the tree (see RowToggles): the same size, the same fill. -->
-    <UserControl.Styles>
-        <Style Selector="Border.slot">
-            <Setter Property="Width" Value="{DynamicResource ControlHeightMD}" />
-            <Setter Property="Height" Value="{DynamicResource ControlHeightMD}" />
-            <Setter Property="Background" Value="{DynamicResource PanelBackgroundLevel2Brush}" />
-            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusAll}" />
-        </Style>
-    </UserControl.Styles>
 
     <DockPanel>
 
@@ -38,7 +29,7 @@
             Background="{DynamicResource Grey200Brush}"
             DockPanel.Dock="Top"
             IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
-            <!-- The badge, the name, and at the right end the toggles of the item: visibility, and the mask of a composition or a layer.
+            <!-- The badge, the name, and at the right end the toggles of the item (see ComposableToggles).
                  The name of an item can be edited here, as in the tree. A group has a name that can not be changed, and no toggle. -->
             <Grid VerticalAlignment="Center" ColumnDefinitions="Auto,*,Auto">
                 <Views:CategoryBadge
@@ -58,43 +49,12 @@
                         IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNull}}" />
                 </Panel>
 
-                <StackPanel
+                <Views:ComposableToggles
                     Name="headerToggles"
                     Grid.Column="2"
                     VerticalAlignment="Center"
-                    Orientation="Horizontal"
-                    Spacing="{DynamicResource SpacingXXS}"
-                    IsVisible="{Binding SelectedNode.Item, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <Border Classes="slot">
-                        <ToggleButton
-                            Name="visibilityToggle"
-                            IsChecked="{Binding SelectedNode.Item.PrefabService.Visibility.Value}"
-                            Theme="{DynamicResource ToggleButtonVisibility}" />
-                    </Border>
-
-                    <!-- The mask toggle: a composition and a layer only. The templates are only for those two types: a template for any
-                         object would also catch the text of a tooltip. -->
-                    <ContentControl Name="maskToggle" Content="{Binding SelectedNode.MaskOwner}">
-                        <ContentControl.DataTemplates>
-                            <DataTemplate DataType="{x:Type Compositing:Composition}">
-                                <Border Classes="slot">
-                                    <ToggleButton
-                                        IsChecked="{Binding Mask.IsMask.Value}"
-                                        Theme="{DynamicResource ToggleButtonMask}"
-                                        ToolTip.Tip="Mask" />
-                                </Border>
-                            </DataTemplate>
-                            <DataTemplate DataType="{x:Type Compositing:Layer}">
-                                <Border Classes="slot">
-                                    <ToggleButton
-                                        IsChecked="{Binding Mask.IsMask.Value}"
-                                        Theme="{DynamicResource ToggleButtonMask}"
-                                        ToolTip.Tip="Mask" />
-                                </Border>
-                            </DataTemplate>
-                        </ContentControl.DataTemplates>
-                    </ContentControl>
-                </StackPanel>
+                    DataContext="{Binding SelectedNode.Item}"
+                    IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}" />
             </Grid>
         </Border>
 
