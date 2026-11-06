@@ -105,13 +105,37 @@ namespace CMiX.UI.Controls.String
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.Escape || e.Key == Key.Enter)
+            if (e.Key == Key.Escape)
+            {
+                CancelEdit();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Enter)
             {
                 OnSwitchToNormalMode();
                 e.Handled = true;
                 return;
             }
         }
+
+        // The edit ends and the old text stays. The input has no binding, so Text still holds the old text.
+        private void CancelEdit()
+        {
+            SetInputVisible(false);
+            UnhookTopLevelEvents();
+            IsEditing = false;
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            CancelEdit();
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        // True while a handler of the top level is hooked. For the tests.
+        internal bool HasTopLevelHandlers => _parentTopLevel != null;
 
         protected override void OnLostFocus(RoutedEventArgs e)
         {
