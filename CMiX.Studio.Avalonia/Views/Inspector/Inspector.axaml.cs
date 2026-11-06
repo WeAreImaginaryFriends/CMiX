@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 
 namespace CMiX.Studio.Avalonia.Views
 {
@@ -11,6 +12,18 @@ namespace CMiX.Studio.Avalonia.Views
         public Inspector()
         {
             InitializeComponent();
+            editor.TemplateApplied += (_, _) =>
+            {
+                if (editor.Presenter is { } presenter)
+                    presenter.PropertyChanged += (_, e) =>
+                    {
+                        if (e.Property == ContentPresenter.ChildProperty && e.NewValue is not null)
+                            EditorViewsBuilt++;
+                    };
+            };
         }
+
+        // The number of editor views that the data templates built. A budget test reads it.
+        internal int EditorViewsBuilt { get; private set; }
     }
 }
