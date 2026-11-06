@@ -35,7 +35,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static double LuminanceOf(Color color) => ColorMix.Luminance(color);
 
         [Fact]
-        public void TheFills_AreTheColorOfTheKindOverTheBackground_WithOneStrengthForEachState()
+        public void Fill_EachState_IsTheKindColorOverTheBackgroundWithItsStrength()
         {
             var tone = Palette().For(TreeCategory.Light);
 
@@ -45,7 +45,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheCountSquares_AreTheColorOfTheKindOverTheBackground_WithOneStrengthForEachState()
+        public void CountSquare_EachState_IsTheKindColorOverTheBackgroundWithItsStrength()
         {
             var tone = Palette().For(TreeCategory.Light);
 
@@ -55,7 +55,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void EachState_IsBrighterThanTheOneBefore()
+        public void FillStrength_EachState_IsBrighterThanTheStateBefore()
         {
             var tone = Palette().For(TreeCategory.Light);
 
@@ -66,7 +66,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ARowDeeperByAChangeOfKind_IsWeaker_ByTheLevelFactor_DownToTheFloor()
+        public void FillStrength_ARowDeeperByAChangeOfKind_DropsByTheLevelFactorToTheFloor()
         {
             var palette = Palette();
 
@@ -78,7 +78,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ADeepRow_IsStillAColor_AndEachStateIsStillBrighterThanTheOneBefore()
+        public void FillStrength_ADeepRow_StaysAColorAndEachStateStaysBrighter()
         {
             var tone = Palette().For(TreeCategory.Light, kindDepth: 40);
 
@@ -88,7 +88,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheComposableDepth_ChangesTheHue_AndNotTheStrength()
+        public void ComposableDepth_ADeeperComposable_ChangesTheHueAndNotTheStrength()
         {
             var palette = Palette();
 
@@ -102,13 +102,13 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(TreeCategory.Composable, 1, "CategoryComposableLevel1")]
         [InlineData(TreeCategory.Composable, 3, "CategoryComposableLevel3")]
         [InlineData(TreeCategory.Composable, 9, "CategoryComposableLevel3")]
-        public void TheColorKey_FollowsTheKind_AndOnlyAComposableChangesWithItsDepth(TreeCategory category, int depth, string expected)
+        public void ColorKey_EveryKindAndDepth_ChangesWithTheDepthForAComposableOnly(TreeCategory category, int depth, string expected)
         {
             Assert.Equal(expected, CategoryPalette.ColorKey(category, depth));
         }
 
         [Fact]
-        public void ADeepComposable_HasTheColorOfTheLastLevel()
+        public void ColorKey_ADeepComposable_GivesTheColorOfTheLastLevel()
         {
             var palette = Palette();
 
@@ -117,7 +117,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The text must stay readable on every fill: the light text of the theme at rest and when hovered, white when selected.
         [AvaloniaFact]
-        public void TheTextIsReadable_OnEveryKindAtEveryLevelAndState()
+        public void FromApplication_EveryKindLevelAndState_KeepsTheTextReadable()
         {
             var palette = CategoryPalette.FromApplication();
 
@@ -137,7 +137,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ThePaletteOfTheApplication_HasATonePerKindAndLevel()
+        public void FromApplication_TheAppPalette_HasATonePerKindAndLevel()
         {
             var palette = CategoryPalette.FromApplication();
 
@@ -149,7 +149,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void FromApplication_MixesAgainstTheTreeBackground()
+        public void FromApplication_TheTreeBackground_IsTheBaseOfTheMix()
         {
             var colors = Application.Current!;
             var kind = (Color)colors.FindResource("CategoryLight")!;

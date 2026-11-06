@@ -43,7 +43,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Color ColorOf(IBrush? brush) => ((ISolidColorBrush)brush!).Color;
 
         [AvaloniaFact]
-        public void TheIconOfEveryRow_IsFullyOpaque_AndHasTheColorOfTheNames()
+        public void Show_TheIconOfEveryRow_IsOpaqueInTheColorOfTheNames()
         {
             var (view, tree) = Show();
             var foreground = ColorOf((IBrush)Application.Current!.FindResource("ForegroundBrush")!);

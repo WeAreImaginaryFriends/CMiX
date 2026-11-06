@@ -30,7 +30,7 @@ namespace CMiX.Studio.Avalonia.Tests
             view.GetVisualDescendants().OfType<ExpanderIndented>().First(expander => Equals(expander.Header, header));
 
         [AvaloniaFact]
-        public void TheAssetPanel_HasTheExpandersOfTheOtherPanels_AllOpen()
+        public void Show_TheAssetPanel_HasTheOpenExpandersOfTheOtherPanels()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.RightPanel = CMiX.Studio.Avalonia.ViewModels.PanelChoice.Assets;
@@ -45,7 +45,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheAssetExpanders_HaveTheLookOfTheEntityExpanders()
+        public void Show_TheAssetExpanders_HaveTheLookOfTheEntityExpanders()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             var provider = TestServiceProviderFactory.Create();
@@ -65,7 +65,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void APanelInsideAPanel_IsOneStepBrighterThanItsParent()
+        public void Show_APanelInsideAPanel_IsOneStepBrighterThanItsParent()
         {
             var provider = TestServiceProviderFactory.Create();
             var entity = (Entity)provider.GetRequiredService<ControlFactory>().Create(typeof(Entity));
@@ -83,7 +83,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheBlendOfAFilter_IsClosedWhenTheFilterAppears_AndTheOtherPanelsAreOpen()
+        public void Show_AFilter_ClosesTheBlendAndOpensTheOtherPanels()
         {
             var provider = TestServiceProviderFactory.Create();
             var blur = (CMiX.Core.Texturing.Filters.Blur)provider.GetRequiredService<ControlFactory>().Create(typeof(CMiX.Core.Texturing.Filters.Blur));

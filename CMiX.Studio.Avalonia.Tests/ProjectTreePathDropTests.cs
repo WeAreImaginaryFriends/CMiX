@@ -90,7 +90,7 @@ namespace CMiX.Studio.Avalonia.Tests
         // ---- the tree model ----
 
         [AvaloniaFact]
-        public void AnImageDroppedOnAnEmptyTree_MakesACompositionWithALayerAndAnEntity()
+        public void Drop_AnImageOnAnEmptyTree_AddsACompositionLayerAndEntity()
         {
             var screen = Show();
 
@@ -104,7 +104,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AFolderWithImagesDroppedOnAnEmptyTree_MakesAQuad()
+        public void Drop_AFolderWithImagesOnAnEmptyTree_AddsAQuad()
         {
             var screen = Show();
 
@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ATextFileDroppedOnAnEmptyTree_MakesATextEntity()
+        public void Drop_ATextFileOnAnEmptyTree_AddsATextEntity()
         {
             var screen = Show();
 
@@ -127,7 +127,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnTheSpaceOfATreeWithCompositions_MakesANewComposition()
+        public void Drop_OnTheSpaceOfATreeWithCompositions_AddsAComposition()
         {
             var screen = Show(compositions: 1, layersEach: 1);
 
@@ -139,7 +139,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnACompositionWithoutLayers_MakesALayerWithTheEntity()
+        public void Drop_OnACompositionWithoutLayers_AddsALayerWithTheEntity()
         {
             var screen = Show(compositions: 1);
 
@@ -151,7 +151,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnACompositionWithLayers_AlwaysMakesANewLayer()
+        public void Drop_OnACompositionWithLayers_AddsANewLayer()
         {
             var screen = Show(compositions: 1, layersEach: 2);
 
@@ -165,7 +165,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnALayer_AddsTheEntityToThatLayer()
+        public void Drop_OnALayer_AddsTheEntityToThatLayer()
         {
             var screen = Show(compositions: 1, layersEach: 2);
             var secondLayer = screen.Tree.Roots[0].Children[1];
@@ -179,7 +179,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnTheGroupsOrItemsOfALayer_AddsTheEntityToTheEntitiesOfThatLayer()
+        public void Drop_OnTheGroupsOrItemsOfALayer_AddsTheEntityToThatLayer()
         {
             var screen = Show(compositions: 1, layersEach: 1);
             var layerNode = screen.Tree.Roots[0].Children[0];
@@ -196,7 +196,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void SeveralPaths_GoToOneNewLayer()
+        public void Drop_SeveralPaths_AddsOneNewLayer()
         {
             var screen = Show(compositions: 1);
 
@@ -208,7 +208,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOfAnUnknownFile_ChangesNothing()
+        public void Drop_AnUnknownFile_ChangesNothing()
         {
             var screen = Show();
 
@@ -219,7 +219,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropThatMakesTheWholeChain_IsOneUndoStep()
+        public void Drop_OnAnEmptyTree_IsOneUndoStep()
         {
             var screen = Show();
 
@@ -230,7 +230,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnALayer_IsOneUndoStep()
+        public void Drop_OnALayer_IsOneUndoStep()
         {
             var screen = Show(compositions: 1, layersEach: 1);
 
@@ -286,7 +286,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Point EmptySpace(Screen screen) => new(200, 300);
 
         [AvaloniaFact]
-        public void FilesDroppedOnTheEmptySpaceOfTheView_MakeTheChain()
+        public void Drop_FilesOnTheEmptySpaceOfTheView_AddsTheChain()
         {
             var screen = Show();
 
@@ -296,7 +296,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void FilesDroppedOnARowOfTheView_MakeALayerUnderTheComposition()
+        public void Drop_FilesOnARowOfTheView_AddsALayerUnderTheComposition()
         {
             var screen = Show(compositions: 1, layersEach: 1);
 
@@ -308,7 +308,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void OverARow_OnlyTheRowThatTakesTheFilesLooksHovered_AndNoFrameIsDrawn()
+        public void DragOver_FilesOverARow_LightsOnlyTheRowThatTakesThem()
         {
             var screen = Show(compositions: 1, layersEach: 1);
             var data = FilesOf(screen.Window, NewFile("one.png"));
@@ -383,7 +383,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void FilesThatTheTreeDoesNotAccept_MakeNothing()
+        public void Drop_FilesThatTheTreeRefuses_AddsNothing()
         {
             var screen = Show();
             var data = FilesOf(screen.Window, NewFile("notes.xyz"));

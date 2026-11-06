@@ -25,7 +25,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Scene CreateScene() => TreeFixtures.CreateScene([2]);
 
         [Fact]
-        public void ACompositionNode_HasTheLayersThenTheGroupsOfFiltersAndModifiers()
+        public void Build_ACompositionNode_HasTheLayersThenTheFilterAndModifierGroups()
         {
             var scene = CreateScene();
 
@@ -36,7 +36,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ALayerNode_HasItsThreeListsThenFiltersAndModifiers()
+        public void Build_ALayerNode_HasItsThreeListsThenFiltersAndModifiers()
         {
             var scene = CreateScene();
 
@@ -49,7 +49,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(typeof(Entity), new[] { "Textures", "Modifiers" })]
         [InlineData(typeof(FullscreenQuad), new[] { "Textures" })]
         [InlineData(typeof(TextEntity), new[] { "Modifiers" })]
-        public void AnEntityNode_HasTheGroupsOfWhatItHolds(Type type, string[] expected)
+        public void Build_AnEntityNode_HasTheGroupsOfWhatItHolds(Type type, string[] expected)
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(type);
@@ -60,7 +60,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ACameraNode_AndALightNode_HaveTheirModifiers()
+        public void Build_ACameraOrALightNode_HasItsModifiers()
         {
             var scene = CreateScene();
             scene.Layer.CameraManager.AddItem(typeof(Camera));
@@ -71,7 +71,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AModifierAddedToAnEntity_AppearsUnderItsModifiersGroup_WithItsNameAndIcon()
+        public void Add_AModifierToAnEntity_ShowsItInTheModifiersGroup()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -87,7 +87,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AFilterAddedToALayer_AppearsUnderItsFiltersGroup_WithTheFilterIcon()
+        public void Add_AFilterToALayer_ShowsItInTheFiltersGroup()
         {
             var scene = CreateScene();
 
@@ -99,7 +99,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ATextureOfAnEntity_AppearsUnderItsTexturesGroup_AndHasItsOwnFilters()
+        public void Add_ATextureToAnEntity_ShowsItInTheTexturesGroupWithItsFilters()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheGroupsOfAComposition_StayAfterTheLayers_WhenLayersAreAddedRemovedAndMoved()
+        public void Change_TheLayersOfAComposition_KeepsTheGroupsAfterTheLayers()
         {
             var scene = CreateScene();
 
@@ -132,7 +132,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheGroupsOfAComposition_StayWhenTheListIsReset()
+        public void Reset_TheListOfAComposition_KeepsItsGroups()
         {
             var scene = CreateScene();
 
@@ -143,7 +143,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AGroupNode_KnowsItsOwnerAndItsList_ForTheInspector()
+        public void Build_AGroupNode_KnowsItsOwnerAndItsList()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -164,7 +164,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void SelectingAModifierNode_SelectsTheChainDownToTheModifier()
+        public void Select_AModifierNode_SelectsTheChainDownToTheModifier()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -182,7 +182,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheGroupOfModifiers_OffersTheModifiersOfItsOwner_AndAddsTheChosenOne()
+        public void GetAdds_TheGroupOfModifiers_OffersAndAddsTheModifiersOfItsOwner()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -199,7 +199,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheGroupOfFilters_OffersTheFilters_AndAddsTheChosenOne()
+        public void GetAdds_TheGroupOfFilters_OffersAndAddsTheFilters()
         {
             var scene = CreateScene();
             var group = Scene.Group<FiltersGroup>(scene.LayerNode);
@@ -212,7 +212,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheGroupOfTextures_OffersTheTextureSources_AndAddsTheChosenOne()
+        public void GetAdds_TheGroupOfTextures_OffersAndAddsTheTextureSources()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -227,7 +227,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AModifierAFilterAndATexture_HaveAModulatorsGroup_WithTheirModulators()
+        public void Build_AModifierFilterOrTexture_HasAModulatorsGroup()
         {
             var scene = CreateScene();
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
@@ -259,7 +259,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheGroupOfModulators_OffersTheModulators_AndAddsTheChosenOne()
+        public void GetAdds_TheGroupOfModulators_OffersAndAddsTheModulators()
         {
             var scene = CreateScene();
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
@@ -275,7 +275,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AnItem_HasSubmenusForWhatItCanHold_AndTheyAreNotTheDefaultRow()
+        public void GetAdds_AnItem_GivesSubmenusThatAreNotTheDefaultRow()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -294,7 +294,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.IsType<ScaleModifier>(Assert.Single(((Entity)entityNode.Item!).ModifierManager.ManagerData.Items));
         }
         [Fact]
-        public void TheModifiersOfAnEntity_CanBeReordered_AndMovedToAnotherEntity()
+        public void Drop_AModifierOfAnEntity_ReordersOrMovesItToAnotherEntity()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -323,7 +323,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AnItem_MovesOnlyToAListOfItsOwnKind()
+        public void CanDrop_AnItem_IsTrueOnlyForAListOfItsKind()
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
@@ -343,7 +343,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AFilter_MovesToAnotherLayerAndToAComposition()
+        public void Drop_AFilter_MovesToAnotherLayerOrAComposition()
         {
             var scene = CreateScene();
             var other = (Layer)scene.Composition.LayerManager.ManagerData.Items[1];
@@ -363,7 +363,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AModulator_MovesToTheModulatorsOfAnotherItem_AndAfterItsRows()
+        public void Drop_AModulator_MovesItToTheModulatorsOfAnotherItem()
         {
             var scene = CreateScene();
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
@@ -390,7 +390,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheRowsOfAGroup_CanBeDragged_AndTheGroupsCannot()
+        public void CanDrag_ARowOrAGroup_IsTrueForTheRowOnly()
         {
             var scene = CreateScene();
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));

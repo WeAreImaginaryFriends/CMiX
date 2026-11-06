@@ -133,7 +133,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void Set_RaisesTheChangeOfTheIndexer()
+        public void Set_AGesture_RaisesTheChangeOfTheIndexer()
         {
             var map = new ShortcutMap(FilePath);
             var names = new List<string?>();

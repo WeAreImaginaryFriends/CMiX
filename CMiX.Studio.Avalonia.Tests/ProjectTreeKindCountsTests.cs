@@ -19,7 +19,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Scene CreateScene() => TreeFixtures.CreateScene([2], scene => AddKinds(scene.Layer));
 
         [Fact]
-        public void ALayer_HoldsItsItemsByKind_InTheOrderOfItsRows()
+        public void KindCounts_ALayer_CountsItsItemsByKindInTheOrderOfItsRows()
         {
             var scene = CreateScene();
 
@@ -30,7 +30,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ACompositionCountsItsLayersAsComposables()
+        public void KindCounts_AComposition_CountsItsLayersAsComposables()
         {
             var scene = CreateScene();
 
@@ -38,7 +38,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AGroup_HoldsItsItemsOfItsOwnKind_AndAnEmptyGroupHoldsNothing()
+        public void KindCounts_AGroup_CountsTheItemsOfItsKind()
         {
             var scene = CreateScene();
 
@@ -48,7 +48,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AnEmptyRow_HoldsNothing()
+        public void KindCounts_AnEmptyRow_IsEmpty()
         {
             var scene = CreateScene();
             var secondLayer = scene.CompositionNode.Children[1];
@@ -58,7 +58,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheCounts_FollowTheLists_AndTheParentOfAGroupTellsItsChange()
+        public void Change_TheLists_UpdatesTheCountsOfTheParents()
         {
             var scene = CreateScene();
             var changes = new List<string?>();
@@ -77,7 +77,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ARowShowsItsCounts_OnlyWhileItIsCollapsedAndHoldsSomething()
+        public void ShowCounts_ARow_IsTrueOnlyWhenCollapsedAndNotEmpty()
         {
             var scene = CreateScene();
             var changes = new List<string?>();
@@ -95,7 +95,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ALayerAddedToTheComposition_ChangesTheCountOfTheComposition()
+        public void Add_ALayerToTheComposition_ChangesItsCount()
         {
             var scene = CreateScene();
             var changes = new List<string?>();

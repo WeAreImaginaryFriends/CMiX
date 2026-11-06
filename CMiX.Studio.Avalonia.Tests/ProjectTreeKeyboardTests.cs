@@ -80,7 +80,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Enter_SelectsTheChain()
+        public void Press_Enter_SelectsTheChain()
         {
             var screen = Show();
             var second = screen.Tree.Roots[0].Children[1];
@@ -94,7 +94,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void F2_StartsTheRename()
+        public void Press_F2_StartsTheRename()
         {
             var screen = Show();
             var first = screen.Tree.Roots[0].Children[0];
@@ -106,7 +106,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Delete_RemovesTheSelectedItem()
+        public void Press_Delete_RemovesTheSelectedItem()
         {
             var screen = Show();
             var first = screen.Tree.Roots[0].Children[0];
@@ -158,7 +158,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TreeKeyBindings_HoldTheTreeCommands()
+        public void KeyBindings_OfTheTree_HoldTheTreeCommands()
         {
             var screen = Show();
             var tree = screen.Tree;

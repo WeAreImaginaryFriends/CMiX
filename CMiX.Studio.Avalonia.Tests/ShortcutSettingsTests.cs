@@ -29,7 +29,7 @@ namespace CMiX.Studio.Avalonia.Tests
             settings.Scopes.SelectMany(scope => scope.Rows).Single(row => row.Name == name);
 
         [Fact]
-        public void Rows_ListEveryNameOfTheMap()
+        public void Rows_ByDefault_ListEveryNameOfTheMap()
         {
             var (map, settings) = Create();
 
@@ -89,7 +89,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ResetAll_RestoresTheDefaults()
+        public void ResetAll_AfterChanges_RestoresTheDefaults()
         {
             var (map, settings) = Create();
             Row(settings, "Edit.Undo").Gesture = null;

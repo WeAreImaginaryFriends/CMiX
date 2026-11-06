@@ -52,7 +52,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void BeforeADrag_NoRowHasADragState()
+        public void Build_BeforeADrag_GivesNoRowADragState()
         {
             var scene = CreateScene();
 
@@ -67,7 +67,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void DraggingAnEntity_LightsOnlyTheGroupsOfEntitiesAndTheLayers_ItsOwnAndThoseOfOtherLayers()
+        public void BeginDrag_AnEntity_LightsTheEntityGroupsAndTheLayersOnly()
         {
             var scene = CreateScene();
 
@@ -80,7 +80,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void DraggingAnEntity_LeavesTheEntitiesNextToWhichItCanGoAsNeighbors_NotLit()
+        public void BeginDrag_AnEntity_MarksTheOtherEntitiesAsNeighbors()
         {
             var scene = CreateScene();
 
@@ -96,7 +96,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The case of a filter: only the groups of filters and the layers light up. The filters themselves keep their look, and the bar shows the place.
         [Fact]
-        public void DraggingAFilter_LightsOnlyTheGroupsOfFiltersAndTheLayers_NotTheFilters()
+        public void BeginDrag_AFilter_LightsTheFilterGroupsAndTheLayersOnly()
         {
             var scene = CreateScene();
             var filters = Scene.Group<FiltersGroup>(scene.Layer1);
@@ -114,7 +114,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheDraggedRow_IsNeverACandidate_AndItsOwnGroupIsOneUnlessTheRowIsAlreadyTheLast()
+        public void BeginDrag_ARow_MarksItsGroupButNeverTheRowAsCandidate()
         {
             var scene = CreateScene();
 
@@ -136,7 +136,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The case of a row of modifiers: the group "Modifiers" of the entity takes it, and it goes to the end of the list.
         [Fact]
-        public void ARowDroppedOnItsOwnGroup_GoesToTheEndOfItsList()
+        public void Drop_ARowOnItsOwnGroup_PutsItAtTheEndOfItsList()
         {
             var scene = CreateScene();
             var service = new TreeDropService();
@@ -156,7 +156,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void DraggingALayer_LightsTheCompositions_AndLeavesTheOtherLayersAsNeighbors()
+        public void BeginDrag_ALayer_LightsTheCompositionsAndMarksTheLayersAsNeighbors()
         {
             var scene = CreateScene();
 
@@ -167,7 +167,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void DraggingAModifier_LightsTheGroupsOfModifiers_ItsOwnAndThoseOfOtherEntities_AndNotOtherKinds()
+        public void BeginDrag_AModifier_LightsTheModifierGroupsOnly()
         {
             var scene = CreateScene();
             var firstModifier = Scene.Group<ModifiersGroup>(scene.Entity1).Children[0];
@@ -185,7 +185,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void EveryRowThatIsNeitherLitNorANeighbor_IsDimmed_ExceptTheDraggedRowAndTheHints()
+        public void BeginDrag_ANode_DimsEveryOtherRow()
         {
             var scene = CreateScene();
 
@@ -201,7 +201,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ACollapsedRowWithATargetUnderIt_GivesAHint_AndAnOpenRowDoesNot()
+        public void BeginDrag_ACollapsedRowWithATargetUnderIt_GivesAHint()
         {
             var scene = CreateScene();
             scene.CompositionB.IsExpanded = false;
@@ -273,7 +273,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ARowWithNoTargetUnderIt_GivesNoHint()
+        public void BeginDrag_ARowWithNoTargetUnderIt_GivesNoHint()
         {
             var scene = CreateScene();
             scene.Tree.BeginDrag(scene.Entity1);
@@ -286,7 +286,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheEndOfTheDrag_ClearsEveryState_AndTellsTheChanges()
+        public void EndDrag_AfterADrag_ClearsEveryStateAndTellsTheChanges()
         {
             var scene = CreateScene();
             var changes = new List<string?>();
@@ -312,7 +312,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ADragThatStartsAfterAnother_StartsFromScratch()
+        public void BeginDrag_AfterAnotherDrag_StartsFromScratch()
         {
             var scene = CreateScene();
             scene.Tree.BeginDrag(scene.Entity1);
@@ -325,7 +325,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void EveryLitRow_TakesTheDropInside_AndEveryNeighborTakesItBeforeOrAfter()
+        public void DragOver_ALitRowOrANeighbor_TakesTheDropInsideOrBeside()
         {
             var scene = CreateScene();
             var service = new TreeDropService();

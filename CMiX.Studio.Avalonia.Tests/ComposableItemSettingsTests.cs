@@ -29,7 +29,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(typeof(Layer))]
         [InlineData(typeof(Composition))]
-        public void TheView_ShowsTheBlendSettings_AndTheMaskSettingsOnlyForAMask(Type itemType)
+        public void Show_TheView_ShowsTheBlendAndTheMaskSettingsOnlyForAMask(Type itemType)
         {
             var (_, view, item) = Show(itemType);
             var blend = view.GetVisualDescendants().OfType<ComposableManagerSettings>().Single();
@@ -44,7 +44,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheLists_UseThisView_ForTheSelectedItem()
+        public void Select_AnItemInTheLists_ShowsThisView()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));

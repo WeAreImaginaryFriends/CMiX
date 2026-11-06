@@ -60,7 +60,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 .GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("kindcount")).ToList();
 
         [AvaloniaFact]
-        public void TheTooltipOfAMaskToggle_ShowsItsText_ForACompositionAndForALayer()
+        public void Show_TheMaskToggle_HasItsTooltipForACompositionAndALayer()
         {
             var (view, tree) = Show();
 
@@ -74,7 +74,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTooltipOfAMaskToggle_OpensBelowTheToggle_LikeEveryTooltip()
+        public void Show_TheMaskToggle_OpensItsTooltipBelowIt()
         {
             var (view, tree) = Show();
             var toggle = ItemOf(view, tree.Roots[0]).GetVisualDescendants().OfType<RowToggles>().First()
@@ -84,7 +84,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void VisibilityToggle_HasTheVisibleTip()
+        public void VisibilityToggle_Show_HasTheVisibleTip()
         {
             var (view, tree) = Show();
             var toggle = ItemOf(view, tree.Roots[0]).GetVisualDescendants().OfType<RowToggles>().First()
@@ -97,7 +97,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTooltipOfACountSquare_SaysHowManyOfWhichKind()
+        public void Show_ACountSquare_TellsHowManyOfWhichKindInItsTooltip()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
@@ -110,7 +110,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTooltipOfTheCountOfAGroup_NamesItsKind()
+        public void Show_TheCountOfAGroup_NamesItsKindInItsTooltip()
         {
             var (view, tree) = Show();
             var entities = tree.Roots[0].Children[0].Children.Single(child => child.Group is EntitiesGroup);
@@ -140,7 +140,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(TreeCategory.Modifier, 3, "3 Modifiers")]
         [InlineData(TreeCategory.Modulator, 1, "1 Modulator")]
         [InlineData(TreeCategory.Modulator, 2, "2 Modulators")]
-        public void ADescription_IsTheNumberAndTheNameOfTheKind(TreeCategory category, int count, string expected)
+        public void Describe_ACount_GivesTheNumberAndTheNameOfTheKind(TreeCategory category, int count, string expected)
         {
             Assert.Equal(expected, new KindCount(category, count).Description);
         }
@@ -170,7 +170,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void OnlyACompositionAndALayer_HaveAMaskOwner()
+        public void MaskOwner_EachKind_IsSetForACompositionAndALayerOnly()
         {
             var provider = TestServiceProviderFactory.Create();
             var project = provider.GetRequiredService<Project>();

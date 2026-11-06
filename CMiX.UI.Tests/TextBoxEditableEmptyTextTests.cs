@@ -29,7 +29,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void EnterWithAnEmptyText_KeepsTheOldText()
+        public void Enter_WithAnEmptyText_KeepsTheOldText()
         {
             var (window, box, input, _) = Show("Layer.001");
             Edit(box, input, string.Empty);
@@ -41,7 +41,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ALostFocusWithAnEmptyText_KeepsTheOldText()
+        public void LostFocus_WithAnEmptyText_KeepsTheOldText()
         {
             var (_, box, input, other) = Show("Layer.001");
             Edit(box, input, string.Empty);
@@ -53,7 +53,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AnEditWithOnlySpaces_KeepsTheOldText()
+        public void Enter_WithOnlySpaces_KeepsTheOldText()
         {
             var (window, box, input, _) = Show("Layer.001");
             Edit(box, input, "   ");
@@ -64,7 +64,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheOldTextShowsAgainInTheNextEdit()
+        public void Edit_AfterAnEmptyText_ShowsTheOldTextAgain()
         {
             var (window, box, input, _) = Show("Layer.001");
             Edit(box, input, string.Empty);
@@ -77,7 +77,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ARealText_IsCommitted()
+        public void Enter_WithARealText_CommitsIt()
         {
             var (window, box, input, _) = Show("Layer.001");
             Edit(box, input, "Floor");
@@ -88,7 +88,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ALostFocusWithoutAnEdit_DoesNotWriteAStaleText()
+        public void LostFocus_WithoutAnEdit_WritesNoStaleText()
         {
             var (_, box, input, other) = Show("Layer.001");
             Edit(box, input, "Floor");

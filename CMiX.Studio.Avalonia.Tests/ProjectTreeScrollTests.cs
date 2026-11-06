@@ -69,7 +69,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnARowAtTheEdgeOfTheView_DoesNotScrollTheTree()
+        public void Click_ARowAtTheEdgeOfTheView_DoesNotScroll()
         {
             var (view, tree, scroller) = Show();
             var layer = ScrollToARowAtTheBottomEdge(view, tree, scroller);
@@ -85,7 +85,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleClickOnARowAtTheEdgeOfTheView_CollapsesIt_AndTheRowStaysWhereItWas()
+        public void DoubleClick_ARowAtTheEdgeOfTheView_CollapsesItInPlace()
         {
             var (view, tree, scroller) = Show();
             var layer = ScrollToARowAtTheBottomEdge(view, tree, scroller);
@@ -105,7 +105,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ProgramSelection_RevealsTheRow()
+        public void Select_FromAProgram_ScrollsTheRowIntoView()
         {
             var (view, tree, scroller) = Show();
             var far = tree.Roots[0].Children[10];
@@ -121,7 +121,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void PointerSelection_DoesNotScroll()
+        public void Select_FromAPointer_DoesNotScroll()
         {
             var (view, tree, scroller) = Show();
             var far = tree.Roots[0].Children[10];
@@ -153,7 +153,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragNearTheBottomEdge_ScrollsDown_AndADragNearTheTopEdge_ScrollsUp()
+        public void DragOver_NearAnEdge_ScrollsTowardThatEdge()
         {
             var (view, tree, scroller) = Show();
             DragTo(view, tree, scroller, scroller.Bounds.Height / 2);
@@ -171,7 +171,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheMouseWheel_ScrollsTheTreeDuringADrag_AndNotWithoutOne()
+        public void Wheel_DuringADragOnly_ScrollsTheTree()
         {
             var (view, tree, scroller) = Show();
             view.ScrollByWheel(-2);
@@ -190,7 +190,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The pointer is captured, so the drag goes on beyond the edge of the tree. Escape stops it.
         [AvaloniaFact]
-        public void ADragAwayFromTheEdges_DoesNotScroll_AndACancelledDrag_Stops()
+        public void DragOver_AwayFromTheEdgesOrCancelled_StopsTheScroll()
         {
             var (view, tree, scroller) = Show();
             DragTo(view, tree, scroller, scroller.Bounds.Height / 2);

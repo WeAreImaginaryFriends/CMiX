@@ -54,7 +54,7 @@ namespace CMiX.Studio.Avalonia.Tests
         };
 
         [Fact]
-        public void WithNothingSelected_OnlyAddIsEnabled_AndItAddsAComposition()
+        public void CanExecute_NothingSelected_EnablesOnlyAddForAComposition()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = null;
@@ -68,7 +68,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ACompositionSelected_AddsALayerToThatComposition()
+        public void Add_WithACompositionSelected_AddsALayerToIt()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.Tree.Roots[1];
@@ -81,7 +81,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheFirstComposition_CannotMoveUp_AndTheLastCannotMoveDown()
+        public void CanExecute_TheFirstAndTheLastComposition_StopsMovesPastTheEdge()
         {
             var scene = CreateScene();
 
@@ -93,7 +93,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ALayerSelected_HasFiveThingsToAdd_SoTheAddCommandAddsNothingItself()
+        public void GetAdds_ALayerSelected_OffersFiveThings()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.LayerNodeOfA(0);
@@ -108,7 +108,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheEntitiesGroup_HasThreeThingsToAdd()
+        public void GetAdds_TheEntitiesGroup_OffersThreeThings()
         {
             var scene = CreateScene();
 
@@ -118,7 +118,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheCompositionIsTheLastChoiceOfAdd_WhateverIsSelected_AndTheOnlyOneWithNothingSelected()
+        public void GetAdds_AnySelection_PutsTheCompositionLast()
         {
             var scene = CreateScene();
             scene.A.LayerManager.AddItem(typeof(Layer));
@@ -133,7 +133,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheCamerasGroupAndTheLightsGroup_AddACameraAndALight()
+        public void Add_WithTheCamerasOrLightsGroupSelected_AddsACameraOrALight()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
@@ -150,7 +150,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(typeof(EntitiesGroup))]
         [InlineData(typeof(CamerasGroup))]
         [InlineData(typeof(LightsGroup))]
-        public void AGroupSelected_CanAdd_ButCannotDuplicateMoveOrRemove(System.Type group)
+        public void CanExecute_AGroupSelected_EnablesOnlyAdd(System.Type group)
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.Group(0, group);
@@ -159,7 +159,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AnEntitySelected_CanOnlyAddAComposition_AndCanDuplicateMoveAndRemove()
+        public void CanExecute_AnEntitySelected_EnablesEveryCommand()
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -175,7 +175,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void Duplicate_CopiesTheSelectedLayerRightAfterIt()
+        public void Duplicate_ALayer_PutsTheCopyRightAfterIt()
         {
             var scene = CreateScene();
             var original = scene.LayerOfA(0);
@@ -189,7 +189,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void MoveDownAndMoveUp_MoveTheSelectedComposition()
+        public void MoveDownAndMoveUp_AComposition_MoveIt()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.Tree.Roots[0];
@@ -203,7 +203,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void Remove_TakesTheSelectedLayerOutOfItsComposition()
+        public void Remove_ALayer_TakesItOutOfItsComposition()
         {
             var scene = CreateScene();
             var second = scene.LayerOfA(1);
@@ -215,7 +215,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheCommands_TellThatTheyChanged_WhenTheSelectionChanges()
+        public void Select_AnotherNode_RaisesCanExecuteChanged()
         {
             var scene = CreateScene();
             var raised = 0;
@@ -227,7 +227,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheCommands_FollowTheListsOfTheTree()
+        public void CanExecute_AChangeOfTheLists_FollowsTheTree()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.LayerNodeOfA(0);
@@ -281,7 +281,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheToolbar_IsUnderTheTree_WithTheFiveButtonsOfTheListToolbars()
+        public void Show_TheToolbar_IsUnderTheTreeWithFiveButtons()
         {
             var screen = Show();
             var tree = screen.View.GetVisualDescendants().OfType<TreeView>().First();
@@ -294,7 +294,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheButtons_AreDisabledWhenTheSelectedNodeHasNothingToDo()
+        public void Show_ANodeWithNothingToDo_DisablesTheButtons()
         {
             var screen = Show();
             var entityParent = screen.Scene.LayerOfA(0);
@@ -314,7 +314,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnAdd_WithACompositionSelected_OpensAMenuWithAddLayerAndAddComposition()
+        public void Click_AddWithACompositionSelected_OpensAMenuWithLayerAndComposition()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Tree.Roots[1];
@@ -334,7 +334,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheAddLayerRowOfTheMenu_AddsALayerToTheSelectedComposition()
+        public void Click_TheAddLayerRow_AddsALayerToTheSelectedComposition()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Tree.Roots[1];
@@ -347,7 +347,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnAdd_WithAnEntitySelected_OffersTheCompositionOnly_AndAddsNothingByItself()
+        public void Click_AddWithAnEntitySelected_OffersOnlyTheComposition()
         {
             var screen = Show();
             screen.Scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -363,7 +363,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnAdd_WithACamerasGroupSelected_OpensAMenu_AndAddACameraFromIt()
+        public void Click_AddWithACamerasGroupSelected_OpensAMenuThatAddsACamera()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Group<CamerasGroup>(0);
@@ -375,7 +375,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnAdd_WithALayerSelected_OpensAMenuOfTheFiveThingsToAddAndTheComposition()
+        public void Click_AddWithALayerSelected_OpensAMenuOfSixThings()
         {
             var screen = Show();
             var layer = screen.Scene.LayerNodeOfA(0);
@@ -391,7 +391,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheMenuOfAdd_StandsOnTheButton_EightPixelsOverItsTopLeftCorner()
+        public void Click_Add_OpensTheMenuEightPixelsOverTheButton()
         {
             // The room on the left keeps the popup inside the window of the test. A real popup is a window of its own.
             var screen = Show(leftRoom: 100);
@@ -415,7 +415,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheMenuOfAdd_StaysOverTheButton_WhateverTheNumberOfRows()
+        public void Click_AddWithAnyNumberOfRows_KeepsTheMenuOverTheButton()
         {
             var screen = Show(leftRoom: 100);
             var button = screen.ButtonOf("AddButton");
@@ -438,7 +438,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AChoiceOfTheMenu_AddsThatThingToTheSelectedLayer()
+        public void Click_AMenuRow_AddsThatThingToTheSelectedLayer()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.LayerNodeOfA(1);
@@ -454,7 +454,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnAdd_WithTheEntitiesGroupSelected_OpensAMenuOfTheThreeKindsOfEntity()
+        public void Click_AddWithTheEntitiesGroupSelected_OpensAMenuOfThreeKinds()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Group<EntitiesGroup>(0);
@@ -467,7 +467,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheOtherButtons_ActOnTheSelectedNode()
+        public void Click_TheOtherButtons_ActOnTheSelectedNode()
         {
             var screen = Show();
             var first = screen.Scene.LayerOfA(0);
@@ -485,7 +485,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EveryToolbarButton_HasATip()
+        public void Show_EveryToolbarButton_HasATip()
         {
             var screen = Show();
             var expected = new Dictionary<string, string>
@@ -503,7 +503,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The look of the buttons before the change to ButtonIcon: 24 by 24, a transparent corner of 2, an icon of 16 at 0.9.
         [AvaloniaFact]
-        public void TheButtons_KeepTheLookOfTheToolbar()
+        public void Show_TheToolbar_KeepsTheLookOfItsButtons()
         {
             var screen = Show();
 

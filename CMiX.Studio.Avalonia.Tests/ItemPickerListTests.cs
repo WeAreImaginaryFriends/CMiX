@@ -34,7 +34,7 @@ namespace CMiX.Studio.Avalonia.Tests
             list.GetVisualDescendants().OfType<Button>().ToList();
 
         [AvaloniaFact]
-        public void ALongList_IsAsHighAsTheVisibleRows_AndScrolls()
+        public void Show_ALongList_IsAsHighAsTheVisibleRowsAndScrolls()
         {
             var (list, _) = Show(40);
 
@@ -48,7 +48,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AShortList_IsAsHighAsItsRows_AndDoesNotScroll()
+        public void Show_AShortList_IsAsHighAsItsRowsAndDoesNotScroll()
         {
             var (list, _) = Show(3);
 
@@ -59,7 +59,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARow_ShowsTheTextOfThePath()
+        public void Show_ARow_ShowsTheTextOfThePath()
         {
             var (list, _) = Show(2);
 
@@ -67,7 +67,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnARow_RunsTheCommandWithTheItem()
+        public void Click_ARow_RunsTheCommandWithTheItem()
         {
             object? received = null;
             var (list, items) = Show(5, new RelayCommand<object>(item => received = item));
@@ -78,7 +78,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnItemAdded_AppearsAsARow()
+        public void Add_AnItem_AddsARow()
         {
             var (list, items) = Show(2);
 

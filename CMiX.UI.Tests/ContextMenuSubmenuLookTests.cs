@@ -35,7 +35,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheSubmenuPanel_IsAPopupFrame()
+        public void Show_TheSubmenuPanel_IsAPopupFrame()
         {
             var (submenu, _) = Open();
 
@@ -45,7 +45,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheRowsOfTheSubmenu_HaveTheThemeOfTheRowsOfTheMenu()
+        public void Show_TheRowsOfTheSubmenu_HaveTheThemeOfTheMenuRows()
         {
             var (submenu, row) = Open();
 

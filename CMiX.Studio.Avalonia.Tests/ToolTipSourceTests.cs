@@ -9,7 +9,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static readonly Regex Placement = new(@"ToolTip\.(Placement|HorizontalOffset|VerticalOffset)\s*=", RegexOptions.Compiled);
 
         [Fact]
-        public void NoView_SetsThePlaceOfATooltip()
+        public void Scan_TheViews_SetNoPlaceOfATooltip()
         {
             var found = SourceTree.AxamlFiles()
                 .Where(file => Placement.IsMatch(File.ReadAllText(file)))

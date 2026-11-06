@@ -73,7 +73,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static int CountNodes(TreeNode node) => 1 + node.Children.Sum(CountNodes);
 
         [AvaloniaFact]
-        public void TheView_ShowsOneRowPerNode()
+        public void Show_TheView_ShowsOneRowPerNode()
         {
             var screen = Show();
 
@@ -93,7 +93,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
 
         [AvaloniaFact]
-        public void EveryRow_HasTheHeightOfARowOfTheOtherLists()
+        public void Show_EveryRow_HasTheRowHeightOfTheOtherLists()
         {
             var screen = Show();
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
@@ -111,7 +111,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(0.1)]
         [InlineData(0.5)]
         [InlineData(0.9)]
-        public void ADragOverARow_MovesNoRow(double fraction)
+        public void DragOver_ARow_MovesNoRow(double fraction)
         {
             var screen = Show();
             var nodes = TreeTestScreen.All(screen.Tree.Roots).ToList();
@@ -125,7 +125,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TwoRowsNextToEachOther_AreOneRowGapApart()
+        public void Show_TwoRowsNextToEachOther_AreOneRowGapApart()
         {
             var screen = Show();
             var spacing = Convert.ToDouble(screen.View.Resources["TreeRowGap"]);
@@ -141,7 +141,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AChildRow_IsOneRowGapBelowItsParentRow()
+        public void Show_AChildRow_IsOneRowGapBelowItsParent()
         {
             var screen = Show();
             var spacing = Convert.ToDouble(screen.View.Resources["TreeRowGap"]);
@@ -186,7 +186,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(0.05)]
         [InlineData(0.4)]
-        public void ACompositionOverTheTopHalfOfACompositionRow_ShowsTheDropBefore(double fraction)
+        public void DragOver_ACompositionOnTheTopHalfOfACompositionRow_MarksTheDropBefore(double fraction)
         {
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
@@ -200,7 +200,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(0.6)]
         [InlineData(0.95)]
-        public void ACompositionOverTheBottomHalfOfTheLastRowOfABlock_ShowsTheDropAfterTheWholeBlock(double fraction)
+        public void DragOver_ACompositionOnTheBottomHalfOfTheLastRowOfABlock_MarksTheDropAfterTheBlock(double fraction)
         {
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
@@ -217,7 +217,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(0.6)]
         [InlineData(0.95)]
-        public void ACompositionOverTheBottomHalfOfAnExpandedCompositionRow_ShowsNothing(double fraction)
+        public void DragOver_ACompositionOnTheBottomHalfOfAnOpenCompositionRow_MarksNothing(double fraction)
         {
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
@@ -231,7 +231,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(0.1)]
         [InlineData(0.9)]
-        public void ACompositionOverAMiddleRowOfABlock_ShowsNothing(double fraction)
+        public void DragOver_ACompositionOnAMiddleRowOfABlock_MarksNothing(double fraction)
         {
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
@@ -242,7 +242,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ACollapsedCompositionRow_HasBothHalves()
+        public void DragOver_ACollapsedCompositionRow_UsesBothHalves()
         {
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
@@ -257,7 +257,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheAfterBar_IsDrawnUnderTheLastRowOfTheBlock()
+        public void DragOver_AfterABlock_DrawsTheBarUnderItsLastRow()
         {
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
@@ -275,7 +275,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheBeforeBar_IsDrawnAtTheTopOfTheBlock()
+        public void DragOver_BeforeABlock_DrawsTheBarAtItsTop()
         {
             var screen = ShowWithABlock();
             var last = screen.Tree.Roots[2];
@@ -292,7 +292,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ALayerOverTheBottomHalfOfTheLastRowOfAnotherLayer_ShowsTheDropAfterThatLayer()
+        public void DragOver_ALayerOnTheBottomHalfOfTheLastRowOfALayer_MarksTheDropAfterIt()
         {
             var screen = Show();
             var first = screen.Tree.Roots[0].Children[0];
@@ -307,7 +307,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ALayerOverAMiddleRowOfAnotherLayer_ShowsNothing()
+        public void DragOver_ALayerOnAMiddleRowOfALayer_MarksNothing()
         {
             var screen = Show();
             var first = screen.Tree.Roots[0].Children[0];
@@ -322,7 +322,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(0.05)]
         [InlineData(0.5)]
         [InlineData(0.95)]
-        public void ALayerOverACompositionRow_ShowsTheDropInsideWhereverThePointerIs(double fraction)
+        public void DragOver_ALayerOnACompositionRow_MarksTheDropInside(double fraction)
         {
             var screen = Show();
 
@@ -361,7 +361,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(true)]
         [InlineData(false)]
-        public void ADoubleClickAwayFromTheName_ExpandsOrCollapsesTheRow_AndStartsNoRename(bool expanded)
+        public void DoubleClick_AwayFromTheName_ExpandsOrCollapsesTheRowWithoutARename(bool expanded)
         {
             var screen = Show();
             var node = screen.Tree.Roots[0];
@@ -377,7 +377,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleClickOnTheIconOfARow_ExpandsOrCollapsesTheRow()
+        public void DoubleClick_OnTheIconOfARow_ExpandsOrCollapsesTheRow()
         {
             var screen = Show();
             var node = screen.Tree.Roots[0];
@@ -391,7 +391,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleClickAwayFromTheName_OfARowWithoutChildren_DoesNothing()
+        public void DoubleClick_AwayFromTheNameOfARowWithoutChildren_DoesNothing()
         {
             var screen = Show();
             // A row without children: a modulator of a modifier of an entity (the entity, the modifier and its groups have rows under them).
@@ -417,7 +417,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleClickOnAToggle_DoesNotExpandOrCollapseTheRow()
+        public void DoubleClick_OnAToggle_KeepsTheRowAsItIs()
         {
             var screen = Show();
             var node = screen.Tree.Roots[0];
@@ -433,7 +433,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleClickInTheInputWhileRenaming_KeepsTheRenameAndTheRow()
+        public void DoubleClick_InTheInputWhileRenaming_KeepsTheRenameAndTheRow()
         {
             var screen = Show();
             var node = screen.Tree.Roots[0];
@@ -451,7 +451,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(true)]
         [InlineData(false)]
-        public void ADoubleClickOnTheName_StartsTheRenameAndKeepsTheRowAsItWas(bool expanded)
+        public void DoubleClick_OnTheName_StartsTheRenameAndKeepsTheRow(bool expanded)
         {
             var screen = Show();
             var node = screen.Tree.Roots[0];
@@ -469,7 +469,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheNameBox_FillsTheColoredRowAfterTheIcon()
+        public void Show_TheNameBox_FillsTheColoredRowAfterTheIcon()
         {
             var screen = Show();
             var row = screen.RowOf(screen.Tree.Roots[0]);
@@ -486,7 +486,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheChevron_ExpandsAndCollapsesTheRow()
+        public void Click_TheChevron_ExpandsAndCollapsesTheRow()
         {
             var screen = Show();
             var node = screen.Tree.Roots[0];
@@ -505,7 +505,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ThePointerOverARow_HighlightsOnlyThatRowAndNotItsParent()
+        public void Hover_ARow_LightsOnlyThatRow()
         {
             var screen = Show();
             var composition = screen.Tree.Roots[0];
@@ -519,7 +519,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ACompositionRowAndALayerRow_HaveTheVisibilityToggleAndTheMaskToggle()
+        public void Show_ACompositionOrLayerRow_HasTheVisibilityAndTheMaskToggle()
         {
             var screen = Show();
 
@@ -537,7 +537,7 @@ namespace CMiX.Studio.Avalonia.Tests
             control.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X;
 
         [AvaloniaFact]
-        public void TheVisibilityToggle_IsFirst_AndTheMaskToggleIsRightOfIt()
+        public void Show_TheToggles_PutTheVisibilityFirstAndTheMaskRightOfIt()
         {
             var screen = Show();
 
@@ -553,7 +553,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheVisibilityToggleOfEveryRow_HasTheSameLeftEdge()
+        public void Show_TheVisibilityToggleOfEveryRow_HasTheSameLeftEdge()
         {
             var screen = Show();
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
@@ -571,7 +571,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnEntityRow_HasTheVisibilityToggleOnly_AndAGroupRowHasNone()
+        public void Show_AnEntityRowAndAGroupRow_HaveOnlyTheVisibilityOrNoToggle()
         {
             var screen = Show();
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
@@ -586,7 +586,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData("ToggleButtonVisibility")]
         [InlineData("ToggleButtonMask")]
-        public void TheToggles_ChangeTheVisibilityAndTheMaskOfTheComposition(string themeKey)
+        public void Click_TheToggles_ChangeTheVisibilityAndTheMaskOfTheComposition(string themeKey)
         {
             var screen = Show();
             var visibility = themeKey == "ToggleButtonVisibility";
@@ -601,7 +601,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARowOfAGroup_ShowsTheNameOfTheGroup()
+        public void Show_ARowOfAGroup_ShowsTheNameOfTheGroup()
         {
             var screen = Show();
             var group = screen.Tree.Roots[0].Children[0].Children[0];
@@ -612,7 +612,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASelectedRow_SelectsTheNode()
+        public void Select_ARow_SelectsTheNode()
         {
             var screen = Show();
             var node = screen.Tree.Roots[0].Children[1];
@@ -624,7 +624,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragOverTheLowerPartOfARow_MarksTheRowAndAnEndedDragClearsIt()
+        public void DragOver_TheLowerPartOfARow_MarksTheRowUntilTheDragEnds()
         {
             var screen = Show();
             var row = screen.RowOf(screen.Tree.Roots[1]);
@@ -640,7 +640,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragOverTheMiddleOfACompositionRow_MarksItAsInside()
+        public void DragOver_TheMiddleOfACompositionRow_MarksItAsInside()
         {
             var screen = Show();
             var layerNode = screen.Tree.Roots[0].Children[0];
@@ -653,7 +653,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(0.1)]
         [InlineData(0.9)]
-        public void ADragOverTheItemItself_MarksNothing(double fraction)
+        public void DragOver_TheItemItself_MarksNothing(double fraction)
         {
             var screen = Show();
             var node = screen.Tree.Roots[0];
@@ -665,7 +665,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragOverThePlaceWhereTheItemAlreadyIs_MarksNothing()
+        public void DragOver_ThePlaceOfTheItem_MarksNothing()
         {
             var screen = Show();
             var next = screen.Tree.Roots[1];
@@ -681,7 +681,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaTheory]
         [InlineData(0.5, true)]
         [InlineData(0.1, false)]
-        public void ADragOfANodeOfTheTree_ShowsTheMoveCursorAndNeverTheCursorForNotAllowed(double fraction, bool allowed)
+        public void DragOver_ANodeOfTheTree_ShowsOnlyTheMoveCursor(double fraction, bool allowed)
         {
             var screen = Show();
             var source = screen.Tree.Roots[0];
@@ -693,7 +693,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragOverATargetThatIsNotAllowed_MarksNothing()
+        public void DragOver_ATargetThatIsNotAllowed_MarksNothing()
         {
             var screen = Show();
             var group = screen.Tree.Roots[0].Children[0].Children[0];
@@ -705,7 +705,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnTheBottomHalfOfTheLastRowOfACompositionBlock_ReordersTheCompositions()
+        public void Drop_OnTheBottomHalfOfTheLastRowOfACompositionBlock_ReordersTheCompositions()
         {
             var screen = Show();
             var nodeA = screen.Tree.Roots[0];
@@ -718,7 +718,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOfALayerOnTheMiddleOfACompositionRow_MovesTheLayerThere()
+        public void Drop_ALayerOnTheMiddleOfACompositionRow_MovesTheLayerThere()
         {
             var screen = Show();
             var moved = screen.A.LayerManager.ManagerData.Items[0];
@@ -730,7 +730,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOfALayerWithASharedEntity_ChangesNothing()
+        public void Drop_ALayerWithASharedEntity_ChangesNothing()
         {
             var screen = Show();
             var layer = (Layer)screen.A.LayerManager.ManagerData.Items[0];
@@ -745,7 +745,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AGroup_CannotBeDragged_ButAnItemCan()
+        public void CanDrag_AGroupOrAnItem_IsTrueForTheItemOnly()
         {
             var screen = Show();
             var layerNode = screen.Tree.Roots[0].Children[0];
@@ -760,7 +760,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The press on a row remembers the node for a drag. A group is not remembered, so a move of the pointer starts no drag.
         [AvaloniaFact]
-        public void APressOnAGroup_PreparesNoDrag_AndAPressOnALayerDoes()
+        public void Press_OnAGroupOrALayer_PreparesADragForTheLayerOnly()
         {
             var screen = Show();
             var layerNode = screen.Tree.Roots[0].Children[0];
@@ -823,7 +823,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADropOnATargetThatIsNotAllowed_ChangesNothing()
+        public void Drop_OnATargetThatIsNotAllowed_ChangesNothing()
         {
             var screen = Show();
             var group = screen.Tree.Roots[0].Children[0].Children[0];
@@ -843,7 +843,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Detach_RemovesTheViewModelHandlers()
+        public void Detach_AnAttachedView_RemovesTheViewModelHandlers()
         {
             var screen = Show();
             Assert.Equal(1, HandlersOfView(screen.Tree, screen.View));

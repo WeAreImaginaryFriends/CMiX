@@ -13,7 +13,7 @@ namespace CMiX.Core.Tests
             (T)TestServiceProviderFactory.Create().GetRequiredService<ControlFactory>().Create(typeof(T));
 
         [Fact]
-        public void ANewComposition_HasItsPanelsOpen()
+        public void Create_AComposition_OpensItsPanels()
         {
             var composition = New<Composition>();
 
@@ -23,7 +23,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void ANewEntity_HasItsPanelsOpen()
+        public void Create_AnEntity_OpensItsPanels()
         {
             var entity = New<Entity>();
 
@@ -35,7 +35,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void ANewLight_HasItsPanelsOpen()
+        public void Create_ALight_OpensItsPanels()
         {
             var light = New<LightEntity>();
 

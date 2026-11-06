@@ -64,7 +64,7 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
         }
 
         [AvaloniaFact]
-        public void SearchEnterRemoveUndo_BringsTheEntityBack()
+        public void Undo_AfterSearchEnterAndRemove_BringsTheEntityBack()
         {
             var setup = Show();
             var manager = setup.Layer.ModelEntityManager;
@@ -80,7 +80,7 @@ namespace CMiX.Studio.Avalonia.Tests.Integration
         }
 
         [AvaloniaFact]
-        public void SearchEnterUndoRedo_PutsTheEntityBack()
+        public void Redo_AfterSearchEnterAndUndo_PutsTheEntityBack()
         {
             var setup = Show();
             var items = setup.Layer.ModelEntityManager.ManagerData.Items;

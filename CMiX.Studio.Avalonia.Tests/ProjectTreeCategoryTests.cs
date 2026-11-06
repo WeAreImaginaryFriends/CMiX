@@ -34,7 +34,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static TreeNode Child<T>(TreeNode node) where T : TreeGroup => node.Children.Single(child => child.Group is T);
 
         [Fact]
-        public void EveryRow_HasTheKindOfItsItem_AndAGroupHasTheKindOfItsItems()
+        public void Build_EveryRow_HasTheKindOfItsItems()
         {
             var composition = CreateTree().Roots[0];
             var layer = composition.Children[0];
@@ -58,7 +58,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheComposableDepth_CountsTheComposablesAroundTheRow()
+        public void ComposableDepth_ARow_CountsTheComposablesAroundIt()
         {
             var composition = CreateTree().Roots[0];
             var layer = composition.Children[0];
@@ -71,7 +71,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheKindDepth_CountsTheChangesOfKindDownToTheRow()
+        public void KindDepth_ARow_CountsTheChangesOfKindDownToIt()
         {
             var composition = CreateTree().Roots[0];
             var layer = composition.Children[0];
@@ -94,7 +94,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ALayerAddedLater_HasTheKindAndTheDepthOfALayer()
+        public void Add_ALayerLater_GivesItTheKindAndTheDepthOfALayer()
         {
             var tree = CreateTree();
             var composition = tree.Roots[0];

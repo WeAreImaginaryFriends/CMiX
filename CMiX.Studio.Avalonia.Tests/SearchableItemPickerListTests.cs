@@ -60,7 +60,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WithoutText_ShowsEveryItem()
+        public void Type_NoText_ShowsEveryItem()
         {
             var (_, list, _) = Show();
 
@@ -69,7 +69,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TypedText_KeepsTheItemsThatHoldIt_InTheOrderOfTheSource()
+        public void Type_SomeText_KeepsTheMatchingItemsInSourceOrder()
         {
             var (_, list, _) = Show();
 
@@ -79,7 +79,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSearch_IgnoresTheCase()
+        public void Type_TextInAnotherCase_FindsTheItems()
         {
             var (_, list, _) = Show();
 
@@ -89,7 +89,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TextThatNothingHolds_ShowsTheNoMatchLine()
+        public void Type_TextThatNothingHolds_ShowsTheNoMatchLine()
         {
             var (_, list, _) = Show();
 
@@ -100,7 +100,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnEmptySource_DoesNotShowTheNoMatchLine()
+        public void Show_AnEmptySource_HidesTheNoMatchLine()
         {
             var (_, list, items) = Show();
 
@@ -111,7 +111,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnItemAdded_ThatMatches_AppearsAndOneThatDoesNot_Stays_Out()
+        public void Add_AnItemWhileFiltered_ShowsItOnlyWhenItMatches()
         {
             var (_, list, items) = Show();
             Type(list, "cube");
@@ -124,7 +124,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Enter_PicksTheFirstRow()
+        public void Press_Enter_PicksTheFirstRow()
         {
             object? picked = null;
             var (_, list, items) = Show(item => picked = item);
@@ -148,7 +148,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Escape_ClearsTheText()
+        public void Press_Escape_ClearsTheText()
         {
             var (_, list, _) = Show();
             Type(list, "cu");
@@ -160,7 +160,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AppearingAgain_StartsWithoutAFilter()
+        public void Show_Again_StartsWithoutAFilter()
         {
             var (window, list, _) = Show();
             Type(list, "cu");
@@ -178,7 +178,7 @@ namespace CMiX.Studio.Avalonia.Tests
             list.GetVisualDescendants().OfType<Button>().Where(row => row.Classes.Contains("highlighted")).ToArray();
 
         [AvaloniaFact]
-        public void ByDefault_TheFirstRowIsHighlighted()
+        public void Show_ByDefault_HighlightsTheFirstRow()
         {
             var (_, list, _) = Show();
 
@@ -203,7 +203,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Up_MovesTheHighlightBack()
+        public void Press_Up_MovesTheHighlightBack()
         {
             var (_, list, _) = Show();
 
@@ -215,7 +215,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheHighlight_StopsAtTheFirstAndTheLastRow()
+        public void Press_UpOrDownAtTheEnds_StopsTheHighlight()
         {
             var (_, list, _) = Show();
 
@@ -228,7 +228,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Down_MovesInsideTheRowsThatMatch()
+        public void Press_Down_MovesInsideTheRowsThatMatch()
         {
             object? picked = null;
             var (_, list, items) = Show(item => picked = item);
@@ -242,7 +242,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TypingAgain_PutsTheHighlightOnTheFirstRow()
+        public void Type_AgainAfterAMove_HighlightsTheFirstRow()
         {
             var (_, list, _) = Show();
             Press(Search(list), Key.Down);
@@ -255,7 +255,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WithoutAMatch_ThereIsNoHighlight_AndTheKeysDoNothing()
+        public void Type_TextWithoutAMatch_HighlightsNothingAndDisablesTheKeys()
         {
             object? picked = null;
             var (_, list, _) = Show(item => picked = item);
@@ -270,7 +270,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheHighlightedRow_IsScrolledIntoView()
+        public void Press_DownPastTheView_ScrollsTheRowIntoView()
         {
             var items = new ObservableCollection<Item>(Enumerable.Range(1, 40).Select(i => new Item($"Entity {i}")));
             var list = new SearchableItemPickerList { ItemsSource = items, TextPath = nameof(Item.Name), Width = 200 };
@@ -290,7 +290,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSearchIcon_IsInsideTheField_AndTheTextStartsAfterIt()
+        public void Show_TheSearchIcon_IsInsideTheFieldBeforeTheText()
         {
             var (_, list, _) = Show();
             var box = Search(list);
@@ -358,7 +358,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheMouse_MovesTheHighlightToTheRowUnderIt_AndEnterPicksIt()
+        public void Hover_ARow_MovesTheHighlightAndEnterPicksIt()
         {
             object? picked = null;
             var (window, list, items) = Show(item => picked = item);
@@ -373,7 +373,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AStillPointer_DoesNotLightASecondRow_WhenTheKeysMoveTheHighlight()
+        public void Press_ArrowsUnderAStillPointer_LightsOnlyOneRow()
         {
             var (window, list, _) = Show();
             MouseOver(window, RowButton(list, 0));
@@ -393,7 +393,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Enter_RunsTheCommandAndThenRaisesPicked()
+        public void Press_Enter_RunsTheCommandAndThenRaisesPicked()
         {
             var order = new List<string>();
             var (_, list, _) = Show(_ => order.Add("command"));
@@ -418,7 +418,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnARow_RunsTheCommandAndThenRaisesPicked()
+        public void Click_ARow_RunsTheCommandAndThenRaisesPicked()
         {
             var order = new List<string>();
             var (window, list, _) = Show(_ => order.Add("command"));
@@ -430,7 +430,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheFieldTakesTheFocus_WhenTheListAppears()
+        public void Show_TheList_GivesTheFocusToTheField()
         {
             var (_, list, _) = Show();
             Dispatcher.UIThread.RunJobs();

@@ -55,7 +55,7 @@ namespace CMiX.Studio.Avalonia.Tests
             CategoryPalette.FromApplication().For(node.Category!.Value, node.ComposableDepth, node.KindDepth);
 
         [AvaloniaFact]
-        public void DuringADrag_ARowThatCanTakeTheNode_HasABrighterFill_AndARowThatCanNot_IsCovered()
+        public void BeginDrag_ANode_BrightensTheTargetsAndCoversTheOtherRows()
         {
             var (view, tree) = Show();
             var source = FirstEntity(tree);
@@ -75,7 +75,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WhenTheDragEnds_EveryMarkIsGone()
+        public void EndDrag_AfterADrag_ClearsEveryMark()
         {
             var (view, tree) = Show();
             tree.BeginDrag(FirstEntity(tree));
@@ -92,7 +92,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void NoRow_HasABorder_DuringADrag()
+        public void BeginDrag_ANode_DrawsNoRowBorder()
         {
             var (view, tree) = Show();
             tree.BeginDrag(FirstEntity(tree));
@@ -108,7 +108,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ACollapsedRowWithACandidateUnderIt_IsNotCovered_AndHasNoOtherMark()
+        public void BeginDrag_ACollapsedRowWithACandidateUnderIt_LeavesTheRowUncovered()
         {
             var (view, tree) = Show();
             var composition = tree.Roots[0];
@@ -153,7 +153,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheCover_UsesTheColorsOfTheTheme_AndTakesNoClick()
+        public void Show_TheCover_UsesTheThemeColorsAndTakesNoClick()
         {
             var (view, tree) = Show();
             var source = FirstEntity(tree);
@@ -167,7 +167,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheMarks_DoNotMoveOrResizeAnyRow()
+        public void BeginDrag_ANode_KeepsThePlaceAndTheSizeOfEveryRow()
         {
             var (view, tree) = Show();
             var before = All(tree.Roots).Select(node => (Part(view, node, "RowBorder").Bounds, Part(view, node, "RowBorder").TranslatePoint(new Point(0, 0), window!))).ToList();
@@ -181,7 +181,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The group that is lit takes the node: a drop on it moves the filter to the list of that group.
         [AvaloniaFact]
-        public void ADropOnTheLitGroupOfFilters_MovesTheFilterThere()
+        public void Drop_OnTheLitGroupOfFilters_MovesTheFilterThere()
         {
             var (view, tree) = Show();
             var firstLayer = tree.Roots[0].Children[0];
@@ -209,7 +209,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragWithThePointer_StartsTheDragOfTheTree_AndMarksTheRows()
+        public void Drag_WithThePointer_StartsTheTreeDragAndMarksTheRows()
         {
             var (view, tree) = Show();
             var source = FirstEntity(tree);
@@ -228,7 +228,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void APressOnTheToggleColumn_NeverStartsADrag_EvenAwayFromTheButtons()
+        public void Press_OnTheToggleColumn_StartsNoDrag()
         {
             var (view, tree) = Show();
             var source = FirstEntity(tree);

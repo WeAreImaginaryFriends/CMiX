@@ -39,7 +39,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AListWithManyRows_ShowsTheBar_AndTheRowsKeepTheirWidth()
+        public void Show_AListWithManyRows_ShowsTheBarAndKeepsTheRowWidth()
         {
             var few = FirstRowOfAList(2);
             var many = FirstRowOfAList(20);
@@ -50,7 +50,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheBarOfAList_LiesInTheRoomOnTheRight_AndNotOverTheRows()
+        public void Show_TheBarOfAList_LiesInTheRoomOnTheRight()
         {
             var list = new ListBox { Width = 200, Height = 96 };
             for (var i = 0; i < 20; i++)
@@ -76,7 +76,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The room on the right of the content is the width of the bar and of its margins. If one of them changes, the other must too.
         [AvaloniaFact]
-        public void TheRoomOnTheRight_IsTheWidthOfTheBarAndItsMargins()
+        public void Show_TheRoomOnTheRight_IsTheWidthOfTheBarAndItsMargins()
         {
             var list = new ListBox { Width = 200, Height = 96 };
             for (var i = 0; i < 20; i++)
@@ -95,7 +95,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheThumbOfTheBar_IsDarkerThanItWas_AndUsesAColorOfTheTheme()
+        public void Show_TheThumbOfTheBar_UsesADarkerThemeColor()
         {
             var list = new ListBox { Width = 200, Height = 96 };
             for (var i = 0; i < 20; i++)
@@ -136,7 +136,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTree_ShowsTheBarWithManyRows_AndTheRowsKeepTheirWidth()
+        public void Show_ATreeWithManyRows_ShowsTheBarAndKeepsTheRowWidth()
         {
             var few = FirstRowOfTheTree(1);
             var many = FirstRowOfTheTree(60);

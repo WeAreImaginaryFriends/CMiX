@@ -208,7 +208,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void ReceivingPeer_AddThenRemoveOfTheSameLayer_MovesTheSameInstance()
+        public void Receive_AnAddThenARemoveOfTheSameLayer_MovesTheSameInstance()
         {
             var sender = TestServiceProviderFactory.Create();
             var senderA = sender.GetRequiredService<PrefabManager>();

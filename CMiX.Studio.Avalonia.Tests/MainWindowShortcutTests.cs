@@ -16,7 +16,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void CtrlZThenCtrlShiftZ_UndoesAndRedoesTheStep()
+        public void Press_CtrlZThenCtrlShiftZ_UndoesAndRedoesTheStep()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             var items = viewModel.Project.CompositionManager.ManagerData.Items;
@@ -46,7 +46,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WindowKeyBindings_HoldTheUndoAndRedoCommands()
+        public void KeyBindings_OfTheWindow_HoldTheUndoAndRedoCommands()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
 

@@ -18,7 +18,7 @@ namespace CMiX.Core.Tests
             project.RedisAddressRegistry.Addresses.Select(address => address.Value).ToList();
 
         [Fact]
-        public void ANewAddress_IsNamedAddressWithANumber()
+        public void Add_AnAddress_NamesItAddressWithANumber()
         {
             var (project, _) = NewProject();
 
@@ -29,7 +29,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void ANewAddress_TakesTheFirstFreeNumber()
+        public void Add_AnAddressAfterOthers_TakesTheFirstFreeNumber()
         {
             var (project, _) = NewProject();
             project.RedisAddressRegistry.AddAddress();
@@ -43,7 +43,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void ANewAddress_IsOneUndoStepWithItsName()
+        public void Add_AnAddress_IsOneUndoStepWithItsName()
         {
             var (project, undo) = NewProject();
             undo.Clear();

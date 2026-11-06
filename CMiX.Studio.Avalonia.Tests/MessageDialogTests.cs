@@ -81,7 +81,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public async Task Enter_RunsTheDefaultButton()
+        public async Task Press_Enter_RunsTheDefaultButton()
         {
             var (dialog, result) = Show(ThreeButtons);
 
@@ -91,7 +91,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public async Task Escape_RunsTheCancelButton()
+        public async Task Press_Escape_RunsTheCancelButton()
         {
             var (dialog, result) = Show(MessageDialogOptions.Notice("Text.", "Warning"));
 
@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Frame_IsThePopupFrame()
+        public void Show_TheDialog_UsesThePopupFrame()
         {
             var (dialog, _) = Show(ThreeButtons);
 

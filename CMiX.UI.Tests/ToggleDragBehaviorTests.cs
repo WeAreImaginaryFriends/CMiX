@@ -72,7 +72,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void APress_TogglesTheFirstButtonOnce_AtOnce()
+        public void Press_AButton_TogglesItOnceAtOnce()
         {
             var rows = Show();
 
@@ -84,7 +84,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ADragDown_PaintsEveryButtonWithTheNewStateOfTheFirst()
+        public void Drag_Down_PaintsEveryButtonWithTheNewStateOfTheFirst()
         {
             var rows = Show();
 
@@ -98,7 +98,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AStrokeThatStartsOnAnOnButton_SwitchesTheOthersOff_EvenIfSomeAreOffAlready()
+        public void Drag_FromAnOnButton_SwitchesTheOthersOff()
         {
             var rows = Show();
             foreach (var index in new[] { 0, 1, 3 })
@@ -113,7 +113,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AFastMove_DoesNotSkipTheButtonsInBetween()
+        public void Drag_Fast_SkipsNoButton()
         {
             var rows = Show();
 
@@ -125,7 +125,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AStrokeUpwards_PaintsToo()
+        public void Drag_Up_PaintsTheButtons()
         {
             var rows = Show();
 
@@ -137,7 +137,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AStrokeOnTheVisibilityColumn_DoesNotTouchTheMaskButtons()
+        public void Drag_OnTheVisibilityColumn_KeepsTheMaskButtons()
         {
             var rows = Show();
 
@@ -151,7 +151,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AStrokeOnTheMaskColumn_PaintsTheMaskButtonsOnly()
+        public void Drag_OnTheMaskColumn_PaintsTheMaskButtonsOnly()
         {
             var rows = Show();
 
@@ -164,7 +164,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AButtonWithoutAGroup_ToggleOnRelease_AndStartsNoStroke()
+        public void Press_AButtonWithoutAGroup_TogglesOnReleaseWithNoStroke()
         {
             var rows = Show();
 
@@ -182,7 +182,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AfterTheRelease_AMoveOverTheButtonsPaintsNothing()
+        public void Move_AfterTheRelease_PaintsNothing()
         {
             var rows = Show();
 
@@ -196,7 +196,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AMoveWithoutThePressedMouseButton_EndsTheStroke()
+        public void Move_WithoutThePressedMouseButton_EndsTheStroke()
         {
             var rows = Show();
 
@@ -210,7 +210,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ADisabledButton_IsNotPainted_AndStartsNoStroke()
+        public void Drag_OverADisabledButton_LeavesItAndStartsNoStroke()
         {
             var rows = Show();
             rows.Visibility[2].IsEnabled = false;
@@ -229,7 +229,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void APressOutsideTheButtons_StartsNoStroke()
+        public void Press_OutsideTheButtons_StartsNoStroke()
         {
             var rows = Show();
 
@@ -239,7 +239,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheStroke_RaisesStartedBeforeTheFirstToggle_AndEndedAfterTheLastPaint()
+        public void Drag_AStroke_RaisesStartedFirstAndEndedLast()
         {
             var rows = Show();
             var log = new List<string>();
@@ -254,7 +254,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void EveryStroke_RaisesOneStartAndOneEnd_AndAClickIsAStroke()
+        public void Drag_AnyStrokeOrClick_RaisesOneStartAndOneEnd()
         {
             var rows = Show();
             var started = 0;
@@ -273,7 +273,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheGroup_PutsTheButtonInPressMode_AndRemovingItGivesTheReleaseModeBack()
+        public void Group_SetAndCleared_SwitchesThePressModeOnAndOff()
         {
             var button = new ToggleButton();
             Assert.Equal(ClickMode.Release, button.ClickMode);
@@ -286,7 +286,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ADetachedBehavior_EndsTheStrokeAndHandlesNoMoreInput()
+        public void Detach_DuringAStroke_EndsItAndStopsTheInput()
         {
             var rows = Show();
             var ended = 0;

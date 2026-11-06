@@ -20,7 +20,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void IconKey_SetsTheIcon()
+        public void IconKey_Set_ShowsTheIcon()
         {
             var button = new ButtonIcon { IconKey = "Add" };
             Show(button);

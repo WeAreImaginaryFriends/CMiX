@@ -55,7 +55,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Dot_WithAnInternalModulator_IsInternal_AndHighlightedWhenHovered()
+        public void Dot_WithAnInternalModulator_IsInternalAndLightsOnHover()
         {
             var (blur, button) = Show(typeof(RandomModulator));
             var modulator = Bind(blur, typeof(RandomModulator));
@@ -69,7 +69,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Dot_WithAnExternalModulator_IsExternal_AndHighlightedWhenHovered()
+        public void Dot_WithAnExternalModulator_IsExternalAndLightsOnHover()
         {
             var (blur, button) = Show(typeof(RedisFloatModulator));
             var modulator = Bind(blur, typeof(RedisFloatModulator));

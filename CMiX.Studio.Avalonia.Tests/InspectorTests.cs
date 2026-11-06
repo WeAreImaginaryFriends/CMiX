@@ -93,7 +93,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheInspectorTab_IsTheFirstTab_AndTheOtherTabsAreStillThere()
+        public void Show_TheTabs_PutTheInspectorFirstAndKeepTheOtherTabs()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
             var keys = TestServiceProviderFactory.MainTabControl(window).Items.OfType<TabItem>()
@@ -107,7 +107,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EveryTab_HasATooltipOnItsIcon()
+        public void Show_EveryTab_HasATooltipOnItsIcon()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
             var tabs = TestServiceProviderFactory.MainTabControl(window).Items.OfType<TabItem>().ToList();
@@ -123,7 +123,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The title bar has the height of the headers of the panels under it (the headers of the expanders).
         [AvaloniaFact]
-        public void TheHeader_HasTheHeightOfTheHeadersOfThePanels()
+        public void Show_TheHeader_HasTheHeightOfThePanelHeaders()
         {
             var screen = Show();
             Select(screen, screen.CompositionNode);
@@ -142,7 +142,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The icon of the title bar is on a square in the color of the kind of the selected row.
         [AvaloniaFact]
-        public void TheHeader_ShowsTheIconOnASquareInTheColorOfTheKind_AndItFollowsTheSelection()
+        public void Select_AnItem_ShowsItsIconOnASquareOfTheKindColorInTheHeader()
         {
             var screen = Show();
             var palette = CMiX.Studio.Avalonia.Themes.CategoryPalette.FromApplication();
@@ -158,7 +158,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheBadgeOfTheHeader_IsARowHighSquareWithTheCornersOfTheControls_AndAWhiteIcon_InTheMiddleOfTheBar()
+        public void Show_TheBadgeOfTheHeader_IsARowHighSquareWithAWhiteIconInTheBar()
         {
             var screen = Show();
             Select(screen, screen.CompositionNode);
@@ -177,7 +177,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheHeaderOfAnItem_HasTheEditableName_AndTheToggles_AtTheRightEnd()
+        public void Show_TheHeaderOfAnItem_HasTheEditableNameAndTheTogglesAtTheRight()
         {
             var screen = Show();
             Select(screen, screen.LayerNode);
@@ -199,7 +199,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheToggles_HaveTheSameSquaresAsTheToggleColumnOfTheTree()
+        public void Show_TheToggles_HaveTheSquaresOfTheToggleColumnOfTheTree()
         {
             var screen = Show();
             Select(screen, screen.LayerNode);
@@ -219,7 +219,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheToggles_ChangeTheItem_AndTheNameEditorRenamesIt()
+        public void Edit_TheTogglesAndTheName_ChangeTheItem()
         {
             var screen = Show();
             Select(screen, screen.LayerNode);
@@ -237,7 +237,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void OnlyACompositionAndALayerHaveTheMaskToggle_AndAGroupHasNoToggle()
+        public void Show_EachKindOfItem_GivesTheMaskToggleToACompositionAndALayerOnly()
         {
             var screen = Show();
             var entity = screen.Group<EntitiesGroup>().Children[0];
@@ -256,7 +256,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WithNothingSelected_TheInspectorShowsOnlyTheHint()
+        public void Show_NothingSelected_ShowsOnlyTheHint()
         {
             var screen = Show();
             Assert.True(screen.Placeholder.IsEffectivelyVisible);
@@ -265,7 +265,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASelectedComposition_ShowsItsSettingsAndItsEditor()
+        public void Select_AComposition_ShowsItsSettingsAndItsEditor()
         {
             var screen = Show();
 
@@ -284,7 +284,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Entity EntityOf(Screen screen) => (Entity)screen.Layer.ModelEntityManager.ManagerData.Items[0];
 
         [AvaloniaFact]
-        public void TheModifiersGroupOfAnEntity_ShowsTheListOfItsModifiers_WithTheModifiersOfThatEntity()
+        public void Select_TheModifiersGroupOfAnEntity_ShowsTheModifiersOfThatEntity()
         {
             var screen = Show();
             var entityNode = screen.Group<EntitiesGroup>().Children[0];
@@ -303,7 +303,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheFiltersGroupOfALayerAndOfAComposition_ShowTheListOfTheirFilters()
+        public void Select_TheFiltersGroupOfALayerOrAComposition_ShowsTheListOfFilters()
         {
             var screen = Show();
 
@@ -318,7 +318,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheModifiersGroupOfALayerAndOfAComposition_ListWhatCanBeAddedToThem()
+        public void Select_TheModifiersGroupOfALayerOrAComposition_ListsWhatCanBeAdded()
         {
             var screen = Show();
 
@@ -330,7 +330,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTexturesGroupOfAnEntity_ShowsItsDiffuseTexture()
+        public void Select_TheTexturesGroupOfAnEntity_ShowsItsDiffuseTexture()
         {
             var screen = Show();
             var entityNode = screen.Group<EntitiesGroup>().Children[0];
@@ -342,7 +342,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AModifierRow_ShowsTheEditorOfThatModifier()
+        public void Select_AModifierRow_ShowsTheEditorOfThatModifier()
         {
             var screen = Show();
             EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
@@ -359,7 +359,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheModulatorsGroupAndAModulatorRow_ShowTheListAndTheEditorOfTheModulator()
+        public void Select_TheModulatorsGroupOrAModulatorRow_ShowsTheListOrTheEditor()
         {
             var screen = Show();
             EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
@@ -383,7 +383,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AFilterRow_ShowsTheEditorOfThatFilter()
+        public void Select_AFilterRow_ShowsTheEditorOfThatFilter()
         {
             var screen = Show();
             screen.Layer.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
@@ -398,7 +398,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ATextureRow_ShowsTheEditorOfThatTexture()
+        public void Select_ATextureRow_ShowsTheEditorOfThatTexture()
         {
             var screen = Show();
             EntityOf(screen).Texture.DiffuseTexture.TextureManager.AddItem(typeof(CMiX.Core.Texturing.Sources.Image));
@@ -413,7 +413,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASelectionInTheModifierListOfTheInspector_IsTheSelectionOfTheTree()
+        public void Select_AModifierInTheInspectorList_SelectsItInTheTree()
         {
             var screen = Show();
             EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
@@ -428,7 +428,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASelectedLayer_ShowsItsSettingsAndItsEffects_ButNotTheListsOfItsItems()
+        public void Select_ALayer_ShowsItsSettingsAndEffectsButNotItsItemLists()
         {
             var screen = Show();
 
@@ -447,7 +447,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(0, typeof(ModelEntity))]
         [InlineData(1, typeof(FullscreenQuadView))]
         [InlineData(2, typeof(TextEntityView))]
-        public void ASelectedEntity_ShowsTheEditorOfItsKind(int index, Type editor)
+        public void Select_AnEntity_ShowsTheEditorOfItsKind(int index, Type editor)
         {
             var screen = Show();
             var node = screen.Group<EntitiesGroup>().Children[index];
@@ -460,7 +460,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASelectedCamera_AndALight_ShowTheirEditors()
+        public void Select_ACameraOrALight_ShowsItsEditor()
         {
             var screen = Show();
 
@@ -474,7 +474,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AGroup_ShowsItsNameAndTheListPanelOfItsKind()
+        public void Select_AGroup_ShowsItsNameAndTheListPanelOfItsKind()
         {
             var screen = Show();
 
@@ -499,7 +499,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheInspector_FollowsTheSelection_AndTheNameOfTheItem()
+        public void Select_AnotherItemOrRename_UpdatesTheInspector()
         {
             var screen = Show();
             var entity = screen.Group<EntitiesGroup>().Children[0];
@@ -517,7 +517,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WhenTheSelectedItemIsRemoved_TheInspectorLeavesItsEditor()
+        public void Remove_TheSelectedItem_ClosesTheEditor()
         {
             var screen = Show();
             // The only camera: when it goes, the selection falls back to the group of cameras.
@@ -535,7 +535,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASelectionInAList_ShowsInTheInspectorToo()
+        public void Select_AnItemInAList_ShowsItInTheInspector()
         {
             var screen = Show();
             // A second camera is now the selected one in its list. Selecting the first one in the list moves the selection of the tree.
@@ -562,7 +562,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData("entities group")]
         [InlineData("cameras group")]
         [InlineData("lights group")]
-        public void EveryPanelOfAnEditor_IsOpen(string kind)
+        public void Show_AnEditor_OpensEveryPanel(string kind)
         {
             var screen = Show();
             var node = kind switch
@@ -589,7 +589,7 @@ namespace CMiX.Studio.Avalonia.Tests
         // ---- the inspector follows what happens to the item ----
 
         [AvaloniaFact]
-        public async Task AnEntityMovedToAnotherLayer_StaysInTheInspector()
+        public async Task Move_AnEntityToAnotherLayer_KeepsItInTheInspector()
         {
             var screen = Show();
             var composition = (Composition)screen.CompositionNode.Item!;
@@ -609,7 +609,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WhenTheCompositionOfTheSelectedLayerIsRemoved_TheInspectorShowsTheHint()
+        public void Remove_TheCompositionOfTheSelectedLayer_ShowsTheHint()
         {
             var screen = Show();
             Select(screen, screen.LayerNode);
@@ -625,7 +625,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnUndoOfTheRemoval_AndARedo_LeaveTheInspectorWorking()
+        public void UndoAndRedo_OfARemoval_KeepTheInspectorWorking()
         {
             var screen = Show();
             var camera = screen.Group<CamerasGroup>().Children[0];
@@ -645,7 +645,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AfterAnotherTab_TheInspectorShowsTheCurrentSelection()
+        public void Show_AfterAnotherTab_ShowsTheCurrentSelection()
         {
             var screen = Show();
             Select(screen, screen.LayerNode);
@@ -684,7 +684,7 @@ namespace CMiX.Studio.Avalonia.Tests
             (TestServiceProviderFactory.MainTabControl(screen.Window).SelectedItem as TabItem is { Header: AppIcon icon }) ? icon.IconKey : "";
 
         [AvaloniaFact]
-        public void AClickOnARow_ShowsTheInspectorWithThatItem()
+        public void Click_ARow_ShowsTheInspectorWithThatItem()
         {
             var screen = Show();
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
@@ -696,7 +696,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnAGroup_ShowsTheInspectorToo()
+        public void Click_AGroup_ShowsTheInspector()
         {
             var screen = Show();
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
@@ -708,7 +708,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnTheVisibilityButton_DoesNotChangeTheTab()
+        public void Click_TheVisibilityButton_KeepsTheTab()
         {
             var screen = Show();
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
@@ -724,7 +724,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASelectionByAProgramOrAList_DoesNotChangeTheTab()
+        public void Select_FromAProgramOrAList_KeepsTheTab()
         {
             var screen = Show();
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
@@ -741,7 +741,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WhenTheOptionIsOff_AClickDoesNotChangeTheTab()
+        public void Click_WithTheOptionOff_KeepsTheTab()
         {
             var screen = Show();
             screen.Window.OpenInspectorOnTreeClick = false;
@@ -755,7 +755,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The layer view is also a tab with its own scroll viewer. In the inspector that viewer is off, so only the inspector scrolls.
         [AvaloniaFact]
-        public void HostedView_DoesNotScrollOnItsOwn()
+        public void HostedView_Show_DoesNotScrollOnItsOwn()
         {
             var screen = Show();
             Select(screen, screen.LayerNode);

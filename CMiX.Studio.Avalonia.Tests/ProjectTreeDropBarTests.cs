@@ -84,7 +84,7 @@ namespace CMiX.Studio.Avalonia.Tests
             item.GetVisualDescendants().OfType<Border>().Last(border => border.Name == "DropLine");
 
         [AvaloniaFact]
-        public void TheBarBeforeARowOfAList_IsSeen_ForTheFirstRowAndForTheOthers()
+        public void DragOver_BeforeARowOfAList_ShowsTheBarForEveryRow()
         {
             var (view, _, _, group) = Show();
             var source = group.Children[0];
@@ -107,7 +107,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The last row of the list has rows under it (its group of modulators): the bar after it is at the bottom of the item.
         [AvaloniaFact]
-        public void TheBarAfterTheLastRowOfAList_IsSeen()
+        public void DragOver_AfterTheLastRowOfAList_ShowsTheBar()
         {
             var (view, _, _, group) = Show();
             var source = group.Children[0];
@@ -123,7 +123,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARowOfModifiers_CanBeDroppedOnTheGroupModifiers_AndGoesToTheEnd()
+        public void Drop_AModifierOnItsGroup_PutsItAtTheEnd()
         {
             var (view, _, entity, group) = Show();
             var source = group.Children[0];
@@ -140,7 +140,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheGroupModifiers_IsLit_WhileARowOfItsListIsDragged_AndTheRowsOfTheListAreNot()
+        public void BeginDrag_ARowOfTheModifiers_LightsTheGroupAndNotTheRows()
         {
             var (view, tree, _, group) = Show();
 

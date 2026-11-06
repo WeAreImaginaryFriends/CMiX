@@ -24,7 +24,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void IsARealButton()
+        public void Create_TheMomentaryButton_IsAButton()
         {
             Assert.IsAssignableFrom<Button>(new ButtonMomentary());
         }

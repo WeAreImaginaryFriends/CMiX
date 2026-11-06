@@ -43,7 +43,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private Rect BoundsIn(Control control) => new(control.TranslatePoint(new Point(0, 0), window!)!.Value, control.Bounds.Size);
 
         [AvaloniaFact]
-        public void NoFill_TouchesTheLeftBorderOfTheTree_AndTheTopRowStartsAfterTheGutter()
+        public void Show_TheRows_KeepTheirFillsOffTheLeftBorder()
         {
             var (view, tree) = Show();
             var tops = All(tree.Roots).Select(node => BoundsIn(RowOf(view, node)).Left).ToList();
@@ -54,7 +54,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheChevron_IsOutsideTheFill_AtTheLeftOfTheRow_InFrontOfTheFillOfItsLevel()
+        public void Show_TheChevron_IsLeftOfTheFillOfItsLevel()
         {
             var (view, tree) = Show();
 
@@ -72,7 +72,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheChevronOfAChild_IsOneIndentToTheRightOfTheChevronOfItsParent()
+        public void Show_TheChevronOfAChild_IsOneIndentRightOfItsParent()
         {
             var (view, tree) = Show();
             var composition = tree.Roots[0];
@@ -85,7 +85,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheFillOfAChild_StartsOneIndentToTheRightOfTheFillOfItsParent()
+        public void Show_TheFillOfAChild_StartsOneIndentRightOfItsParent()
         {
             var (view, tree) = Show();
             var composition = tree.Roots[0];
@@ -101,7 +101,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnEmptyRow_IsIndentedLikeItsSiblings_AndItsChevronCannotBeClicked()
+        public void Show_AnEmptyRow_IsIndentedLikeItsSiblingsWithADisabledChevron()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
@@ -114,7 +114,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EveryFill_EndsAtTheSamePlace_WhateverItsLevel()
+        public void Show_EveryFill_EndsAtTheSamePlace()
         {
             var (view, tree) = Show();
 
@@ -128,7 +128,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(1.25)]
         [InlineData(1.5)]
         [InlineData(2.0)]
-        public void TheSpaceBetweenTwoRows_IsAWholeNumberOfPixels_AtEveryScaling(double scale)
+        public void Show_AtEveryScaling_PutsWholePixelsBetweenTwoRows(double scale)
         {
             var (view, tree) = Show(scale);
             var layers = tree.Roots[0].Children;
@@ -145,7 +145,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(1.25, 3.2)]
         [InlineData(1.5, 10.0 / 3.0)]
         [InlineData(2.0, 3.0)]
-        public void TheGap_IsSnappedToWholePixels(double scale, double expected)
+        public void Show_TheGap_SnapsToWholePixels(double scale, double expected)
         {
             var (_, gap) = ProjectTreeView.SnapToPixels(24, ProjectTreeView.RowGap, scale);
 
@@ -154,7 +154,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSpaceBetweenARowAndItsToggles_StaysOnePixel_AndIsNotTheSpaceBetweenRows()
+        public void Show_ARowAndItsToggles_HaveOnePixelBetweenThem()
         {
             var (view, tree) = Show();
 
@@ -163,7 +163,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheDropLine_StartsAtTheIndentOfItsRow_AtTheTopOfTheFirstRow_AndInTheSpaceUnderARow()
+        public void DragOver_ARow_PutsTheDropLineAtTheIndentOfTheRow()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
@@ -190,7 +190,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheNameOfASelectedRow_IsWhite_AndOtherRowsHaveTheLightText()
+        public void Select_ARow_MakesItsNameWhite()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];

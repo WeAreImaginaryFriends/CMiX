@@ -27,7 +27,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static double Left(Visual control, Visual root) => control.TranslatePoint(new Point(0, 0), root)!.Value.X;
 
         [AvaloniaFact]
-        public void TheTree_AndTheTabs_TouchEachOther()
+        public void Show_TheTreeAndTheTabs_TouchEachOther()
         {
             var (window, _, _, tree, tabs) = Show();
 
@@ -35,7 +35,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheColumns_FillTheWholeWidth_SoTheSplitterTakesNoRoom()
+        public void Show_TheColumns_FillTheWholeWidth()
         {
             var (_, _, grid, _, _) = Show();
 
@@ -43,7 +43,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSplitter_LiesOverTheEdge_OnTopOfBothPanels()
+        public void Show_TheSplitter_LiesOverTheEdgeOfBothPanels()
         {
             var (window, splitter, grid, tree, tabs) = Show();
             var edge = Left(tabs, window);
@@ -60,7 +60,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragOfTheSplitter_MovesTheEdge_ByTheDistanceOfTheMouse()
+        public void Drag_TheSplitter_MovesTheEdgeByTheDistanceOfTheMouse()
         {
             var (window, splitter, grid, _, _) = Show();
             var before = grid.ColumnDefinitions[0].ActualWidth;
@@ -77,7 +77,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSplitter_CannotMakeAPanelNarrowerThanItsLeastWidth()
+        public void Drag_TheSplitter_StopsAtTheLeastWidthOfAPanel()
         {
             var (window, splitter, grid, _, _) = Show();
             var start = splitter.TranslatePoint(new Point(splitter.Bounds.Width / 2, 100), window)!.Value;
@@ -100,7 +100,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSplitter_DoesNotCoverTheScrollBarOfTheTree()
+        public void Show_TheSplitter_LeavesTheScrollBarOfTheTreeFree()
         {
             var (window, splitter, _, tree, _) = Show();
             var bar = tree.GetVisualDescendants().OfType<global::Avalonia.Controls.Primitives.ScrollBar>().First(b => b.Orientation == global::Avalonia.Layout.Orientation.Vertical);

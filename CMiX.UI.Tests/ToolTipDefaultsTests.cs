@@ -14,7 +14,7 @@ namespace CMiX.UI.Tests
     public class ToolTipDefaultsTests
     {
         [AvaloniaFact]
-        public void EveryControl_HasTheTooltipBelowIt_ByDefault()
+        public void Placement_ByDefault_IsBelowEveryControl()
         {
             foreach (var control in new Control[] { new Button(), new TextBlock(), new Border(), new ToggleButton(), new CMiX.UI.Controls.AppIcon() })
             {
@@ -26,7 +26,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AValueSetForOneControl_Stays()
+        public void Placement_SetForOneControl_StaysAsSet()
         {
             var button = new Button();
             ToolTip.SetPlacement(button, PlacementMode.Right);
@@ -39,7 +39,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ATipThatComesFromABinding_IsPlacedToo()
+        public void Placement_ATipFromABinding_IsSetToo()
         {
             var button = new Button { DataContext = new { Text = "From a binding" } };
             button.Bind(ToolTip.TipProperty, new Avalonia.Data.Binding("Text"));
@@ -48,7 +48,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheRoomOfTheShadowInTheTooltipTheme_IsTheRoomOfTheOtherPopups()
+        public void Show_TheTooltipTheme_HasTheShadowRoomOfTheOtherPopups()
         {
             var tip = new ToolTip { Content = "Text" };
             var window = new Window { Content = new Border { Child = tip }, Width = 200, Height = 100 };
@@ -62,7 +62,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheBoxOfAnOpenTooltip_IsEightPixelsBelowTheControl()
+        public void Open_ATooltip_IsEightPixelsBelowTheControl()
         {
             var button = new Button { Content = "Hover", Width = 80, Height = 24, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top, Margin = new Thickness(40, 20, 0, 0) };
             ToolTip.SetTip(button, "A tip");

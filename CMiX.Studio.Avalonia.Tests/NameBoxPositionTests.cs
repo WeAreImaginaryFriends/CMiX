@@ -67,7 +67,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ANameBox_ShowsTheTextAtTheSamePlaceInBothModes()
+        public void Show_ANameBox_PutsTheTextAtTheSamePlaceInBothModes()
         {
             var box = new TextBoxEditable { Text = "Layer.001" };
             var window = new Window { Content = box, Width = 300, Height = 100 };
@@ -79,7 +79,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // A font size with a fractional line height is where a rounding of 1 pixel shows.
         [AvaloniaFact]
-        public void ANameBoxOfAnyHeightAndFontSize_ShowsTheTextAtTheSamePlaceInBothModes()
+        public void Show_ANameBoxOfAnyHeightAndFontSize_PutsTheTextAtTheSamePlaceInBothModes()
         {
             foreach (var (height, fontSize) in new[] { (20.0, 12.0), (21.0, 12.5), (24.0, 12.5), (24.0, 13.3), (25.0, 11.7), (31.0, 12.5), (24.0, 10.0) })
             {
@@ -94,7 +94,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ANameInTheTree_ShowsTheTextAtTheSamePlaceInBothModes()
+        public void Show_ANameInTheTree_PutsTheTextAtTheSamePlaceInBothModes()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
@@ -106,7 +106,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ANameInTheList_ShowsTheTextAtTheSamePlaceInBothModes()
+        public void Show_ANameInTheList_PutsTheTextAtTheSamePlaceInBothModes()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));

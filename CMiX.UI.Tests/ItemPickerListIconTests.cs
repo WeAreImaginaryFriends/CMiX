@@ -29,7 +29,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void WithAnIconPath_EachRowHasTheIconAndTheText()
+        public void Show_WithAnIconPath_GivesEachRowTheIconAndTheText()
         {
             var (_, list) = Show(nameof(Item.Icon));
 
@@ -40,7 +40,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void WithoutAnIconPath_TheRowsAreTheTextOnly_AsBefore()
+        public void Show_WithoutAnIconPath_GivesTheRowsTheTextOnly()
         {
             var (_, list) = Show(string.Empty);
 
@@ -51,7 +51,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheIconRows_KeepTheSizeOfTheOtherRows()
+        public void Show_TheIconRows_KeepTheSizeOfTheOtherRows()
         {
             var (_, withIcons) = Show(nameof(Item.Icon));
             var (_, textOnly) = Show(string.Empty);

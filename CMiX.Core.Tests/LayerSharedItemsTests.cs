@@ -65,7 +65,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void GetSharedItems_OnlyLayersOfTheListCount()
+        public void GetSharedItems_ALayerOutsideTheList_IsNotCounted()
         {
             var (first, second, third) = CreateLayers();
             first.ModelEntityManager.AddItem(typeof(Entity));

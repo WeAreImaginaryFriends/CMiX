@@ -50,7 +50,7 @@ namespace CMiX.Studio.Avalonia.Tests
             row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window)!.Value;
 
         [AvaloniaFact]
-        public void ARowAtRest_HasTheFillOfItsKind()
+        public void Show_ARowAtRest_HasTheFillOfItsKind()
         {
             var (_, view, tree) = Show();
 
@@ -59,7 +59,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheRowsOfTwoKinds_HaveTwoFills_AndTheSameKindHasOneFill()
+        public void Show_RowsOfTwoKinds_HaveAFillPerKind()
         {
             var (_, view, tree) = Show();
             var composition = tree.Roots[0];
@@ -72,7 +72,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASelectedRow_HasTheSelectedFill_AndTheOthersKeepTheirs()
+        public void Select_ARow_GivesOnlyThatRowTheSelectedFill()
         {
             var (window, view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
@@ -86,7 +86,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARowUnderThePointer_IsAsBrightAsASelectedRow_AndASelectedRowKeepsTheSelectedFill()
+        public void Hover_ARow_MakesItAsBrightAsASelectedRow()
         {
             var (window, view, tree) = Show();
             var first = tree.Roots[0].Children[0];
@@ -105,7 +105,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EachStep_IsBrighterThanTheOneBefore()
+        public void Show_EachState_IsBrighterThanTheStateBefore()
         {
             var (_, _, tree) = Show();
             var tone = ToneOf(tree.Roots[0].Children[0]);
@@ -136,7 +136,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TreeBackground_EqualsTheBackgroundUnderTheRows()
+        public void TreeBackground_Show_EqualsTheBackgroundUnderTheRows()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
             var view = window.GetVisualDescendants().OfType<ProjectTreeView>().First();

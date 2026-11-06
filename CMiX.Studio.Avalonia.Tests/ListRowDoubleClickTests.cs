@@ -43,7 +43,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleClickOnTheTextOfTheName_StartsTheRename()
+        public void DoubleClick_OnTheTextOfTheName_StartsTheRename()
         {
             var (window, name) = Show();
             var text = name.GetVisualDescendants().OfType<TextBlock>().First(block => block.Name == "TextDisplay");
@@ -54,7 +54,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleClickAwayFromTheText_DoesNothing()
+        public void DoubleClick_AwayFromTheText_DoesNothing()
         {
             var (window, name) = Show();
 

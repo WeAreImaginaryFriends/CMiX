@@ -38,7 +38,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleTapOnTheText_StartsTheEditMode_AndTheTapIsHandled()
+        public void DoubleTap_OnTheText_StartsTheEditModeAndHandlesTheTap()
         {
             var (window, _, text, input) = Show();
 
@@ -49,7 +49,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleTapAwayFromTheText_StartsNothing_AndTheTapIsLeftToTheRow()
+        public void DoubleTap_AwayFromTheText_LeavesTheTapToTheRow()
         {
             var (window, box, _, input) = Show();
             var rest = (Grid)box.Content!;
@@ -61,7 +61,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ADoubleTapInTheInputWhileEditing_KeepsTheEditMode_AndTheTapIsHandled()
+        public void DoubleTap_InTheInputWhileEditing_KeepsTheEditModeAndHandlesTheTap()
         {
             var (window, box, _, input) = Show();
             box.IsEditing = true;
@@ -75,7 +75,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheText_IsAsWideAsItsText_NotAsTheBox()
+        public void Show_TheText_IsAsWideAsItsTextAndNotAsTheBox()
         {
             var (_, box, text, _) = Show("Layer 1");
 
@@ -83,7 +83,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AnEmptyName_StillHasATextToDoubleTap()
+        public void DoubleTap_AnEmptyName_StillFindsAText()
         {
             var (_, _, text, _) = Show("");
             var height = System.Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
@@ -92,7 +92,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ARealDoubleClick_OnTheTextStartsTheEditMode_AndOnTheRestOfTheRowDoesNot()
+        public void DoubleClick_OnTheTextOrTheRow_StartsTheEditModeOnTheTextOnly()
         {
             var (window, box, text, input) = Show();
             var onText = text.TranslatePoint(new Point(text.Bounds.Width / 2, text.Bounds.Height / 2), window)!.Value;

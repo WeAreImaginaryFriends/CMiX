@@ -19,7 +19,7 @@ namespace CMiX.Studio.Avalonia.Tests
         });
 
         [Fact]
-        public async Task AnEntityMovedToAnotherLayer_IsSelectedInTheTree_AndInTheNewList()
+        public async Task Drop_AnEntityOnAnotherLayer_SelectsItInTheTreeAndTheNewList()
         {
             var scene = CreateScene();
             var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[1];
@@ -37,7 +37,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public async Task ADrop_OpensTheRowsThatHoldTheItem_ButNotTheItem()
+        public async Task Drop_AnItem_OpensTheRowsThatHoldIt()
         {
             var scene = CreateScene();
             var node = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
@@ -56,7 +56,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public async Task AnEntityThatWasNotSelected_IsSelectedAfterTheMove()
+        public async Task Drop_AnEntityThatIsNotSelected_SelectsIt()
         {
             var scene = CreateScene();
             var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
@@ -68,7 +68,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public async Task ALayerMovedToAnotherComposition_IsSelectedAfterTheMove()
+        public async Task Drop_ALayerOnAnotherComposition_SelectsIt()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(1);
@@ -83,7 +83,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public async Task TheMoveAndTheSelection_AreOneUndoStep()
+        public async Task Drop_AnItem_MovesAndSelectsInOneUndoStep()
         {
             var scene = CreateScene();
             var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[1];
@@ -98,7 +98,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public async Task AMoveInTheSameList_KeepsTheSelection()
+        public async Task Drop_InTheSameList_KeepsTheSelection()
         {
             var scene = CreateScene();
             var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
@@ -127,7 +127,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public async Task ABlockedMove_ChangesNoSelection()
+        public async Task Drop_ABlockedMove_KeepsTheSelection()
         {
             var scene = CreateScene();
             var node = scene.LayerNodeOfA(0);

@@ -55,7 +55,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static string NumberIn(Border square) => square.GetVisualDescendants().OfType<TextBlock>().Single().Text!;
 
         [AvaloniaFact]
-        public void ACollapsedRow_ShowsASquareForEachKindItHolds_WithTheNumberInIt()
+        public void Show_ACollapsedRow_ShowsASquareWithTheCountForEachKind()
         {
             var (view, _, layer, _) = Show();
             layer.IsExpanded = false;
@@ -72,7 +72,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnOpenRow_ShowsNoSquares_AndAnEmptyRowShowsNone()
+        public void Show_AnOpenOrEmptyRow_ShowsNoSquares()
         {
             var (view, _, layer, empty) = Show();
 
@@ -85,7 +85,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSquares_FollowTheOpeningAndTheClosingOfTheRow()
+        public void Expand_ARow_HidesOrShowsTheSquares()
         {
             var (view, _, layer, _) = Show();
 
@@ -99,7 +99,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ACollapsedGroup_ShowsItsCount_InTheColorOfItsKind()
+        public void Show_ACollapsedGroup_ShowsItsCountInTheColorOfItsKind()
         {
             var (view, _, layer, _) = Show();
             var entities = layer.Children.Single(child => child.Group is EntitiesGroup);
@@ -113,7 +113,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSquares_AreBrighterWhenTheRowIsSelected_AndInBetweenUnderThePointer()
+        public void Select_ARow_MakesTheSquaresBrighter()
         {
             var (view, tree, layer, _) = Show();
             layer.IsExpanded = false;
@@ -132,7 +132,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASquare_IsSixteenHighInARowOfTwentyFour_SoTheSpaceAboveAndBelowIsTheSame()
+        public void Show_ASquare_IsSixteenHighInTheMiddleOfTheRow()
         {
             var (view, _, layer, _) = Show();
             layer.IsExpanded = false;
@@ -149,7 +149,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSquares_FollowTheNameOfTheRow()
+        public void Rename_ARow_MovesTheSquares()
         {
             var (view, _, layer, _) = Show();
             layer.IsExpanded = false;

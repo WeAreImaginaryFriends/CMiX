@@ -42,7 +42,7 @@ namespace CMiX.Studio.Avalonia.Tests
             view.GetVisualDescendants().OfType<KeyGestureBox>().Single(box => box.DataContext is ShortcutRow row && row.Name == name);
 
         [AvaloniaFact]
-        public void View_ShowsOneKeyGestureBoxPerRow()
+        public void Show_TheView_ShowsOneKeyGestureBoxPerRow()
         {
             var (map, _, view) = Show();
 
@@ -76,7 +76,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ConflictRow_ShowsTheMark()
+        public void Show_AConflictRow_ShowsTheMark()
         {
             var (map, _, view) = Show();
             map.Set("Tree.Rename", new KeyGesture(Key.Delete));
@@ -91,7 +91,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ResetAllButton_HoldsTheResetAllCommand()
+        public void Show_TheResetAllButton_HoldsTheResetAllCommand()
         {
             var (_, settings, view) = Show();
 
@@ -139,7 +139,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void SettingsTab_HasTheShortcutsExpanderClosed()
+        public void Show_TheSettingsTab_HasTheShortcutsExpanderClosed()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             TestServiceProviderFactory.SelectMainTab(window, "Settings");

@@ -50,7 +50,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private Rect BoundsIn(Control control) => new(control.TranslatePoint(new Point(0, 0), window!)!.Value, control.Bounds.Size);
 
         [AvaloniaFact]
-        public void TheSquares_AreOutsideTheColoredRow_AtItsRight()
+        public void Show_TheSquares_AreRightOfTheColoredRow()
         {
             var (view, tree) = Show();
 
@@ -63,7 +63,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheEye_IsTheFirstSquare_AndTheMaskFollowsIt()
+        public void Show_TheToggles_PutTheEyeFirstAndTheMaskSecond()
         {
             var (view, tree) = Show();
             var composition = tree.Roots[0];
@@ -78,7 +78,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnEntity_HasOnlyTheEye_AtTheSamePlaceAsTheEyeOfAComposition_AndEveryOtherSquareIsEmpty()
+        public void Show_AnEntity_HasOnlyTheEyeAtThePlaceOfTheCompositionEye()
         {
             var (view, tree) = Show();
             var composition = tree.Roots[0];
@@ -100,7 +100,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EveryColoredRow_EndsAtTheSamePlace_WhateverItHolds()
+        public void Show_EveryColoredRow_EndsAtTheSamePlace()
         {
             var (view, tree) = Show();
 
@@ -113,7 +113,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(1.0)]
         [InlineData(1.25)]
         [InlineData(1.5)]
-        public void TheSpaces_AreTheSpaceOfTheRows_AndEverySquareIsARowHigh(double scale)
+        public void Show_TheSquares_AreARowHighWithTheSpaceOfTheRows(double scale)
         {
             var (view, tree) = Show(scale);
             var composition = tree.Roots[0];
@@ -132,7 +132,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheToggle_IsInTheMiddleOfItsSquare_WithTheSameSpaceOnEverySide()
+        public void Show_TheToggle_IsInTheMiddleOfItsSquare()
         {
             var (view, tree) = Show();
             var composition = tree.Roots[0];
@@ -150,7 +150,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheSquares_HaveTheBackgroundOfTheSecondPanelLevel()
+        public void Show_TheSquares_HaveTheBackgroundOfTheSecondPanelLevel()
         {
             var (view, tree) = Show();
             var expected = ((ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel2Brush")!).Color;
@@ -160,7 +160,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASquareWithNoButton_IsDarker_ThanASquareWithOne()
+        public void Show_ASquareWithNoButton_IsDarkerThanASquareWithOne()
         {
             var (view, tree) = Show();
             var darkest = ((ISolidColorBrush)Application.Current!.FindResource("Grey100Brush")!).Color;
@@ -176,7 +176,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheColumn_HasTheWidthOfTheSpaceAndAllTheSquares()
+        public void Show_TheColumn_HasTheWidthOfTheSpaceAndTheSquares()
         {
             var (view, tree) = Show();
             var column = ColumnOf(view, tree.Roots[0]);

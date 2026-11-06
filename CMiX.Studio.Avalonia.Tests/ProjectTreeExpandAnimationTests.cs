@@ -26,7 +26,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClosedRow_HidesItsChildren_AndAnOpenRowShowsThem()
+        public void Expand_AClosedOrOpenRow_HidesOrShowsItsChildren()
         {
             var (_, closed) = Show(false);
             var (_, open) = Show(true);
@@ -38,7 +38,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Opening_IsAnAnimation()
+        public void Expand_ARow_IsAnAnimation()
         {
             var (row, panel) = Show(false);
 
@@ -50,7 +50,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AfterTheAnimation_TheRowIsOpenOrClosed()
+        public void Expand_AfterTheAnimation_LeavesTheRowOpenOrClosed()
         {
             var (row, panel) = Show(false);
             panel.Duration = TimeSpan.Zero;
@@ -66,7 +66,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARowWithoutChildren_TakesNoRoomForTheChildren()
+        public void Show_ARowWithoutChildren_TakesNoRoomForChildren()
         {
             var (_, panel) = Show(true, withChild: false);
 

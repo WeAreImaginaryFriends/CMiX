@@ -15,7 +15,7 @@ namespace CMiX.Studio.Avalonia.Tests
     public class MainWindowTreeTests
     {
         [AvaloniaFact]
-        public void TheTree_StandsLeftOfTheTabs_AndStartsAtTheirTop()
+        public void Show_TheTree_StandsLeftOfTheTabsAtTheirTop()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
 
@@ -33,7 +33,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTreeAndTheTabs_HaveExactlyTheSameWidth()
+        public void Show_TheTreeAndTheTabs_HaveTheSameWidth()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
             var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
@@ -44,7 +44,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheMasterBeat_IsUnderTheTabsOnly_AndTheTreeHasTheWholeHeightOfItsColumn()
+        public void Show_TheMasterBeat_IsUnderTheTabsOnly()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
             var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
@@ -70,7 +70,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTreeRows_HaveTheSameSpaceOnAllFourSides()
+        public void Show_TheTreeRows_HaveTheSameSpaceOnAllSides()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
@@ -91,7 +91,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTabs_KeepTheirWidthOfBefore()
+        public void Show_TheTabs_KeepTheirWidthOfBefore()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
 
@@ -101,7 +101,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnAddedCompositionAndLayer_AppearInTheTreeOfTheWindow()
+        public void Add_ACompositionAndALayer_ShowsThemInTheTree()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
@@ -118,7 +118,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void NodeChosen_SwitchesOnlyThePanelOfTheTree()
+        public void NodeChosen_Raised_SwitchesOnlyThePanelOfTheTree()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));

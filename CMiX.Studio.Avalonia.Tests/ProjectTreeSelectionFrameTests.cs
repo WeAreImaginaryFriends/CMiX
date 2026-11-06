@@ -42,7 +42,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void OnlyTheSelectedRow_HasTheFrame()
+        public void Select_ARow_GivesOnlyThatRowTheFrame()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
@@ -59,7 +59,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheFrame_IsTheBrightColorOfTheKind_OfTheRow()
+        public void Select_ARow_GivesTheFrameTheBrightColorOfItsKind()
         {
             var (view, tree) = Show();
             var palette = CategoryPalette.FromApplication();
@@ -79,7 +79,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(1.25)]
         [InlineData(1.5)]
         [InlineData(2.0)]
-        public void TheFrame_IsOnePixelOfTheScreen_AtEveryScaling(double scale)
+        public void Select_AtEveryScaling_GivesAFrameOfOneScreenPixel(double scale)
         {
             var (view, tree) = Show(scale);
             var layer = tree.Roots[0].Children[0];
@@ -95,7 +95,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheFrame_CoversTheRowExactly_AndTheRowDoesNotMoveWhenItIsSelected()
+        public void Select_ARow_CoversItExactlyAndKeepsItInPlace()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
@@ -112,7 +112,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheFrame_HasTheCornersOfTheRow()
+        public void Select_ARow_GivesTheFrameTheCornersOfTheRow()
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];

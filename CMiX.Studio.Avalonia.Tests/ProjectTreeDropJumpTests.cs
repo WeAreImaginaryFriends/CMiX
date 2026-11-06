@@ -77,7 +77,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ALayerDroppedOnAnotherComposition_DoesNotMoveTheView_AndTheRowsAboveStayWhereTheyWere()
+        public void Drop_ALayerOnAnotherComposition_KeepsTheViewAndTheRowsAbove()
         {
             var (view, tree, scroller) = Show();
             scroller.Offset = new Vector(0, 800);
@@ -97,7 +97,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ALayerMovedInItsOwnList_DoesNotMoveTheView()
+        public void Drop_ALayerInItsOwnList_KeepsTheView()
         {
             var (view, tree, scroller) = Show();
             scroller.Offset = new Vector(0, 300);
@@ -114,7 +114,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTree_CanScrollUntilItsLastRowIsNearTheTop()
+        public void Scroll_ToTheEnd_PutsTheLastRowNearTheTop()
         {
             var (view, tree, scroller) = Show();
             var last = All(tree.Roots).Last();

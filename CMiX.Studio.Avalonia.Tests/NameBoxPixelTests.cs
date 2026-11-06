@@ -86,7 +86,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(13.0)]
         [InlineData(11.0)]
         [InlineData(10.0)]
-        public void TheInkOfTheText_IsAtTheSamePixelsInBothModes(double fontSize)
+        public void Render_TheText_PutsTheInkAtTheSamePixelsInBothModes(double fontSize)
         {
             var shown = Ink(fontSize, editing: false);
             var edited = Ink(fontSize, editing: true);

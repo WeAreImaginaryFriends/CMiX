@@ -16,13 +16,13 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AnExpanderIndented_IsOpenByDefault()
+        public void Show_AnIndentedExpander_IsOpenByDefault()
         {
             Assert.True(new ExpanderIndented().IsExpanded);
         }
 
         [AvaloniaFact]
-        public void AnExpander_IsOpenByDefault_InTheTheme()
+        public void Show_AnExpanderInTheTheme_IsOpenByDefault()
         {
             var expander = new Expander { Header = "Peers", Content = new Border() };
             var window = new Window { Content = expander, Width = 200, Height = 200 };
@@ -33,7 +33,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void AValueOrABindingStillClosesAnExpander()
+        public void Show_AValueOrABinding_CanCloseAnExpander()
         {
             var closed = new ExpanderIndented { IsExpanded = false };
             var bound = new ExpanderIndented { DataContext = new Flag { Open = false } };

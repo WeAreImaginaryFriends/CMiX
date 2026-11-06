@@ -30,7 +30,7 @@ namespace CMiX.Studio.Avalonia.Tests
             layerNode.Children.Single(group => group.Group is T);
 
         [Fact]
-        public void ANewItem_StartsCollapsed_AndDoesNotOpenTheRowThatHoldsIt()
+        public void Add_AnItem_StartsCollapsedAndKeepsItsParentClosed()
         {
             var scene = CreateScene();
             var composition = scene.Tree.Roots[0];
@@ -46,7 +46,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void Roots_AreTheCompositionsInTheOrderOfTheList()
+        public void Build_TheTree_PutsTheCompositionsAsRootsInListOrder()
         {
             var scene = CreateScene();
 
@@ -55,7 +55,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ACompositionNode_HasTheLayersOfTheCompositionAsChildren()
+        public void Build_ACompositionNode_HasItsLayersAsChildren()
         {
             var scene = CreateScene();
 
@@ -65,7 +65,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ALayerNode_HasTheGroupsEntitiesCamerasAndLights()
+        public void Build_ALayerNode_HasTheGroupsEntitiesCamerasAndLights()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
@@ -82,7 +82,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AGroupNode_HasTheItemsOfItsListAsChildren()
+        public void Build_AGroupNode_HasTheItemsOfItsListAsChildren()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
@@ -98,7 +98,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AnAddedItem_AddsANode()
+        public void Add_AnItem_AddsANode()
         {
             var scene = CreateScene();
 
@@ -110,7 +110,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ARemovedItem_RemovesItsNode()
+        public void Remove_AnItem_RemovesItsNode()
         {
             var scene = CreateScene();
 
@@ -120,7 +120,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AMovedItem_MovesItsNode()
+        public void Move_AnItem_MovesItsNode()
         {
             var scene = CreateScene();
             var first = scene.LayerOfA(0);
@@ -132,7 +132,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AMoveFromAPeer_MovesItsNode()
+        public void Move_FromAPeer_MovesTheNode()
         {
             var scene = CreateScene();
             var first = scene.LayerOfA(0);
@@ -143,7 +143,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ARenamedItem_ChangesTheHeader()
+        public void Rename_AnItem_ChangesTheHeader()
         {
             var scene = CreateScene();
 
@@ -153,7 +153,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ALayerMovedToAnotherComposition_MovesItsNode()
+        public void Move_ALayerToAnotherComposition_MovesItsNode()
         {
             var scene = CreateScene();
             var moved = scene.LayerOfA(0);
@@ -167,7 +167,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ADisposedTree_NoLongerFollowsTheLists()
+        public void Dispose_TheTree_StopsFollowingTheLists()
         {
             var scene = CreateScene();
             var node = scene.Tree.Roots[0];
@@ -179,7 +179,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void SelectingALayerNode_SelectsTheCompositionAndTheLayer()
+        public void Select_ALayerNode_SelectsTheCompositionAndTheLayer()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
@@ -191,7 +191,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void SelectingAnEntityNode_SelectsTheWholeChain()
+        public void Select_AnEntityNode_SelectsTheWholeChain()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
@@ -207,7 +207,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void SelectingAGroupNode_SelectsOnlyItsAncestors()
+        public void Select_AGroupNode_SelectsOnlyItsAncestors()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
@@ -221,7 +221,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void SelectingANode_IsOneUndoStep()
+        public void Select_ANode_IsOneUndoStep()
         {
             var scene = CreateScene();
             var secondLayer = scene.LayerOfA(1);
@@ -238,7 +238,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ASelectionInTheLists_MovesTheSelectedNode()
+        public void Select_AnItemInTheLists_MovesTheSelectedNode()
         {
             var scene = CreateScene();
 
@@ -248,7 +248,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AnUnselectedNode_DoesNotChangeTheSelectionOfTheLists()
+        public void Select_NoNode_KeepsTheSelectionOfTheLists()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = LayerNode(scene, 0);
@@ -260,7 +260,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ARemovedSelectedNode_MovesTheSelectionToTheParent()
+        public void Remove_TheSelectedNode_SelectsTheParent()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
@@ -274,7 +274,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ARemovedSelectedComposition_SelectsTheNeighborLikeTheList()
+        public void Remove_TheSelectedComposition_SelectsTheNeighbor()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.Tree.Roots[1];
@@ -286,7 +286,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheOnlyCompositionRemoved_ClearsTheSelection()
+        public void Remove_TheOnlyComposition_ClearsTheSelection()
         {
             var scene = CreateScene();
             scene.Project.CompositionManager.RemoveItem(scene.A);

@@ -38,7 +38,7 @@ namespace CMiX.Studio.Avalonia.Tests
             editor.GetVisualDescendants().OfType<RangeValue>().Single();
 
         [AvaloniaFact]
-        public void LeftValue_ChangesTheMinimum()
+        public void LeftValue_Set_ChangesTheMinimum()
         {
             var modulator = NewModulator();
             var editor = Show(modulator, "Bass");
@@ -50,7 +50,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void RightValue_ChangesTheMaximum()
+        public void RightValue_Set_ChangesTheMaximum()
         {
             var modulator = NewModulator();
             var editor = Show(modulator, "Bass");

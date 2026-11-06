@@ -34,7 +34,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(typeof(Blur), TreeCategory.Filter)]
         [InlineData(typeof(TranslateModifier), TreeCategory.Modifier)]
         [InlineData(typeof(LFOModulator), TreeCategory.Modulator)]
-        public void AnItem_HasTheKindOfItsType(System.Type type, TreeCategory expected)
+        public void Category_AnItem_IsTheKindOfItsType(System.Type type, TreeCategory expected)
         {
             var item = TestServiceProviderFactory.Create().GetRequiredService<ControlFactory>().Create(type);
 
@@ -42,7 +42,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AGroup_HasTheKindOfItsItems()
+        public void Category_AGroup_IsTheKindOfItsItems()
         {
             var provider = TestServiceProviderFactory.Create();
             var layer = (Layer)provider.GetRequiredService<ControlFactory>().Create(typeof(Layer));
@@ -58,7 +58,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EveryKind_HasAColor_AndANestedComposableHasOneColorForEachLevel()
+        public void ColorKey_EveryKindAndLevel_GivesAColorPerLevelForAComposable()
         {
             foreach (var category in System.Enum.GetValues<TreeCategory>())
                 Assert.IsType<AvaloniaColor>(Application.Current!.FindResource("Category" + category));

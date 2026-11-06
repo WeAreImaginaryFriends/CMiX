@@ -90,7 +90,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheBehavior_IsInstalledOnTheMainWindow()
+        public void Show_TheMainWindow_HasTheToggleDragBehavior()
         {
             var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
 
@@ -98,7 +98,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheVisibilityAndMaskButtons_AreInTheirGroups()
+        public void Show_TheVisibilityAndMaskButtons_AreInTheirGroups()
         {
             var screen = Show();
 
@@ -107,7 +107,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragDownTheTree_SetsTheVisibilityOfEveryLayerPassed()
+        public void Drag_DownTheTree_SetsTheVisibilityOfEveryLayerPassed()
         {
             var screen = Show();
             var start = screen.Layers[0].PrefabService.Visibility.Value;
@@ -121,7 +121,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AFastDragDownTheTree_SkipsNoLayer()
+        public void Drag_FastDownTheTree_SkipsNoLayer()
         {
             var screen = Show();
             var start = screen.Layers[0].PrefabService.Visibility.Value;
@@ -134,7 +134,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AVisibilityDrag_DoesNotChangeTheMask()
+        public void Drag_OnTheVisibility_KeepsTheMask()
         {
             var screen = Show();
             var masks = screen.Layers.Select(layer => layer.Mask.IsMask.Value).ToList();
@@ -147,7 +147,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AMaskDragDownTheTree_SetsTheMaskOfEveryLayerPassed_AndNotTheVisibility()
+        public void Drag_OnTheMaskDownTheTree_SetsOnlyTheMaskOfEveryLayerPassed()
         {
             var screen = Show();
             var start = screen.Layers[0].Mask.IsMask.Value;
@@ -162,7 +162,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragOfManyLayers_IsOneUndoStep()
+        public void Drag_OverManyLayers_IsOneUndoStep()
         {
             var screen = Show();
             var before = screen.Layers.Select(layer => layer.PrefabService.Visibility.Value).ToList();
@@ -180,7 +180,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClick_IsOneUndoStepAndTogglesOnce()
+        public void Click_AToggle_TogglesOnceInOneUndoStep()
         {
             var screen = Show();
             var before = screen.Layers[1].PrefabService.Visibility.Value;
@@ -196,7 +196,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADragFromTheTreeToAList_PaintsTheButtonsOfTheList()
+        public void Drag_FromTheTreeToAList_PaintsTheButtonsOfTheList()
         {
             var screen = Show();
 
@@ -217,7 +217,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void APressOnAVisibilityButton_EndsTheRenameOfARow()
+        public void Press_AVisibilityButton_EndsTheRenameOfARow()
         {
             var screen = Show();
             var box = screen.TreeView.GetVisualDescendants().OfType<TextBoxEditable>().First(row => row.Text == screen.LayerNode(0).Header);

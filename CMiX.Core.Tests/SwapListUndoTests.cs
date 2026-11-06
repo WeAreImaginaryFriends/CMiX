@@ -30,7 +30,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void AddFromTheRepository_ThenRemove_ThenUndo_BringsTheItemBack()
+        public void Undo_AfterAddAndRemove_BringsTheItemBack()
         {
             var (undo, slot, shared) = Setup();
 
@@ -46,7 +46,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void AddFromTheRepository_ThenRemove_ThenUndoAndRedo_RemovesItAgain()
+        public void Redo_AfterAddRemoveAndUndo_RemovesTheItemAgain()
         {
             var (undo, slot, shared) = Setup();
             slot.AddExistingItem(shared);
@@ -59,7 +59,7 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
-        public void AddFromTheRepository_ThenUndo_ThenRedo_PutsTheItemBack()
+        public void Redo_AfterAddAndUndo_PutsTheItemBack()
         {
             var (undo, slot, shared) = Setup();
             slot.AddExistingItem(shared);

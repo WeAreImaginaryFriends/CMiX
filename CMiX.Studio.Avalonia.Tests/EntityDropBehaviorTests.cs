@@ -73,13 +73,13 @@ namespace CMiX.Studio.Avalonia.Tests
                 Assert.Single(textured.Texture.DiffuseTexture.TextureManager.ManagerData.Items));
 
         [AvaloniaFact]
-        public void TheBehavior_AcceptsFilesAndFoldersByDefault()
+        public void Create_TheBehavior_AcceptsFilesAndFolders()
         {
             Assert.Equal(FileDropMode.FilesAndFolders, new EntityDropBehavior().Mode);
         }
 
         [AvaloniaFact]
-        public void TheEntityList_OfALayer_HasTheDropBehaviorOnItsManager()
+        public void Show_TheEntityListOfALayer_HasTheDropBehaviorOnItsManager()
         {
             var provider = TestServiceProviderFactory.Create();
             var layer = (Layer)provider.GetRequiredService<ControlFactory>().Create(typeof(Layer));
@@ -95,7 +95,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedFolderWithImages_BecomesAQuadWithASequencePlayer()
+        public void Drop_AFolderWithImages_AddsAQuadWithASequencePlayer()
         {
             var (entities, _, dropper) = Show();
             var folder = NewFolder("frames", "frame_0001.png");
@@ -109,7 +109,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedFolderWithoutImages_AddsNothing()
+        public void Drop_AFolderWithoutImages_AddsNothing()
         {
             var (entities, _, dropper) = Show();
 
@@ -119,7 +119,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedImage_BecomesAnEntityWithAnImage()
+        public void Drop_AnImage_AddsAnEntityWithTheImage()
         {
             var (entities, _, dropper) = Show();
             var path = NewFile("one.png");
@@ -133,7 +133,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedVideo_BecomesAnEntityWithAVideoPlayer()
+        public void Drop_AVideo_AddsAnEntityWithAVideoPlayer()
         {
             var (entities, _, dropper) = Show();
             var path = NewFile("clip.mp4");
@@ -147,7 +147,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedGeometryFile_BecomesAnEntityWithThatMesh()
+        public void Drop_AGeometryFile_AddsAnEntityWithThatMesh()
         {
             var (entities, _, dropper) = Show();
             var path = NewFile("model.obj");
@@ -161,7 +161,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedFileOfAnUnknownType_AddsNothing()
+        public void Drop_AFileOfAnUnknownType_AddsNothing()
         {
             var (entities, _, dropper) = Show();
 
@@ -171,7 +171,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedTextFile_BecomesATextEntityWithTheTextOfTheFile()
+        public void Drop_ATextFile_AddsATextEntityWithTheTextOfTheFile()
         {
             var (entities, _, dropper) = Show();
             var path = System.IO.Path.Combine(_folder, "notes.txt");
@@ -184,7 +184,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedTextFile_IsOneUndoStep()
+        public void Drop_ATextFile_IsOneUndoStep()
         {
             var (entities, undo, dropper) = Show();
             undo.Clear();
@@ -196,7 +196,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ATextFileThatIsTooLarge_AddsNothing()
+        public void Drop_ATextFileThatIsTooLarge_AddsNothing()
         {
             var (entities, _, dropper) = Show();
             var path = System.IO.Path.Combine(_folder, "big.txt");
@@ -208,7 +208,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedImage_IsOneUndoStep()
+        public void Drop_AnImage_IsOneUndoStep()
         {
             var (entities, undo, dropper) = Show();
             undo.Clear();
@@ -220,7 +220,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedFolderWithImages_IsOneUndoStep()
+        public void Drop_AFolderWithImages_IsOneUndoStep()
         {
             var (entities, undo, dropper) = Show();
             undo.Clear();
@@ -232,7 +232,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ADroppedGeometryFile_IsOneUndoStep()
+        public void Drop_AGeometryFile_IsOneUndoStep()
         {
             var (entities, undo, dropper) = Show();
             undo.Clear();

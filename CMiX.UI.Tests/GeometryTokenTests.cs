@@ -12,7 +12,7 @@ namespace CMiX.UI.Tests
         private static Thickness Space(string key) => Tokens.Get<Thickness>(key);
 
         [AvaloniaFact]
-        public void ScrollBarSize_IsTheThicknessPlusTwoMargins()
+        public void ScrollBarSize_Token_IsTheThicknessPlusTwoMargins()
         {
             var margin = Space("ScrollBarMargin");
 
@@ -20,19 +20,19 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ScrollBarGutter_IsTheScrollBarSizeAtTheRight()
+        public void ScrollBarGutter_Token_IsTheScrollBarSizeAtTheRight()
         {
             Assert.Equal(new Thickness(0, 0, Size("ScrollBarSize"), 0), Space("ScrollBarGutter"));
         }
 
         [AvaloniaFact]
-        public void TreeIndentMargin_IsTheTreeIndentAtTheLeft()
+        public void TreeIndentMargin_Token_IsTheTreeIndentAtTheLeft()
         {
             Assert.Equal(new Thickness(Size("TreeIndent"), 0, 0, 0), Space("TreeIndentMargin"));
         }
 
         [AvaloniaFact]
-        public void TreeSpaces_AreSpacingTokens()
+        public void TreeSpaces_Tokens_AreSpacingTokens()
         {
             var md = Size("SpacingMD");
             var sm = Size("SpacingSM");
@@ -44,13 +44,13 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void SplitterRowOverlap_IsMinusHalfTheSplitterSize()
+        public void SplitterRowOverlap_Token_IsMinusHalfTheSplitterSize()
         {
             Assert.Equal(new Thickness(0, -Size("SplitterSize") / 2), Space("SplitterRowOverlap"));
         }
 
         [AvaloniaFact]
-        public void SplitterColumnOverlap_IsMinusTheSplitterSizeLessTheScrollBarMargin()
+        public void SplitterColumnOverlap_Token_IsMinusTheSplitterSizeLessTheScrollBarMargin()
         {
             var margin = Space("ScrollBarMargin");
 

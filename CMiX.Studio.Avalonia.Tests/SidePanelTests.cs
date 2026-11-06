@@ -68,7 +68,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ByDefault_TheTreeIsOnTheLeft_AndTheTabsOnTheRight()
+        public void Show_ByDefault_PutsTheTreeLeftAndTheTabsRight()
         {
             var screen = Show();
 
@@ -80,7 +80,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheIconOfTheButton_HasTheSameSpaceAtTheLeft_AtTheTop_AndAtTheBottom()
+        public void Show_TheIconOfTheButton_HasTheSameSpaceOnThreeSides()
         {
             var screen = Show();
 
@@ -104,7 +104,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EachSide_HasAnIconButtonAtItsTop_ThatShowsTheIconOfTheChoice_AndNoName()
+        public void Show_EachSide_HasAnIconButtonOfTheChoiceAtItsTop()
         {
             var screen = Show();
 
@@ -134,7 +134,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheChevron_TurnsWhenTheListIsOpen()
+        public void Open_TheList_TurnsTheChevron()
         {
             var screen = Show();
             var toggle = Screen.ToggleOf(screen.Left);
@@ -151,7 +151,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTooltipOfTheButton_IsTheNameOfTheChoice_BelowTheButton()
+        public void Show_TheButton_HasTheNameOfTheChoiceAsTooltipBelowIt()
         {
             var screen = Show();
             var toggle = Screen.ToggleOf(screen.Left);
@@ -165,7 +165,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheList_HasOneRowForEachChoice_WithItsIconAndItsName()
+        public void Open_TheList_ShowsARowWithIconAndNameForEachChoice()
         {
             var screen = Show();
             Screen.ToggleOf(screen.Left).IsChecked = true;
@@ -179,7 +179,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheList_IsTheListOfTheSwapButtonOfThePrefabSlots_InTheSameFrame()
+        public void Open_TheList_UsesTheSwapButtonListAndFrame()
         {
             var screen = Show();
             var popup = Screen.PopupOf(screen.Left);
@@ -190,14 +190,14 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void EveryChoice_HasAnIconThatTheAppKnows()
+        public void Show_EveryChoice_HasAKnownIcon()
         {
             foreach (var choice in PanelChoice.All)
                 Assert.True(Icons.Kinds.ContainsKey(choice.IconKey), "No icon for " + choice.Name);
         }
 
         [AvaloniaFact]
-        public void PickingARow_ChangesThePanel_AndClosesTheList()
+        public void Pick_ARow_ChangesThePanelAndClosesTheList()
         {
             var screen = Show();
 
@@ -209,7 +209,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTree_CanBeOnTheRight_WhileTheTabsAreOnTheLeft()
+        public void Choose_TheTreeRightAndTheTabsLeft_ShowsThemThere()
         {
             var screen = Show();
 
@@ -226,7 +226,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTree_CanBeOnBothSides_AndTheSelectionIsTheSame()
+        public void Choose_TheTreeOnBothSides_KeepsOneSelection()
         {
             var screen = Show();
 
@@ -247,7 +247,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTabs_CanBeOnBothSides()
+        public void Choose_TheTabsOnEitherSide_ShowsThemThere()
         {
             var screen = Show();
 
@@ -258,7 +258,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheAssets_CanBeOnEitherSide_WithTheAssetManagerOfTheProject()
+        public void Choose_TheAssetsOnEitherSide_ShowsTheAssetManagerOfTheProject()
         {
             var screen = Show();
 
@@ -275,7 +275,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheAssets_AreNoLongerATab()
+        public void Show_TheTabs_HaveNoAssetsTab()
         {
             var screen = Show();
 
@@ -287,7 +287,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheMasterBeat_IsPartOfTheTabsPanel_WhereverItIs()
+        public void Choose_TheTabsOnEitherSide_KeepsTheMasterBeatInTheTabsPanel()
         {
             var screen = Show();
             Pick(screen, left: true, PanelChoice.Tabs);
@@ -300,7 +300,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheViewModel_ChangesTheButton_AndTheOtherWayAround()
+        public void Choose_FromTheViewModelOrTheButton_KeepsBothInStep()
         {
             var screen = Show();
 
@@ -315,7 +315,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnATree_ShowsTheInspectorOfTheTabsOnTheOtherSide()
+        public void Click_ATree_ShowsTheInspectorOnTheOtherSide()
         {
             var screen = Show();
             Pick(screen, left: true, PanelChoice.Tabs);
@@ -340,7 +340,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AClickOnATree_WithNoTabsOnScreen_ChangesNothingElse()
+        public void Click_ATreeWithNoTabsOnScreen_ChangesNothingElse()
         {
             var screen = Show();
             Pick(screen, left: false, PanelChoice.Tree);
@@ -361,7 +361,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTwoSides_HaveTheirContentAtTheSameHeight()
+        public void Show_TheTwoSides_HaveTheirContentAtTheSameHeight()
         {
             var screen = Show();
             var tree = Assert.Single(screen.Trees);
@@ -371,7 +371,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheHost_IsReusable_AnyPanelOfTheWindowCanUseIt()
+        public void Show_TheHostInAnyPanel_Works()
         {
             var host = new SidePanelHost { Choices = PanelChoice.All, Choice = PanelChoice.Tabs };
 

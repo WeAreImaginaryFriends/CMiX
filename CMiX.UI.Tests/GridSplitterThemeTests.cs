@@ -68,7 +68,7 @@ namespace CMiX.UI.Tests
             splitter.GetVisualDescendants().OfType<Border>().First(border => border.Name == "border");
 
         [AvaloniaFact]
-        public void ASplitterOfColumns_HasAVerticalBar_AsLongAsItself()
+        public void Show_ASplitterOfColumns_HasAVerticalBarOfItsLength()
         {
             var (_, splitter) = ShowColumns();
 
@@ -79,7 +79,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ASplitterOfRows_HasAHorizontalBar_AsLongAsItself()
+        public void Show_ASplitterOfRows_HasAHorizontalBarOfItsLength()
         {
             var (_, splitter) = ShowRows();
 
@@ -92,7 +92,7 @@ namespace CMiX.UI.Tests
         [AvaloniaTheory]
         [InlineData(true)]
         [InlineData(false)]
-        public void WhenThePointerIsOver_TheBarAndTheBackShow_InBothDirections(bool columns)
+        public void Hover_ASplitterInEitherDirection_ShowsTheBarAndTheBack(bool columns)
         {
             var (window, splitter) = columns ? ShowColumns() : ShowRows();
             var idleBar = Assert.IsAssignableFrom<ISolidColorBrush>(Indicator(splitter).Background ?? Brushes.Transparent);

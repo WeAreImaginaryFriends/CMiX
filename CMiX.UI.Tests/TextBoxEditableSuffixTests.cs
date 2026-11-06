@@ -22,7 +22,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheSuffix_FollowsTheEndOfTheText_AtAFixedDistance()
+        public void Show_AnyText_KeepsTheSuffixAtAFixedDistanceFromItsEnd()
         {
             var (box, suffix, window) = Show();
             var text = box.GetVisualDescendants().OfType<TextBlock>().First(block => block.Name == "TextDisplay");
@@ -34,7 +34,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ALongerText_MovesTheSuffix()
+        public void Show_ALongerText_MovesTheSuffix()
         {
             var (_, shortSuffix, window) = Show("A");
             var shortLeft = shortSuffix.TranslatePoint(new Point(0, 0), window)!.Value.X;
@@ -46,7 +46,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void TheSuffix_IsCenteredAcrossTheHeightOfTheBox()
+        public void Show_TheSuffix_IsCenteredInTheHeightOfTheBox()
         {
             var (box, suffix, window) = Show();
 
@@ -56,7 +56,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void WhileTheTextIsEdited_TheSuffixIsHidden()
+        public void Edit_TheText_HidesTheSuffix()
         {
             var (box, suffix, _) = Show();
             Assert.True(suffix.IsEffectivelyVisible);
@@ -68,7 +68,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ABoxWithoutASuffix_HasTheSameTextPlace()
+        public void Show_ABoxWithoutASuffix_KeepsTheTextPlace()
         {
             var (_, _, window) = Show();
             var withSuffix = window.GetVisualDescendants().OfType<TextBlock>().First(block => block.Name == "TextDisplay").Bounds;

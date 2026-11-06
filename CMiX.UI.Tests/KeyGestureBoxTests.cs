@@ -125,7 +125,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void Focus_ShowsTheRecordingLook()
+        public void Focus_TheBox_ShowsTheRecordingLook()
         {
             var (_, box) = ShowFocused(null);
             var frame = box.FindControl<Border>("Frame")!;

@@ -182,7 +182,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void DescribeBlock_NamesTheLayerTheCompositionsAndTheItems()
+        public void DescribeBlock_ALayerWithSharedItems_NamesTheLayerTheCompositionsAndTheItems()
         {
             var scene = CreateScene();
             var moved = scene.LayerOfA(0);
@@ -423,7 +423,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void CanDrop_AnEntityIntoACameraGroup_OrOntoItsOwnGroup_IsFalse()
+        public void CanDrop_AnEntityIntoACameraGroupOrItsOwnGroup_IsFalse()
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));

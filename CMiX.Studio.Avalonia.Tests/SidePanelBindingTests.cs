@@ -11,7 +11,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private static readonly Regex Path = new(@"Context\.([A-Za-z]+)");
 
         [Fact]
-        public void EveryContextPathOfTheSidePanels_NamesAMemberOfMainViewModel()
+        public void Bind_EveryContextPathOfTheSidePanels_NamesAMemberOfMainViewModel()
         {
             var members = typeof(MainViewModel).GetProperties().Select(property => property.Name).ToHashSet();
             var file = SourceTree.AxamlFiles().Single(f => System.IO.Path.GetFileName(f) == "SidePanelHost.axaml");

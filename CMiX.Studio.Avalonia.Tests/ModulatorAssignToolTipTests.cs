@@ -38,7 +38,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WithNothingAssigned_TheTooltipInvitesToAssign()
+        public void Tooltip_WithNothingAssigned_AsksToAssign()
         {
             var (_, _, inner) = Show();
 
@@ -46,7 +46,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void WithAnAssignedOutput_TheTooltipNamesTheModulatorAndTheOutput()
+        public void Tooltip_WithAnAssignedOutput_NamesTheModulatorAndTheOutput()
         {
             var (blur, _, inner) = Show();
 
@@ -59,7 +59,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTooltip_FollowsAUnassign_AndARename()
+        public void Tooltip_AfterUnassignOrRename_ShowsTheNewText()
         {
             var (blur, _, inner) = Show();
             var random = blur.ModulatorManager.ManagerData.Items.OfType<RandomModulator>().Single();
@@ -75,7 +75,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheTooltip_OpensBelowTheButton()
+        public void Tooltip_Open_IsBelowTheButton()
         {
             var (_, _, inner) = Show();
 
@@ -83,7 +83,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void TheConverter_GivesTheTitleForNoModulatorOrNoOutput()
+        public void Convert_NoModulatorOrNoOutput_GivesTheTitle()
         {
             var converter = new ModulatorToToolTipConverter();
             var culture = System.Globalization.CultureInfo.InvariantCulture;

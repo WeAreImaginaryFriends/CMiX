@@ -33,7 +33,7 @@ namespace CMiX.UI.Tests
         }
 
         [Fact]
-        public void Lerp_AlsoMixesTheAlphaChannel()
+        public void Lerp_TwoColorsWithAlpha_MixesTheAlphaToo()
         {
             var result = ColorMix.Lerp(Color.FromArgb(0, 10, 20, 30), Color.FromArgb(200, 10, 20, 30), 0.5);
 
@@ -41,7 +41,7 @@ namespace CMiX.UI.Tests
         }
 
         [Fact]
-        public void Luminance_IsZeroForBlack_OneForWhite_AndGreenIsBrighterThanBlue()
+        public void Luminance_BlackWhiteGreenAndBlue_GivesTheExpectedOrder()
         {
             Assert.Equal(0, ColorMix.Luminance(Color.FromRgb(0, 0, 0)), 6);
             Assert.Equal(1, ColorMix.Luminance(Color.FromRgb(255, 255, 255)), 6);
@@ -49,7 +49,7 @@ namespace CMiX.UI.Tests
         }
 
         [Fact]
-        public void Contrast_IsTwentyOneForBlackOnWhite_OneForTheSameColor_AndDoesNotDependOnTheOrder()
+        public void Contrast_BlackOnWhiteAndOneColor_GivesTwentyOneAndOneInAnyOrder()
         {
             var black = Color.FromRgb(0, 0, 0);
             var white = Color.FromRgb(255, 255, 255);

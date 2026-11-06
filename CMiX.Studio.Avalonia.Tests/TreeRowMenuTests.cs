@@ -114,7 +114,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ACompositionMenu_StartsWithTheNameAndHasTheRowsOfTheLists()
+        public void Open_TheMenuOfAComposition_StartsWithTheNameAndHasTheListRows()
         {
             var screen = Show();
 
@@ -126,7 +126,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARightClickOnARow_OpensTheMenu()
+        public void RightClick_ARow_OpensTheMenu()
         {
             var screen = Show();
 
@@ -136,7 +136,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ASecondRightClick_OpensTheMenuOfTheNewRow()
+        public void RightClick_AnotherRow_OpensTheMenuOfThatRow()
         {
             var screen = Show();
             screen.OpenMenu(screen.Tree.Roots[0]);
@@ -149,7 +149,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // The menu of a row must be the menu of that row, whatever rows were clicked before and whatever rows are above it.
         [AvaloniaFact]
-        public void ARightClickOnAGroupAfterARightClickOnItsComposition_OpensTheMenuOfTheGroup()
+        public void RightClick_AGroupAfterItsComposition_OpensTheMenuOfTheGroup()
         {
             var screen = Show();
             screen.OpenMenu(screen.Tree.Roots[0]);
@@ -165,7 +165,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARightClickOnAnEntityAfterARightClickOnItsGroup_OpensTheMenuOfTheEntityWithoutTheAddRowsOfTheGroup()
+        public void RightClick_AnEntityAfterItsGroup_OpensTheEntityMenuWithoutTheGroupAddRows()
         {
             var screen = Show();
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -185,7 +185,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(1)]
         [InlineData(2)]
         [InlineData(3)]
-        public void EveryRightClick_OpensExactlyOneMenu_WhateverWasClickedBefore(int rounds)
+        public void RightClick_AfterAnyOtherClick_OpensExactlyOneMenu(int rounds)
         {
             var screen = Show();
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -205,7 +205,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AddLayer_AddsALayerToThatComposition()
+        public void AddLayer_OnAComposition_AddsALayerToIt()
         {
             var screen = Show();
 
@@ -216,7 +216,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ALayerMenu_StartsWithTheAddSubmenuThenHasTheRowsOfTheLayerList()
+        public void Open_TheMenuOfALayer_StartsWithAddThenHasTheListRows()
         {
             var screen = Show();
 
@@ -227,7 +227,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheAddSubmenuOfALayer_OffersEntitiesCameraAndLight()
+        public void Open_TheAddSubmenuOfALayer_OffersEntitiesCameraAndLight()
         {
             var screen = Show();
 
@@ -238,7 +238,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheAddSubmenuOfALayer_AddsEachKindToTheRightListOfThatLayer()
+        public void Click_TheAddSubmenuOfALayer_AddsEachKindToItsList()
         {
             var screen = Show();
             var layer = screen.LayerOfA(1);
@@ -292,7 +292,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheMenu_ActsOnTheRowThatWasClicked_NotOnTheSelectedRow()
+        public void RightClick_ARowThatIsNotSelected_ActsOnTheClickedRow()
         {
             var screen = Show();
             var first = screen.LayerOfA(0);
@@ -306,7 +306,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheEntitiesGroupMenu_OnlyAddsEntities()
+        public void Open_TheMenuOfTheEntitiesGroup_OffersOnlyEntities()
         {
             var screen = Show();
 
@@ -316,7 +316,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheAddRowsOfTheEntitiesGroup_AddTheirTypeToTheLayer()
+        public void Click_TheAddRowsOfTheEntitiesGroup_AddTheirTypeToTheLayer()
         {
             var screen = Show();
             var layer = screen.LayerOfA(0);
@@ -333,7 +333,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheCamerasAndLightsGroups_AddACameraAndALight()
+        public void Click_TheAddRowOfTheCamerasOrLightsGroup_AddsACameraOrALight()
         {
             var screen = Show();
             var layer = screen.LayerOfA(0);
@@ -346,7 +346,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AnEntityMenu_HasTheRowsOfTheSlots_WithRemove()
+        public void Open_TheMenuOfAnEntity_HasTheSlotRowsWithRemove()
         {
             var screen = Show();
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -379,7 +379,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 .Select(item => item.Header?.ToString()).SingleOrDefault();
 
         [AvaloniaFact]
-        public void AMenuOfAComposition_OpensReadyToAddALayer()
+        public void Open_TheMenuOfAComposition_HighlightsAddLayer()
         {
             var screen = Show();
 
@@ -389,7 +389,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AMenuOfALayer_OpensOnTheAddRow_AndAMenuOfAnEntityOnDuplicate()
+        public void Open_TheMenuOfALayerOrAnEntity_HighlightsAddOrDuplicate()
         {
             var screen = Show();
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
@@ -401,7 +401,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AfterTheCreationOfAComposition_TheMenuOfACompositionStillOpensOnAddLayer()
+        public void Open_TheMenuAfterANewComposition_StillHighlightsAddLayer()
         {
             var screen = Show();
             screen.TreeView.RaiseEvent(new ContextRequestedEventArgs { Source = screen.TreeView });
@@ -414,7 +414,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void TheRowUsedLast_StillOpensUnderThePointer()
+        public void Open_TheMenuAgain_PutsTheLastRowUsedUnderThePointer()
         {
             var screen = Show();
             Screen.Click(screen.OpenMenu(screen.Tree.Roots[0])!, "Duplicate");
@@ -428,7 +428,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARightClickOutsideTheRows_OpensTheMenuToAddAComposition()
+        public void RightClick_OutsideTheRows_OpensTheMenuToAddAComposition()
         {
             var screen = Show();
             var before = screen.Project.CompositionManager.ManagerData.Items.Count;
@@ -449,7 +449,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARightClickOnARow_OffersNoCompositionToAdd_ExceptOnTheRowsThatTakeOneNow()
+        public void RightClick_ARow_OffersACompositionOnlyWhereItCanGo()
         {
             var screen = Show();
 
@@ -474,7 +474,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AContextRequestWhileTheNameIsEdited_OpensNoMenu()
+        public void ContextRequest_WhileTheNameIsEdited_OpensNoMenu()
         {
             var screen = Show();
             var node = screen.LayerNodeOfA(0);
@@ -490,7 +490,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARightClickDuringARename_EndsTheRenameAndOpensNoMenu_AndTheNextOneOpensTheMenu()
+        public void RightClick_DuringARename_EndsTheRenameBeforeTheNextMenu()
         {
             var screen = Show();
             var node = screen.LayerNodeOfA(0);
@@ -513,7 +513,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Rename_StartsTheEditOfTheNameOfThatRow()
+        public void Rename_OnARow_StartsTheEditOfItsName()
         {
             var screen = Show();
             var node = screen.LayerNodeOfA(1);
