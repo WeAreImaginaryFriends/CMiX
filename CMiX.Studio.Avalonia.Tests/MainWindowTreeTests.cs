@@ -116,5 +116,27 @@ namespace CMiX.Studio.Avalonia.Tests
             // A composition and its two groups (filters and modifiers), a layer and its five groups.
             Assert.Equal(before + 9, tree.GetVisualDescendants().OfType<TreeViewItem>().Count());
         }
+
+        [AvaloniaFact]
+        public void NodeChosen_SwitchesOnlyThePanelOfTheTree()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
+            TestServiceProviderFactory.Pump();
+            var leftBefore = viewModel.LeftPanel;
+            var rightBefore = viewModel.RightPanel;
+            TestServiceProviderFactory.SelectMainTab(window, "Settings");
+            var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+
+            tree.RaiseEvent(new NodeChosenEventArgs(ProjectTreeView.NodeChosenEvent, tree, viewModel.ProjectTree.Roots[0]));
+            TestServiceProviderFactory.Pump();
+
+            // Each side keeps its content. Only the tabs beside the tree show the inspector.
+            Assert.Same(leftBefore, viewModel.LeftPanel);
+            Assert.Same(rightBefore, viewModel.RightPanel);
+            Assert.Same(tree, window.GetVisualDescendants().OfType<ProjectTreeView>().Single());
+            var selected = TestServiceProviderFactory.MainTabControl(window).SelectedItem as TabItem;
+            Assert.Equal("Inspector", (selected?.Header as CMiX.UI.Controls.AppIcon)?.IconKey);
+        }
     }
 }

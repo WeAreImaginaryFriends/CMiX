@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -60,24 +62,44 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(ContextRequestedEvent, OnContextRequested, RoutingStrategies.Bubble);
             treeView.AddHandler(DoubleTappedEvent, OnDoubleTapped, RoutingStrategies.Bubble);
             treeView.AddHandler(ScrollViewer.ScrollChangedEvent, (_, _) => rowMetrics.SetEndRoom());
+            treeView.TemplateApplied += (_, e) =>
+                e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter")?.AddHandler(RequestBringIntoViewEvent, OnRequestBringIntoView);
+            treeView.AddHandler(KeyDownEvent, OnKeyDownTunnel, RoutingStrategies.Tunnel);
+            treeView.AddHandler(KeyDownEvent, OnKeyDownBubble, RoutingStrategies.Bubble, handledEventsToo: true);
         }
 
-        // The tree does not scroll by itself when the user chooses a row: a click on a row that is at the edge of the view would scroll to
+        // The tree does not scroll by itself when the user clicks a row: a click on a row that is at the edge of the view would scroll to
         // show the whole block of the row, and the second click of a double click would land on another row. A row that a program or a
-        // peer selects is brought into view here, and only its own row, not the rows under it.
+        // key selects is brought into view here (RevealRow), and only its own row, not the rows under it.
         private ProjectTree? watched;
-        private bool chosenByClick;
         private bool attached;
 
-        // A row asks to be brought into view when it gets the focus or the selection. For the choice of the user the request stops here:
-        // it would scroll to show the whole block of the row.
-        static ProjectTreeView()
+        // True while the view drops a node. The drop keeps the view where it is (see OnDrop).
+        private bool dropping;
+
+        // The row border that RevealRow brings into view.
+        private Visual? revealTarget;
+
+        // A row asks to be brought into view when it gets the focus or the selection. That request scrolls to the whole block of the
+        // row, so it stops here, under the scroller of the tree. Only the request of RevealRow goes through.
+        private void OnRequestBringIntoView(object? sender, RequestBringIntoViewEventArgs e)
         {
-            RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((item, e) =>
-            {
-                if (item.FindAncestorOfType<ProjectTreeView>() is { chosenByClick: true })
-                    e.Handled = true;
-            });
+            if (!ReferenceEquals(e.TargetObject, revealTarget))
+                e.Handled = true;
+        }
+
+        // A key that moves the selection: the tree marks the selection as a keyboard selection and brings the row into view.
+        private TreeNode? nodeBeforeKey;
+
+        private void OnKeyDownTunnel(object? sender, KeyEventArgs e) => nodeBeforeKey = watched?.SelectedNode;
+
+        private void OnKeyDownBubble(object? sender, KeyEventArgs e)
+        {
+            if (watched?.SelectedNode is not { } node || ReferenceEquals(node, nodeBeforeKey))
+                return;
+
+            watched.Select(node, SelectionOrigin.Keyboard);
+            Dispatcher.UIThread.Post(() => RevealRow(node), DispatcherPriority.Loaded);
         }
 
         protected override void OnDataContextChanged(EventArgs e)
@@ -94,7 +116,8 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(ProjectTree.SelectedNode) || chosenByClick || watched?.SelectedNode is not { } node)
+            if (e.PropertyName != nameof(ProjectTree.SelectedNode) || dropping || watched?.SelectedNode is not { } node
+                || watched.Origin is not (SelectionOrigin.Program or SelectionOrigin.Peer))
                 return;
 
             Dispatcher.UIThread.Post(() => RevealRow(node), DispatcherPriority.Loaded);
@@ -102,8 +125,18 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void RevealRow(TreeNode node)
         {
-            if (TreeRows.FindItem(treeView, node) is { } item)
-                TreeRows.RowBorderOf(item)?.BringIntoView();
+            if (TreeRows.FindItem(treeView, node) is not { } item || TreeRows.RowBorderOf(item) is not { } border)
+                return;
+
+            revealTarget = border;
+            try
+            {
+                border.BringIntoView();
+            }
+            finally
+            {
+                revealTarget = null;
+            }
         }
 
         // See TreeRowMetrics.SnapToPixels.
@@ -216,8 +249,9 @@ namespace CMiX.Studio.Avalonia.Views
             return false;
         }
 
-        // A left click on a row, away from its buttons and its name box: the user chooses the node. It does not come when a node is
-        // selected by a program, a list or a peer. The main window uses it to show the inspector.
+        // A left click on a row, away from its buttons and its name box: the user chooses the node. It comes on the release, when no drag
+        // started and the pointer is still on the row. It does not come when a node is selected by a program, a list or a peer.
+        // The main window uses it to show the inspector.
         public static readonly RoutedEvent<NodeChosenEventArgs> NodeChosenEvent =
             RoutedEvent.Register<ProjectTreeView, NodeChosenEventArgs>(nameof(NodeChosen), RoutingStrategies.Bubble);
 
@@ -228,13 +262,13 @@ namespace CMiX.Studio.Avalonia.Views
             remove => RemoveHandler(NodeChosenEvent, value);
         }
 
+        // The node of the row that the left button pressed. A drag clears it.
+        private TreeNode? chosenNode;
+
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             pressedNode = null;
-
-            // The selection that this press makes is the choice of the user: the tree does not scroll for it.
-            chosenByClick = true;
-            Dispatcher.UIThread.Post(() => chosenByClick = false, DispatcherPriority.Background);
+            chosenNode = null;
             if (!e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed || IsEditor(e.Source))
                 return;
 
@@ -242,9 +276,7 @@ namespace CMiX.Studio.Avalonia.Views
             // The toggles at the right of a row never start a drag, not even the space around them.
             pressedNode = node != null && !IsInToggles(e.Source) && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
             pressPoint = e.GetPosition(treeView);
-
-            if (node != null)
-                RaiseEvent(new NodeChosenEventArgs(NodeChosenEvent, this, node));
+            chosenNode = node;
         }
 
         private async void OnPointerMoved(object? sender, PointerEventArgs e)
@@ -258,6 +290,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             var node = pressedNode;
             pressedNode = null;
+            chosenNode = null;
 
             var data = new DataObject();
             data.Set(NodeFormat, node);
@@ -282,7 +315,22 @@ namespace CMiX.Studio.Avalonia.Views
             }
         }
 
-        private void OnPointerReleased(object? sender, PointerReleasedEventArgs e) => pressedNode = null;
+        private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            var node = chosenNode;
+            pressedNode = null;
+            chosenNode = null;
+            if (node == null || e.InitialPressMouseButton != MouseButton.Left || !IsOverRow(node, e))
+                return;
+
+            RaiseEvent(new NodeChosenEventArgs(NodeChosenEvent, this, node));
+        }
+
+        // True when the pointer is on the row border of the node.
+        private bool IsOverRow(TreeNode node, PointerEventArgs e) =>
+            TreeRows.FindItem(treeView, node) is { } item
+            && TreeRows.RowBorderOf(item) is { } border
+            && new Rect(border.Bounds.Size).Contains(e.GetPosition(border));
 
         // The local paths of the files and folders of a drag from the file explorer. A drag of a node has none.
         private static List<string> PathsOf(DragEventArgs e) =>
@@ -425,13 +473,21 @@ namespace CMiX.Studio.Avalonia.Views
                 // A drop changes the number of rows above and under the view. The tree must not jump: the first row in view stays where it
                 // is, and the tree does not scroll to the moved row. The move is done before the first await of DropAsync.
                 var anchor = scrollAnchor.CaptureAnchor(source);
-                chosenByClick = true;
-                Dispatcher.UIThread.Post(() => chosenByClick = false, DispatcherPriority.Background);
 
-                var dropping = tree.DropAsync(source, target, position.Value);
+                Task drop;
+                dropping = true;
+                try
+                {
+                    drop = tree.DropAsync(source, target, position.Value);
+                }
+                finally
+                {
+                    dropping = false;
+                }
+
                 scrollAnchor.RestoreAnchor(anchor);
                 Dispatcher.UIThread.Post(() => scrollAnchor.RestoreAnchor(anchor), DispatcherPriority.Loaded);
-                await dropping;
+                await drop;
             }
             catch (Exception exception)
             {

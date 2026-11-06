@@ -792,6 +792,50 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Window.MouseUp(screen.PointIn(layerNode, 0.5), MouseButton.Left);
         }
 
+        // The nodes that the view reports as chosen.
+        private static List<TreeNode> RecordChosen(Screen screen)
+        {
+            var chosen = new List<TreeNode>();
+            screen.View.NodeChosen += (_, e) => chosen.Add(e.Node);
+            screen.Window.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+            return chosen;
+        }
+
+        [AvaloniaFact]
+        public void PointerPressed_ThatStartsADrag_RaisesNoNodeChosen()
+        {
+            var screen = Show();
+            var layerNode = screen.Tree.Roots[0].Children[0];
+            var chosen = RecordChosen(screen);
+            var start = screen.PointIn(layerNode, 0.5);
+            var end = start + new Vector(0, 20);
+
+            screen.Window.MouseDown(start, MouseButton.Left);
+            Assert.Empty(chosen);
+            screen.Window.MouseMove(end, RawInputModifiers.LeftMouseButton);
+            screen.Window.MouseUp(end, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Empty(chosen);
+        }
+
+        [AvaloniaFact]
+        public void PointerReleased_WithoutADrag_RaisesNodeChosen()
+        {
+            var screen = Show();
+            var layerNode = screen.Tree.Roots[0].Children[0];
+            var chosen = RecordChosen(screen);
+            var point = screen.PointIn(layerNode, 0.5);
+
+            screen.Window.MouseDown(point, MouseButton.Left);
+            Assert.Empty(chosen);
+            screen.Window.MouseUp(point, MouseButton.Left);
+
+            Assert.Equal(new[] { layerNode }, chosen);
+        }
+
         [AvaloniaFact]
         public void ADropOnATargetThatIsNotAllowed_ChangesNothing()
         {

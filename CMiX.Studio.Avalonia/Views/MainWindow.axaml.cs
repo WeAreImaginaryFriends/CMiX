@@ -1,6 +1,7 @@
 ﻿// SPDX-FileCopyrightText: 2017-2026 CloneProduction Shanghai Company Limited and CMiX contributors
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+using Avalonia;
 using Avalonia.Controls;
 using System.Linq;
 using Avalonia.Input;
@@ -28,19 +29,22 @@ namespace CMiX.Studio.Avalonia.Views
             titleBar.PointerPressed += TitleBar_PointerPressed;
             Closing += OnClosing;
             InstallToggleDrag();
-            AddHandler(ProjectTreeView.NodeChosenEvent, (_, _) => ShowInspector());
+            AddHandler(ProjectTreeView.NodeChosenEvent, (_, e) => ShowInspector(e.Source as Visual));
         }
 
         // A click on a row of the tree shows the inspector, which has the editor of that row. A program can turn this off.
         public bool OpenInspectorOnTreeClick { get; set; } = true;
 
-        private void ShowInspector()
+        // Shows the inspector in the tabs beside the tree. The side panel that holds the tree keeps its content.
+        private void ShowInspector(Visual? tree)
         {
             if (!OpenInspectorOnTreeClick)
                 return;
 
+            var side = tree?.FindAncestorOfType<SidePanelHost>();
             foreach (var tabs in this.GetVisualDescendants().OfType<MainTabsPanel>().ToList())
-                tabs.ShowInspector();
+                if (side == null || !side.IsVisualAncestorOf(tabs))
+                    tabs.ShowInspector();
         }
 
         // A drag over the visibility or the mask buttons sets them all to one state. The whole drag is one undo step.

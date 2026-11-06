@@ -268,7 +268,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
                     // Search under the holder only. A shared item is also under other layers.
                     if (FindNode(owner ?? root, source.Item!) is { } moved)
-                        SelectedNode = moved;
+                        Select(moved, SelectionOrigin.Program);
                 }
             }
             finally
@@ -342,16 +342,24 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 pathDrop.AddItem(layer.ModelEntityManager, path);
         }
 
+        // The binding of the tree view sets this. The origin is Pointer.
         public TreeNode? SelectedNode
         {
             get => selectedNode;
-            set
-            {
-                if (!SetProperty(ref selectedNode, value) || value == null || selecting)
-                    return;
+            set => Select(value, SelectionOrigin.Pointer);
+        }
 
-                SelectChain(value);
-            }
+        // What made the last selection. The view brings a row into view only for some origins.
+        public SelectionOrigin Origin { get; private set; } = SelectionOrigin.Program;
+
+        // Selects a node and its chain in the lists. The origin is set before the change event.
+        public void Select(TreeNode? node, SelectionOrigin origin)
+        {
+            Origin = origin;
+            if (!SetProperty(ref selectedNode, node, nameof(SelectedNode)) || node == null || selecting)
+                return;
+
+            SelectChain(node);
         }
 
         // The node of an item, wherever it is in the tree. A moved item has a new node in its new list.
@@ -394,9 +402,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // A list changed its selection. The tree follows without writing back to the lists.
         internal void SelectFromModel(TreeNode node)
         {
-            if (selecting)
+            if (selecting || ReferenceEquals(selectedNode, node))
                 return;
 
+            // A local list and a peer both come here. The tree cannot tell them apart, so the origin is Program.
+            Origin = SelectionOrigin.Program;
             SetProperty(ref selectedNode, node, nameof(SelectedNode));
         }
 
@@ -406,9 +416,19 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (selectedNode == null || !selectedNode.IsOrIsUnder(node))
                 return;
 
+            Origin = SelectionOrigin.Program;
             SetProperty(ref selectedNode, ReferenceEquals(node.Parent, root) ? null : node.Parent, nameof(SelectedNode));
         }
 
         public void Dispose() => root.Dispose();
+    }
+
+    // What made a selection of the tree.
+    public enum SelectionOrigin
+    {
+        Program,
+        Pointer,
+        Keyboard,
+        Peer
     }
 }

@@ -121,19 +121,34 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ARowThatAProgramSelectsFarAway_IsBroughtIntoView()
+        public void ProgramSelection_RevealsTheRow()
         {
             var (view, tree, scroller) = Show();
             var far = tree.Roots[0].Children[10];
             Assert.True(RowTop(view, far) > 500, "The row is not out of the view.");
 
-            tree.SelectedNode = far;
+            tree.Select(far, SelectionOrigin.Program);
             Settle();
             Dispatcher.UIThread.RunJobs();
             Settle();
 
             Assert.True(scroller.Offset.Y > 0);
             Assert.InRange(RowTop(view, far), 0, 500);
+        }
+
+        [AvaloniaFact]
+        public void PointerSelection_DoesNotScroll()
+        {
+            var (view, tree, scroller) = Show();
+            var far = tree.Roots[0].Children[10];
+            Assert.True(RowTop(view, far) > 500, "The row is not out of the view.");
+
+            tree.Select(far, SelectionOrigin.Pointer);
+            Settle();
+            Dispatcher.UIThread.RunJobs();
+            Settle();
+
+            Assert.Equal(0, scroller.Offset.Y);
         }
 
         private void DragAt(ProjectTreeView view, ProjectTree tree, ScrollViewer scroller, double y, RawDragEventType type)
