@@ -504,18 +504,3 @@ namespace CMiX.Studio.Avalonia.Views
         }
     }
 }
-
-namespace CMiX.Studio.Avalonia.Views
-{
-    // The node that the user chose with a click on its row.
-    public sealed class NodeChosenEventArgs : RoutedEventArgs
-    {
-        public NodeChosenEventArgs(RoutedEvent routedEvent, object source, TreeNode node)
-            : base(routedEvent, source)
-        {
-            Node = node;
-        }
-
-        public TreeNode Node { get; }
-    }
-}

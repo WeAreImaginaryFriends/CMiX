@@ -22,7 +22,7 @@
             VerticalAlignment="Stretch"
             Theme="{StaticResource TabControlMain}">
 
-            <!-- The editor of the item that is selected in the tree. The tabs after it are the first way to edit, which stays for now. -->
+            <!-- The editor of the item that is selected in the tree. -->
             <TabItem x:Name="inspectorTab" Theme="{StaticResource TabItemHorizontal}">
 
                 <TabItem.Header>

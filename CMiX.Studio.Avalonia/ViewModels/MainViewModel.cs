@@ -65,10 +65,8 @@ namespace CMiX.Studio.Avalonia.ViewModels
             MainMenu.RepositoryManagers = _repositoryManagers;
             Sync.SnapshotApplied += OnSnapshotApplied;
             ControlRepository = controlRepository;
-            // Clear any stale registrations from top level managers activated via SetupManager.
-            // These were activated manually and never went through ActivateAll(),
-            // so they may still be in the list. Without this, ControlFactory.Create
-            // could re activate them unexpectedly during nested control creation.
+            // SetupManager activates the top level managers by hand, so ActivateAll never runs for them.
+            // Remove their registrations, so ControlFactory.Create does not activate them again in a nested control.
             activationService.Clear();
         }
 
@@ -129,7 +127,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
         public IRelayCommand UndoCommand { get; }
         public IRelayCommand RedoCommand { get; }
 
-        // What the left and the right panel of the window show. The user changes them in the combo box at the top of each panel.
+        // What the left and the right panel of the window show. The user picks them with the icon button at the top of each panel.
         // The tree can be on the left, on the right or on both sides.
         public System.Collections.Generic.IReadOnlyList<PanelChoice> PanelChoices => PanelChoice.All;
 

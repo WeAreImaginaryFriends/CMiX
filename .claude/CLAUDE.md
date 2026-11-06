@@ -49,7 +49,9 @@ These rules apply to every task in this repository.
   with `SyncPeerStartup` (`StartAsStudio`, `StartAsEngine`).
 - Wire data uses MessagePack through VL.Serialization.MessagePack. Project
   files and hashes use System.Text.Json with ProjectSerializer.Options.
-- Namespaces follow the folder. CMiX.Core has nullable disabled; the Avalonia
+- Namespaces follow the folder. The views of CMiX.Studio.Avalonia keep the one namespace
+  CMiX.Studio.Avalonia.Views for the view locator (see docs/DEVELOPMENT.md).
+  CMiX.Core has nullable disabled; the Avalonia
   projects have it enabled.
 - The UI never waits for Redis. Every store call runs on a background task.
 - StackExchange.Redis stays on 2.8.31, the version the vvvv Redis package ships.

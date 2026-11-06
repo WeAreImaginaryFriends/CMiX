@@ -81,7 +81,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             list == null ? null : GroupsOf(owner).FirstOrDefault(group => ReferenceEquals(group.Manager, list));
     }
 
-    // The groups of a layer. The panels of the old tabs take the layer as their DataContext.
+    // The groups of a layer. The panels of a layer take the layer as their DataContext.
     public abstract class LayerGroup : TreeGroup
     {
         protected LayerGroup(Layer layer, PrefabManager manager) : base(layer, manager)
