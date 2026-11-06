@@ -122,7 +122,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void TheTooltipOfTheCountOfAGroup_NamesItsKind()
         {
             var (view, tree) = Show();
-            var entities = tree.Roots[0].Children[0].Children.Single(child => child.Header == "Entities");
+            var entities = tree.Roots[0].Children[0].Children.Single(child => child.Group is EntitiesGroup);
             entities.IsExpanded = false;
             Settle();
 
@@ -167,7 +167,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
             var compositionNode = tree.Roots[0];
             var layerNode = compositionNode.Children[0];
-            var entities = layerNode.Children.Single(child => child.Header == "Entities");
+            var entities = layerNode.Children.Single(child => child.Group is EntitiesGroup);
 
             Assert.Same(composition, compositionNode.MaskOwner);
             Assert.Same(layer, layerNode.MaskOwner);

@@ -29,7 +29,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             public TreeNode CompositionNode => Tree.Roots[0];
             public TreeNode LayerNode => CompositionNode.Children[0];
-            public static TreeNode Group(TreeNode node, string header) => node.Children.Single(child => child.Item == null && child.Header == header);
+            public static TreeNode Group<T>(TreeNode node) where T : TreeGroup => node.Children.Single(child => child.Item == null && child.Group is T);
             public static string[] Headers(TreeNode node) => node.Children.Where(child => child.Item == null).Select(child => child.Header).ToArray();
         }
 
@@ -53,8 +53,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(new[] { "Filters", "Modifiers" }, Scene.Headers(scene.CompositionNode));
             Assert.Equal(new[] { true, true, false, false }, scene.CompositionNode.Children.Select(child => child.Item != null));
-            Assert.Same(scene.Composition.TextureModifierManager, Scene.Group(scene.CompositionNode, "Filters").ChildManager);
-            Assert.Same(scene.Composition.ModifierManager, Scene.Group(scene.CompositionNode, "Modifiers").ChildManager);
+            Assert.Same(scene.Composition.TextureModifierManager, Scene.Group<FiltersGroup>(scene.CompositionNode).ChildManager);
+            Assert.Same(scene.Composition.ModifierManager, Scene.Group<ModifiersGroup>(scene.CompositionNode).ChildManager);
         }
 
         [Fact]
@@ -63,8 +63,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
 
             Assert.Equal(new[] { "Entities", "Cameras", "Lights", "Filters", "Modifiers" }, Scene.Headers(scene.LayerNode));
-            Assert.Same(scene.Layer.TextureModifierManager, Scene.Group(scene.LayerNode, "Filters").ChildManager);
-            Assert.Same(scene.Layer.ModifierManager, Scene.Group(scene.LayerNode, "Modifiers").ChildManager);
+            Assert.Same(scene.Layer.TextureModifierManager, Scene.Group<FiltersGroup>(scene.LayerNode).ChildManager);
+            Assert.Same(scene.Layer.ModifierManager, Scene.Group<ModifiersGroup>(scene.LayerNode).ChildManager);
         }
 
         [Theory]
@@ -76,7 +76,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(type);
 
-            var entity = Scene.Group(scene.LayerNode, "Entities").Children[0];
+            var entity = Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0];
 
             Assert.Equal(expected, Scene.Headers(entity));
         }
@@ -88,8 +88,8 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.Layer.CameraManager.AddItem(typeof(Camera));
             scene.Layer.LightManager.AddItem(typeof(LightEntity));
 
-            Assert.Equal(new[] { "Modifiers" }, Scene.Headers(Scene.Group(scene.LayerNode, "Cameras").Children[0]));
-            Assert.Equal(new[] { "Modifiers" }, Scene.Headers(Scene.Group(scene.LayerNode, "Lights").Children[0]));
+            Assert.Equal(new[] { "Modifiers" }, Scene.Headers(Scene.Group<CamerasGroup>(scene.LayerNode).Children[0]));
+            Assert.Equal(new[] { "Modifiers" }, Scene.Headers(Scene.Group<LightsGroup>(scene.LayerNode).Children[0]));
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             entity.ModifierManager.AddItem(typeof(TranslateModifier));
 
-            var node = Assert.Single(Scene.Group(Scene.Group(scene.LayerNode, "Entities").Children[0], "Modifiers").Children);
+            var node = Assert.Single(Scene.Group<ModifiersGroup>(Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0]).Children);
             Assert.Same(entity.ModifierManager.ManagerData.Items[0], node.Item);
             Assert.Same(entity.ModifierManager, node.Owner);
             Assert.Equal(((IPrefab)node.Item!).PrefabService.Name.Value, node.Header);
@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.Layer.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
 
-            var node = Assert.Single(Scene.Group(scene.LayerNode, "Filters").Children);
+            var node = Assert.Single(Scene.Group<FiltersGroup>(scene.LayerNode).Children);
             Assert.IsType<CMiX.Core.Texturing.Filters.Blur>(node.Item);
             Assert.Equal("Filter", node.IconKey);
         }
@@ -129,8 +129,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             entity.Texture.DiffuseTexture.TextureManager.AddItem(typeof(CMiX.Core.Texturing.Sources.Image));
 
-            var entityNode = Scene.Group(scene.LayerNode, "Entities").Children[0];
-            var texture = Assert.Single(Scene.Group(entityNode, "Textures").Children);
+            var entityNode = Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0];
+            var texture = Assert.Single(Scene.Group<TexturesGroup>(entityNode).Children);
             Assert.IsType<CMiX.Core.Texturing.Sources.Image>(texture.Item);
             Assert.Equal("Texture", texture.IconKey);
             Assert.Equal(new[] { "Filters", "Modulators" }, Scene.Headers(texture));
@@ -170,19 +170,19 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
             var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
-            var entityNode = Scene.Group(scene.LayerNode, "Entities").Children[0];
+            var entityNode = Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0];
 
-            var modifiers = Assert.IsType<ModifiersGroup>(Scene.Group(entityNode, "Modifiers").Group);
+            var modifiers = Assert.IsType<ModifiersGroup>(Scene.Group<ModifiersGroup>(entityNode).Group);
             Assert.Same(entity, modifiers.Owner);
             Assert.Same(entity.ModifierManager, modifiers.Manager);
             Assert.Equal(typeof(Entity), modifiers.OwnerType);
 
-            var textures = Assert.IsType<TexturesGroup>(Scene.Group(entityNode, "Textures").Group);
+            var textures = Assert.IsType<TexturesGroup>(Scene.Group<TexturesGroup>(entityNode).Group);
             Assert.Same(entity.Texture.DiffuseTexture.TextureManager, textures.Manager);
 
-            var filters = Assert.IsType<FiltersGroup>(Scene.Group(scene.LayerNode, "Filters").Group);
+            var filters = Assert.IsType<FiltersGroup>(Scene.Group<FiltersGroup>(scene.LayerNode).Group);
             Assert.Equal(typeof(Layer), filters.OwnerType);
-            Assert.IsType<EntitiesGroup>(Scene.Group(scene.LayerNode, "Entities").Group);
+            Assert.IsType<EntitiesGroup>(Scene.Group<EntitiesGroup>(scene.LayerNode).Group);
         }
 
         [Fact]
@@ -193,7 +193,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
             entity.ModifierManager.AddItem(typeof(TranslateModifier));
             entity.ModifierManager.AddItem(typeof(ScaleModifier));
-            var node = Scene.Group(Scene.Group(scene.LayerNode, "Entities").Children[0], "Modifiers").Children[0];
+            var node = Scene.Group<ModifiersGroup>(Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0]).Children[0];
 
             scene.Tree.SelectedNode = node;
 
@@ -209,7 +209,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
             var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
-            var group = Scene.Group(Scene.Group(scene.LayerNode, "Entities").Children[0], "Modifiers");
+            var group = Scene.Group<ModifiersGroup>(Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0]);
 
             var adds = scene.Tree.GetAdds(group);
 
@@ -224,7 +224,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void TheGroupOfFilters_OffersTheFilters_AndAddsTheChosenOne()
         {
             var scene = CreateScene();
-            var group = Scene.Group(scene.LayerNode, "Filters");
+            var group = Scene.Group<FiltersGroup>(scene.LayerNode);
 
             var adds = scene.Tree.GetAdds(group);
 
@@ -239,7 +239,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
             var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
-            var group = Scene.Group(Scene.Group(scene.LayerNode, "Entities").Children[0], "Textures");
+            var group = Scene.Group<TexturesGroup>(Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0]);
 
             var adds = scene.Tree.GetAdds(group);
 
@@ -257,12 +257,12 @@ namespace CMiX.Studio.Avalonia.Tests
             var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
             entity.ModifierManager.AddItem(typeof(TranslateModifier));
             entity.Texture.DiffuseTexture.TextureManager.AddItem(typeof(CMiX.Core.Texturing.Sources.Image));
-            var entityNode = Scene.Group(scene.LayerNode, "Entities").Children[0];
+            var entityNode = Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0];
             var nodes = new[]
             {
-                Scene.Group(scene.LayerNode, "Filters").Children[0],
-                Scene.Group(entityNode, "Modifiers").Children[0],
-                Scene.Group(entityNode, "Textures").Children[0]
+                Scene.Group<FiltersGroup>(scene.LayerNode).Children[0],
+                Scene.Group<ModifiersGroup>(entityNode).Children[0],
+                Scene.Group<TexturesGroup>(entityNode).Children[0]
             };
 
             foreach (var node in nodes)
@@ -270,7 +270,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 var owner = (CMiX.Core.Modulation.IModulatable)node.Item!;
                 owner.ModulatorManager.AddItem(typeof(LFOModulator));
 
-                var group = Scene.Group(node, "Modulators");
+                var group = Scene.Group<ModulatorsGroup>(node);
                 Assert.IsType<ModulatorsGroup>(group.Group);
                 Assert.Same(owner.ModulatorManager, group.ChildManager);
                 var modulator = Assert.Single(group.Children);
@@ -286,9 +286,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
             var filter = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
-            var filterNode = Scene.Group(scene.LayerNode, "Filters").Children[0];
+            var filterNode = Scene.Group<FiltersGroup>(scene.LayerNode).Children[0];
 
-            var adds = scene.Tree.GetAdds(Scene.Group(filterNode, "Modulators"));
+            var adds = scene.Tree.GetAdds(Scene.Group<ModulatorsGroup>(filterNode));
 
             Assert.Equal(AddableTypes.ForInterface(typeof(IModulator)).Select(AddableTypes.LabelOf), adds.Select(add => add.Header));
             adds.Single(add => add.Header == AddableTypes.LabelOf(typeof(LFOModulator))).Execute!();
@@ -301,7 +301,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
-            var entityNode = Scene.Group(scene.LayerNode, "Entities").Children[0];
+            var entityNode = Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0];
 
             var adds = scene.Tree.GetAdds(entityNode);
             Assert.Equal(new[] { "Add Texture", "Add Modifier" }, adds.Select(add => add.Header));
@@ -326,9 +326,9 @@ namespace CMiX.Studio.Avalonia.Tests
             first.ModifierManager.AddItem(typeof(TranslateModifier));
             first.ModifierManager.AddItem(typeof(ScaleModifier));
             second.ModifierManager.AddItem(typeof(TranslateModifier));
-            var entities = Scene.Group(scene.LayerNode, "Entities");
-            var modifiers = Scene.Group(entities.Children[0], "Modifiers");
-            var foreignGroup = Scene.Group(entities.Children[1], "Modifiers");
+            var entities = Scene.Group<EntitiesGroup>(scene.LayerNode);
+            var modifiers = Scene.Group<ModifiersGroup>(entities.Children[0]);
+            var foreignGroup = Scene.Group<ModifiersGroup>(entities.Children[1]);
             var service = new TreeDropService();
 
             Assert.True(service.CanDrop(modifiers.Children[1], modifiers.Children[0], DropPosition.Before));
@@ -352,15 +352,15 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
             var entity = (Entity)scene.Layer.ModelEntityManager.ManagerData.Items[0];
             entity.ModifierManager.AddItem(typeof(TranslateModifier));
-            var entityNode = Scene.Group(scene.LayerNode, "Entities").Children[0];
-            var modifier = Scene.Group(entityNode, "Modifiers").Children[0];
-            var filter = Scene.Group(scene.LayerNode, "Filters").Children[0];
+            var entityNode = Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0];
+            var modifier = Scene.Group<ModifiersGroup>(entityNode).Children[0];
+            var filter = Scene.Group<FiltersGroup>(scene.LayerNode).Children[0];
             var service = new TreeDropService();
 
             // A modifier does not go to filters, and a filter does not go to modifiers.
-            Assert.False(service.CanDrop(modifier, Scene.Group(scene.LayerNode, "Filters"), DropPosition.Inside));
+            Assert.False(service.CanDrop(modifier, Scene.Group<FiltersGroup>(scene.LayerNode), DropPosition.Inside));
             Assert.False(service.CanDrop(modifier, filter, DropPosition.After));
-            Assert.False(service.CanDrop(filter, Scene.Group(entityNode, "Modifiers"), DropPosition.Inside));
+            Assert.False(service.CanDrop(filter, Scene.Group<ModifiersGroup>(entityNode), DropPosition.Inside));
             Assert.False(service.CanDrop(filter, modifier, DropPosition.After));
         }
 
@@ -372,14 +372,14 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
             var filter = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
             var service = new TreeDropService();
-            var otherFilters = Scene.Group(scene.CompositionNode.Children[1], "Filters");
+            var otherFilters = Scene.Group<FiltersGroup>(scene.CompositionNode.Children[1]);
 
-            Assert.True(service.CanDrop(Scene.Group(scene.LayerNode, "Filters").Children[0], otherFilters, DropPosition.Inside));
-            Assert.True(service.Drop(Scene.Group(scene.LayerNode, "Filters").Children[0], otherFilters, DropPosition.Inside).Moved);
+            Assert.True(service.CanDrop(Scene.Group<FiltersGroup>(scene.LayerNode).Children[0], otherFilters, DropPosition.Inside));
+            Assert.True(service.Drop(Scene.Group<FiltersGroup>(scene.LayerNode).Children[0], otherFilters, DropPosition.Inside).Moved);
             Assert.Empty(scene.Layer.TextureModifierManager.ManagerData.Items);
             Assert.Same(filter, Assert.Single(other.TextureModifierManager.ManagerData.Items));
 
-            var compositionFilters = Scene.Group(scene.CompositionNode, "Filters");
+            var compositionFilters = Scene.Group<FiltersGroup>(scene.CompositionNode);
             Assert.True(service.Drop(otherFilters.Children[0], compositionFilters, DropPosition.Inside).Moved);
             Assert.Same(filter, Assert.Single(scene.Composition.TextureModifierManager.ManagerData.Items));
         }
@@ -390,20 +390,20 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
-            var filters = Scene.Group(scene.LayerNode, "Filters");
+            var filters = Scene.Group<FiltersGroup>(scene.LayerNode);
             var first = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
             var second = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[1];
             first.ModulatorManager.AddItem(typeof(LFOModulator));
             first.ModulatorManager.AddItem(typeof(RandomModulator));
             second.ModulatorManager.AddItem(typeof(LFOModulator));
-            var firstGroup = Scene.Group(filters.Children[0], "Modulators");
-            var secondGroup = Scene.Group(filters.Children[1], "Modulators");
+            var firstGroup = Scene.Group<ModulatorsGroup>(filters.Children[0]);
+            var secondGroup = Scene.Group<ModulatorsGroup>(filters.Children[1]);
             var service = new TreeDropService();
 
             // Inside the other group and next to its row.
             Assert.True(service.CanDrop(firstGroup.Children[0], secondGroup, DropPosition.Inside));
             Assert.True(service.CanDrop(firstGroup.Children[0], secondGroup.Children[0], DropPosition.Before));
-            Assert.False(service.CanDrop(firstGroup.Children[0], Scene.Group(scene.LayerNode, "Filters"), DropPosition.Inside));
+            Assert.False(service.CanDrop(firstGroup.Children[0], Scene.Group<FiltersGroup>(scene.LayerNode), DropPosition.Inside));
 
             var moved = firstGroup.Children[0].Item;
             Assert.True(service.Drop(firstGroup.Children[0], secondGroup.Children[0], DropPosition.Before).Moved);
@@ -418,11 +418,11 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
             var filter = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
             filter.ModulatorManager.AddItem(typeof(LFOModulator));
-            var filterNode = Scene.Group(scene.LayerNode, "Filters").Children[0];
+            var filterNode = Scene.Group<FiltersGroup>(scene.LayerNode).Children[0];
 
             Assert.True(scene.Tree.CanDrag(filterNode));
-            Assert.True(scene.Tree.CanDrag(Scene.Group(filterNode, "Modulators").Children[0]));
-            Assert.False(scene.Tree.CanDrag(Scene.Group(filterNode, "Modulators")));
+            Assert.True(scene.Tree.CanDrag(Scene.Group<ModulatorsGroup>(filterNode).Children[0]));
+            Assert.False(scene.Tree.CanDrag(Scene.Group<ModulatorsGroup>(filterNode)));
         }
 
     }

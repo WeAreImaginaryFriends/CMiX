@@ -73,7 +73,7 @@ namespace CMiX.Studio.Avalonia.Tests
             nodes.SelectMany(node => new[] { node }.Concat(All(node.Children)));
 
         private static TreeNode FirstEntity(ProjectTree tree) =>
-            tree.Roots[0].Children[0].Children.Single(child => child.Header == "Entities").Children[0];
+            tree.Roots[0].Children[0].Children.Single(child => child.Group is EntitiesGroup).Children[0];
 
         private static AvaloniaColor FillOf(ProjectTreeView view, TreeNode node) =>
             ((ISolidColorBrush)Part(view, node, "RowBorder").Background!).Color;
@@ -184,8 +184,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var (view, tree) = Show();
             var firstLayer = tree.Roots[0].Children[0];
             var secondLayer = tree.Roots[0].Children[1];
-            var filter = firstLayer.Children.Single(child => child.Header == "Filters").Children[0];
-            var target = secondLayer.Children.Single(child => child.Header == "Filters");
+            var filter = firstLayer.Children.Single(child => child.Group is FiltersGroup).Children[0];
+            var target = secondLayer.Children.Single(child => child.Group is FiltersGroup);
             var lists = ((Layer)firstLayer.Item!, (Layer)secondLayer.Item!);
             var data = new DataObject();
             data.Set(ProjectTreeView.NodeFormat, filter);

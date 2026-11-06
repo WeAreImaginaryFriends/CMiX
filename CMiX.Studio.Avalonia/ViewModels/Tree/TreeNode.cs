@@ -10,12 +10,10 @@ using System.Linq;
 using CMiX.Core;
 using CMiX.Core.Compositing;
 using CMiX.Core.Modifiers;
-using CMiX.Core.Modulation;
 using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Rendering.Cameras;
-using CMiX.Core.Texturing;
 using CMiX.Core.Texturing.Filters;
 using CMiX.Core.Texturing.Sources;
 using CMiX.Core.Rendering.Lights;
@@ -30,15 +28,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     {
         private readonly ProjectTree tree;
 
-        internal TreeNode(ProjectTree tree, TreeNode? parent, PrefabManager? owner, IControl? item, string header, PrefabManager? childManager)
+        internal TreeNode(ProjectTree tree, TreeNode? parent, PrefabManager? owner, IControl? item, string header, PrefabManager? childManager, TreeGroup? group = null)
         {
             this.tree = tree;
             Children.CollectionChanged += (_, _) => RaiseKindCountsChanged();
             Parent = parent;
             Owner = owner;
             Item = item;
-            this.header = header;
-            IconKey = IconFor(item, header);
+            Group = group;
+            this.header = group?.Header ?? header;
+            IconKey = group?.IconKey ?? IconFor(item);
 
             if (item is IPrefab prefab)
             {
@@ -46,11 +45,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 prefab.PrefabService.Name.PropertyChanged += OnNameChanged;
             }
 
-            // A group row has no item. The inspector shows the panel of the group.
-            if (item == null)
-                Group = TreeGroup.For(parent?.Item, childManager);
-
-            Category = item != null ? TreeCategories.Of(item) : Group != null ? TreeCategories.Of(Group) : null;
+            Category = item != null ? TreeCategories.Of(item) : group?.Category;
             ComposableDepth = parent == null ? 0 : parent.ComposableDepth + (parent.Category == TreeCategory.Composable ? 1 : 0);
             KindDepth = parent == null ? 0 : parent.KindDepth + (parent.Category != null && Category != null && parent.Category != Category ? 1 : 0);
 
@@ -70,31 +65,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 AddGroups(item);
         }
 
-        // The lists that an item holds, as groups: the lists of a layer, then the textures, the filters and the modifiers.
+        // The lists that an item holds, as groups (see TreeGroup.GroupsOf). A group row has no item. The inspector shows the panel of the group.
         private void AddGroups(IControl item)
         {
-            if (item is Layer layer)
-            {
-                AddGroup("Entities", layer.ModelEntityManager);
-                AddGroup("Cameras", layer.CameraManager);
-                AddGroup("Lights", layer.LightManager);
-            }
-
-            if (item is ITexturable textured && textured.Texture?.DiffuseTexture?.TextureManager is { } textures)
-                AddGroup("Textures", textures);
-
-            if (item is ITextureModifiable filtered && filtered.TextureModifierManager is { } filters)
-                AddGroup("Filters", filters);
-
-            if (item is IModifiable modified && modified.ModifierManager is { } modifiers)
-                AddGroup("Modifiers", modifiers);
-
-            if (item is IModulatable modulated && modulated.ModulatorManager is { } modulators)
-                AddGroup("Modulators", modulators);
+            foreach (var group in TreeGroup.GroupsOf(item))
+                Children.Add(new TreeNode(tree, this, null, null, group.Header, group.Manager, group));
         }
-
-        private void AddGroup(string header, PrefabManager list) =>
-            Children.Add(new TreeNode(tree, this, null, null, header, list));
 
         public TreeNode? Parent { get; }
         public string IconKey { get; }
@@ -200,7 +176,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             return false;
         }
 
-        private static string IconFor(IControl? item, string header) => item switch
+        // The icon of an item row, or of a row that is neither an item nor a group.
+        private static string IconFor(IControl? item) => item switch
         {
             Composition => "Composition",
             Layer => "LayerScene",
@@ -208,16 +185,6 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             TextEntity => "TextIcon",
             Camera => "Camera",
             LightEntity => "MeshLight",
-            null => header switch
-            {
-                "Cameras" => "Camera",
-                "Lights" => "MeshLight",
-                "Textures" => "Texture",
-                "Filters" => "Filter",
-                "Modifiers" => "Modifier",
-                "Modulators" => "Modulator",
-                _ => "Geometry"
-            },
             IModifier => "Modifier",
             IModulator => "Modulator",
             ITextureFilter => "Filter",

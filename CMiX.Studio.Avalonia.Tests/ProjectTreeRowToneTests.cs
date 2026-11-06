@@ -91,7 +91,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var (_, view, tree) = Show();
             var composition = tree.Roots[0];
             var layer = composition.Children[0];
-            var entities = layer.Children.Single(child => child.Header == "Entities");
+            var entities = layer.Children.Single(child => child.Group is EntitiesGroup);
             var entity = entities.Children[0];
 
             Assert.NotEqual(FillOf(RowOf(view, layer)), FillOf(RowOf(view, entities)));

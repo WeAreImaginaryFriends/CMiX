@@ -51,8 +51,8 @@ namespace CMiX.Studio.Avalonia.Tests
         // The layers of a composition. The groups of the composition (filters and modifiers) come after them.
         private static IEnumerable<TreeNode> LayersOf(TreeNode composition) => composition.Children.Where(child => child.Item != null);
 
-        private static TreeNode GroupNode(TreeNode layerNode, string header) =>
-            layerNode.Children.Single(group => group.Header == header);
+        private static TreeNode GroupNode<T>(TreeNode layerNode) where T : TreeGroup =>
+            layerNode.Children.Single(group => group.Group is T);
 
         [Fact]
         public void ANewItem_StartsCollapsed_AndDoesNotOpenTheRowThatHoldsIt()
@@ -117,9 +117,9 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var node = LayerNode(scene, 0);
 
-            Assert.Same(layer.ModelEntityManager.ManagerData.Items[0], Assert.Single(GroupNode(node, "Entities").Children).Item);
-            Assert.Same(layer.CameraManager.ManagerData.Items[0], Assert.Single(GroupNode(node, "Cameras").Children).Item);
-            Assert.Same(layer.LightManager.ManagerData.Items[0], Assert.Single(GroupNode(node, "Lights").Children).Item);
+            Assert.Same(layer.ModelEntityManager.ManagerData.Items[0], Assert.Single(GroupNode<EntitiesGroup>(node).Children).Item);
+            Assert.Same(layer.CameraManager.ManagerData.Items[0], Assert.Single(GroupNode<CamerasGroup>(node).Children).Item);
+            Assert.Same(layer.LightManager.ManagerData.Items[0], Assert.Single(GroupNode<LightsGroup>(node).Children).Item);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
 
             Assert.Equal(3, LayersOf(scene.Tree.Roots[0]).Count());
-            Assert.Single(GroupNode(LayerNode(scene, 0), "Entities").Children);
+            Assert.Single(GroupNode<EntitiesGroup>(LayerNode(scene, 0)).Children);
         }
 
         [Fact]
@@ -224,7 +224,7 @@ namespace CMiX.Studio.Avalonia.Tests
             layer.ModelEntityManager.AddItem(typeof(Entity));
             var first = layer.ModelEntityManager.ManagerData.Items[0];
 
-            scene.Tree.SelectedNode = GroupNode(LayerNode(scene, 0), "Entities").Children[0];
+            scene.Tree.SelectedNode = GroupNode<EntitiesGroup>(LayerNode(scene, 0)).Children[0];
 
             Assert.Same(scene.A, scene.Project.CompositionManager.SelectedItem);
             Assert.Same(layer, scene.A.LayerManager.SelectedItem);
@@ -239,7 +239,7 @@ namespace CMiX.Studio.Avalonia.Tests
             layer.ModelEntityManager.AddItem(typeof(Entity));
             layer.ModelEntityManager.ClearSelection();
 
-            scene.Tree.SelectedNode = GroupNode(LayerNode(scene, 0), "Entities");
+            scene.Tree.SelectedNode = GroupNode<EntitiesGroup>(LayerNode(scene, 0));
 
             Assert.Same(layer, scene.A.LayerManager.SelectedItem);
             Assert.Null(layer.ModelEntityManager.SelectedItem);
@@ -291,7 +291,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var layer = scene.LayerOfA(0);
             layer.ModelEntityManager.AddItem(typeof(Entity));
             var entity = layer.ModelEntityManager.ManagerData.Items[0];
-            scene.Tree.SelectedNode = GroupNode(LayerNode(scene, 0), "Entities").Children[0];
+            scene.Tree.SelectedNode = GroupNode<EntitiesGroup>(LayerNode(scene, 0)).Children[0];
 
             layer.ModelEntityManager.RemoveItem(entity);
 

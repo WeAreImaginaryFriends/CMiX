@@ -47,7 +47,7 @@ namespace CMiX.Studio.Avalonia.Tests
             foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
                 panel.Duration = TimeSpan.Zero;
             Settle();
-            var group = tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(child => child.Header == "Modifiers");
+            var group = tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(child => child.Group is ModifiersGroup);
             return (view, tree, entity, group);
         }
 

@@ -123,7 +123,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var (view, tree) = Show();
             var composition = tree.Roots[0];
             var layer = composition.Children[0];
-            var entities = layer.Children.Single(child => child.Header == "Entities");
+            var entities = layer.Children.Single(child => child.Group is EntitiesGroup);
 
             var compositionLeft = BoundsIn(RowOf(view, composition)).Left;
             var layerLeft = BoundsIn(RowOf(view, layer)).Left;
@@ -138,7 +138,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (view, tree) = Show();
             var layer = tree.Roots[0].Children[0];
-            var empty = tree.Roots[0].Children.Single(child => child.Header == "Filters");
+            var empty = tree.Roots[0].Children.Single(child => child.Group is FiltersGroup);
             Assert.Empty(empty.Children);
 
             Assert.Equal(BoundsIn(RowOf(view, layer)).Left, BoundsIn(RowOf(view, empty)).Left, 3);

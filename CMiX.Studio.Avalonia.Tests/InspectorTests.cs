@@ -47,7 +47,7 @@ namespace CMiX.Studio.Avalonia.Tests
             public ProjectTree Tree => ViewModel.ProjectTree;
             public TreeNode CompositionNode => Tree.Roots[0];
             public TreeNode LayerNode => CompositionNode.Children[0];
-            public TreeNode Group(string header) => LayerNode.Children.Single(group => group.Header == header);
+            public TreeNode Group<T>() where T : TreeGroup => LayerNode.Children.Single(group => group.Group is T);
 
             // Found by its name: while no item is selected the scroll viewer is hidden and has no visual children yet.
             public ContentControl Editor => Inspector.FindControl<ContentControl>("editor")!;
@@ -146,7 +146,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
             var palette = CMiX.Studio.Avalonia.Themes.CategoryPalette.FromApplication();
-            foreach (var node in new[] { screen.CompositionNode, screen.LayerNode, screen.Group("Entities"), screen.Group("Lights") })
+            foreach (var node in new[] { screen.CompositionNode, screen.LayerNode, screen.Group<EntitiesGroup>(), screen.Group<LightsGroup>() })
             {
                 Select(screen, node);
                 var square = screen.Header.GetVisualDescendants().OfType<CategoryBadge>().Single().GetVisualDescendants().OfType<Border>().First();
@@ -240,7 +240,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void OnlyACompositionAndALayerHaveTheMaskToggle_AndAGroupHasNoToggle()
         {
             var screen = Show();
-            var entity = screen.Group("Entities").Children[0];
+            var entity = screen.Group<EntitiesGroup>().Children[0];
 
             Select(screen, screen.CompositionNode);
             Assert.True(screen.MaskToggle!.IsEffectivelyVisible);
@@ -249,7 +249,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(screen.VisibilityToggle!.IsEffectivelyVisible);
             Assert.True(screen.MaskToggle == null || !screen.MaskToggle.IsEffectivelyVisible);
 
-            Select(screen, screen.Group("Entities"));
+            Select(screen, screen.Group<EntitiesGroup>());
             Assert.False(screen.VisibilityToggle!.IsEffectivelyVisible);
             Assert.False(screen.NameEditor.IsEffectivelyVisible);
             Assert.Equal("Entities", screen.Title.Text);
@@ -287,9 +287,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public void TheModifiersGroupOfAnEntity_ShowsTheListOfItsModifiers_WithTheModifiersOfThatEntity()
         {
             var screen = Show();
-            var entityNode = screen.Group("Entities").Children[0];
+            var entityNode = screen.Group<EntitiesGroup>().Children[0];
 
-            Select(screen, entityNode.Children.Single(group => group.Header == "Modifiers"));
+            Select(screen, entityNode.Children.Single(group => group.Group is ModifiersGroup));
 
             var panel = Assert.IsType<ModifiersGroup>(screen.Editor.Content);
             Assert.Same(EntityOf(screen), panel.Owner);
@@ -307,13 +307,13 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            Select(screen, screen.LayerNode.Children.Single(group => group.Header == "Filters"));
+            Select(screen, screen.LayerNode.Children.Single(group => group.Group is FiltersGroup));
             var layerPanel = screen.Find<ModifierManager>()!;
             Assert.Same(screen.Layer.TextureModifierManager, layerPanel.DataContext);
             Assert.Equal("Add Filter", layerPanel.Caption);
             Assert.Equal(typeof(CMiX.Core.Texturing.Filters.ITextureFilter), ((AutoSelectionPanel)layerPanel.SelectionPanel).Interface);
 
-            Select(screen, screen.CompositionNode.Children.Single(group => group.Header == "Filters"));
+            Select(screen, screen.CompositionNode.Children.Single(group => group.Group is FiltersGroup));
             Assert.Same(((Composition)screen.CompositionNode.Item!).TextureModifierManager, screen.Find<ModifierManager>()!.DataContext);
         }
 
@@ -322,10 +322,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            Select(screen, screen.LayerNode.Children.Single(group => group.Header == "Modifiers"));
+            Select(screen, screen.LayerNode.Children.Single(group => group.Group is ModifiersGroup));
             Assert.Equal(typeof(Layer), ((AutoSelectionPanel)screen.Find<ModifierManager>()!.SelectionPanel).PanelOwner);
 
-            Select(screen, screen.CompositionNode.Children.Single(group => group.Header == "Modifiers"));
+            Select(screen, screen.CompositionNode.Children.Single(group => group.Group is ModifiersGroup));
             Assert.Equal(typeof(Composition), ((AutoSelectionPanel)screen.Find<ModifierManager>()!.SelectionPanel).PanelOwner);
         }
 
@@ -333,9 +333,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public void TheTexturesGroupOfAnEntity_ShowsItsDiffuseTexture()
         {
             var screen = Show();
-            var entityNode = screen.Group("Entities").Children[0];
+            var entityNode = screen.Group<EntitiesGroup>().Children[0];
 
-            Select(screen, entityNode.Children.Single(group => group.Header == "Textures"));
+            Select(screen, entityNode.Children.Single(group => group.Group is TexturesGroup));
 
             Assert.IsType<TexturesGroup>(screen.Editor.Content);
             Assert.Same(EntityOf(screen).Texture.DiffuseTexture, screen.Find<DiffuseTexture>()!.DataContext);
@@ -347,7 +347,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
             TestServiceProviderFactory.Pump();
-            var node = screen.Group("Entities").Children[0].Children.Single(group => group.Header == "Modifiers").Children[0];
+            var node = screen.Group<EntitiesGroup>().Children[0].Children.Single(group => group.Group is ModifiersGroup).Children[0];
 
             Select(screen, node);
 
@@ -366,8 +366,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var modifier = (CMiX.Core.Modulation.IModulatable)EntityOf(screen).ModifierManager.ManagerData.Items[0];
             modifier.ModulatorManager.AddItem(typeof(CMiX.Core.Modulation.Modulators.LFOModulator));
             TestServiceProviderFactory.Pump();
-            var modifierNode = screen.Group("Entities").Children[0].Children.Single(group => group.Header == "Modifiers").Children[0];
-            var groupNode = modifierNode.Children.Single(group => group.Header == "Modulators");
+            var modifierNode = screen.Group<EntitiesGroup>().Children[0].Children.Single(group => group.Group is ModifiersGroup).Children[0];
+            var groupNode = modifierNode.Children.Single(group => group.Group is ModulatorsGroup);
 
             Select(screen, groupNode);
             Assert.IsType<ModulatorsGroup>(screen.Editor.Content);
@@ -388,7 +388,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             screen.Layer.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
             TestServiceProviderFactory.Pump();
-            var node = screen.LayerNode.Children.Single(group => group.Header == "Filters").Children[0];
+            var node = screen.LayerNode.Children.Single(group => group.Group is FiltersGroup).Children[0];
 
             Select(screen, node);
 
@@ -403,7 +403,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             EntityOf(screen).Texture.DiffuseTexture.TextureManager.AddItem(typeof(CMiX.Core.Texturing.Sources.Image));
             TestServiceProviderFactory.Pump();
-            var node = screen.Group("Entities").Children[0].Children.Single(group => group.Header == "Textures").Children[0];
+            var node = screen.Group<EntitiesGroup>().Children[0].Children.Single(group => group.Group is TexturesGroup).Children[0];
 
             Select(screen, node);
 
@@ -419,7 +419,7 @@ namespace CMiX.Studio.Avalonia.Tests
             EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
             EntityOf(screen).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.ScaleModifier));
             TestServiceProviderFactory.Pump();
-            var modifiers = screen.Group("Entities").Children[0].Children.Single(group => group.Header == "Modifiers");
+            var modifiers = screen.Group<EntitiesGroup>().Children[0].Children.Single(group => group.Group is ModifiersGroup);
 
             EntityOf(screen).ModifierManager.SelectAt(0);
             TestServiceProviderFactory.Pump();
@@ -450,7 +450,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ASelectedEntity_ShowsTheEditorOfItsKind(int index, Type editor)
         {
             var screen = Show();
-            var node = screen.Group("Entities").Children[index];
+            var node = screen.Group<EntitiesGroup>().Children[index];
 
             Select(screen, node);
 
@@ -464,11 +464,11 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            Select(screen, screen.Group("Cameras").Children[0]);
+            Select(screen, screen.Group<CamerasGroup>().Children[0]);
             Assert.NotNull(screen.Find<CameraView>());
             Assert.Equal("Camera", screen.HeaderIcon.IconKey);
 
-            Select(screen, screen.Group("Lights").Children[0]);
+            Select(screen, screen.Group<LightsGroup>().Children[0]);
             Assert.NotNull(screen.Find<LightView>());
             Assert.Null(screen.Find<CameraView>());
         }
@@ -478,7 +478,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            Select(screen, screen.Group("Cameras"));
+            Select(screen, screen.Group<CamerasGroup>());
             Assert.True(screen.Header.IsVisible);
             Assert.Equal("Cameras", screen.Title.Text);
             Assert.False(screen.Placeholder.IsVisible);
@@ -487,12 +487,12 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Same(screen.Layer, screen.Find<LayerCameraTab>()!.DataContext);
             Assert.Null(screen.Find<LayerEntityTab>());
 
-            Select(screen, screen.Group("Entities"));
+            Select(screen, screen.Group<EntitiesGroup>());
             Assert.Equal("Entities", screen.Title.Text);
             Assert.Same(screen.Layer, screen.Find<LayerEntityTab>()!.DataContext);
             Assert.Null(screen.Find<LayerCameraTab>());
 
-            Select(screen, screen.Group("Lights"));
+            Select(screen, screen.Group<LightsGroup>());
             Assert.Equal("Lights", screen.Title.Text);
             Assert.Same(screen.Layer, screen.Find<LayerLightTab>()!.DataContext);
             Assert.Null(screen.Find<LayerEntityTab>());
@@ -502,7 +502,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void TheInspector_FollowsTheSelection_AndTheNameOfTheItem()
         {
             var screen = Show();
-            var entity = screen.Group("Entities").Children[0];
+            var entity = screen.Group<EntitiesGroup>().Children[0];
 
             Select(screen, screen.LayerNode);
             Assert.NotNull(screen.Find<LayerPostFXTab>());
@@ -521,7 +521,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
             // The only camera: when it goes, the selection falls back to the group of cameras.
-            var camera = screen.Group("Cameras").Children[0];
+            var camera = screen.Group<CamerasGroup>().Children[0];
             Select(screen, camera);
             Assert.NotNull(screen.Find<CameraView>());
 
@@ -541,7 +541,7 @@ namespace CMiX.Studio.Avalonia.Tests
             // A second camera is now the selected one in its list. Selecting the first one in the list moves the selection of the tree.
             screen.Layer.CameraManager.AddItem(typeof(CameraModel));
             TestServiceProviderFactory.Pump();
-            var camera = screen.Group("Cameras").Children[0];
+            var camera = screen.Group<CamerasGroup>().Children[0];
 
             screen.Layer.CameraManager.SelectAt(0);
             TestServiceProviderFactory.Pump();
@@ -569,14 +569,14 @@ namespace CMiX.Studio.Avalonia.Tests
             {
                 "composition" => screen.CompositionNode,
                 "layer" => screen.LayerNode,
-                "entity" => screen.Group("Entities").Children[0],
-                "quad" => screen.Group("Entities").Children[1],
-                "text" => screen.Group("Entities").Children[2],
-                "camera" => screen.Group("Cameras").Children[0],
-                "entities group" => screen.Group("Entities"),
-                "cameras group" => screen.Group("Cameras"),
-                "lights group" => screen.Group("Lights"),
-                _ => screen.Group("Lights").Children[0]
+                "entity" => screen.Group<EntitiesGroup>().Children[0],
+                "quad" => screen.Group<EntitiesGroup>().Children[1],
+                "text" => screen.Group<EntitiesGroup>().Children[2],
+                "camera" => screen.Group<CamerasGroup>().Children[0],
+                "entities group" => screen.Group<EntitiesGroup>(),
+                "cameras group" => screen.Group<CamerasGroup>(),
+                "lights group" => screen.Group<LightsGroup>(),
+                _ => screen.Group<LightsGroup>().Children[0]
             };
 
             Select(screen, node);
@@ -595,10 +595,10 @@ namespace CMiX.Studio.Avalonia.Tests
             var composition = (Composition)screen.CompositionNode.Item!;
             composition.LayerManager.AddItem(typeof(Layer));
             TestServiceProviderFactory.Pump();
-            var entity = screen.Group("Entities").Children[0];
+            var entity = screen.Group<EntitiesGroup>().Children[0];
             var item = entity.Item;
             Select(screen, entity);
-            var otherEntities = screen.CompositionNode.Children[1].Children.Single(group => group.Header == "Entities");
+            var otherEntities = screen.CompositionNode.Children[1].Children.Single(group => group.Group is EntitiesGroup);
 
             await screen.Tree.DropAsync(entity, otherEntities, DropPosition.Inside);
             TestServiceProviderFactory.Pump();
@@ -628,7 +628,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void AnUndoOfTheRemoval_AndARedo_LeaveTheInspectorWorking()
         {
             var screen = Show();
-            var camera = screen.Group("Cameras").Children[0];
+            var camera = screen.Group<CamerasGroup>().Children[0];
             Select(screen, camera);
 
             screen.Layer.CameraManager.RemoveItem((IControl)camera.Item!);
@@ -651,7 +651,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Select(screen, screen.LayerNode);
 
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
-            Select(screen, screen.Group("Cameras").Children[0]);
+            Select(screen, screen.Group<CamerasGroup>().Children[0]);
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Inspector");
 
             var inspector = screen.Window.GetVisualDescendants().OfType<Inspector>().Single();
@@ -689,7 +689,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
 
-            Click(screen, CenterOfRow(screen, screen.Group("Cameras").Children[0]));
+            Click(screen, CenterOfRow(screen, screen.Group<CamerasGroup>().Children[0]));
 
             Assert.Equal("Inspector", SelectedTab(screen));
             Assert.NotNull(screen.Find<CameraView>());
@@ -701,7 +701,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
 
-            Click(screen, CenterOfRow(screen, screen.Group("Lights")));
+            Click(screen, CenterOfRow(screen, screen.Group<LightsGroup>()));
 
             Assert.Equal("Inspector", SelectedTab(screen));
             Assert.Equal("Lights", screen.Title.Text);

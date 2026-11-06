@@ -19,7 +19,7 @@ namespace CMiX.Studio.Avalonia.Tests
             public Composition B { get; init; } = null!;
             public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
             public TreeNode LayerNodeOfA(int index) => Tree.Roots[0].Children[index];
-            public static TreeNode Group(TreeNode layerNode, string header) => layerNode.Children.Single(group => group.Header == header);
+            public static TreeNode Group<T>(TreeNode layerNode) where T : TreeGroup => layerNode.Children.Single(group => group.Group is T);
         }
 
         // A holds two layers, the first with two entities. B holds one layer.
@@ -47,15 +47,15 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[1];
-            var node = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[1];
+            var node = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[1];
             scene.Tree.SelectedNode = node;
 
-            await scene.Tree.DropAsync(node, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside);
+            await scene.Tree.DropAsync(node, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside);
 
             var selected = scene.Tree.SelectedNode;
             Assert.NotNull(selected);
             Assert.Same(entity, selected!.Item);
-            Assert.Same(Scene.Group(scene.LayerNodeOfA(1), "Entities").Children[0], selected);
+            Assert.Same(Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)).Children[0], selected);
             Assert.Same(entity, scene.LayerOfA(1).ModelEntityManager.SelectedItem);
             Assert.Same(scene.LayerOfA(1), scene.A.LayerManager.SelectedItem);
         }
@@ -64,8 +64,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public async Task ADrop_OpensTheRowsThatHoldTheItem_ButNotTheItem()
         {
             var scene = CreateScene();
-            var node = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
-            var target = Scene.Group(scene.LayerNodeOfA(1), "Entities");
+            var node = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var target = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1));
             TestServiceProviderFactory.ExpandAll(scene.Tree);
             target.IsExpanded = false;
             scene.LayerNodeOfA(1).IsExpanded = false;
@@ -84,9 +84,9 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
-            var node = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var node = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
 
-            await scene.Tree.DropAsync(node, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside);
+            await scene.Tree.DropAsync(node, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside);
 
             Assert.Same(entity, scene.Tree.SelectedNode!.Item);
         }
@@ -111,10 +111,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[1];
-            var node = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[1];
+            var node = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[1];
             scene.Undo.Clear();
 
-            await scene.Tree.DropAsync(node, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside);
+            await scene.Tree.DropAsync(node, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside);
             scene.Undo.Undo();
 
             Assert.Contains(entity, scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
@@ -126,7 +126,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             var entity = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
-            var group = Scene.Group(scene.LayerNodeOfA(0), "Entities");
+            var group = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0));
             scene.Tree.SelectedNode = group.Children[0];
 
             await scene.Tree.DropAsync(group.Children[0], group.Children[1], DropPosition.After);
@@ -141,9 +141,9 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.A.LayerManager.AddItem(typeof(Layer));
             var entity = (Core.Prefabs.IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
             scene.LayerOfA(2).ModelEntityManager.AddExistingItem(entity);
-            var node = Scene.Group(scene.LayerNodeOfA(2), "Entities").Children[0];
+            var node = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(2)).Children[0];
 
-            await scene.Tree.DropAsync(node, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside);
+            await scene.Tree.DropAsync(node, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside);
 
             var selected = scene.Tree.SelectedNode;
             Assert.Same(entity, selected!.Item);

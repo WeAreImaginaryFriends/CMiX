@@ -42,38 +42,26 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             _ => null
         };
 
-        // The name of a kind for a number of items, such as Entity for one and Entities for two.
+        // The name of a kind for a number of items, such as Entity for one and Entities for two. The name for several is the header
+        // of the group of the kind.
         public static string Label(TreeCategory category, int count) => (category, count == 1) switch
         {
             (TreeCategory.Composable, true) => "Composable",
             (TreeCategory.Composable, false) => "Composables",
             (TreeCategory.Entity, true) => "Entity",
-            (TreeCategory.Entity, false) => "Entities",
+            (TreeCategory.Entity, false) => EntitiesGroup.Title,
             (TreeCategory.Camera, true) => "Camera",
-            (TreeCategory.Camera, false) => "Cameras",
+            (TreeCategory.Camera, false) => CamerasGroup.Title,
             (TreeCategory.Light, true) => "Light",
-            (TreeCategory.Light, false) => "Lights",
+            (TreeCategory.Light, false) => LightsGroup.Title,
             (TreeCategory.Texture, true) => "Texture",
-            (TreeCategory.Texture, false) => "Textures",
+            (TreeCategory.Texture, false) => TexturesGroup.Title,
             (TreeCategory.Filter, true) => "Filter",
-            (TreeCategory.Filter, false) => "Filters",
+            (TreeCategory.Filter, false) => FiltersGroup.Title,
             (TreeCategory.Modifier, true) => "Modifier",
-            (TreeCategory.Modifier, false) => "Modifiers",
+            (TreeCategory.Modifier, false) => ModifiersGroup.Title,
             (TreeCategory.Modulator, true) => "Modulator",
-            _ => "Modulators"
-        };
-
-        // The kind of the items in a group.
-        public static TreeCategory? Of(TreeGroup group) => group switch
-        {
-            EntitiesGroup => TreeCategory.Entity,
-            CamerasGroup => TreeCategory.Camera,
-            LightsGroup => TreeCategory.Light,
-            TexturesGroup => TreeCategory.Texture,
-            FiltersGroup => TreeCategory.Filter,
-            ModifiersGroup => TreeCategory.Modifier,
-            ModulatorsGroup => TreeCategory.Modulator,
-            _ => null
+            _ => ModulatorsGroup.Title
         };
     }
 }

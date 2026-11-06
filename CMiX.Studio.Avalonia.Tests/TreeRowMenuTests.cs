@@ -58,7 +58,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
             public TreeNode LayerNodeOfA(int index) => Tree.Roots[0].Children[index];
-            public TreeNode Group(int layerIndex, string header) => LayerNodeOfA(layerIndex).Children.Single(group => group.Header == header);
+            public TreeNode Group<T>(int layerIndex) where T : TreeGroup => LayerNodeOfA(layerIndex).Children.Single(group => group.Group is T);
 
             // A right click on the row.
             public ContextMenu? OpenMenu(TreeNode node)
@@ -155,9 +155,9 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.OpenMenu(screen.Tree.Roots[0]);
             screen.OpenMenu(screen.LayerNodeOfA(0));
 
-            var entities = Screen.Headers(screen.OpenMenu(screen.Group(0, "Entities"))!);
-            var cameras = Screen.Headers(screen.OpenMenu(screen.Group(0, "Cameras"))!);
-            var lights = Screen.Headers(screen.OpenMenu(screen.Group(0, "Lights"))!);
+            var entities = Screen.Headers(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!);
+            var cameras = Screen.Headers(screen.OpenMenu(screen.Group<CamerasGroup>(0))!);
+            var lights = Screen.Headers(screen.OpenMenu(screen.Group<LightsGroup>(0))!);
 
             Assert.Equal(new[] { "Entities", "-", "Add Entity", "Add Fullscreen Quad", "Add Text" }, entities);
             Assert.Equal(new[] { "Cameras", "-", "Add Camera" }, cameras);
@@ -170,9 +170,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
-            var entityNode = screen.Group(0, "Entities").Children[0];
+            var entityNode = screen.Group<EntitiesGroup>(0).Children[0];
             screen.OpenMenu(screen.Tree.Roots[0]);
-            screen.OpenMenu(screen.Group(0, "Entities"));
+            screen.OpenMenu(screen.Group<EntitiesGroup>(0));
 
             var headers = Screen.Headers(screen.OpenMenu(entityNode)!);
 
@@ -190,7 +190,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
-            var order = new[] { screen.Tree.Roots[0], screen.LayerNodeOfA(0), screen.Group(0, "Entities"), screen.Group(0, "Entities").Children[0] };
+            var order = new[] { screen.Tree.Roots[0], screen.LayerNodeOfA(0), screen.Group<EntitiesGroup>(0), screen.Group<EntitiesGroup>(0).Children[0] };
 
             for (var round = 0; round < rounds; round++)
                 foreach (var node in order)
@@ -310,7 +310,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            var headers = Screen.Headers(screen.OpenMenu(screen.Group(0, "Entities"))!);
+            var headers = Screen.Headers(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!);
 
             Assert.Equal(new[] { "Entities", "-", "Add Entity", "Add Fullscreen Quad", "Add Text" }, headers);
         }
@@ -321,15 +321,15 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var layer = screen.LayerOfA(0);
 
-            Screen.Click(screen.OpenMenu(screen.Group(0, "Entities"))!, "Add Entity");
-            Screen.Click(screen.OpenMenu(screen.Group(0, "Entities"))!, "Add Fullscreen Quad");
-            Screen.Click(screen.OpenMenu(screen.Group(0, "Entities"))!, "Add Text");
+            Screen.Click(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!, "Add Entity");
+            Screen.Click(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!, "Add Fullscreen Quad");
+            Screen.Click(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!, "Add Text");
 
             Assert.Collection(layer.ModelEntityManager.ManagerData.Items,
                 item => Assert.IsType<Entity>(item),
                 item => Assert.IsType<FullscreenQuad>(item),
                 item => Assert.IsType<TextEntity>(item));
-            Assert.Equal(3, screen.Group(0, "Entities").Children.Count);
+            Assert.Equal(3, screen.Group<EntitiesGroup>(0).Children.Count);
         }
 
         [AvaloniaFact]
@@ -338,8 +338,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var layer = screen.LayerOfA(0);
 
-            Screen.Click(screen.OpenMenu(screen.Group(0, "Cameras"))!, "Add Camera");
-            Screen.Click(screen.OpenMenu(screen.Group(0, "Lights"))!, "Add Light");
+            Screen.Click(screen.OpenMenu(screen.Group<CamerasGroup>(0))!, "Add Camera");
+            Screen.Click(screen.OpenMenu(screen.Group<LightsGroup>(0))!, "Add Light");
 
             Assert.IsType<Camera>(Assert.Single(layer.CameraManager.ManagerData.Items));
             Assert.IsType<LightEntity>(Assert.Single(layer.LightManager.ManagerData.Items));
@@ -352,7 +352,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
 
-            var headers = Screen.Headers(screen.OpenMenu(screen.Group(0, "Entities").Children[0])!);
+            var headers = Screen.Headers(screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!);
 
             Assert.Equal(new[] { "Add Texture", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
                 headers.Skip(2));
@@ -366,10 +366,10 @@ namespace CMiX.Studio.Avalonia.Tests
             layer.ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
 
-            Screen.Click(screen.OpenMenu(screen.Group(0, "Entities").Children[0])!, "Remove");
+            Screen.Click(screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!, "Remove");
 
             Assert.Empty(layer.ModelEntityManager.ManagerData.Items);
-            Assert.Empty(screen.Group(0, "Entities").Children);
+            Assert.Empty(screen.Group<EntitiesGroup>(0).Children);
         }
 
         // ---- the row under the pointer when the menu opens (see MenuAnchor) ----
@@ -396,8 +396,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.LayerNodeOfA(0))!));
-            Assert.Equal("Add Entity", AnchorOf(screen.OpenMenu(screen.Group(0, "Entities"))!));
-            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Group(0, "Entities").Children[0])!));
+            Assert.Equal("Add Entity", AnchorOf(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!));
+            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!));
         }
 
         [AvaloniaFact]

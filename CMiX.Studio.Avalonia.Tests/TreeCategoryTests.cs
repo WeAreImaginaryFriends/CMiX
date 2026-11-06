@@ -48,13 +48,13 @@ namespace CMiX.Studio.Avalonia.Tests
             var layer = (Layer)provider.GetRequiredService<ControlFactory>().Create(typeof(Layer));
             var entity = (Entity)provider.GetRequiredService<ControlFactory>().Create(typeof(Entity));
 
-            Assert.Equal(TreeCategory.Entity, TreeCategories.Of(new EntitiesGroup(layer, layer.ModelEntityManager)));
-            Assert.Equal(TreeCategory.Camera, TreeCategories.Of(new CamerasGroup(layer, layer.CameraManager)));
-            Assert.Equal(TreeCategory.Light, TreeCategories.Of(new LightsGroup(layer, layer.LightManager)));
-            Assert.Equal(TreeCategory.Texture, TreeCategories.Of(new TexturesGroup(entity, entity.Texture.DiffuseTexture.TextureManager)));
-            Assert.Equal(TreeCategory.Filter, TreeCategories.Of(new FiltersGroup(layer, layer.TextureModifierManager)));
-            Assert.Equal(TreeCategory.Modifier, TreeCategories.Of(new ModifiersGroup(entity, entity.ModifierManager)));
-            Assert.Equal(TreeCategory.Modulator, TreeCategories.Of(new ModulatorsGroup(entity, entity.ModifierManager)));
+            Assert.Equal(TreeCategory.Entity, new EntitiesGroup(layer, layer.ModelEntityManager).Category);
+            Assert.Equal(TreeCategory.Camera, new CamerasGroup(layer, layer.CameraManager).Category);
+            Assert.Equal(TreeCategory.Light, new LightsGroup(layer, layer.LightManager).Category);
+            Assert.Equal(TreeCategory.Texture, new TexturesGroup(entity, entity.Texture.DiffuseTexture.TextureManager).Category);
+            Assert.Equal(TreeCategory.Filter, new FiltersGroup(layer, layer.TextureModifierManager).Category);
+            Assert.Equal(TreeCategory.Modifier, new ModifiersGroup(entity, entity.ModifierManager).Category);
+            Assert.Equal(TreeCategory.Modulator, new ModulatorsGroup(entity, entity.ModifierManager).Category);
         }
 
         [AvaloniaFact]

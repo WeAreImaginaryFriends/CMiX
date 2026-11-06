@@ -21,7 +21,7 @@ namespace CMiX.Studio.Avalonia.Tests
             public Layer Layer { get; init; } = null!;
             public TreeNode CompositionNode => Tree.Roots[0];
             public TreeNode LayerNode => CompositionNode.Children[0];
-            public static TreeNode Group(TreeNode node, string header) => node.Children.Single(child => child.Header == header);
+            public static TreeNode Group<T>(TreeNode node) where T : TreeGroup => node.Children.Single(child => child.Group is T);
         }
 
         // A composition with two layers. The first layer has two entities, one filter and three modifiers.
@@ -67,9 +67,9 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
-            Assert.Equal(new[] { new KindCount(TreeCategory.Entity, 2) }, Scene.Group(scene.LayerNode, "Entities").KindCounts);
-            Assert.Empty(Scene.Group(scene.LayerNode, "Cameras").KindCounts);
-            Assert.False(Scene.Group(scene.LayerNode, "Cameras").HasKindCounts);
+            Assert.Equal(new[] { new KindCount(TreeCategory.Entity, 2) }, Scene.Group<EntitiesGroup>(scene.LayerNode).KindCounts);
+            Assert.Empty(Scene.Group<CamerasGroup>(scene.LayerNode).KindCounts);
+            Assert.False(Scene.Group<CamerasGroup>(scene.LayerNode).HasKindCounts);
         }
 
         [Fact]

@@ -5,11 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
-using CMiX.Core.Texturing.Filters;
-using CMiX.Core.Texturing.Sources;
 
 namespace CMiX.Studio.Avalonia.ViewModels.Tree
 {
@@ -33,16 +30,6 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 .GetTypes()
                 .Where(IsAddable)
                 .Where(interfaceType.IsAssignableFrom));
-
-        // What a list of a group takes: filters and textures by interface, modifiers by the type of the owner.
-        public static IReadOnlyList<Type> ForGroup(TreeGroup group) => group switch
-        {
-            FiltersGroup => ForInterface(typeof(ITextureFilter)),
-            TexturesGroup => ForInterface(typeof(ITextureSource)),
-            ModifiersGroup => ForOwner(group.OwnerType),
-            ModulatorsGroup => ForInterface(typeof(IModulator)),
-            _ => Array.Empty<Type>()
-        };
 
         public static string LabelOf(Type type) =>
             ControlFactory.StringHelper.LabelOf(type) ?? ControlFactory.StringHelper.PascalCaseToDisplay(type.Name);

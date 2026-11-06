@@ -412,8 +412,8 @@ namespace CMiX.Studio.Avalonia.Tests
             modifiers.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
             ((CMiX.Core.Modulation.IModulatable)modifiers.ManagerData.Items[0]).ModulatorManager.AddItem(typeof(CMiX.Core.Modulation.Modulators.LFOModulator));
             Dispatcher.UIThread.RunJobs();
-            var modifierNode = screen.Tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(group => group.Header == "Modifiers").Children[0];
-            var entityNode = modifierNode.Children.Single(group => group.Header == "Modulators").Children[0];
+            var modifierNode = screen.Tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(group => group.Group is ModifiersGroup).Children[0];
+            var entityNode = modifierNode.Children.Single(group => group.Group is ModulatorsGroup).Children[0];
             for (var ancestor = entityNode.Parent; ancestor != null; ancestor = ancestor.Parent)
                 ancestor.IsExpanded = true;
             Dispatcher.UIThread.RunJobs();

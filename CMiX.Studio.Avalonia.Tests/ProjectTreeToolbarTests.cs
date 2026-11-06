@@ -49,7 +49,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
             public TreeNode LayerNodeOfA(int index) => Tree.Roots[0].Children[index];
-            public TreeNode Group(int layerIndex, string header) => LayerNodeOfA(layerIndex).Children.Single(group => group.Header == header);
+            public TreeNode Group<T>(int layerIndex) where T : TreeGroup => LayerNodeOfA(layerIndex).Children.Single(group => group.Group is T);
+            public TreeNode Group(int layerIndex, System.Type kind) => LayerNodeOfA(layerIndex).Children.Single(group => kind.IsInstanceOfType(group.Group));
         }
 
         // A holds two layers, B holds one.
@@ -138,7 +139,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
-            var choices = scene.Tree.GetAddChoices(scene.Group(0, "Entities"));
+            var choices = scene.Tree.GetAddChoices(scene.Group<EntitiesGroup>(0));
 
             Assert.Equal(new[] { "Add Entity", "Add Fullscreen Quad", "Add Text", "Add Composition" }, choices.Select(choice => choice.Header));
         }
@@ -154,8 +155,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(new[] { "Add Composition" }, Headers(null));
             Assert.Equal(new[] { "Add Layer", "Add Filter", "Add Modifier", "Add Composition" }, Headers(scene.Tree.Roots[0]));
             Assert.Equal("Add Composition", Headers(scene.LayerNodeOfA(0)).Last());
-            Assert.Equal(new[] { "Add Camera", "Add Composition" }, Headers(scene.Group(0, "Cameras")));
-            Assert.Equal(new[] { "Add Texture", "Add Modifier", "Add Composition" }, Headers(scene.Group(0, "Entities").Children[0]));
+            Assert.Equal(new[] { "Add Camera", "Add Composition" }, Headers(scene.Group<CamerasGroup>(0)));
+            Assert.Equal(new[] { "Add Texture", "Add Modifier", "Add Composition" }, Headers(scene.Group<EntitiesGroup>(0).Children[0]));
         }
 
         [Fact]
@@ -165,18 +166,18 @@ namespace CMiX.Studio.Avalonia.Tests
             var layer = scene.LayerOfA(0);
 
             // The toolbar opens a menu for a group, so the test takes the row of the kind from the choices.
-            scene.Tree.GetAddChoices(scene.Group(0, "Cameras")).Single(choice => choice.Header == "Add Camera").Execute!.Invoke();
-            scene.Tree.GetAddChoices(scene.Group(0, "Lights")).Single(choice => choice.Header == "Add Light").Execute!.Invoke();
+            scene.Tree.GetAddChoices(scene.Group<CamerasGroup>(0)).Single(choice => choice.Header == "Add Camera").Execute!.Invoke();
+            scene.Tree.GetAddChoices(scene.Group<LightsGroup>(0)).Single(choice => choice.Header == "Add Light").Execute!.Invoke();
 
             Assert.IsType<Camera>(Assert.Single(layer.CameraManager.ManagerData.Items));
             Assert.IsType<LightEntity>(Assert.Single(layer.LightManager.ManagerData.Items));
         }
 
         [Theory]
-        [InlineData("Entities")]
-        [InlineData("Cameras")]
-        [InlineData("Lights")]
-        public void AGroupSelected_CanAdd_ButCannotDuplicateMoveOrRemove(string group)
+        [InlineData(typeof(EntitiesGroup))]
+        [InlineData(typeof(CamerasGroup))]
+        [InlineData(typeof(LightsGroup))]
+        public void AGroupSelected_CanAdd_ButCannotDuplicateMoveOrRemove(System.Type group)
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.Group(0, group);
@@ -190,7 +191,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
-            var group = scene.Group(0, "Entities");
+            var group = scene.Group<EntitiesGroup>(0);
 
             // Add is on: a composition can be added whatever is selected.
             scene.Tree.SelectedNode = group.Children[0];
@@ -328,13 +329,13 @@ namespace CMiX.Studio.Avalonia.Tests
             entityParent.ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
 
-            screen.Scene.Tree.SelectedNode = screen.Scene.Group(0, "Entities").Children[0];
+            screen.Scene.Tree.SelectedNode = screen.Scene.Group<EntitiesGroup>(0).Children[0];
             // A composition can be added whatever is selected, so Add is never disabled.
             Assert.True(screen.ButtonOf("AddButton").IsEffectivelyEnabled);
             Assert.True(screen.ButtonOf("DuplicateButton").IsEffectivelyEnabled);
             Assert.False(screen.ButtonOf("MoveUpButton").IsEffectivelyEnabled);
 
-            screen.Scene.Tree.SelectedNode = screen.Scene.Group(0, "Entities");
+            screen.Scene.Tree.SelectedNode = screen.Scene.Group<EntitiesGroup>(0);
             Assert.True(screen.ButtonOf("AddButton").IsEffectivelyEnabled);
             Assert.False(screen.ButtonOf("DuplicateButton").IsEffectivelyEnabled);
             Assert.False(screen.ButtonOf("RemoveButton").IsEffectivelyEnabled);
@@ -379,7 +380,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             screen.Scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
-            screen.Scene.Tree.SelectedNode = screen.Scene.Group(0, "Entities").Children[0];
+            screen.Scene.Tree.SelectedNode = screen.Scene.Group<EntitiesGroup>(0).Children[0];
 
             screen.Click(screen.ButtonOf("AddButton"));
 
@@ -393,7 +394,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void AClickOnAdd_WithACamerasGroupSelected_OpensAMenu_AndAddACameraFromIt()
         {
             var screen = Show();
-            screen.Scene.Tree.SelectedNode = screen.Scene.Group(0, "Cameras");
+            screen.Scene.Tree.SelectedNode = screen.Scene.Group<CamerasGroup>(0);
 
             screen.Click(screen.ButtonOf("AddButton"));
             screen.ClickRow(screen.ButtonOf("AddButton").ContextMenu!, "Add Camera");
@@ -448,7 +449,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var button = screen.ButtonOf("AddButton");
             var buttonTop = button.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
 
-            foreach (var node in new[] { screen.Scene.Group(0, "Entities"), screen.Scene.LayerNodeOfA(0) })
+            foreach (var node in new[] { screen.Scene.Group<EntitiesGroup>(0), screen.Scene.LayerNodeOfA(0) })
             {
                 screen.Scene.Tree.SelectedNode = node;
                 screen.Click(button);
@@ -484,7 +485,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void AClickOnAdd_WithTheEntitiesGroupSelected_OpensAMenuOfTheThreeKindsOfEntity()
         {
             var screen = Show();
-            screen.Scene.Tree.SelectedNode = screen.Scene.Group(0, "Entities");
+            screen.Scene.Tree.SelectedNode = screen.Scene.Group<EntitiesGroup>(0);
 
             screen.Click(screen.ButtonOf("AddButton"));
 

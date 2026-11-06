@@ -31,30 +31,30 @@ namespace CMiX.Studio.Avalonia.Tests
             return new ProjectTree(project, provider.GetRequiredService<UndoManager>());
         }
 
-        private static TreeNode Child(TreeNode node, string header) => node.Children.Single(child => child.Header == header);
+        private static TreeNode Child<T>(TreeNode node) where T : TreeGroup => node.Children.Single(child => child.Group is T);
 
         [Fact]
         public void EveryRow_HasTheKindOfItsItem_AndAGroupHasTheKindOfItsItems()
         {
             var composition = CreateTree().Roots[0];
             var layer = composition.Children[0];
-            var entities = Child(layer, "Entities");
+            var entities = Child<EntitiesGroup>(layer);
             var entity = entities.Children[0];
-            var modifier = Child(entity, "Modifiers").Children[0];
+            var modifier = Child<ModifiersGroup>(entity).Children[0];
 
             Assert.Equal(TreeCategory.Composable, composition.Category);
             Assert.Equal(TreeCategory.Composable, layer.Category);
             Assert.Equal(TreeCategory.Entity, entities.Category);
             Assert.Equal(TreeCategory.Entity, entity.Category);
-            Assert.Equal(TreeCategory.Camera, Child(layer, "Cameras").Category);
-            Assert.Equal(TreeCategory.Light, Child(layer, "Lights").Category);
-            Assert.Equal(TreeCategory.Filter, Child(layer, "Filters").Category);
-            Assert.Equal(TreeCategory.Filter, Child(layer, "Filters").Children[0].Category);
-            Assert.Equal(TreeCategory.Texture, Child(entity, "Textures").Category);
-            Assert.Equal(TreeCategory.Modifier, Child(entity, "Modifiers").Category);
+            Assert.Equal(TreeCategory.Camera, Child<CamerasGroup>(layer).Category);
+            Assert.Equal(TreeCategory.Light, Child<LightsGroup>(layer).Category);
+            Assert.Equal(TreeCategory.Filter, Child<FiltersGroup>(layer).Category);
+            Assert.Equal(TreeCategory.Filter, Child<FiltersGroup>(layer).Children[0].Category);
+            Assert.Equal(TreeCategory.Texture, Child<TexturesGroup>(entity).Category);
+            Assert.Equal(TreeCategory.Modifier, Child<ModifiersGroup>(entity).Category);
             Assert.Equal(TreeCategory.Modifier, modifier.Category);
-            Assert.Equal(TreeCategory.Modulator, Child(modifier, "Modulators").Category);
-            Assert.Equal(TreeCategory.Modulator, Child(modifier, "Modulators").Children[0].Category);
+            Assert.Equal(TreeCategory.Modulator, Child<ModulatorsGroup>(modifier).Category);
+            Assert.Equal(TreeCategory.Modulator, Child<ModulatorsGroup>(modifier).Children[0].Category);
         }
 
         [Fact]
@@ -62,11 +62,11 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var composition = CreateTree().Roots[0];
             var layer = composition.Children[0];
-            var entity = Child(layer, "Entities").Children[0];
+            var entity = Child<EntitiesGroup>(layer).Children[0];
 
             Assert.Equal(0, composition.ComposableDepth);
             Assert.Equal(1, layer.ComposableDepth);
-            Assert.Equal(2, Child(layer, "Entities").ComposableDepth);
+            Assert.Equal(2, Child<EntitiesGroup>(layer).ComposableDepth);
             Assert.Equal(2, entity.ComposableDepth);
         }
 
@@ -75,11 +75,11 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var composition = CreateTree().Roots[0];
             var layer = composition.Children[0];
-            var entities = Child(layer, "Entities");
+            var entities = Child<EntitiesGroup>(layer);
             var entity = entities.Children[0];
-            var modifiers = Child(entity, "Modifiers");
+            var modifiers = Child<ModifiersGroup>(entity);
             var modifier = modifiers.Children[0];
-            var modulators = Child(modifier, "Modulators");
+            var modulators = Child<ModulatorsGroup>(modifier);
 
             Assert.Equal(0, composition.KindDepth);
             Assert.Equal(0, layer.KindDepth);
@@ -89,8 +89,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(2, modifier.KindDepth);
             Assert.Equal(3, modulators.KindDepth);
             Assert.Equal(3, modulators.Children[0].KindDepth);
-            Assert.Equal(1, Child(layer, "Filters").KindDepth);
-            Assert.Equal(1, Child(layer, "Filters").Children[0].KindDepth);
+            Assert.Equal(1, Child<FiltersGroup>(layer).KindDepth);
+            Assert.Equal(1, Child<FiltersGroup>(layer).Children[0].KindDepth);
         }
 
         [Fact]

@@ -93,25 +93,6 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 || CanMoveBetweenLists(source, target);
         }
 
-        // The kinds of list that a layer has for its items. An item moves between layers only into a list of its own kind.
-        private enum Slot
-        {
-            None,
-            Entities,
-            Cameras,
-            Lights
-        }
-
-        private static Slot SlotOfList(Layer layer, PrefabManager? list) =>
-            ReferenceEquals(list, layer.ModelEntityManager) ? Slot.Entities
-            : ReferenceEquals(list, layer.CameraManager) ? Slot.Cameras
-            : ReferenceEquals(list, layer.LightManager) ? Slot.Lights
-            : Slot.None;
-
-        // The kind of list that holds an item row of a layer. A layer, a composition and a group give None.
-        private static Slot SlotOfItem(TreeNode item) =>
-            item.Item != null && item.Parent?.Parent?.Item is Layer layer ? SlotOfList(layer, item.Owner) : Slot.None;
-
         // The kind of a list is the type of its group: entities, cameras, lights, textures, filters, modifiers or modulators.
         // An item moves between the lists of two owners only into a list of its own kind.
         private static System.Type? KindOfItem(TreeNode item) =>
@@ -148,21 +129,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (CompositionOf(source) is not { Item: Composition composition } || source.Parent?.Parent?.Item is not Layer ownLayer)
                 return false;
 
-            var slot = SlotOfItem(source);
-            if (slot == Slot.None)
+            if (source.Item == null || source.Parent?.Group is not LayerGroup kind)
                 return false;
 
             return composition.LayerManager.ManagerData.Items.OfType<Layer>().Any(layer =>
                 !ReferenceEquals(layer, ownLayer)
-                && ListOf(layer, slot).ManagerData.Items.Contains(source.Item!));
+                && TreeGroup.GroupsOf(layer).Any(group => group.GetType() == kind.GetType() && group.Manager.ManagerData.Items.Contains(source.Item)));
         }
-
-        private static PrefabManager ListOf(Layer layer, Slot slot) => slot switch
-        {
-            Slot.Cameras => layer.CameraManager,
-            Slot.Lights => layer.LightManager,
-            _ => layer.ModelEntityManager
-        };
 
         // The last row that is shown in the block of a node: itself when it is collapsed or has no children.
         public static TreeNode LastVisible(TreeNode node) =>

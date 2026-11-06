@@ -26,7 +26,7 @@ namespace CMiX.Studio.Avalonia.Tests
             public Layer LayerOfB() => (Layer)B.LayerManager.ManagerData.Items[0];
             public TreeNode LayerNodeOfA(int index) => NodeA.Children[index];
             public TreeNode LayerNodeOfB(int index) => NodeB.Children[index];
-            public static TreeNode Group(TreeNode layerNode, string header) => layerNode.Children.Single(group => group.Header == header);
+            public static TreeNode Group<T>(TreeNode layerNode) where T : TreeGroup => layerNode.Children.Single(group => group.Group is T);
         }
 
         // A holds two layers, B holds one.
@@ -138,7 +138,7 @@ namespace CMiX.Studio.Avalonia.Tests
             layer.ModelEntityManager.AddItem(typeof(Entity));
             var first = layer.ModelEntityManager.ManagerData.Items[0];
             var second = layer.ModelEntityManager.ManagerData.Items[1];
-            var group = Scene.Group(scene.LayerNodeOfA(0), "Entities");
+            var group = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0));
 
             service.Drop(group.Children[1], group.Children[0], DropPosition.Before);
 
@@ -271,7 +271,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Locate_TheBottomHalfOfTheLastRowOfABlock_IsAfterTheWholeBlock(double fraction)
         {
             var scene = CreateScene();
-            var lastRow = Scene.Group(scene.LayerNodeOfB(0), "Modifiers");
+            var lastRow = Scene.Group<ModifiersGroup>(scene.LayerNodeOfB(0));
 
             var place = service.Locate(scene.LayerNodeOfA(0), lastRow, fraction);
 
@@ -295,7 +295,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
-            Assert.Null(service.Locate(scene.LayerNodeOfA(0), Scene.Group(scene.LayerNodeOfB(0), "Modifiers"), 0.2));
+            Assert.Null(service.Locate(scene.LayerNodeOfA(0), Scene.Group<ModifiersGroup>(scene.LayerNodeOfB(0)), 0.2));
         }
 
         [Theory]
@@ -305,7 +305,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
-            Assert.Null(service.Locate(scene.LayerNodeOfA(0), Scene.Group(scene.LayerNodeOfB(0), "Entities"), fraction));
+            Assert.Null(service.Locate(scene.LayerNodeOfA(0), Scene.Group<EntitiesGroup>(scene.LayerNodeOfB(0)), fraction));
         }
 
         [Theory]
@@ -325,7 +325,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
 
             Assert.Null(service.Locate(scene.LayerNodeOfA(0), scene.LayerNodeOfA(0), 0.2));
-            Assert.Null(service.Locate(scene.LayerNodeOfA(0), Scene.Group(scene.LayerNodeOfA(0), "Lights"), 0.9));
+            Assert.Null(service.Locate(scene.LayerNodeOfA(0), Scene.Group<LightsGroup>(scene.LayerNodeOfA(0)), 0.9));
             Assert.Null(service.Locate(scene.NodeA, scene.LayerNodeOfA(1), 0.2));
         }
 
@@ -334,9 +334,9 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
-            var entity = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var entity = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
 
-            Assert.Null(service.Locate(entity, Scene.Group(scene.LayerNodeOfA(0), "Cameras"), 0.9));
+            Assert.Null(service.Locate(entity, Scene.Group<CamerasGroup>(scene.LayerNodeOfA(0)), 0.9));
             Assert.Null(service.Locate(entity, scene.LayerNodeOfB(0), 0.2));
         }
 
@@ -346,7 +346,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
-            var group = Scene.Group(scene.LayerNodeOfA(0), "Entities");
+            var group = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0));
             TestServiceProviderFactory.ExpandAll(scene.Tree);
 
             // An entity has groups under it (textures, filters, modifiers). The bottom half of the last row of its block is after it.
@@ -376,7 +376,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
 
             Assert.False(service.CanDrop(scene.LayerNodeOfA(0), scene.LayerNodeOfA(1), DropPosition.Inside));
-            Assert.False(service.CanDrop(scene.LayerNodeOfA(0), Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside));
+            Assert.False(service.CanDrop(scene.LayerNodeOfA(0), Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside));
         }
 
         [Fact]
@@ -395,8 +395,8 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(1).ModelEntityManager.AddItem(typeof(Entity));
             var moved = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
             var staying = scene.LayerOfA(1).ModelEntityManager.ManagerData.Items[0];
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
-            var target = Scene.Group(scene.LayerNodeOfA(1), "Entities").Children[0];
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var target = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)).Children[0];
 
             Assert.True(service.CanDrop(source, target, DropPosition.Before));
             var outcome = service.Drop(source, target, DropPosition.Before);
@@ -414,8 +414,8 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(1).ModelEntityManager.AddItem(typeof(Entity));
             var moved = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
             var staying = scene.LayerOfA(1).ModelEntityManager.ManagerData.Items[0];
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
-            var target = Scene.Group(scene.LayerNodeOfA(1), "Entities");
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var target = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1));
 
             Assert.True(service.CanDrop(source, target, DropPosition.Inside));
             service.Drop(source, target, DropPosition.Inside);
@@ -430,7 +430,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             var moved = scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
 
-            service.Drop(Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0], Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside);
+            service.Drop(Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0], Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside);
 
             Assert.Same(moved, Assert.Single(scene.LayerOfA(1).ModelEntityManager.ManagerData.Items));
         }
@@ -440,8 +440,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
-            var group = Scene.Group(scene.LayerNodeOfA(1), "Entities");
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var group = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1));
 
             var place = service.Locate(source, group, 0.9);
 
@@ -455,10 +455,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
 
-            Assert.False(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(1), "Cameras"), DropPosition.Inside));
-            Assert.False(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(0), "Entities"), DropPosition.Inside));
+            Assert.False(service.CanDrop(source, Scene.Group<CamerasGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside));
+            Assert.False(service.CanDrop(source, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)), DropPosition.Inside));
         }
 
         [Fact]
@@ -466,10 +466,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             scene.LayerOfA(0).CameraManager.AddItem(typeof(Camera));
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Cameras").Children[0];
+            var source = Scene.Group<CamerasGroup>(scene.LayerNodeOfA(0)).Children[0];
 
-            Assert.True(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(1), "Cameras"), DropPosition.Inside));
-            Assert.False(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside));
+            Assert.True(service.CanDrop(source, Scene.Group<CamerasGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside));
+            Assert.False(service.CanDrop(source, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside));
         }
 
         [Fact]
@@ -479,9 +479,9 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             var entity = (IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
             scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
 
-            Assert.False(service.CanDrop(source, Scene.Group(scene.LayerNodeOfA(1), "Entities"), DropPosition.Inside));
+            Assert.False(service.CanDrop(source, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)), DropPosition.Inside));
         }
 
         [Fact]
@@ -490,9 +490,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             var entity = (IHasCompositionID)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
 
-            var outcome = service.Drop(source, Scene.Group(scene.LayerNodeOfB(0), "Entities"), DropPosition.Inside);
+            var outcome = service.Drop(source, Scene.Group<EntitiesGroup>(scene.LayerNodeOfB(0)), DropPosition.Inside);
 
             Assert.True(outcome.Moved);
             Assert.Equal(scene.B.ID, entity.CompositionID);
@@ -505,8 +505,8 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             var entity = (IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
             scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
-            var target = Scene.Group(scene.LayerNodeOfB(0), "Entities");
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var target = Scene.Group<EntitiesGroup>(scene.LayerNodeOfB(0));
 
             Assert.True(service.CanDrop(source, target, DropPosition.Inside));
             var outcome = service.Drop(source, target, DropPosition.Inside);
@@ -526,9 +526,9 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             var entity = (IPrefab)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
             scene.LayerOfA(1).ModelEntityManager.AddExistingItem(entity);
-            var source = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var source = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
 
-            var outcome = service.Drop(source, Scene.Group(scene.LayerNodeOfA(2), "Entities"), DropPosition.Inside);
+            var outcome = service.Drop(source, Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(2)), DropPosition.Inside);
 
             Assert.True(outcome.Moved);
             Assert.Contains(entity, scene.LayerOfA(2).ModelEntityManager.ManagerData.Items);
@@ -543,8 +543,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var layer = scene.LayerOfA(0);
             layer.CameraManager.AddItem(typeof(Camera));
             layer.ModelEntityManager.AddItem(typeof(Entity));
-            var camera = Scene.Group(scene.LayerNodeOfA(0), "Cameras").Children[0];
-            var entity = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
+            var camera = Scene.Group<CamerasGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var entity = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
 
             Assert.False(service.CanDrop(camera, entity, DropPosition.Before));
         }
@@ -553,7 +553,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void CanDrop_AGroup_CannotBeDragged()
         {
             var scene = CreateScene();
-            var group = Scene.Group(scene.LayerNodeOfA(0), "Entities");
+            var group = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0));
 
             Assert.False(service.CanDrop(group, scene.LayerNodeOfA(1), DropPosition.Before));
         }
@@ -595,9 +595,9 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(1).ModelEntityManager.AddItem(typeof(Entity));
             var entity = (Entity)scene.LayerOfA(0).ModelEntityManager.ManagerData.Items[0];
             entity.ModifierManager.AddItem(typeof(TranslateModifier));
-            var modifier = Scene.Group(Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0], "Modifiers").Children[0];
-            var entityModifiers = Scene.Group(Scene.Group(scene.LayerNodeOfA(1), "Entities").Children[0], "Modifiers");
-            var layerModifiers = Scene.Group(scene.LayerNodeOfB(0), "Modifiers");
+            var modifier = Scene.Group<ModifiersGroup>(Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0]).Children[0];
+            var entityModifiers = Scene.Group<ModifiersGroup>(Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(1)).Children[0]);
+            var layerModifiers = Scene.Group<ModifiersGroup>(scene.LayerNodeOfB(0));
 
             Assert.False(ListRules.CanHold(typeof(Layer), typeof(TranslateModifier)));
             Assert.False(service.CanDrop(modifier, layerModifiers, DropPosition.Inside));
@@ -609,8 +609,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
-            var entity = Scene.Group(scene.LayerNodeOfA(0), "Entities").Children[0];
-            var group = Scene.Group(scene.LayerNodeOfA(0), "Cameras");
+            var entity = Scene.Group<EntitiesGroup>(scene.LayerNodeOfA(0)).Children[0];
+            var group = Scene.Group<CamerasGroup>(scene.LayerNodeOfA(0));
 
             Assert.False(service.CanDrop(entity, group, DropPosition.Before));
             Assert.False(service.CanDrop(entity, group, DropPosition.After));

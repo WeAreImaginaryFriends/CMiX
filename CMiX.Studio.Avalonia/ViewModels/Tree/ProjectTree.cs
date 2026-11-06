@@ -9,11 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CMiX.Core;
 using CMiX.Core.Compositing;
-using CMiX.Core.Modifiers;
-using CMiX.Core.Modulation;
-using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs.Managers;
-using CMiX.Core.Texturing;
 using CMiX.Core.Rendering.Cameras;
 using CMiX.Core.Rendering.Lights;
 using CMiX.Core.Undo;
@@ -88,41 +84,22 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (node.Item is Layer own)
                 return new[]
                 {
-                    new TreeAdd("row.add", "Add", Children: new[]
-                    {
-                        AddOf("row.add-entity", "Entity", own.ModelEntityManager, typeof(Entity)),
-                        AddOf("row.add-fullscreen-quad", "Fullscreen Quad", own.ModelEntityManager, typeof(FullscreenQuad)),
-                        AddOf("row.add-text-entity", "Text", own.ModelEntityManager, typeof(TextEntity)),
-                        AddOf("row.add-camera", "Camera", own.CameraManager, typeof(Camera)),
-                        AddOf("row.add-light", "Light", own.LightManager, typeof(LightEntity))
-                    })
+                    new TreeAdd("row.add", "Add", Children: TreeGroup.GroupsOf(own).OfType<LayerGroup>()
+                        .SelectMany(group => group.AddableTypes.Select(type => LayerAddOf(group, type, string.Empty)))
+                        .ToList())
                 }.Concat(HeldAdds(own)).ToList();
 
             // Any other item takes the modifiers, the filters and the textures that it can hold.
             if (node.Item != null)
                 return HeldAdds(node.Item);
 
-            // A group of modifiers, filters or textures takes one of the types that its owner can hold.
-            if (node.Group is { } held && held is not LayerGroup)
-                return AddsOfTypes(held);
-
             // A group of a layer takes the kind of item of its list.
-            if (node.ChildManager is not { } list || node.Parent?.Item is not Layer layer)
-                return Array.Empty<TreeAdd>();
+            if (node.Group is LayerGroup layerGroup)
+                return layerGroup.AddableTypes.Select(type => LayerAddOf(layerGroup, type, "Add ")).ToList();
 
-            if (ReferenceEquals(list, layer.ModelEntityManager))
-                return new[]
-                {
-                    AddOf("row.add-entity", "Add Entity", list, typeof(Entity)),
-                    AddOf("row.add-fullscreen-quad", "Add Fullscreen Quad", list, typeof(FullscreenQuad)),
-                    AddOf("row.add-text-entity", "Add Text", list, typeof(TextEntity))
-                };
-
-            if (ReferenceEquals(list, layer.CameraManager))
-                return new[] { AddOf("row.add-camera", "Add Camera", list, typeof(Camera)) };
-
-            if (ReferenceEquals(list, layer.LightManager))
-                return new[] { AddOf("row.add-light", "Add Light", list, typeof(LightEntity)) };
+            // A group of modifiers, filters or textures takes one of the types that its owner can hold.
+            if (node.Group is { } held)
+                return AddsOfTypes(held);
 
             return Array.Empty<TreeAdd>();
         }
@@ -139,29 +116,33 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             return choices;
         }
 
-        // The submenus of an item for what it can hold: textures, filters and modifiers. A submenu is there only when the item can hold the kind.
-        private static IReadOnlyList<TreeAdd> HeldAdds(IControl item)
-        {
-            var adds = new List<TreeAdd>();
-            if (item is ITexturable { Texture.DiffuseTexture.TextureManager: { } textures })
-                adds.Add(new TreeAdd("row.add-texture", "Add Texture", Children: AddsOfTypes(new TexturesGroup(item, textures)), Secondary: true));
-
-            if (item is ITextureModifiable { TextureModifierManager: { } filters })
-                adds.Add(new TreeAdd("row.add-filter", "Add Filter", Children: AddsOfTypes(new FiltersGroup(item, filters)), Secondary: true));
-
-            if (item is IModifiable { ModifierManager: { } modifiers })
-                adds.Add(new TreeAdd("row.add-modifier", "Add Modifier", Children: AddsOfTypes(new ModifiersGroup(item, modifiers)), Secondary: true));
-
-            if (item is IModulatable { ModulatorManager: { } modulators })
-                adds.Add(new TreeAdd("row.add-modulator", "Add Modulator", Children: AddsOfTypes(new ModulatorsGroup(item, modulators)), Secondary: true));
-
-            return adds;
-        }
+        // The submenus of an item for what it can hold: textures, filters, modifiers and modulators. A submenu is there only when the item
+        // can hold the kind.
+        private static IReadOnlyList<TreeAdd> HeldAdds(IControl item) =>
+            TreeGroup.GroupsOf(item)
+                .Where(group => group is not LayerGroup)
+                .Select(group =>
+                {
+                    var name = TreeCategories.Label(group.Category, 1);
+                    return new TreeAdd("row.add-" + name.ToLowerInvariant(), "Add " + name, Children: AddsOfTypes(group), Secondary: true);
+                })
+                .ToList();
 
         private static IReadOnlyList<TreeAdd> AddsOfTypes(TreeGroup group) =>
-            AddableTypes.ForGroup(group)
+            group.AddableTypes
                 .Select(type => AddOf("row.add-" + type.Name, AddableTypes.LabelOf(type), group.Manager, type))
                 .ToList();
+
+        // An add row for an item of a layer. The prefix is "Add " in the menu of a group, and empty in the submenu of the layer.
+        private static TreeAdd LayerAddOf(LayerGroup group, Type type, string prefix)
+        {
+            var (id, label) = type == typeof(FullscreenQuad) ? ("row.add-fullscreen-quad", "Fullscreen Quad")
+                : type == typeof(TextEntity) ? ("row.add-text-entity", "Text")
+                : type == typeof(Camera) ? ("row.add-camera", "Camera")
+                : type == typeof(LightEntity) ? ("row.add-light", "Light")
+                : ("row.add-entity", "Entity");
+            return AddOf(id, prefix + label, group.Manager, type);
+        }
 
         private static TreeAdd AddOf(string id, string header, PrefabManager list, Type type) =>
             new(id, header, () => list.AddItem(type));
@@ -299,7 +280,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The other nodes of a layer pass the drop to the entities of their layer, but they are not the target themselves.
         public bool IsPathTarget(TreeNode node) =>
             node.Item is Composition or Layer
-            || (node.Item == null && node.Parent?.Item is Layer layer && ReferenceEquals(node.ChildManager, layer.ModelEntityManager));
+            || node.Group is EntitiesGroup;
 
         public bool CanDropPaths(IEnumerable<string> paths) => paths.Any(pathDrop.Accepts);
 

@@ -126,7 +126,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ACollapsedGroup_ShowsItsCount_InTheColorOfItsKind()
         {
             var (view, _, layer, _) = Show();
-            var entities = layer.Children.Single(child => child.Header == "Entities");
+            var entities = layer.Children.Single(child => child.Group is EntitiesGroup);
             entities.IsExpanded = false;
             Settle();
 
