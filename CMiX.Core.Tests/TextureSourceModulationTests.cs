@@ -4,6 +4,7 @@ using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Texturing.Filters;
 using CMiX.Core.Texturing.Sources;
+using CMiX.Core.Undo;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -80,6 +81,24 @@ namespace CMiX.Core.Tests
             copy.FromModel(player.ToModel());
 
             Assert.True(copy.DoSeek.Value);
+        }
+
+        [Fact]
+        public void DoSeek_PressAndReleaseThenUndo_LeavesDoSeekFalse()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var undoManager = provider.GetRequiredService<UndoManager>();
+            var player = (VideoPlayer)provider.GetRequiredService<ControlFactory>().Create(typeof(VideoPlayer));
+            provider.GetRequiredService<ControlActivationService>().ActivateAll();
+
+            Assert.True(player.DoSeek.IsMomentary);
+
+            player.DoSeek.Value = true;
+            player.DoSeek.Value = false;
+            var error = Record.Exception(() => undoManager.Undo());
+
+            Assert.Null(error);
+            Assert.False(player.DoSeek.Value);
         }
 
         [Fact]

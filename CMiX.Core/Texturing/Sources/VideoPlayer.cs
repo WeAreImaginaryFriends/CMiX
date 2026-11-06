@@ -25,6 +25,7 @@ namespace CMiX.Core.Texturing.Sources
             SeekTarget = seekTarget;
             Playing = playing;
             DoSeek = doSeek;
+            DoSeek.IsMomentary = true;
             AssetSelector = assetSelector;
 
             Modulators.Add(Playing, SeekTarget, DoSeek);

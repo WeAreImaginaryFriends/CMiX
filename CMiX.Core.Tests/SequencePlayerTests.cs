@@ -4,6 +4,7 @@ using CMiX.Core.Assets;
 using CMiX.Core.Persistence;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Texturing.Sources;
+using CMiX.Core.Undo;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -23,7 +24,24 @@ namespace CMiX.Core.Tests
             Assert.True(player.Looping.Value);
             Assert.True(player.Playing.Value);
             Assert.False(player.DoSeek.Value);
+            Assert.True(player.DoSeek.IsMomentary);
             Assert.IsAssignableFrom<IAssetTextureSource>(player);
+        }
+
+        [Fact]
+        public void DoSeek_PressAndReleaseThenUndo_LeavesDoSeekFalse()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var undoManager = provider.GetRequiredService<UndoManager>();
+            var player = (SequencePlayer)provider.GetRequiredService<ControlFactory>().Create(typeof(SequencePlayer));
+            provider.GetRequiredService<ControlActivationService>().ActivateAll();
+
+            player.DoSeek.Value = true;
+            player.DoSeek.Value = false;
+            var error = Record.Exception(() => undoManager.Undo());
+
+            Assert.Null(error);
+            Assert.False(player.DoSeek.Value);
         }
 
         [Fact]

@@ -47,6 +47,12 @@ namespace CMiX.Core.Modulation
 
         public GenericValue<string> BoundOutputNameSource { get; set; }
 
+        public bool IsMomentary
+        {
+            get => ValueSource.IsMomentary;
+            set => ValueSource.IsMomentary = value;
+        }
+
         public T Value
         {
             get => ValueSource.Value;

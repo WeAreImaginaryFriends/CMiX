@@ -47,6 +47,7 @@ namespace CMiX.Core.BaseControls
         public ICommand ResetCommand { get; set; }
         public ControlMessenger ControlMessenger { get; set; }
         public MessageFactory MessageFactory { get; set; }
+        public bool IsMomentary { get; set; }
 
         private T _value;
         public T Value
@@ -68,6 +69,14 @@ namespace CMiX.Core.BaseControls
                     // message for nothing.
                     if (EqualityComparer<T>.Default.Equals(_value, value))
                         return;
+
+                    // A momentary value is a pulse. It writes no undo step but it goes on the wire.
+                    if (IsMomentary)
+                    {
+                        SetProperty(ref _value, value);
+                        SendValueChanged();
+                        return;
+                    }
 
                     var before = CaptureModel();
                     SetProperty(ref _value, value);
@@ -97,7 +106,8 @@ namespace CMiX.Core.BaseControls
                 _inInteraction = true;
                 // Undo state is decided once per gesture, matching what the unthrottled path would
                 // have recorded for the first write of the gesture.
-                var recordsUndo = !(UndoManager?.IsApplying ?? false)
+                var recordsUndo = !IsMomentary
+                                  && !(UndoManager?.IsApplying ?? false)
                                   && !(UndoManager?.IsSuppressed ?? false);
                 _interactionBefore = recordsUndo ? CaptureModel() : null;
                 _lastInteractionSendTicks = Stopwatch.GetTimestamp() - InteractionSendIntervalTicks;

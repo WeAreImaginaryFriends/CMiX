@@ -29,6 +29,7 @@ namespace CMiX.Core.Texturing.Sources
             FPS = fps;
             Looping = looping;
             DoSeek = doSeek;
+            DoSeek.IsMomentary = true;
             AssetSelector = assetSelector;
 
             Modulators.Add(Playing, Looping, SeekTarget, DoSeek);
