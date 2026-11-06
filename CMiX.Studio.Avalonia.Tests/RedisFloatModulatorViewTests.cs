@@ -2,13 +2,9 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using CMiX.Core.Animations;
-using CMiX.Core.Modulation;
 using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Texturing.Filters;
-using CMiX.Core.Undo;
-using CMiX.UI.Controls.Enum;
 using CMiX.UI.Controls.Number;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -16,26 +12,16 @@ using ViewRedisFloatModulator = CMiX.Studio.Avalonia.Views.RedisFloatModulator;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // The address combo box and the range of a RedisFloatModulator in the window.
+    // The range of a RedisFloatModulator in the window. RedisModulatorViewTests holds the address box.
     public class RedisFloatModulatorViewTests
     {
         private readonly IServiceProvider _provider = TestServiceProviderFactory.Create();
-
-        private RedisAddressRegistry Registry => _provider.GetRequiredService<RedisAddressRegistry>();
 
         private RedisFloatModulator NewModulator()
         {
             var blur = (Blur)_provider.GetRequiredService<ControlFactory>().Create(typeof(Blur));
             blur.ModulatorManager.AddItem(typeof(RedisFloatModulator));
             return (RedisFloatModulator)blur.ModulatorManager.SelectedItem;
-        }
-
-        private RedisAddress AddAddress(string text)
-        {
-            Registry.AddAddress();
-            var address = (RedisAddress)Registry.AddressManager.SelectedItem;
-            address.Value = text;
-            return address;
         }
 
         private static ViewRedisFloatModulator Show(RedisFloatModulator modulator)
@@ -46,65 +32,7 @@ namespace CMiX.Studio.Avalonia.Tests
             return view;
         }
 
-        private static ComboBoxCaptioned AddressBox(Control view) =>
-            view.GetVisualDescendants().OfType<ComboBoxCaptioned>().Single(combo => combo.Caption == "Address");
-
         private static RangeValue RangeOf(Control view) => view.GetVisualDescendants().OfType<RangeValue>().Single();
-
-        [AvaloniaFact]
-        public void Show_TheAddressBox_ListsTheAddressesOfTheProject()
-        {
-            var modulator = NewModulator();
-            var first = AddAddress("cmix:kick");
-            var second = AddAddress("cmix:snare");
-
-            var view = Show(modulator);
-
-            Assert.Equal(new object[] { first, second }, AddressBox(view).ItemsSource!.Cast<object>());
-        }
-
-        [AvaloniaFact]
-        public void SelectedItem_PickingAnAddress_SetsTheSelectedAddressID()
-        {
-            var modulator = NewModulator();
-            AddAddress("cmix:kick");
-            var second = AddAddress("cmix:snare");
-            var view = Show(modulator);
-
-            AddressBox(view).SelectedItem = second;
-            Dispatcher.UIThread.RunJobs();
-
-            Assert.Equal(second.ID, modulator.SelectedAddressID.Value);
-        }
-
-        [AvaloniaFact]
-        public void Show_AModulatorWithASelection_ShowsItAsTheSelectedItem()
-        {
-            var modulator = NewModulator();
-            AddAddress("cmix:kick");
-            var second = AddAddress("cmix:snare");
-            modulator.SelectedAddress = second;
-
-            var view = Show(modulator);
-
-            Assert.Same(second, AddressBox(view).SelectedItem);
-        }
-
-        [AvaloniaFact]
-        public void ResetCommand_OfTheAddressBox_ClearsTheSelection()
-        {
-            var modulator = NewModulator();
-            AddAddress("cmix:kick");
-            modulator.SelectedAddress = AddAddress("cmix:snare");
-            var view = Show(modulator);
-            var box = AddressBox(view);
-
-            box.ResetCommand!.Execute(null);
-            Dispatcher.UIThread.RunJobs();
-
-            Assert.Null(modulator.SelectedAddressID.Value);
-            Assert.Null(box.SelectedItem);
-        }
 
         [AvaloniaFact]
         public void LeftValue_TheRangeValue_ChangesTheMinimum()
@@ -128,19 +56,6 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(3.0f, modulator.Range.Maximum.Value);
-        }
-
-        [AvaloniaFact]
-        public void Show_TheView_LeavesNothingOnTheUndoStack()
-        {
-            AddAddress("cmix:kick");
-            var modulator = NewModulator();
-            var undo = _provider.GetRequiredService<UndoManager>();
-            undo.Clear();
-
-            Show(modulator);
-
-            Assert.False(undo.CanUndo);
         }
     }
 }

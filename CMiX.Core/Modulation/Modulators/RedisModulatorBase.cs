@@ -51,5 +51,32 @@ namespace CMiX.Core.Modulation.Modulators
             OutputRemoved?.Invoke(OutputName);
             SelectedAddressID.Value = null;
         }
+
+        protected void FillBaseModel(RedisModulatorModelBase model)
+        {
+            model.ID = ID;
+            model.PrefabService = (PrefabServiceModel)PrefabService.ToModel();
+            model.SelectedAddressID = (GenericValueModel<Guid?>)SelectedAddressID.ToModel();
+        }
+
+        protected void ReadBaseModel(RedisModulatorModelBase model)
+        {
+            ID = model.ID;
+            PrefabService.FromModel(model.PrefabService);
+            SelectedAddressID.FromModel(model.SelectedAddressID);
+        }
+    }
+
+    // A Redis modulator with one output of type T.
+    public abstract class RedisModulatorBase<T> : RedisModulatorBase
+    {
+        protected RedisModulatorBase(PrefabService prefabService, RedisAddressRegistry registry,
+                                     GenericValue<Guid?> selectedAddressID)
+            : base(prefabService, registry, selectedAddressID)
+        {
+        }
+
+        protected override IModulatorOutput Output =>
+            new AddressedOutput<T>(OutputName, SelectedAddress?.Value ?? OutputName);
     }
 }

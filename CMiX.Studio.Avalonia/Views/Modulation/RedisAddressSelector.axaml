@@ -1,0 +1,20 @@
+<ui:UserControlCaptioned
+    x:Class="CMiX.Studio.Avalonia.Views.Modulation.RedisAddressSelector"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    x:Name="redisAddressSelector">
+
+    <ui:ComboBoxCaptioned
+        Caption="{Binding Caption, ElementName=redisAddressSelector}"
+        ItemsSource="{Binding Registry.AddressManager.ManagerData.Items}"
+        ResetCommand="{Binding SelectedAddressID.ResetCommand}"
+        SelectedItem="{Binding SelectedAddress}">
+        <ui:ComboBoxCaptioned.ItemTemplate>
+            <DataTemplate>
+                <ui:TextBlockTrimmed Text="{Binding Value}" />
+            </DataTemplate>
+        </ui:ComboBoxCaptioned.ItemTemplate>
+    </ui:ComboBoxCaptioned>
+
+</ui:UserControlCaptioned>
