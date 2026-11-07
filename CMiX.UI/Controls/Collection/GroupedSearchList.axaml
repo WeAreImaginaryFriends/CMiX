@@ -1,0 +1,66 @@
+<UserControl
+    x:Class="CMiX.UI.Controls.Collection.GroupedSearchList"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    x:Name="groupedList">
+
+    <!-- The row under the highlight is lit. The mouse moves the highlight, as in ItemPickerList. A header is quieter than a row. -->
+    <UserControl.Styles>
+        <Style Selector="Border.row">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusAll}" />
+            <Setter Property="Height" Value="{DynamicResource ControlHeightMD}" />
+        </Style>
+        <Style Selector="Border.row.highlighted">
+            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+        </Style>
+        <Style Selector="Border.row.header TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Grey900Brush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <!-- The search field, then the groups. The rows scroll when there are more than VisibleRows. -->
+    <StackPanel Spacing="4">
+
+        <Panel>
+
+            <TextBox
+                x:Name="PART_Search"
+                Height="{DynamicResource ControlHeightMD}"
+                Padding="28,0,6,0"
+                VerticalContentAlignment="Center"
+                Text="{Binding SearchText, ElementName=groupedList, Mode=TwoWay}"
+                Watermark="Search" />
+
+            <ui:AppIcon
+                Margin="8,0,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                IconKey="Search"
+                IsHitTestVisible="False"
+                Opacity="0.5"
+                Size="{DynamicResource IconSizeXS}" />
+
+        </Panel>
+
+        <ScrollViewer
+            x:Name="PART_Scroll"
+            HorizontalScrollBarVisibility="Hidden"
+            VerticalScrollBarVisibility="Hidden"
+            ui:ScrollStep.ItemHeight="{DynamicResource ControlHeightMD}"
+            ui:ScrollStep.ItemSpacing="0"
+            ui:ScrollStep.VisibleItemCount="{Binding VisibleRows, ElementName=groupedList}">
+            <StackPanel x:Name="PART_Rows" />
+        </ScrollViewer>
+
+        <TextBlock
+            x:Name="PART_NoMatch"
+            Margin="8,0,0,4"
+            IsVisible="False"
+            Opacity="0.5"
+            Text="No match" />
+
+    </StackPanel>
+
+</UserControl>
