@@ -14,6 +14,34 @@ namespace CMiX.Studio.Avalonia.Tests
     {
         private static readonly Regex IconKey = new(@"IconKey=""([A-Za-z0-9_]+)""", RegexOptions.Compiled);
 
+        // Every icon has the one size IconSizeXS, and a slot that holds an icon (the icon of a menu row) is not smaller than the icon.
+        [Fact]
+        public void EveryIconSizeAndIconSlotInTheAxaml_IsIconSizeXS()
+        {
+            var other = new List<string>();
+            var size = new Regex(@"<(?:ui:)?AppIcon\b[^>]*?\bSize=""([^""]+)""", RegexOptions.Singleline);
+            foreach (var file in SourceTree.AxamlFiles())
+            {
+                var text = File.ReadAllText(file);
+                foreach (Match match in size.Matches(text))
+                    if (match.Groups[1].Value != "{DynamicResource IconSizeXS}")
+                        other.Add($"{SourceTree.Relative(file)}: {match.Groups[1].Value}");
+
+                foreach (Match match in Regex.Matches(text, @"Name=""PART_IconPresenter""[^>]*?(?:Width|Height)=""([^""]+)""", RegexOptions.Singleline))
+                    if (match.Groups[1].Value != "{DynamicResource IconSizeXS}")
+                        other.Add($"{SourceTree.Relative(file)}: slot {match.Groups[1].Value}");
+            }
+
+            Assert.True(other.Count == 0, "Icons with another size:\n" + string.Join("\n", other));
+        }
+
+        [Fact]
+        public void Duplicate_TheKey_IsTheDuplicateIconAndNotTheCopyIcon()
+        {
+            Assert.Equal(Material.Icons.MaterialIconKind.ContentDuplicate, Icons.Kinds["Duplicate"]);
+            Assert.NotEqual(Icons.Kinds["Copy"], Icons.Kinds["Duplicate"]);
+        }
+
         [AvaloniaFact]
         public void EveryIconKeyInTheAxaml_IsRegistered()
         {

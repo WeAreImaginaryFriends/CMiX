@@ -5,7 +5,7 @@
     xmlns:Tree="clr-namespace:CMiX.Studio.Avalonia.ViewModels.Tree"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
 
-    <!-- What a collapsed row holds: a small square for each kind, in the color of the kind. It does not show how many.
+    <!-- What a collapsed row holds: a small square for each kind, in the color of the kind, with how many items of that kind.
          The DataContext is the tree node. The squares are at the full color when the pointer is over the row, as when the row is selected (the pseudo classes hovered and selected, set from IsHovered and IsSelected). -->
     <UserControl.Styles>
         <Style Selector="Border.kindcount">
@@ -32,7 +32,14 @@
                     Height="{DynamicResource ControlHeightXS}"
                     MinWidth="{DynamicResource ControlHeightXS}"
                     CornerRadius="{DynamicResource CornerRadiusAll}"
-                    ToolTip.Tip="{Binding Description}" />
+                    ToolTip.Tip="{Binding Description}">
+                    <TextBlock
+                        Margin="4,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource ActiveForegroundBrush}"
+                        Text="{Binding Count}" />
+                </Border>
             </DataTemplate>
         </ItemsControl.ItemTemplate>
     </ItemsControl>

@@ -109,6 +109,10 @@ namespace CMiX.Studio.Avalonia.Tests
                 Settle();
                 var texts = Panel.List.VisibleTexts;
                 var row = Panel.List.RowVisuals.Where((visual, index) => !visual.Classes.Contains("header") && texts[index] == text).First();
+                // Every group is open, so the list can be longer than the panel: the row scrolls into view first.
+                row.BringIntoView();
+                Window.UpdateLayout();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
                 var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), Window)!.Value;
                 Window.MouseMove(point);
                 Dispatcher.UIThread.RunJobs();
@@ -187,9 +191,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var cameras = Screen.Headers(screen.OpenMenu(screen.Group<CamerasGroup>(0))!);
             var lights = Screen.Headers(screen.OpenMenu(screen.Group<LightsGroup>(0))!);
 
-            Assert.Equal(new[] { "Entities", "-", "Add" }, entities);
-            Assert.Equal(new[] { "Cameras", "-", "Add" }, cameras);
-            Assert.Equal(new[] { "Lights", "-", "Add" }, lights);
+            Assert.Equal(new[] { "Entities", "-", "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" }, entities);
+            Assert.Equal(new[] { "Cameras", "-", "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" }, cameras);
+            Assert.Equal(new[] { "Lights", "-", "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" }, lights);
         }
 
         [AvaloniaFact]
@@ -263,7 +267,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var panel = screen.OpenAddPanel(screen.OpenMenu(screen.LayerNodeOfA(0))!);
 
             Assert.True(panel.IsOpen);
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, panel.List.Groups!.Select(group => group.Header));
+            Assert.Equal(new[] { "Content", "Filter", "Modifier", "Project" }, panel.List.Groups!.Select(group => group.Header));
             Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, panel.List.Groups!.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
         }
 
@@ -345,7 +349,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var headers = Screen.Headers(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!);
 
-            Assert.Equal(new[] { "Entities", "-", "Add" }, headers);
+            Assert.Equal(new[] { "Entities", "-", "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" }, headers);
             Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, screen.OpenAddPanel(screen.TreeView.ContextMenu!).List.Groups!.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
         }
 
@@ -444,7 +448,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             screen.TreeView.RaiseEvent(new ContextRequestedEventArgs { Source = screen.TreeView });
             Dispatcher.UIThread.RunJobs();
-            Screen.Click(screen.TreeView.ContextMenu!, "Add Composition");
+            screen.OpenAddPanel(screen.TreeView.ContextMenu!);
+            screen.Pick("Composition");
 
             var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
 
@@ -466,7 +471,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void RightClick_OutsideTheRows_OpensTheMenuToAddAComposition()
+        public void RightClick_OutsideTheRows_OpensTheMenuWhoseAddPanelAddsAComposition()
         {
             var screen = Show();
             var before = screen.Project.CompositionManager.ManagerData.Items.Count;
@@ -476,12 +481,15 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var menu = screen.TreeView.ContextMenu!;
             Assert.NotNull(menu);
-            Assert.Contains("Add Composition", Screen.Headers(menu));
-            Assert.DoesNotContain("Duplicate", Screen.Headers(menu));
-            Assert.DoesNotContain("Remove", Screen.Headers(menu));
+            Assert.Contains("Add", Screen.Headers(menu));
+            Assert.False(menu.Items.OfType<MenuItem>().First(item => item.Header?.ToString() == "Duplicate").IsEnabled);
+            Assert.False(menu.Items.OfType<MenuItem>().First(item => item.Header?.ToString() == "Remove").IsEnabled);
             Assert.All(screen.View.GetVisualDescendants().OfType<TreeViewItem>(), row => Assert.Null(row.ContextMenu));
 
-            Screen.Click(menu, "Add Composition");
+            // The menu adds nothing by itself. The composition is an entry of the panel.
+            Assert.Equal(before, screen.Project.CompositionManager.ManagerData.Items.Count);
+            screen.OpenAddPanel(menu);
+            screen.Pick("Composition");
 
             Assert.Equal(before + 1, screen.Project.CompositionManager.ManagerData.Items.Count);
         }

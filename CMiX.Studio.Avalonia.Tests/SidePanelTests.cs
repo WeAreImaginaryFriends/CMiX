@@ -316,7 +316,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Click_ATree_ShowsTheInspectorOnTheOtherSide()
+        public void Click_ATree_KeepsTheTabOnTheOtherSide()
         {
             var screen = Show();
             Pick(screen, left: true, PanelChoice.Tabs);
@@ -337,7 +337,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.Pump();
 
             var selected = (tabs.GetVisualDescendants().OfType<TabControl>().First().SelectedItem as TabItem)?.Header as AppIcon;
-            Assert.Equal("Inspector", selected?.IconKey);
+            Assert.Equal("Settings", selected?.IconKey);
         }
 
         [AvaloniaFact]

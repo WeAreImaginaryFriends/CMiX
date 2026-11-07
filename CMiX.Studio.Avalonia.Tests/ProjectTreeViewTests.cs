@@ -538,7 +538,7 @@ namespace CMiX.Studio.Avalonia.Tests
             control.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X;
 
         [AvaloniaFact]
-        public void Show_TheToggles_PutTheVisibilityFirstAndTheMaskRightOfIt()
+        public void Show_TheToggles_PutTheMaskFirstAndTheVisibilityRightOfIt()
         {
             var screen = Show();
 
@@ -548,8 +548,8 @@ namespace CMiX.Studio.Avalonia.Tests
                 var visibility = ToggleWithTheme(row, "ToggleButtonVisibility");
                 var mask = ToggleWithTheme(row, "ToggleButtonMask");
 
-                Assert.True(RightEdge(screen, visibility) <= mask.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X,
-                    $"The mask toggle of {node.Header} is not right of the visibility toggle.");
+                Assert.True(RightEdge(screen, mask) <= visibility.TranslatePoint(new Point(0, 0), screen.Window)!.Value.X,
+                    $"The mask toggle of {node.Header} is not left of the visibility toggle.");
             }
         }
 

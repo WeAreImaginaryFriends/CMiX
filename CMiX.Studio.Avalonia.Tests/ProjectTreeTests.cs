@@ -30,7 +30,7 @@ namespace CMiX.Studio.Avalonia.Tests
             layerNode.Children.Single(group => group.Group is T);
 
         [Fact]
-        public void Add_AnItem_StartsCollapsedAndKeepsItsParentClosed()
+        public void Add_AnItem_StartsExpandedAndOpensItsParent()
         {
             var scene = CreateScene();
             var composition = scene.Tree.Roots[0];
@@ -39,10 +39,32 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.A.LayerManager.AddItem(typeof(Layer));
 
-            Assert.False(composition.IsExpanded);
+            Assert.True(composition.IsExpanded);
             var added = composition.Children[before];
             Assert.NotNull(added.Item);
-            Assert.False(added.IsExpanded);
+            Assert.True(added.IsExpanded);
+            Assert.All(added.Children, group => Assert.True(group.IsExpanded));
+        }
+
+        [Fact]
+        public void ApplySnapshot_AProjectLoads_EveryRowStartsCollapsed()
+        {
+            var scene = CreateScene();
+            var model = (ProjectModel)scene.Project.ToModel();
+
+            scene.Project.ApplySnapshot(model);
+
+            Assert.NotEmpty(scene.Tree.Roots);
+            Assert.All(scene.Tree.Roots, composition =>
+            {
+                Assert.False(composition.IsExpanded);
+                Assert.All(composition.Children, child => Assert.False(child.IsExpanded));
+            });
+
+            // An item that the user adds after the load is expanded again.
+            var loaded = (Composition)scene.Project.CompositionManager.ManagerData.Items[0];
+            loaded.LayerManager.AddItem(typeof(Layer));
+            Assert.True(scene.Tree.Roots[0].IsExpanded);
         }
 
         [Fact]

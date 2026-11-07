@@ -12,8 +12,5 @@ namespace CMiX.Studio.Avalonia.Views
         {
             InitializeComponent();
         }
-
-        // Shows the inspector tab, which has the editor of the row that is selected in the project tree.
-        public void ShowInspector() => mainTabs.SelectedItem = inspectorTab;
     }
 }

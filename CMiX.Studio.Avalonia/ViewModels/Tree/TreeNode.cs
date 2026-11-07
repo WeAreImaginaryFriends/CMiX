@@ -31,6 +31,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         internal TreeNode(ProjectTree tree, TreeNode? parent, PrefabManager? owner, IControl? item, string header, PrefabManager? childManager, TreeGroup? group = null)
         {
             this.tree = tree;
+
+            // A row made while the project loads starts collapsed. Any other new row starts expanded.
+            isExpanded = !tree.IsLoading;
             Parent = parent;
             Owner = owner;
             Item = item;
@@ -253,8 +256,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    // A new item starts collapsed: the user opens it.
-                    InsertChildren(e.NewStartingIndex, e.NewItems!.Cast<IControl>(), expanded: false);
+                    InsertChildren(e.NewStartingIndex, e.NewItems!.Cast<IControl>());
+
+                    // A new item shows at once: the rows above it open. A loaded item opens nothing.
+                    if (!tree.IsLoading)
+                        for (var holder = this; holder != null; holder = holder.Parent)
+                            holder.IsExpanded = true;
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     RemoveChildren(e.OldStartingIndex, e.OldItems!.Count);
@@ -276,14 +283,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             tree.ListChanged();
         }
 
-        private void InsertChildren(int index, System.Collections.Generic.IEnumerable<IControl> items, bool expanded = true)
+        private void InsertChildren(int index, IEnumerable<IControl> items)
         {
             foreach (var item in items)
-            {
-                var node = CreateItemNode(item);
-                node.IsExpanded = expanded;
-                Children.Insert(index++, node);
-            }
+                Children.Insert(index++, CreateItemNode(item));
         }
 
         private void RemoveChildren(int index, int count)

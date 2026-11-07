@@ -44,8 +44,10 @@ namespace CMiX.Studio.Avalonia.Tests
         private static RowToggles ColumnOf(ProjectTreeView view, TreeNode node) =>
             ItemOf(view, node).GetVisualDescendants().OfType<RowToggles>().First();
 
-        private static List<Border> SquaresOf(RowToggles column) =>
-            column.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("slot") && border.IsEffectivelyVisible).ToList();
+        // The squares from the left: the mask first, the visibility last.
+        private List<Border> SquaresOf(RowToggles column) =>
+            column.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("slot") && border.IsEffectivelyVisible)
+                .OrderBy(border => BoundsIn(border).Left).ToList();
 
         private Rect BoundsIn(Control control) => new(control.TranslatePoint(new Point(0, 0), window!)!.Value, control.Bounds.Size);
 
@@ -63,15 +65,15 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Show_TheToggles_PutTheEyeFirstAndTheMaskSecond()
+        public void Show_TheToggles_PutTheMaskFirstAndTheEyeLast()
         {
             var (view, tree) = Show();
             var composition = tree.Roots[0];
             var squares = SquaresOf(ColumnOf(view, composition));
 
             Assert.Equal(2, squares.Count);
-            var eye = squares[0].GetVisualDescendants().OfType<ToggleButton>().Single();
-            var mask = squares[1].GetVisualDescendants().OfType<ToggleButton>().Single();
+            var eye = squares[1].GetVisualDescendants().OfType<ToggleButton>().Single();
+            var mask = squares[0].GetVisualDescendants().OfType<ToggleButton>().Single();
             Assert.Same(Application.Current!.FindResource("ToggleButtonVisibility"), eye.Theme);
             Assert.Same(Application.Current!.FindResource("ToggleButtonMask"), mask.Theme);
             Assert.True(BoundsIn(squares[0]).Right <= BoundsIn(squares[1]).Left);
@@ -93,8 +95,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var entitySquares = SquaresOf(ColumnOf(view, entity));
             Assert.Equal(2, entitySquares.Count);
-            Assert.Single(entitySquares[0].GetVisualDescendants().OfType<ToggleButton>().Where(button => button.IsEffectivelyVisible));
-            Assert.Empty(entitySquares[1].GetVisualDescendants().OfType<ToggleButton>().Where(button => button.IsEffectivelyVisible));
+            Assert.Single(entitySquares[1].GetVisualDescendants().OfType<ToggleButton>().Where(button => button.IsEffectivelyVisible));
+            Assert.Empty(entitySquares[0].GetVisualDescendants().OfType<ToggleButton>().Where(button => button.IsEffectivelyVisible));
             Assert.Equal(BoundsIn(SquaresOf(ColumnOf(view, composition))[0]).Left, BoundsIn(entitySquares[0]).Left);
             Assert.Equal(BoundsIn(SquaresOf(ColumnOf(view, composition))[1]).Left, BoundsIn(entitySquares[1]).Left);
         }

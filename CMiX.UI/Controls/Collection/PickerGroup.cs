@@ -8,10 +8,9 @@ using System.Linq;
 namespace CMiX.UI.Controls.Collection
 {
     // One row that can be picked in a GroupedSearchList. Value is what the owner gets back. Kind is any object that the list
-    // gives to its KindBrush function, to color the icon of the row. It is null for a row with no color.
-    // IconKey is the key of the icon of the row (see Icons). When it is null, or the key is not registered, the row shows no icon.
+    // gives to its KindBrush function, to color the square of the row. It is null for a row with no color.
     // A row that is not enabled shows greyed. It cannot be picked, and the keys skip it.
-    public sealed record PickerItem(string Text, object? Value = null, object? Kind = null, string? IconKey = null, bool IsEnabled = true);
+    public sealed record PickerItem(string Text, object? Value = null, object? Kind = null, bool IsEnabled = true);
 
     // A group of rows under one header. Kind is the same as the kind of a row.
     public sealed record PickerGroup(string Header, IReadOnlyList<PickerItem> Items, object? Kind = null)

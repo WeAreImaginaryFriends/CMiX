@@ -13,6 +13,7 @@ using CMiX.Core;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.UI.AttachedProperties;
+using CMiX.UI.Controls;
 using CMiX.UI.Controls.Parts;
 using CMiX.UI.Controls.String;
 using CMiX.UI.Popups;
@@ -45,6 +46,8 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         private readonly TitledContextMenu _builder;
         private readonly List<MenuItem> _towardsTheStart = new();
         private readonly List<MenuItem> _towardsTheEnd = new();
+        private readonly List<MenuItem> _inertRows = new();
+        private bool _inert;
         private MenuItem? _addItem;
         private ContextMenu? _menu;
         private DispatcherTimer? _openTimer;
@@ -103,11 +106,13 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             foreach (var add in _adds)
                 Add(add);
 
-            if (kind == RowMenuKind.Group)
-                return Build();
-
             if (_adds.Count > 0 || _addRow != null)
                 Line();
+
+            // A group has no item of its own, so it shows the rows of an item greyed, and they do nothing.
+            _inert = kind == RowMenuKind.Group;
+            if (_inert)
+                kind = RowMenuKind.Slot;
 
             Duplicate();
             Rename();
@@ -133,7 +138,7 @@ namespace CMiX.Studio.Avalonia.Views.Managers
 
         // A row that adds one thing. Posted so the popup closes before the bound list changes.
         private void Add(RowMenuAdd add) =>
-            _builder.Action(add.Id, add.Header, () => Dispatcher.UIThread.Post(() => add.Execute?.Invoke()));
+            Iconed(_builder.Action(add.Id, add.Header, () => Dispatcher.UIThread.Post(() => add.Execute?.Invoke())), "Add");
 
         // The time the pointer rests on the Add row before the panel opens beside the menu.
         private static readonly TimeSpan PanelDelay = TimeSpan.FromMilliseconds(250);
@@ -142,7 +147,7 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         // The menu stays open while the panel is open. The row does not close the menu itself.
         private void AddPanelRow()
         {
-            _addItem = _builder.Action(AddId, new MenuItem { Header = "Add", StaysOpenOnClick = true });
+            _addItem = Iconed(_builder.Action(AddId, new MenuItem { Header = "Add", StaysOpenOnClick = true }), "Add");
             _addItem.Classes.Add("opens");
             ShowShortcut(_addItem, "Tree.Add");
             _addItem.Click += (_, _) => OpenAddPanel();
@@ -222,9 +227,9 @@ namespace CMiX.Studio.Avalonia.Views.Managers
 
             return row;
         }
-        private void Duplicate() => ShowShortcut(Row(DuplicateId, "Duplicate", (manager, item) => manager.DuplicateItem(item)), "Tree.Duplicate");
+        private void Duplicate() => ShowShortcut(Row(DuplicateId, "Duplicate", "Duplicate", (manager, item) => manager.DuplicateItem(item)), "Tree.Duplicate");
 
-        private void Rename() => ShowShortcut(Row(RenameId, "Rename", (_, _) =>
+        private void Rename() => ShowShortcut(Row(RenameId, "Rename", "Rename", (_, _) =>
         {
             if (_nameBox() is { } nameBox)
                 nameBox.IsEditing = true;
@@ -232,21 +237,24 @@ namespace CMiX.Studio.Avalonia.Views.Managers
 
         private void Moves()
         {
-            _towardsTheStart.Add(ShowShortcut(Row(MoveUpId, "Move Up", (manager, item) => MoveBy(manager, item, -1)), "Tree.MoveUp"));
-            _towardsTheEnd.Add(ShowShortcut(Row(MoveDownId, "Move Down", (manager, item) => MoveBy(manager, item, 1)), "Tree.MoveDown"));
-            _towardsTheStart.Add(Row(MoveToTopId, "Move To Top", (manager, item) => manager.MoveItemTo(item, 0)));
-            _towardsTheEnd.Add(Row(MoveToBottomId, "Move To Bottom", (manager, item) => manager.MoveItemTo(item, manager.ManagerData.Items.Count - 1)));
+            _towardsTheStart.Add(ShowShortcut(Row(MoveUpId, "Move Up", "ArrowUp", (manager, item) => MoveBy(manager, item, -1)), "Tree.MoveUp"));
+            _towardsTheEnd.Add(ShowShortcut(Row(MoveDownId, "Move Down", "ArrowDown", (manager, item) => MoveBy(manager, item, 1)), "Tree.MoveDown"));
+            _towardsTheStart.Add(Row(MoveToTopId, "Move To Top", "MoveToTop", (manager, item) => manager.MoveItemTo(item, 0)));
+            _towardsTheEnd.Add(Row(MoveToBottomId, "Move To Bottom", "MoveToBottom", (manager, item) => manager.MoveItemTo(item, manager.ManagerData.Items.Count - 1)));
         }
 
-        private void Remove(string header) => ShowShortcut(Row(RemoveId, header, (manager, item) => manager.RemoveItem(item)), "Tree.Remove");
+        private void Remove(string header) => ShowShortcut(Row(RemoveId, header, "Remove", (manager, item) => manager.RemoveItem(item)), "Tree.Remove");
 
-        private void RemoveEverywhere(string header) => Row(RemoveEverywhereId, header, (manager, item) => manager.RemoveEverywhere(item));
+        private void RemoveEverywhere(string header) => Row(RemoveEverywhereId, header, "Remove", (manager, item) => manager.RemoveEverywhere(item));
 
         private void Line() => _builder.Line();
 
         private ContextMenu Build()
         {
             var menu = _builder.Build();
+            foreach (var row in _inertRows)
+                row.IsEnabled = false;
+
             _menu = menu;
             menu.Opening += (_, _) => RefreshMoveRows();
             if (_addRow != null)
@@ -275,7 +283,9 @@ namespace CMiX.Studio.Avalonia.Views.Managers
                 panel.Dismissed += closeMenu;
 
                 // The Add row can open under the pointer (see MenuAnchor), and then no enter comes.
-                if (_addItem != null && MenuAnchor.GetIsAnchor(_addItem))
+                if (addRow.OpensAtOnce)
+                    Dispatcher.UIThread.Post(OpenAddPanel, DispatcherPriority.Loaded);
+                else if (_addItem != null && MenuAnchor.GetIsAnchor(_addItem))
                     ScheduleAddPanel();
             };
             menu.Closed += (_, _) =>
@@ -287,13 +297,23 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             };
         }
 
-        private MenuItem Row(string id, string header, Action<PrefabManager, IControl> action) =>
-            _builder.Action(id, header, () =>
+        private MenuItem Row(string id, string header, string icon, Action<PrefabManager, IControl> action) =>
+            Iconed(_builder.Action(id, header, () =>
             {
                 if (Target() is not { } target) return;
                 // Posted so the popup closes before the bound list changes.
                 Dispatcher.UIThread.Post(() => action(target.Manager, target.Item));
-            });
+            }), icon);
+
+        // The icon of a row, at the size of the icons of the menus.
+        private MenuItem Iconed(MenuItem row, string icon)
+        {
+            if (_inert)
+                _inertRows.Add(row);
+
+            row.Icon = new AppIcon { IconKey = icon, Size = _row.TryFindResource("IconSizeXS", out var size) && size is double number ? number : 16 };
+            return row;
+        }
 
         // The item of a row of a list box, and the manager of the list box.
         private static (PrefabManager Manager, IControl Item)? ListTarget(Control row) =>

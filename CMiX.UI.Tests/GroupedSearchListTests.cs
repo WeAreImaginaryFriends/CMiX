@@ -25,7 +25,7 @@ namespace CMiX.UI.Tests
             { "Orbit", "Target", "Zoom", "Alpha", "Color", "Visibility", "Flip", "Grid", "Rotation", "Scale" };
 
         private static PickerGroup Group(string header, string[] names, string kind) =>
-            new(header, names.Select(name => new PickerItem(name, name, kind, kind == "content" ? "Add" : null)).ToList(), kind);
+            new(header, names.Select(name => new PickerItem(name, name, kind)).ToList(), kind);
 
         private static (Window Window, GroupedSearchList List, List<PickerPickedEventArgs> Picks) Show()
         {
@@ -95,18 +95,6 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void Show_AHeader_ShowsTheNumberOfItsRows()
-        {
-            var (_, list, _) = Show();
-
-            var numbers = list.RowVisuals.Where(row => row.Classes.Contains("header"))
-                .Select(row => ((Grid)row.Child!).Children.OfType<TextBlock>().Last().Text)
-                .ToArray();
-
-            Assert.Equal(new[] { "5", "12", "10" }, numbers);
-        }
-
-        [AvaloniaFact]
         public void Show_TheRows_AreOneControlHeightHigh()
         {
             var (_, list, _) = Show();
@@ -116,34 +104,41 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void Show_ARowWithAnIconAndAKind_ColorsTheIcon()
+        public void Show_ARowWithAColoredKind_ShowsASquareInThatColorAndNoIcon()
         {
             var (_, list, _) = Show();
 
             var entity = list.RowVisuals[1];
-            var icon = ((StackPanel)entity.Child!).Children.OfType<AppIcon>().Single();
+            var children = ((StackPanel)entity.Child!).Children;
+            var square = children.OfType<Border>().Single();
 
-            Assert.Equal("Add", icon.IconKey);
-            Assert.Equal(Colors.Red, ((ISolidColorBrush)icon.Foreground!).Color);
+            Assert.Empty(children.OfType<AppIcon>());
+            Assert.Equal(Colors.Red, ((ISolidColorBrush)square.Background!).Color);
         }
 
         [AvaloniaFact]
-        public void Show_ARowWithoutAnIconOrWithAnUnknownKey_ShowsOnlyItsText()
+        public void Show_ARowWithoutAColor_ShowsOnlyItsText()
         {
             var list = new GroupedSearchList
             {
-                Groups = new[]
-                {
-                    new PickerGroup("Group", new[] { new PickerItem("No icon"), new PickerItem("Unknown", IconKey: "NoSuchIconKey") }),
-                },
+                Groups = new[] { new PickerGroup("Group", new[] { new PickerItem("No color") }) },
                 Width = 240,
             };
             new Window { Content = list, Width = 400, Height = 600 }.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Assert.All(list.RowVisuals.Skip(1), row => Assert.Empty(((StackPanel)row.Child!).Children.OfType<AppIcon>()));
-            Assert.Equal(new[] { "Group", "No icon", "Unknown" }, list.VisibleTexts);
+            Assert.All(list.RowVisuals.Skip(1), row => Assert.Single(((StackPanel)row.Child!).Children));
+            Assert.Equal(new[] { "Group", "No color" }, list.VisibleTexts);
         }
+
+        [AvaloniaFact]
+        public void Show_AGroupHeader_HasNoCount()
+        {
+            var (_, list, _) = Show();
+
+            Assert.Equal(new[] { "Content", "Filter", "Modifier" }, list.VisibleTexts.Where((_, index) => list.RowVisuals[index].Classes.Contains("header")));
+        }
+
 
         private static GroupedSearchList ShowWithDisabledRows(out List<PickerPickedEventArgs> picks)
         {
@@ -285,17 +280,6 @@ namespace CMiX.UI.Tests
             Type(list, "AL");
 
             Assert.Equal(new[] { "Filter", "Alpha", "Halftone", "Kaleidoscope", "Modifier", "Alpha", "Scale" }, list.VisibleTexts);
-        }
-
-        [AvaloniaFact]
-        public void Type_Text_ShowsTheNumberOfMatchesInTheHeader()
-        {
-            var (_, list, _) = Show();
-
-            Type(list, "bl");
-
-            var header = list.RowVisuals[0];
-            Assert.Equal("2", ((Grid)header.Child!).Children.OfType<TextBlock>().Last().Text);
         }
 
         [AvaloniaFact]

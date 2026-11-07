@@ -52,6 +52,27 @@ namespace CMiX.Studio.Avalonia.Tests
             ((IPrefab)manager.ManagerData.Items[index]).PrefabService.Name.Value;
 
         [AvaloniaFact]
+        public void SlotMenu_EachRow_HasAnIconOfItsAction()
+        {
+            CMiX.Studio.Avalonia.Themes.StudioIcons.Register();
+            var (_, list) = ShowSlotList(RowMenuKind.Slot, 2);
+
+            var rows = OpenMenu(RowAt(list, 0)).Where(row => row.Header is string text && text.Length > 1 && row.IsVisible && row.Header as string != NameOfTitle(row)).ToList();
+
+            var icons = rows.Where(row => row.Classes.Contains("title") == false).ToDictionary(row => (string)row.Header!, row => ((CMiX.UI.Controls.AppIcon)row.Icon!).IconKey);
+            Assert.Equal("Duplicate", icons["Duplicate"]);
+            Assert.Equal("Rename", icons["Rename"]);
+            Assert.Equal("ArrowUp", icons["Move Up"]);
+            Assert.Equal("ArrowDown", icons["Move Down"]);
+            Assert.Equal("MoveToTop", icons["Move To Top"]);
+            Assert.Equal("MoveToBottom", icons["Move To Bottom"]);
+            Assert.Equal("Remove", icons["Remove"]);
+            Assert.All(icons.Values, key => Assert.True(CMiX.UI.Themes.Icons.Kinds.ContainsKey(key)));
+        }
+
+        private static string? NameOfTitle(MenuItem row) => row.Classes.Contains("title") ? row.Header as string : null;
+
+        [AvaloniaFact]
         public void SlotMenu_StartsWithTheNameAndListsDuplicateRenameMovesAndRemove()
         {
             var (manager, list) = ShowSlotList(RowMenuKind.Slot, 2);

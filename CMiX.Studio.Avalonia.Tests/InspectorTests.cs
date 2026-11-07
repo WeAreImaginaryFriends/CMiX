@@ -190,13 +190,15 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(screen.NameEditor.IsEffectivelyVisible);
 
             var headerWidth = screen.Header.Bounds.Width;
-            var maskSlot = (Control)mask.Parent!;
-            var maskRight = maskSlot.TranslatePoint(new Point(maskSlot.Bounds.Width, 0), screen.Header)!.Value.X;
+            // The mask is first and the visibility is on the far right.
+            var visibilitySlot = (Control)visibility.Parent!;
+            var visibilityRight = visibilitySlot.TranslatePoint(new Point(visibilitySlot.Bounds.Width, 0), screen.Header)!.Value.X;
+            var maskLeft = mask.TranslatePoint(new Point(0, 0), screen.Header)!.Value.X;
             var visibilityLeft = visibility.TranslatePoint(new Point(0, 0), screen.Header)!.Value.X;
             var nameRight = screen.NameEditor.TranslatePoint(new Point(screen.NameEditor.Bounds.Width, 0), screen.Header)!.Value.X;
-            Assert.Equal(headerWidth - 8, maskRight, 1);
-            Assert.True(visibilityLeft < maskRight);
-            Assert.True(nameRight <= visibilityLeft + 0.5, "The name goes under the toggles.");
+            Assert.Equal(headerWidth - 8, visibilityRight, 1);
+            Assert.True(maskLeft < visibilityLeft);
+            Assert.True(nameRight <= maskLeft + 0.5, "The name goes under the toggles.");
         }
 
         [AvaloniaFact]
@@ -685,26 +687,28 @@ namespace CMiX.Studio.Avalonia.Tests
             (TestServiceProviderFactory.MainTabControl(screen.Window).SelectedItem as TabItem is { Header: AppIcon icon }) ? icon.IconKey : "";
 
         [AvaloniaFact]
-        public void Click_ARow_ShowsTheInspectorWithThatItem()
+        public void Click_ARow_KeepsTheTabAndTheInspectorHoldsThatItem()
         {
             var screen = Show();
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
 
             Click(screen, CenterOfRow(screen, screen.Group<CamerasGroup>().Children[0]));
 
-            Assert.Equal("Inspector", SelectedTab(screen));
+            Assert.Equal("Settings", SelectedTab(screen));
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Inspector");
             Assert.NotNull(screen.Find<CameraView>());
         }
 
         [AvaloniaFact]
-        public void Click_AGroup_ShowsTheInspector()
+        public void Click_AGroup_KeepsTheTabAndTheInspectorHoldsTheGroup()
         {
             var screen = Show();
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
 
             Click(screen, CenterOfRow(screen, screen.Group<LightsGroup>()));
 
-            Assert.Equal("Inspector", SelectedTab(screen));
+            Assert.Equal("Settings", SelectedTab(screen));
+            TestServiceProviderFactory.SelectMainTab(screen.Window, "Inspector");
             Assert.Equal("Lights", screen.Title.Text);
         }
 
@@ -742,10 +746,9 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Click_WithTheOptionOff_KeepsTheTab()
+        public void Click_OnARow_KeepsTheTab()
         {
             var screen = Show();
-            screen.Window.OpenInspectorOnTreeClick = false;
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
 
             Click(screen, CenterOfRow(screen, screen.LayerNode));

@@ -136,7 +136,7 @@ namespace CMiX.UI.Controls.Collection
 
                 shown++;
                 var open = IsOpen(group);
-                Add(new RowRef(group, null, HeaderRow(group, matches.Count, open)));
+                Add(new RowRef(group, null, HeaderRow(group, open)));
                 if (open)
                 {
                     foreach (var item in matches)
@@ -173,18 +173,14 @@ namespace CMiX.UI.Controls.Collection
             };
         }
 
-        private Border HeaderRow(PickerGroup group, int count, bool open)
+        private Border HeaderRow(PickerGroup group, bool open)
         {
-            var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto") };
+            var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
             grid.Children.Add(new AppIcon { IconKey = open ? "ChevronDown" : "ChevronRight", Size = Number("IconSizeXS", 12), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });
 
             var text = new TextBlock { Text = group.Header, Margin = new Thickness(6, 0, 0, 0), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
             Grid.SetColumn(text, 1);
             grid.Children.Add(text);
-
-            var number = new TextBlock { Text = count.ToString(), Opacity = 0.6, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
-            Grid.SetColumn(number, 2);
-            grid.Children.Add(number);
 
             var row = new Border { Padding = new Thickness(6, 0), Child = grid };
             row.Classes.Add("row");
@@ -195,17 +191,18 @@ namespace CMiX.UI.Controls.Collection
             return row;
         }
 
-        // A row shows its icon when it has one and the key is registered. A row with no icon shows only its text.
+        // A row shows a small square in the color of its kind, when the list has a color for the kind.
         private Border ItemRow(PickerItem item)
         {
             var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 8 };
-            if (item.IconKey is { } key && Icons.Kinds.ContainsKey(key))
+            if (KindBrush?.Invoke(item.Kind) is { } brush)
             {
-                var icon = new AppIcon { IconKey = key, Size = Number("IconSizeXS", 12), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
-                if (KindBrush?.Invoke(item.Kind) is { } brush)
-                    icon.Foreground = brush;
-
-                panel.Children.Add(icon);
+                var size = Number("IconSizeXS", 12) * 0.8;
+                panel.Children.Add(new Border
+                {
+                    Width = size, Height = size, Background = brush,
+                    CornerRadius = new CornerRadius(2), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                });
             }
 
             panel.Children.Add(new TextBlock { Text = item.Text, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });

@@ -11,7 +11,7 @@
          the tooltip, and the tooltip is an empty box.
          Sizes: no class is the inspector header (ControlHeightMD), "row" is the tree (TreeRowHeight, TreeRowSpacing, no fill: the icons sit
          inside the colored row), "small" is the
-         composable lists (ControlHeightXS, no fill, the mask first and the visibility on the far right). -->
+         composable lists (ControlHeightXS, no fill). In every size the mask is first and the visibility is on the far right. -->
     <UserControl.Styles>
         <Style Selector="Border.slot">
             <Setter Property="Width" Value="{DynamicResource ControlHeightMD}" />
@@ -26,10 +26,10 @@
             <Setter Property="Width" Value="{DynamicResource SpacingXXS}" />
         </Style>
         <Style Selector="Border.visibility">
-            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.Column" Value="2" />
         </Style>
         <Style Selector="Border.mask">
-            <Setter Property="Grid.Column" Value="2" />
+            <Setter Property="Grid.Column" Value="0" />
         </Style>
 
         <Style Selector="Views|ComposableToggles.row Border.slot">
@@ -50,12 +50,6 @@
         </Style>
         <Style Selector="Views|ComposableToggles.small Border.gap">
             <Setter Property="Width" Value="{DynamicResource SpacingSM}" />
-        </Style>
-        <Style Selector="Views|ComposableToggles.small Border.visibility">
-            <Setter Property="Grid.Column" Value="2" />
-        </Style>
-        <Style Selector="Views|ComposableToggles.small Border.mask">
-            <Setter Property="Grid.Column" Value="0" />
         </Style>
     </UserControl.Styles>
 

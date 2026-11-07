@@ -1,6 +1,9 @@
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Compositing;
 using CMiX.Studio.Avalonia.Views;
@@ -61,6 +64,23 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Same(viewModel.RedoCommand, For("Edit.RedoAlt").Command);
         }
 
+        // The pointer on the middle of the tree view, or beside it.
+        private static void PointOnTree(Window window)
+        {
+            var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            window.MouseMove(view.TranslatePoint(new Point(view.Bounds.Width / 2, view.Bounds.Height / 2), window)!.Value);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        private static void PointBesideTree(Window window)
+        {
+            var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            var right = view.TranslatePoint(new Point(view.Bounds.Width, 0), window)!.Value.X;
+            window.MouseMove(new Point(right + 10, 10));
+            Dispatcher.UIThread.RunJobs();
+            Assert.False(view.IsPointerOver);
+        }
+
         [AvaloniaFact]
         public void KeyBindings_OfTheWindow_HoldTheAddCommandOfTheTree()
         {
@@ -68,11 +88,11 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var add = window.KeyBindings.Single(binding => Equals(binding.Gesture, viewModel.Shortcuts["Tree.Add"]));
 
-            Assert.Same(viewModel.ProjectTree.AddSelectedCommand, add.Command);
+            Assert.Same(viewModel.ProjectTree.AddUnderPointerCommand, add.Command);
         }
 
         [AvaloniaFact]
-        public void Press_ShiftAWithTheFocusOutsideTheTree_OpensTheAddPanelOfTheSelectedRow()
+        public void Press_ShiftAWithTheFocusOutsideTheTree_OpensTheMenuWithTheAddPanelOpenAndExpanded()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
@@ -85,27 +105,55 @@ namespace CMiX.Studio.Avalonia.Tests
             viewModel.ProjectTree.SelectedNode = layer;
             TestServiceProviderFactory.Pump();
             window.Focus();
+            PointOnTree(window);
 
             Press(window, PhysicalKey.A, RawInputModifiers.Shift);
 
+            // The menu of the row opens with its Add panel, not the panel of the + of the row.
             var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
-            Assert.True(view.RowAddPanel.IsOpen);
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, view.RowAddPanel.List.Groups!.Select(group => group.Header));
-            view.RowAddPanel.Close();
+            TestServiceProviderFactory.Pump();
+            Assert.False(view.RowAddPanel.IsOpen);
+            Assert.True(view.MenuAddPanel.IsOpen);
+            var groups = view.MenuAddPanel.List.Groups!.ToList();
+            Assert.Equal("Project", groups[^1].Header);
+            Assert.All(groups, group => Assert.True(view.MenuAddPanel.List.IsOpen(group)));
+            view.MenuAddPanel.Close();
         }
 
         [AvaloniaFact]
-        public void Press_ShiftAWithNothingSelected_AddsACompositionAtOnce()
+        public void Press_ShiftAWithThePointerBesideTheTree_DoesNothing()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             TestServiceProviderFactory.Pump();
             viewModel.ProjectTree.SelectedNode = null;
             var before = viewModel.Project.CompositionManager.ManagerData.Items.Count;
             window.Focus();
+            PointBesideTree(window);
 
             Press(window, PhysicalKey.A, RawInputModifiers.Shift);
 
-            Assert.Equal(before + 1, viewModel.Project.CompositionManager.ManagerData.Items.Count);
+            Assert.Equal(before, viewModel.Project.CompositionManager.ManagerData.Items.Count);
+            Assert.False(window.GetVisualDescendants().OfType<ProjectTreeView>().Single().MenuAddPanel.IsOpen);
+        }
+
+        [AvaloniaFact]
+        public void Press_ShiftAOverAnEmptyTree_OpensThePanelOfTheProjectAndAddsNothing()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.Pump();
+            viewModel.ProjectTree.SelectedNode = null;
+            var before = viewModel.Project.CompositionManager.ManagerData.Items.Count;
+            window.Focus();
+            PointOnTree(window);
+
+            Press(window, PhysicalKey.A, RawInputModifiers.Shift);
+            TestServiceProviderFactory.Pump();
+
+            var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            Assert.Equal(before, viewModel.Project.CompositionManager.ManagerData.Items.Count);
+            Assert.True(view.MenuAddPanel.IsOpen);
+            Assert.Equal(new[] { "Project" }, view.MenuAddPanel.List.Groups!.Select(group => group.Header));
+            view.MenuAddPanel.Close();
         }
 
         [AvaloniaFact]
@@ -118,14 +166,17 @@ namespace CMiX.Studio.Avalonia.Tests
             viewModel.Shortcuts.Set("Tree.Add", new KeyGesture(Key.N, KeyModifiers.Control));
             TestServiceProviderFactory.Pump();
             window.Focus();
+            PointOnTree(window);
             var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
 
             Press(window, PhysicalKey.A, RawInputModifiers.Shift);
-            Assert.False(view.RowAddPanel.IsOpen);
+            TestServiceProviderFactory.Pump();
+            Assert.False(view.MenuAddPanel.IsOpen);
 
             Press(window, PhysicalKey.N, RawInputModifiers.Control);
-            Assert.True(view.RowAddPanel.IsOpen);
-            view.RowAddPanel.Close();
+            TestServiceProviderFactory.Pump();
+            Assert.True(view.MenuAddPanel.IsOpen);
+            view.MenuAddPanel.Close();
         }
     }
 }

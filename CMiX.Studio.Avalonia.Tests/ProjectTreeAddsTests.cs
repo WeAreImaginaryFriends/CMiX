@@ -119,7 +119,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var groups = screen.Panel.List.Groups!.ToList();
 
             Assert.NotEmpty(model);
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, rowGroups);
+            Assert.Equal(new[] { "Content", "Filter", "Modifier", "Project" }, rowGroups);
             Assert.Equal(rowGroups, groups.Select(group => group.Header));
             Assert.Equal(model.Take(5), groups.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
         }
@@ -133,7 +133,11 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.TreeView.RaiseEvent(new ContextRequestedEventArgs { Source = screen.TreeView });
             Dispatcher.UIThread.RunJobs();
-            Assert.Equal(new[] { "Add Composition" }, screen.TreeView.ContextMenu!.Items.OfType<MenuItem>().Skip(2).Select(item => item.Header?.ToString()));
+
+            // The menu of the space has the Add row, which opens the panel of the project. Nothing is added by the menu itself.
+            Assert.Equal(new[] { "Add" }, screen.TreeView.ContextMenu!.Items.OfType<MenuItem>().Skip(2).Take(1).Select(item => item.Header?.ToString()));
+            var entries = screen.Tree.GetAddGroups(null).SelectMany(group => group.Items).Where(item => item.Enabled).Select(item => item.Header);
+            Assert.Equal(new[] { "Composition" }, entries);
         }
 
         [AvaloniaFact]
@@ -149,15 +153,15 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void AddButton_NothingSelected_AddsACompositionAtOnce()
+        public void AddButton_NothingSelected_OpensThePanelAndAddsNothingAtOnce()
         {
             var screen = Show();
             screen.Tree.SelectedNode = null;
 
             screen.Click(screen.AddButton);
 
-            Assert.Equal(2, screen.Project.CompositionManager.ManagerData.Items.Count);
-            Assert.False(screen.Panel.IsOpen);
+            Assert.Equal(1, screen.Project.CompositionManager.ManagerData.Items.Count);
+            Assert.True(screen.Panel.IsOpen);
         }
 
         [Fact]

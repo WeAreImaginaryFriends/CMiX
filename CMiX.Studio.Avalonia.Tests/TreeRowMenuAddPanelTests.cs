@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.True(screen.Panel.IsOpen);
             Assert.True(screen.Menu.IsOpen);
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.Panel.List.Groups!.Select(group => group.Header));
+            Assert.Equal(new[] { "Content", "Filter", "Modifier", "Project" }, screen.Panel.List.Groups!.Select(group => group.Header));
         }
 
         [AvaloniaFact]
@@ -255,7 +255,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Click_TheAddRowOfAnEntity_EnablesTextureAndModifier()
+        public void Click_TheAddRowOfAnEntity_ShowsOnlyTextureModifierAndTheProject()
         {
             var screen = Show();
             var entity = Scene.Group<EntitiesGroup>(screen.Scene.LayerNode).Children[0];
@@ -263,11 +263,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Click("Add");
 
-            bool AnyEnabled(string header) => screen.Panel.List.Groups!.Single(group => group.Header == header).HasEnabledItems;
-            Assert.True(AnyEnabled("Texture"));
-            Assert.True(AnyEnabled("Modifier"));
-            Assert.False(AnyEnabled("Content"));
-            Assert.False(AnyEnabled("Filter"));
+            Assert.Equal(new[] { "Texture", "Modifier", "Project" }, screen.Panel.List.Groups!.Select(group => group.Header));
         }
     }
 

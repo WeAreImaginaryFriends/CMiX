@@ -52,7 +52,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(target.IsExpanded);
             Assert.True(scene.LayerNodeOfA(1).IsExpanded);
             Assert.True(scene.Tree.Roots[0].IsExpanded);
-            Assert.False(target.Children[0].IsExpanded);
+            Assert.True(target.Children[0].IsExpanded);
         }
 
         [Fact]

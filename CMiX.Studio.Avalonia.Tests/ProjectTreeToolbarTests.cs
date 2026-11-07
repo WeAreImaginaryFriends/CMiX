@@ -72,32 +72,38 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AddSelectedCommand_ANodeSelected_AsksTheViewToOpenThePanelOfThatNode()
+        public void AddUnderPointerCommand_PointerOverTheTree_AsksTheViewForTheMenu()
         {
             var scene = CreateScene();
-            scene.Tree.SelectedNode = scene.LayerNodeOfA(1);
-            TreeNode? asked = null;
-            scene.Tree.AddRequested += (_, node) => asked = node;
+            scene.Tree.IsPointerOverTree = () => true;
+            var asked = 0;
+            scene.Tree.MenuRequested += (_, _) => asked++;
 
-            Assert.True(scene.Tree.AddSelectedCommand.CanExecute(null));
-            scene.Tree.AddSelectedCommand.Execute(null);
+            Assert.True(scene.Tree.AddUnderPointerCommand.CanExecute(null));
+            scene.Tree.AddUnderPointerCommand.Execute(null);
 
-            Assert.Same(scene.LayerNodeOfA(1), asked);
+            Assert.Equal(1, asked);
             Assert.Equal(2, scene.Project.CompositionManager.ManagerData.Items.Count);
         }
 
         [Fact]
-        public void AddSelectedCommand_NothingSelected_AddsACompositionAtOnce()
+        public void AddUnderPointerCommand_NothingSelected_AddsNothingAtOnce()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = null;
-            var asked = 0;
-            scene.Tree.AddRequested += (_, _) => asked++;
+            scene.Tree.IsPointerOverTree = () => true;
 
-            scene.Tree.AddSelectedCommand.Execute(null);
+            scene.Tree.AddUnderPointerCommand.Execute(null);
 
-            Assert.Equal(0, asked);
-            Assert.Equal(3, scene.Project.CompositionManager.ManagerData.Items.Count);
+            Assert.Equal(2, scene.Project.CompositionManager.ManagerData.Items.Count);
+        }
+
+        [Fact]
+        public void AddUnderPointerCommand_PointerAwayFromTheTree_CannotRun()
+        {
+            var scene = CreateScene();
+
+            Assert.False(scene.Tree.AddUnderPointerCommand.CanExecute(null));
         }
 
         [Fact]
@@ -306,6 +312,10 @@ namespace CMiX.Studio.Avalonia.Tests
                 // A header can have the same text as its only row, such as Layer, so the row is the first one that is not a header.
                 var texts = Panel.List.VisibleTexts;
                 var row = Panel.List.RowVisuals.Where((visual, index) => !visual.Classes.Contains("header") && texts[index] == text).First();
+                // Every group is open, so the list can be longer than the panel: the row scrolls into view first.
+                row.BringIntoView();
+                Window.UpdateLayout();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
                 var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), Window)!.Value;
                 Window.MouseMove(point);
                 Dispatcher.UIThread.RunJobs();
@@ -378,7 +388,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Click(screen.ButtonOf("AddButton"));
 
             Assert.True(screen.Panel.IsOpen);
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Layer", "Filter", "Modifier", "Project" }, screen.GroupHeaders());
             Assert.Equal("Add to " + screen.Scene.B.PrefabService.Name.Value, screen.Panel.Title.Text);
             Assert.Equal(1, screen.Scene.B.LayerManager.ManagerData.Items.Count);
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
@@ -413,7 +423,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Click(screen.ButtonOf("AddButton"));
 
             Assert.True(screen.Panel.IsOpen);
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Texture", "Modifier", "Project" }, screen.GroupHeaders());
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
         }
 
@@ -439,7 +449,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Click(screen.ButtonOf("AddButton"));
 
             Assert.True(screen.Panel.IsOpen);
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Content", "Filter", "Modifier", "Project" }, screen.GroupHeaders());
             Assert.Equal("Add to " + layer.Header, screen.Panel.Title.Text);
             Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, screen.Panel.List.Groups!.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
             Assert.Empty(screen.Scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
@@ -505,7 +515,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Click(screen.ButtonOf("AddButton"));
 
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Content", "Project" }, screen.GroupHeaders());
             Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, screen.Panel.List.Groups!.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
         }
 

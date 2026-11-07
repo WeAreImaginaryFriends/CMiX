@@ -120,7 +120,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void NodeChosen_Raised_SwitchesOnlyThePanelOfTheTree()
+        public void NodeChosen_Raised_KeepsTheTabThatIsSelected()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
@@ -133,12 +133,12 @@ namespace CMiX.Studio.Avalonia.Tests
             tree.RaiseEvent(new NodeChosenEventArgs(ProjectTreeView.NodeChosenEvent, tree, viewModel.ProjectTree.Roots[0]));
             TestServiceProviderFactory.Pump();
 
-            // Each side keeps its content. Only the tabs beside the tree show the inspector.
+            // Each side keeps its content, and the tab that the user picked stays picked.
             Assert.Same(leftBefore, viewModel.LeftPanel);
             Assert.Same(rightBefore, viewModel.RightPanel);
             Assert.Same(tree, window.GetVisualDescendants().OfType<ProjectTreeView>().Single());
             var selected = TestServiceProviderFactory.MainTabControl(window).SelectedItem as TabItem;
-            Assert.Equal("Inspector", (selected?.Header as CMiX.UI.Controls.AppIcon)?.IconKey);
+            Assert.Equal("Settings", (selected?.Header as CMiX.UI.Controls.AppIcon)?.IconKey);
         }
     }
 }

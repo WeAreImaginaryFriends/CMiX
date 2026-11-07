@@ -90,12 +90,23 @@ namespace CMiX.Core.Compositing
             RedisAddressRegistry.AddressManager.ManagerData.ID = ManagerIDs.RedisAddressManager;
         }
 
+        // True while a snapshot is applied: a file that opens or a project that a peer sends. A view can tell loaded items from new ones.
+        public bool IsLoading { get; private set; }
+
         // FromModel only adds items, so clear first to make this a real replacement.
         public void ApplySnapshot(ProjectModel model)
         {
-            CompositionManager.ClearAll();
-            RedisAddressRegistry.AddressManager.ClearAll();
-            FromModel(model);
+            IsLoading = true;
+            try
+            {
+                CompositionManager.ClearAll();
+                RedisAddressRegistry.AddressManager.ClearAll();
+                FromModel(model);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
     }
 }

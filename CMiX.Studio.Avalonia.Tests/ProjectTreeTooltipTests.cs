@@ -108,7 +108,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var texts = SquaresOf(view, layer).Select(square => TextOfTooltip(square).Single()).ToList();
 
-            Assert.Equal(new[] { "Entity", "Filter", "Modifier" }, texts);
+            Assert.Equal(new[] { "2 Entities", "1 Filter", "3 Modifiers" }, texts);
         }
 
         [AvaloniaFact]
@@ -121,21 +121,29 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var square = Assert.Single(SquaresOf(view, entities));
 
-            Assert.Equal("Entity", TextOfTooltip(square).Single());
+            Assert.Equal("2 Entities", TextOfTooltip(square).Single());
             Assert.Equal(PlacementMode.Custom, ToolTip.GetPlacement(square));
             Assert.Equal(CMiX.UI.Popups.PopupSide.Bottom, CMiX.UI.ToolTipDefaults.GetSide(square));
         }
 
         [Theory]
-        [InlineData(TreeCategory.Composable, 1, "Composable")]
-        [InlineData(TreeCategory.Entity, 1, "Entity")]
-        [InlineData(TreeCategory.Camera, 1, "Camera")]
-        [InlineData(TreeCategory.Light, 1, "Light")]
-        [InlineData(TreeCategory.Texture, 1, "Texture")]
-        [InlineData(TreeCategory.Filter, 1, "Filter")]
-        [InlineData(TreeCategory.Modifier, 1, "Modifier")]
-        [InlineData(TreeCategory.Modulator, 1, "Modulator")]
-        public void Describe_ACount_GivesTheNameOfTheKindOnly(TreeCategory category, int count, string expected)
+        [InlineData(TreeCategory.Composable, 1, "1 Composable")]
+        [InlineData(TreeCategory.Composable, 4, "4 Composables")]
+        [InlineData(TreeCategory.Entity, 1, "1 Entity")]
+        [InlineData(TreeCategory.Entity, 2, "2 Entities")]
+        [InlineData(TreeCategory.Camera, 1, "1 Camera")]
+        [InlineData(TreeCategory.Camera, 3, "3 Cameras")]
+        [InlineData(TreeCategory.Light, 1, "1 Light")]
+        [InlineData(TreeCategory.Light, 2, "2 Lights")]
+        [InlineData(TreeCategory.Texture, 1, "1 Texture")]
+        [InlineData(TreeCategory.Texture, 2, "2 Textures")]
+        [InlineData(TreeCategory.Filter, 1, "1 Filter")]
+        [InlineData(TreeCategory.Filter, 5, "5 Filters")]
+        [InlineData(TreeCategory.Modifier, 1, "1 Modifier")]
+        [InlineData(TreeCategory.Modifier, 3, "3 Modifiers")]
+        [InlineData(TreeCategory.Modulator, 1, "1 Modulator")]
+        [InlineData(TreeCategory.Modulator, 2, "2 Modulators")]
+        public void Describe_ACount_GivesTheNumberAndTheNameOfTheKind(TreeCategory category, int count, string expected)
         {
             Assert.Equal(expected, new KindCount(category, count).Description);
         }

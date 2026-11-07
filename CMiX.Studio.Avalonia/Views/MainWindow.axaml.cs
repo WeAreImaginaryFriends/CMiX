@@ -32,26 +32,10 @@ namespace CMiX.Studio.Avalonia.Views
             InstallToggleDrag();
             // A text box gets Ctrl+Z first. A key that it does not handle still undoes or redoes the project.
             KeyBindingTextGuard.Install(this, afterTextBox: true);
-            AddHandler(ProjectTreeView.NodeChosenEvent, (_, e) => ShowInspector(e.Source as Visual));
         }
 
         // The window opens on the right edge of the screen, as high as the working area. A program can turn this off.
         public bool DockOnOpen { get; set; } = true;
-
-        // A click on a row of the tree shows the inspector, which has the editor of that row. A program can turn this off.
-        public bool OpenInspectorOnTreeClick { get; set; } = true;
-
-        // Shows the inspector in the tabs beside the tree. The side panel that holds the tree keeps its content.
-        private void ShowInspector(Visual? tree)
-        {
-            if (!OpenInspectorOnTreeClick)
-                return;
-
-            var side = tree?.FindAncestorOfType<SidePanelHost>();
-            foreach (var tabs in this.GetVisualDescendants().OfType<MainTabsPanel>().ToList())
-                if (side == null || !side.IsVisualAncestorOf(tabs))
-                    tabs.ShowInspector();
-        }
 
         // A drag over the visibility or the mask buttons sets them all to one state. The whole drag is one undo step.
         private void InstallToggleDrag()

@@ -37,7 +37,7 @@ namespace CMiX.Studio.Avalonia.Views
         private readonly PopupAnchoring anchoring;
         private readonly PopupCard card = new();
         private readonly TextBlock title = new() { VerticalAlignment = VerticalAlignment.Center };
-        private readonly GroupedSearchList list = new();
+        private readonly GroupedSearchList list = new() { CollapseFrom = int.MaxValue };
         private readonly Dictionary<TreeCategory, IBrush?> brushes = new();
         private bool closedByCode;
 
@@ -81,10 +81,11 @@ namespace CMiX.Studio.Avalonia.Views
 
         // Opens the panel on one side of the anchor. The header is a line of text above the search field, such as "Add to Layer 02".
         // The pass through element keeps receiving the pointer while the panel is open, when the popups share the window with the content (the
-        // overlay mode): the menu that opened the panel stays usable. Nothing opens when there is nothing to add.
+        // overlay mode): the menu that opened the panel stays usable. The panel shows only what the node can take. Nothing opens when there is nothing to add.
         public void Open(Control anchor, PopupSide side, IReadOnlyList<TreeAddGroup> groups, string? header = null, Rect? anchorRect = null,
                          IInputElement? passThrough = null)
         {
+            groups = Available(groups);
             if (groups.Count == 0)
                 return;
 
@@ -150,7 +151,13 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         private static PickerGroup ToPicker(TreeAddGroup group) =>
-            new(group.Header, group.Items.Select(item => new PickerItem(item.Header, item, item.Category, item.IconKey, item.Enabled)).ToList(), group.Category);
+            new(group.Header, group.Items.Select(item => new PickerItem(item.Header, item, item.Category)).ToList(), group.Category);
+
+        // The entries that the node cannot take are not in the panel, and a group with no entry left is not in it either.
+        private static IReadOnlyList<TreeAddGroup> Available(IReadOnlyList<TreeAddGroup> groups) =>
+            groups.Select(group => group with { Items = group.Items.Where(item => item.Enabled).ToList() })
+                  .Where(group => group.Items.Count > 0)
+                  .ToList();
 
         // The bright color of a kind, the same one as the tree row of that kind.
         private IBrush? BrushOf(Control scope, object? kind)

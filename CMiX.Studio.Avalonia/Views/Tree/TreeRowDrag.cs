@@ -3,11 +3,13 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 
 namespace CMiX.Studio.Avalonia.Views
@@ -38,6 +40,7 @@ namespace CMiX.Studio.Avalonia.Views
         private IPointer? pointer;
         private Cursor? cursorBefore;
         private Control? blockTip;
+        private readonly TreeDragGhost ghost = new();
 
         // tree gives the view model of the tree. autoScroller gives the scroller of the drag. scroller gives the scroll viewer of the tree.
         internal TreeRowDrag(TreeView treeView, Func<ProjectTree?> tree, TreeDropMarker marker, Func<DragAutoScroller> autoScroller,
@@ -79,7 +82,7 @@ namespace CMiX.Studio.Avalonia.Views
                 if (Math.Abs(distance.X) < Threshold && Math.Abs(distance.Y) < Threshold)
                     return;
 
-                Begin(pressed, e.Pointer);
+                Begin(pressed, e.Pointer, position);
             }
 
             Track(position);
@@ -108,7 +111,7 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         // The tree shows every row that can take the node for as long as the drag goes on.
-        private void Begin(TreeNode node, IPointer pointer)
+        private void Begin(TreeNode node, IPointer pointer, Point position)
         {
             pressed = null;
             source = node;
@@ -117,11 +120,23 @@ namespace CMiX.Studio.Avalonia.Views
             pointer.Capture(treeView);
             cursorBefore = treeView.Cursor;
             treeView.Cursor = MoveCursor;
+            ShowGhost(node, position);
+        }
+
+        // The copy of the dragged row that follows the pointer. A test reads it.
+        internal TreeDragGhost Ghost => ghost;
+
+        private void ShowGhost(TreeNode node, Point position)
+        {
+            var item = treeView.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(row => ReferenceEquals(row.DataContext, node));
+            if (item != null && TreeRows.RowBorderOf(item) is { } row)
+                ghost.Show(row, treeView, position);
         }
 
         // Marks the place of the drop under the pointer and keeps the scroll of the drag going.
         private void Track(Point position)
         {
+            ghost.Move(treeView, position);
             var (hovered, item, target, place) = Read(position);
             ShowBlockReason(hovered);
             if (item != null && target != null && place != null && CanDrop(target, place.Value))
@@ -191,6 +206,7 @@ namespace CMiX.Studio.Avalonia.Views
             tree()?.EndDrag();
             autoScroller().StopNow();
             marker.Mark(null, null);
+            ghost.Hide();
             treeView.Cursor = cursorBefore;
             cursorBefore = null;
 

@@ -23,7 +23,7 @@
                     VerticalAlignment="Top"
                     DockPanel.Dock="Left"
                     Opacity="0.9"
-                    Size="{DynamicResource IconSizeLG}" />
+                    Size="{DynamicResource IconSizeXS}" />
                 <StackPanel VerticalAlignment="Center" Spacing="4">
                     <TextBlock
                         x:Name="TitleText"

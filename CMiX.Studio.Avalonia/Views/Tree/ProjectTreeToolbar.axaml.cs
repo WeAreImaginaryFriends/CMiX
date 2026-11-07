@@ -9,7 +9,7 @@ using CMiX.UI.Popups;
 namespace CMiX.Studio.Avalonia.Views
 {
     // The toolbar over the tree of the project. The buttons are commands of the tree.
-    // The Add button adds a composition at once when nothing is selected. With a node selected it opens the Add panel under the button.
+    // The Add button opens the Add panel under the button. With nothing selected, the panel offers a composition.
     public partial class ProjectTreeToolbar : UserControl
     {
         private readonly AddPanel panel = new();
@@ -29,17 +29,10 @@ namespace CMiX.Studio.Avalonia.Views
             if (DataContext is not ProjectTree tree)
                 return;
 
-            // With nothing selected the button adds the one choice, a composition, at once. With a node selected the panel opens,
-            // also when it has only the composition to offer: a click on the button must not add a composition by surprise.
-            var choices = tree.SelectedAdds;
-            if (choices.Count == 0)
+            // The button always opens the panel, also with nothing selected, when the panel has only the composition to offer:
+            // a click on the button must not add a composition by surprise.
+            if (tree.SelectedAdds.Count == 0)
                 return;
-
-            if (tree.SelectedNode == null && choices.Count == 1)
-            {
-                tree.AddItemCommand.Execute(choices[0]);
-                return;
-            }
 
             var node = tree.SelectedNode;
             panel.Open(AddButton, PopupSide.Bottom, tree.GetAddGroups(node), node == null ? null : "Add to " + node.Header);

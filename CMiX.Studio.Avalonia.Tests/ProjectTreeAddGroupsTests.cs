@@ -213,20 +213,6 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void GetAddGroups_TheEntries_HaveTheIconOfTheirTypeWhenItHasOne()
-        {
-            var scene = CreateScene();
-
-            var groups = scene.Tree.GetAddGroups(scene.LayerNode);
-
-            Assert.Equal(new[] { "LayerScene" }, GroupOf(groups, "Layer").Items.Select(item => item.IconKey));
-            Assert.Equal(new[] { "Geometry", "FullscreenQuad", "TextIcon", "Camera", "MeshLight" }, GroupOf(groups, "Content").Items.Select(item => item.IconKey));
-            Assert.Equal(new[] { "Composition" }, GroupOf(groups, "Project").Items.Select(item => item.IconKey));
-            foreach (var header in new[] { "Texture", "Filter", "Modifier", "Modulator" })
-                Assert.All(GroupOf(groups, header).Items, item => Assert.Null(item.IconKey));
-        }
-
-        [Fact]
         public void GetAddGroups_ForEveryNode_EnablesTheSameAddsAsGetAdds()
         {
             var scene = SceneWithContent();

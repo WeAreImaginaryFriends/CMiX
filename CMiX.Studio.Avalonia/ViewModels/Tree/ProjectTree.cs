@@ -32,6 +32,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private readonly TreeDropService dropService = new();
         private readonly PathDropService pathDrop;
         private readonly PrefabManager compositions;
+        private readonly Project project;
         private readonly TreeNode root;
         private TreeNode? selectedNode;
         private IReadOnlyList<TreeAdd> selectedAdds;
@@ -44,8 +45,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             this.notice = notice;
             this.pathDrop = pathDrop ?? new PathDropService();
             Shortcuts = shortcuts ?? new ShortcutMap();
+            this.project = project;
             compositions = project.CompositionManager;
-            root = new TreeNode(this, null, null, null, "Project", compositions);
+            root =new TreeNode(this, null, null, null, "Project", compositions);
 
             selectedAdds = GetAddChoices(null);
             AddItemCommand = new RelayCommand<TreeAdd?>(add => add?.Execute?.Invoke(), add => add == null ? HasAdds : add.Execute != null);
@@ -61,7 +63,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             RemoveItemCommand = new RelayCommand(
                 () => { if (SelectedPlace() is var (list, item, _)) list.RemoveItem(item); },
                 () => SelectedPlace() != null);
-            AddSelectedCommand = new RelayCommand(RequestAdd, () => HasAdds);
+            AddUnderPointerCommand = new RelayCommand(
+                () => MenuRequested?.Invoke(this, EventArgs.Empty),
+                () => IsPointerOverTree());
             RenameSelectedCommand = new RelayCommand(
                 () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => selectedNode?.Item != null);
@@ -70,23 +74,22 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 () => softSelectedNode != null);
         }
 
+        // True while the project loads. A row made then starts collapsed. A row made by the user, or by a peer later, starts expanded.
+        internal bool IsLoading => project.IsLoading;
+
         // The gestures of the key bindings of the tree view (the names Tree.*).
         public ShortcutMap Shortcuts { get; }
 
-        // Opens the Add panel of the selected row (Tree.Add). With nothing selected it adds a composition at once, as the Add button of the
-        // toolbar does. The view handles the request (see AddRequested).
-        public IRelayCommand AddSelectedCommand { get; }
+        // Opens the context menu of the row under the pointer (Tree.Add), with its Add panel open. Over the space under the rows, the menu
+        // is the one of the project. It adds nothing at once, not even a composition. The command runs only while the pointer is over the
+        // tree, so the key works from anywhere over the tree and does nothing over the rest of the window.
+        public IRelayCommand AddUnderPointerCommand { get; }
 
-        // The view handles this request: it opens the Add panel on the row of the node.
-        public event EventHandler<TreeNode>? AddRequested;
+        // The view tells if the pointer is over the tree.
+        public Func<bool> IsPointerOverTree { get; set; } = () => false;
 
-        private void RequestAdd()
-        {
-            if (selectedNode is { } node)
-                AddRequested?.Invoke(this, node);
-            else if (SelectedAdds.Count == 1)
-                AddItemCommand.Execute(SelectedAdds[0]);
-        }
+        // The view handles this request: it opens the menu of the row under the pointer.
+        public event EventHandler? MenuRequested;
 
         // Starts the rename of the selected row. The view sets the name box of the row to edit mode (see RenameRequested).
         public IRelayCommand RenameSelectedCommand { get; }
@@ -253,8 +256,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             TreeAdd Entry(string id, string header, Type type, TreeCategory category) =>
                 available.TryGetValue(id, out var add)
-                    ? add with { Header = header, Category = category, IconKey = TreeIcons.OfType(type) }
-                    : new TreeAdd(id, header, Category: category, IconKey: TreeIcons.OfType(type), Enabled: false);
+                    ? add with { Header = header, Category = category }
+                    : new TreeAdd(id, header, Category: category, Enabled: false);
 
             TreeAddGroup Held(TreeCategory category, IReadOnlyList<Type> types)
             {
@@ -399,7 +402,6 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             MoveItemUpCommand?.NotifyCanExecuteChanged();
             MoveItemDownCommand?.NotifyCanExecuteChanged();
             RemoveItemCommand?.NotifyCanExecuteChanged();
-            AddSelectedCommand?.NotifyCanExecuteChanged();
             RenameSelectedCommand?.NotifyCanExecuteChanged();
         }
 

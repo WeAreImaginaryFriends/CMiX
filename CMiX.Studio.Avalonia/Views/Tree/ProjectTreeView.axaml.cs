@@ -93,6 +93,7 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.TemplateApplied += (_, e) =>
                 e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter")?.AddHandler(RequestBringIntoViewEvent, OnRequestBringIntoView);
             treeView.AddHandler(KeyDownEvent, OnKeyDownTunnel, RoutingStrategies.Tunnel);
+            AddHandler(PointerMovedEvent, OnPointerTracked, RoutingStrategies.Tunnel, handledEventsToo: true);
             KeyBindingTextGuard.Install(this);
         }
 
@@ -170,20 +171,17 @@ namespace CMiX.Studio.Avalonia.Views
             RevealRow(node);
         }
 
-        // Tree.Add: the Add panel of the row of the node opens on the right of the + of that row, as a click on the + opens it. The + can be
-        // hidden, but its host keeps its room, so the panel opens in the same place.
-        private void OnAddRequested(object? sender, TreeNode node)
+        // The last place of the pointer over the tree, in the coordinates of the tree view. Tree.Add uses it to find the row.
+        private Point lastPointer;
+
+        private void OnPointerTracked(object? sender, PointerEventArgs e) => lastPointer = e.GetPosition(treeView);
+
+        // Tree.Add: the menu of the row under the pointer opens, and its Add panel opens with it. Over the space under the rows, the menu
+        // is the one of the project. Nothing is added until the user picks an entry of the panel.
+        private void OnMenuRequested(object? sender, EventArgs e)
         {
-            if (DataContext is not ProjectTree tree || rowIndex.FindItem(node) is not { } item)
-                return;
-
-            RevealRow(node);
-            var button = item.GetVisualDescendants().OfType<ButtonIcon>()
-                .FirstOrDefault(plus => plus.Name == AddRowButtonName && ReferenceEquals(plus.DataContext, node));
-            if (button == null)
-                return;
-
-            rowAddPanel.Open(button.GetVisualParent() as Control ?? button, PopupSide.Right, tree.GetAddGroups(node));
+            var source = treeView.InputHitTest(lastPointer) as Visual;
+            OpenMenu(source, addPanelAtOnce: true);
         }
 
         // Starts the rename of the row of the node: the name box of the row goes to edit mode.
@@ -224,7 +222,8 @@ namespace CMiX.Studio.Avalonia.Views
 
             watched.PropertyChanged += OnWatchedPropertyChanged;
             watched.RenameRequested += OnRenameRequested;
-            watched.AddRequested += OnAddRequested;
+            watched.MenuRequested += OnMenuRequested;
+            watched.IsPointerOverTree = () => IsPointerOver;
         }
 
         private void Unwatch()
@@ -234,7 +233,8 @@ namespace CMiX.Studio.Avalonia.Views
 
             watched.PropertyChanged -= OnWatchedPropertyChanged;
             watched.RenameRequested -= OnRenameRequested;
-            watched.AddRequested -= OnAddRequested;
+            watched.MenuRequested -= OnMenuRequested;
+            watched.IsPointerOverTree = () => false;
         }
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -322,27 +322,36 @@ namespace CMiX.Studio.Avalonia.Views
         // children too, because a request goes up through every parent row.
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
         {
+            if (OpenMenu(e.Source, addPanelAtOnce: false))
+                e.Handled = true;
+        }
+
+        // Opens the menu of the row of the source. On the space under the rows, it is the menu of the project, which has the one entry
+        // that the project takes, a composition. Both menus add through the Add panel. Returns false when there is no menu.
+        private bool OpenMenu(object? source, bool addPanelAtOnce)
+        {
             treeView.ContextMenu?.Close();
 
-            // On a row: the menu of the row. On the space under the rows: a menu to add a composition, which is under no row.
-            var item = TreeRows.ItemOf(e.Source);
-            var menu = item?.DataContext is TreeNode node && DataContext is ProjectTree tree ? CreateMenu(item, node, tree)
-                : item == null && DataContext is ProjectTree project ? CreateSpaceMenu(project)
+            var item = TreeRows.ItemOf(source);
+            var menu = item?.DataContext is TreeNode node && DataContext is ProjectTree tree ? CreateMenu(item, node, tree, addPanelAtOnce)
+                : item == null && DataContext is ProjectTree project ? CreateSpaceMenu(project, addPanelAtOnce)
                 : null;
             treeView.ContextMenu = menu;
             if (menu == null)
-                return;
+                return false;
 
             menu.Open(treeView);
-            e.Handled = true;
+            return true;
         }
 
-        // The menu of the empty space of the tree: the rows that the project takes.
-        private ContextMenu CreateSpaceMenu(ProjectTree tree) =>
-            PrefabRowMenu.Create(treeView, RowMenuKind.Group, () => null, tree.GetAdds(null).ToRows(), () => "Project");
+        // The menu of the empty space of the tree: its Add row opens the panel of the project.
+        private ContextMenu CreateSpaceMenu(ProjectTree tree, bool addPanelAtOnce) =>
+            PrefabRowMenu.Create(treeView, RowMenuKind.Group, () => null, Array.Empty<RowMenuAdd>(), () => "Project",
+                addRow: new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(null), OpensAtOnce: addPanelAtOnce),
+                gestureOf: command => tree.Shortcuts[command]);
 
         // The menu of a row. Its Add row opens the Add panel beside the menu, with what the row takes.
-        private ContextMenu? CreateMenu(TreeViewItem row, TreeNode node, ProjectTree tree)
+        private ContextMenu? CreateMenu(TreeViewItem row, TreeNode node, ProjectTree tree, bool addPanelAtOnce)
         {
             var kind = node.Item == null ? RowMenuKind.Group
                 : node.Item is CompositionModel or LayerModel ? RowMenuKind.Composable
@@ -355,7 +364,7 @@ namespace CMiX.Studio.Avalonia.Views
                 () => node.Owner != null && node.Item != null ? (node.Owner, node.Item) : null,
                 Array.Empty<RowMenuAdd>(),
                 () => node.Header,
-                addRow: new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node), node.Item is null or CompositionModel or LayerModel),
+                addRow: new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node), node.Item is null or CompositionModel or LayerModel, addPanelAtOnce),
                 gestureOf: command => tree.Shortcuts[command]);
         }
 

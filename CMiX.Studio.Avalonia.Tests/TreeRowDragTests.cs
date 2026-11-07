@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -275,6 +276,32 @@ namespace CMiX.Studio.Avalonia.Tests
             TreeDrag.Release(screen.Window, between);
 
             Assert.Equal(new IControl[] { screen.B, screen.A }, screen.Project.CompositionManager.ManagerData.Items);
+        }
+
+        [AvaloniaFact]
+        public void Drag_OfARow_ShowsACopyOfTheRowUnderThePointerUntilTheEnd()
+        {
+            var screen = Show();
+            var layer = screen.Tree.Roots[0].Children[0];
+            var target = screen.Tree.Roots[1];
+            var ghost = screen.View.RowDrag.Ghost;
+            Assert.False(ghost.IsShown);
+
+            TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
+
+            Assert.True(ghost.IsShown);
+            Assert.False(ghost.Ghost.IsHitTestVisible);
+            Assert.Equal(screen.RowOf(layer).Bounds.Width > 0, ghost.Ghost.Width > 0);
+            Assert.IsType<VisualBrush>(ghost.Ghost.Background);
+
+            // The copy keeps the point of the row that was grabbed under the pointer.
+            var pointer = screen.PointIn(target, 0.5);
+            var copyTop = ghost.Ghost.TranslatePoint(new Point(0, ghost.Ghost.Bounds.Height / 2), screen.Window)!.Value.Y;
+            Assert.InRange(copyTop, pointer.Y - ghost.Ghost.Bounds.Height, pointer.Y + ghost.Ghost.Bounds.Height);
+
+            TreeDrag.Cancel(screen.Window, pointer);
+
+            Assert.False(ghost.IsShown);
         }
 
         [AvaloniaFact]

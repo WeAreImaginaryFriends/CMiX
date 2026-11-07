@@ -86,6 +86,18 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void Open_AnyNode_OpensEveryGroupEvenALongOne()
+        {
+            var setup = Show();
+
+            Open(setup, PopupSide.Right);
+
+            var groups = setup.Panel.List.Groups!.ToList();
+            Assert.Contains(groups, group => group.Items.Count > 8);
+            Assert.All(groups, group => Assert.True(setup.Panel.List.IsOpen(group)));
+        }
+
+        [AvaloniaFact]
         public void Open_ALayerNode_ShowsItsGroups()
         {
             var setup = Show();
@@ -94,7 +106,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.True(setup.Panel.IsOpen);
             var texts = setup.Panel.List.VisibleTexts;
-            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, setup.Panel.List.Groups!.Select(group => group.Header));
+            Assert.Equal(new[] { "Content", "Filter", "Modifier", "Project" }, setup.Panel.List.Groups!.Select(group => group.Header));
             Assert.Equal(new[] { "Content", "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, texts.Skip(texts.ToList().IndexOf("Content")).Take(6));
         }
 
@@ -189,19 +201,19 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Open_TheRows_HaveTheColorOfTheirKind()
+        public void Open_TheRows_HaveASquareInTheColorOfTheirKind()
         {
-            CMiX.Studio.Avalonia.Themes.StudioIcons.Register();
+            
             var setup = Show();
 
             Open(setup, PopupSide.Right);
 
             var texts = setup.Panel.List.VisibleTexts;
             var row = setup.Panel.List.RowVisuals.Where((visual, index) => !visual.Classes.Contains("header") && texts[index] == "Entity").First();
-            var icon = ((StackPanel)row.Child!).Children.OfType<CMiX.UI.Controls.AppIcon>().Single();
+            var square = ((StackPanel)row.Child!).Children.OfType<Border>().Single();
             var entity = (Color)Application.Current!.FindResource("CategoryEntity")!;
-            Assert.Equal("Geometry", icon.IconKey);
-            Assert.Equal(entity, ((ISolidColorBrush)icon.Foreground!).Color);
+            Assert.Empty(((StackPanel)row.Child!).Children.OfType<CMiX.UI.Controls.AppIcon>());
+            Assert.Equal(entity, ((ISolidColorBrush)square.Background!).Color);
         }
 
         [AvaloniaFact]
