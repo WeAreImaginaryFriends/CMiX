@@ -17,7 +17,7 @@ using Project = CMiX.Core.Compositing.Project;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // ProjectTree.GetAdds is the one source of the add rows: the menu of a row, the menu of the space and the toolbar show it.
+    // ProjectTree.GetAdds is the one source of the add rows of the menu of a row and of the menu of the space. The panel of the toolbar shows the same things in groups.
     public class ProjectTreeAddsTests : IDisposable
     {
         private readonly List<Window> windows = new();
@@ -26,6 +26,9 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             foreach (var window in windows)
             {
+                foreach (var toolbar in window.GetVisualDescendants().OfType<ProjectTreeToolbar>())
+                    toolbar.Panel.Close();
+
                 foreach (var control in window.GetVisualDescendants().OfType<Control>())
                     control.ContextMenu?.Close();
 
@@ -43,6 +46,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             public TreeView TreeView => View.GetVisualDescendants().OfType<TreeView>().First();
             public Button AddButton => View.GetVisualDescendants().OfType<Button>().First(button => button.Name == "AddButton");
+            public AddPanel Panel => View.GetVisualDescendants().OfType<ProjectTreeToolbar>().First().Panel;
             public TreeNode LayerNode => Tree.Roots[0].Children[0];
 
             public TreeViewItem RowOf(TreeNode node) =>
@@ -102,14 +106,15 @@ namespace CMiX.Studio.Avalonia.Tests
             var rowMenu = Flat(screen.TreeView.ContextMenu!.Items.OfType<MenuItem>().Skip(2).TakeWhile(item => !Equals(item.Header, "-")));
             screen.TreeView.ContextMenu!.Close();
 
-            // The menu of the toolbar: the title, a separator, the add rows, then Add Composition.
+            // The panel of the toolbar: the content of the layer, then the groups it holds, then the project.
             screen.Tree.SelectedNode = node;
             screen.Click(screen.AddButton);
-            var toolbar = Flat(screen.AddButton.ContextMenu!.Items.OfType<MenuItem>().Skip(2));
+            var groups = screen.Panel.List.Groups!.ToList();
 
             Assert.NotEmpty(model);
             Assert.Equal(model, rowMenu);
-            Assert.Equal(model.Append("Add Composition"), toolbar);
+            Assert.Equal(model.Take(5), groups[0].Items.Select(item => item.Text));
+            Assert.Equal(new[] { "Filter", "Modifier", "Project" }, groups.Skip(1).Select(group => group.Header));
         }
 
         [AvaloniaFact]
@@ -145,7 +150,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Click(screen.AddButton);
 
             Assert.Equal(2, screen.Project.CompositionManager.ManagerData.Items.Count);
-            Assert.Null(screen.AddButton.ContextMenu);
+            Assert.False(screen.Panel.IsOpen);
         }
 
         [Fact]

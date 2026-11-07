@@ -14,6 +14,7 @@ using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls.Parts;
+using CMiX.UI.Popups;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
@@ -26,7 +27,7 @@ using Project = CMiX.Core.Compositing.Project;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // The toolbar under the tree: add, duplicate, move up, move down and remove, for the selected node.
+    // The toolbar over the tree: add, duplicate, move up, move down and remove, for the selected node.
     // A button that has nothing to do for the selected node is disabled.
     public class ProjectTreeToolbarTests : IDisposable
     {
@@ -36,6 +37,9 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             foreach (var window in windows)
             {
+                foreach (var toolbar in window.GetVisualDescendants().OfType<ProjectTreeToolbar>())
+                    toolbar.Panel.Close();
+
                 foreach (var button in window.GetVisualDescendants().OfType<Button>())
                     button.ContextMenu?.Close();
 
@@ -251,10 +255,33 @@ namespace CMiX.Studio.Avalonia.Tests
 
             public Button ButtonOf(string name) => View.GetVisualDescendants().OfType<Button>().First(button => button.Name == name);
 
-            // A click on a row of the menu.
-            public void ClickRow(ContextMenu menu, string header)
+            public ProjectTreeToolbar Toolbar => View.GetVisualDescendants().OfType<ProjectTreeToolbar>().First();
+            public AddPanel Panel => Toolbar.Panel;
+
+            // The headers of the groups in the panel of the Add button.
+            public string[] GroupHeaders() => Panel.List.Groups!.Select(group => group.Header).ToArray();
+
+            // The box of the card of the panel, in the window.
+            public Rect CardBox()
             {
-                menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, header)).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                var box = Panel.Card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Card");
+                return new Rect(box.TranslatePoint(default, Window)!.Value, box.Bounds.Size);
+            }
+
+            // A click on a row of the panel.
+            public void PickRow(string text)
+            {
+                Window.UpdateLayout();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                Dispatcher.UIThread.RunJobs();
+                // A header can have the same text as its only row, such as Layer, so the row is the first one that is not a header.
+                var texts = Panel.List.VisibleTexts;
+                var row = Panel.List.RowVisuals.Where((visual, index) => !visual.Classes.Contains("header") && texts[index] == text).First();
+                var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), Window)!.Value;
+                Window.MouseMove(point);
+                Dispatcher.UIThread.RunJobs();
+                Window.MouseDown(point, MouseButton.Left);
+                Window.MouseUp(point, MouseButton.Left);
                 Dispatcher.UIThread.RunJobs();
             }
 
@@ -281,7 +308,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Show_TheToolbar_IsUnderTheTreeWithFiveButtons()
+        public void Show_TheToolbar_IsOverTheTreeWithFiveButtons()
         {
             var screen = Show();
             var tree = screen.View.GetVisualDescendants().OfType<TreeView>().First();
@@ -289,8 +316,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var height = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
 
             Assert.All(buttons, button => Assert.Equal(height, button.Bounds.Height));
-            var treeBottom = tree.TranslatePoint(new Point(0, tree.Bounds.Height), screen.Window)!.Value.Y;
-            Assert.All(buttons, button => Assert.True(button.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y >= treeBottom - 1));
+            var treeTop = tree.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
+            Assert.All(buttons, button => Assert.True(button.TranslatePoint(new Point(0, button.Bounds.Height), screen.Window)!.Value.Y <= treeTop + 1));
         }
 
         [AvaloniaFact]
@@ -314,40 +341,40 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Click_AddWithACompositionSelected_OpensAMenuWithLayerAndComposition()
+        public void Click_AddWithACompositionSelected_OpensAPanelWithLayerAndTheProject()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Tree.Roots[1];
 
             screen.Click(screen.ButtonOf("AddButton"));
 
-            var menu = screen.ButtonOf("AddButton").ContextMenu!;
-            var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
-            Assert.Equal(new[] { screen.Scene.B.PrefabService.Name.Value, "-", "Add Layer", "Add Filter", "Add Modifier", "Add Composition" }, headers);
+            Assert.True(screen.Panel.IsOpen);
+            Assert.Equal(new[] { "Layer", "Filter", "Modifier", "Project" }, screen.GroupHeaders());
+            Assert.Equal("Add to " + screen.Scene.B.PrefabService.Name.Value, screen.Panel.Title.Text);
             Assert.Equal(1, screen.Scene.B.LayerManager.ManagerData.Items.Count);
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
 
-            screen.ClickRow(menu, "Add Composition");
+            screen.PickRow("Composition");
 
             Assert.Equal(3, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
             Assert.Equal(1, screen.Scene.B.LayerManager.ManagerData.Items.Count);
         }
 
         [AvaloniaFact]
-        public void Click_TheAddLayerRow_AddsALayerToTheSelectedComposition()
+        public void Click_TheLayerRow_AddsALayerToTheSelectedComposition()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Tree.Roots[1];
             screen.Click(screen.ButtonOf("AddButton"));
 
-            screen.ClickRow(screen.ButtonOf("AddButton").ContextMenu!, "Add Layer");
+            screen.PickRow("Layer");
 
             Assert.Equal(2, screen.Scene.B.LayerManager.ManagerData.Items.Count);
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
         }
 
         [AvaloniaFact]
-        public void Click_AddWithAnEntitySelected_OffersOnlyTheComposition()
+        public void Click_AddWithAnEntitySelected_OffersTheEntityGroupsAndTheProject()
         {
             var screen = Show();
             screen.Scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -356,26 +383,25 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Click(screen.ButtonOf("AddButton"));
 
-            var menu = screen.ButtonOf("AddButton").ContextMenu!;
-            Assert.True(menu.IsOpen);
-            Assert.Equal(new[] { "Add Texture", "Add Modifier", "Add Composition" }, menu.Items.OfType<MenuItem>().Skip(2).Select(item => item.Header?.ToString()));
+            Assert.True(screen.Panel.IsOpen);
+            Assert.Equal(new[] { "Texture", "Modifier", "Project" }, screen.GroupHeaders());
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
         }
 
         [AvaloniaFact]
-        public void Click_AddWithACamerasGroupSelected_OpensAMenuThatAddsACamera()
+        public void Click_AddWithACamerasGroupSelected_OpensAPanelThatAddsACamera()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Group<CamerasGroup>(0);
 
             screen.Click(screen.ButtonOf("AddButton"));
-            screen.ClickRow(screen.ButtonOf("AddButton").ContextMenu!, "Add Camera");
+            screen.PickRow("Camera");
 
             Assert.IsType<Camera>(Assert.Single(screen.Scene.LayerOfA(0).CameraManager.ManagerData.Items));
         }
 
         [AvaloniaFact]
-        public void Click_AddWithALayerSelected_OpensAMenuOfSixThings()
+        public void Click_AddWithALayerSelected_OpensAPanelOfContentFilterModifierAndTheProject()
         {
             var screen = Show();
             var layer = screen.Scene.LayerNodeOfA(0);
@@ -383,18 +409,17 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Click(screen.ButtonOf("AddButton"));
 
-            var menu = screen.ButtonOf("AddButton").ContextMenu!;
-            Assert.True(menu.IsOpen);
-            var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
-            Assert.Equal(new[] { layer.Header, "-", "Entity", "Fullscreen Quad", "Text", "Camera", "Light", "Add Filter", "Add Modifier", "Add Composition" }, headers);
+            Assert.True(screen.Panel.IsOpen);
+            Assert.Equal(new[] { "Content", "Filter", "Modifier", "Project" }, screen.GroupHeaders());
+            Assert.Equal("Add to " + layer.Header, screen.Panel.Title.Text);
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, screen.Panel.List.Groups!.First().Items.Select(item => item.Text));
             Assert.Empty(screen.Scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
         }
 
         [AvaloniaFact]
-        public void Click_Add_OpensTheMenuEightPixelsOverTheButton()
+        public void Click_Add_OpensThePanelEightPixelsUnderTheButtonWithTheTipOnIt()
         {
-            // The room on the left keeps the popup inside the window of the test. A real popup is a window of its own.
-            var screen = Show(leftRoom: 100);
+            var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.LayerNodeOfA(0);
             var button = screen.ButtonOf("AddButton");
 
@@ -402,24 +427,19 @@ namespace CMiX.Studio.Avalonia.Tests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
 
-            var menu = button.ContextMenu!;
-            var frame = menu.GetVisualDescendants().OfType<PopupFrame>().First();
-            var frameTopLeft = frame.TranslatePoint(new Point(0, 0), screen.Window)!.Value;
-            var buttonTopLeft = button.TranslatePoint(new Point(0, 0), screen.Window)!.Value;
-
-            // The frame is larger than the panel by the margin of the shadow.
-            var panelLeft = frameTopLeft.X + PopupFrame.ShadowMargin.Left;
-            var panelBottom = frameTopLeft.Y + frame.Bounds.Height - PopupFrame.ShadowMargin.Bottom;
-            Assert.InRange(panelLeft, buttonTopLeft.X - 0.5, buttonTopLeft.X + 0.5);
-            Assert.InRange(panelBottom, buttonTopLeft.Y - 8.5, buttonTopLeft.Y - 7.5);
+            var origin = button.TranslatePoint(new Point(0, 0), screen.Window)!.Value;
+            var box = screen.CardBox();
+            Assert.Equal(origin.Y + button.Bounds.Height + 8, box.Y, 0.51);
+            Assert.Equal(PopupSide.Top, screen.Panel.Card.TipEdge);
+            Assert.Equal(origin.X + button.Bounds.Width / 2 - box.X, screen.Panel.Card.TipOffset, 0.51);
         }
 
         [AvaloniaFact]
-        public void Click_AddWithAnyNumberOfRows_KeepsTheMenuOverTheButton()
+        public void Click_AddWithAnyNumberOfRows_KeepsThePanelUnderTheButton()
         {
-            var screen = Show(leftRoom: 100);
+            var screen = Show();
             var button = screen.ButtonOf("AddButton");
-            var buttonTop = button.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y;
+            var buttonBottom = button.TranslatePoint(new Point(0, button.Bounds.Height), screen.Window)!.Value.Y;
 
             foreach (var node in new[] { screen.Scene.Group<EntitiesGroup>(0), screen.Scene.LayerNodeOfA(0) })
             {
@@ -428,42 +448,36 @@ namespace CMiX.Studio.Avalonia.Tests
                 AvaloniaHeadlessPlatform.ForceRenderTimerTick();
                 Dispatcher.UIThread.RunJobs();
 
-                var frame = button.ContextMenu!.GetVisualDescendants().OfType<PopupFrame>().First();
-                var panelBottom = frame.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y + frame.Bounds.Height - PopupFrame.ShadowMargin.Bottom;
-                Assert.InRange(panelBottom, buttonTop - 8.5, buttonTop - 7.5);
+                Assert.Equal(buttonBottom + 8, screen.CardBox().Y, 0.51);
 
-                button.ContextMenu.Close();
+                screen.Panel.Close();
                 Dispatcher.UIThread.RunJobs();
             }
         }
 
         [AvaloniaFact]
-        public void Click_AMenuRow_AddsThatThingToTheSelectedLayer()
+        public void Click_APanelRow_AddsThatThingToTheSelectedLayer()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.LayerNodeOfA(1);
             screen.Click(screen.ButtonOf("AddButton"));
-            var menu = screen.ButtonOf("AddButton").ContextMenu!;
 
-            menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, "Light"))
-                .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            Dispatcher.UIThread.RunJobs();
+            screen.PickRow("Light");
 
             Assert.IsType<LightEntity>(Assert.Single(screen.Scene.LayerOfA(1).LightManager.ManagerData.Items));
             Assert.Empty(screen.Scene.LayerOfA(0).LightManager.ManagerData.Items);
         }
 
         [AvaloniaFact]
-        public void Click_AddWithTheEntitiesGroupSelected_OpensAMenuOfThreeKinds()
+        public void Click_AddWithTheEntitiesGroupSelected_OpensAPanelOfThreeKinds()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.Group<EntitiesGroup>(0);
 
             screen.Click(screen.ButtonOf("AddButton"));
 
-            var menu = screen.ButtonOf("AddButton").ContextMenu!;
-            var headers = menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).ToList();
-            Assert.Equal(new[] { "Entities", "-", "Add Entity", "Add Fullscreen Quad", "Add Text", "Add Composition" }, headers);
+            Assert.Equal(new[] { "Entity", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, screen.Panel.List.Groups!.First().Items.Select(item => item.Text));
         }
 
         [AvaloniaFact]

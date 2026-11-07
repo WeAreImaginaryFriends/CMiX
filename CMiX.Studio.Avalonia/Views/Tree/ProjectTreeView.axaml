@@ -27,12 +27,12 @@
         <KeyBinding Command="{Binding OpenSelectedCommand}" Gesture="{Binding Shortcuts[Tree.Open]}" />
     </UserControl.KeyBindings>
 
-    <!-- The toolbar is at the bottom, as the toolbar of the lists of compositions and layers. -->
+    <!-- The toolbar is over the tree. Its Add button opens the Add panel under it. -->
     <DockPanel Background="{DynamicResource TreeBackgroundBrush}">
 
     <Views:ProjectTreeToolbar
         Background="{DynamicResource Grey300Brush}"
-        DockPanel.Dock="Bottom"
+        DockPanel.Dock="Top"
         Padding="{DynamicResource TreeToolbarPadding}" />
 
     <TreeView

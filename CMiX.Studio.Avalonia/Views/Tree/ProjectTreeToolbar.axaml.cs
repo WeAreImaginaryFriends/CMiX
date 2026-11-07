@@ -2,34 +2,34 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
-using CMiX.Studio.Avalonia.Views.Managers;
-using CMiX.UI.Controls.Parts;
+using CMiX.UI.Popups;
 
 namespace CMiX.Studio.Avalonia.Views
 {
-    // The toolbar under the tree of the project. The buttons are commands of the tree.
-    // The Add button adds a composition at once when nothing is selected. With a node selected it opens a menu of what to add.
+    // The toolbar over the tree of the project. The buttons are commands of the tree.
+    // The Add button adds a composition at once when nothing is selected. With a node selected it opens the Add panel under the button.
     public partial class ProjectTreeToolbar : UserControl
     {
-        // The space between the panel of the menu of the Add button and the button.
-        private const double MenuGap = 8;
+        private readonly AddPanel panel = new();
 
         public ProjectTreeToolbar()
         {
             InitializeComponent();
         }
 
-        // The menu shows the add choices of the selected node (ProjectTree.SelectedAdds).
+        // For the tests: the panel of the Add button.
+        internal AddPanel Panel => panel;
+
+        // The panel shows what the selected node takes (ProjectTree.GetAddGroups), then the Project group, as a composition can be added
+        // whatever is selected. Its header names the node, because the button is not on a row.
         private void OnAddClick(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not ProjectTree tree)
                 return;
 
-            // With nothing selected the button adds the one choice, a composition, at once. With a node selected the menu opens,
+            // With nothing selected the button adds the one choice, a composition, at once. With a node selected the panel opens,
             // also when it has only the composition to offer: a click on the button must not add a composition by surprise.
             var choices = tree.SelectedAdds;
             if (choices.Count == 0)
@@ -41,20 +41,8 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
             }
 
-            AddButton.ContextMenu?.Close();
-            var menu = PrefabRowMenu.Create(AddButton, RowMenuKind.Group, () => null, choices.ToRows(), () => tree.SelectedNode?.Header ?? string.Empty);
-
-            // The menu stands on the button: the bottom left corner of its panel is just over the top left corner of the button.
-            // The popup is larger than its panel by the margin of the shadow, so the offsets take that margin out.
-            menu.Placement = PlacementMode.AnchorAndGravity;
-            menu.PlacementAnchor = PopupAnchor.TopLeft;
-            menu.PlacementGravity = PopupGravity.TopRight;
-            menu.HorizontalOffset = -PopupFrame.ShadowMargin.Left;
-            menu.VerticalOffset = PopupFrame.ShadowMargin.Bottom - MenuGap;
-
-            menu.Closed += (_, _) => AddButton.ContextMenu = null;
-            AddButton.ContextMenu = menu;
-            menu.Open(AddButton);
+            var node = tree.SelectedNode;
+            panel.Open(AddButton, PopupSide.Bottom, tree.GetAddGroups(node, withProject: true), node == null ? null : "Add to " + node.Header);
         }
     }
 }
