@@ -38,6 +38,7 @@ namespace CMiX.Studio.Avalonia.Tests
             foreach (var screen in screens)
             {
                 screen.TreeView.ContextMenu?.Close();
+                screen.Panel.Close();
                 screen.Window.Close();
             }
         }
@@ -72,20 +73,43 @@ namespace CMiX.Studio.Avalonia.Tests
             public static List<string> Headers(ContextMenu menu) =>
                 menu.Items.OfType<MenuItem>().Where(item => item.IsVisible).Select(item => item.Header?.ToString() ?? string.Empty).ToList();
 
-            public static MenuItem Submenu(ContextMenu menu, string header) =>
-                menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, header));
-
-            public static void ClickSub(ContextMenu menu, string header, string subHeader)
-            {
-                Submenu(menu, header).Items.OfType<MenuItem>().Single(item => Equals(item.Header, subHeader))
-                    .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-                Dispatcher.UIThread.RunJobs();
-            }
 
             public static void Click(ContextMenu menu, string header)
             {
                 menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, header))
                     .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            // The panel of the Add row of the menus.
+            public AddPanel Panel => View.MenuAddPanel;
+
+            // A click on the Add row of the open menu opens the panel beside it.
+            public AddPanel OpenAddPanel(ContextMenu menu)
+            {
+                Click(menu, "Add");
+                Settle();
+                return Panel;
+            }
+
+            public void Settle()
+            {
+                Window.UpdateLayout();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            // A pointer click on a row of the panel. A header can have the text of its only row, so the row is not a header.
+            public void Pick(string text)
+            {
+                Settle();
+                var texts = Panel.List.VisibleTexts;
+                var row = Panel.List.RowVisuals.Where((visual, index) => !visual.Classes.Contains("header") && texts[index] == text).First();
+                var point = row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), Window)!.Value;
+                Window.MouseMove(point);
+                Dispatcher.UIThread.RunJobs();
+                Window.MouseDown(point, MouseButton.Left);
+                Window.MouseUp(point, MouseButton.Left);
                 Dispatcher.UIThread.RunJobs();
             }
         }
@@ -121,7 +145,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var headers = Screen.Headers(screen.OpenMenu(screen.Tree.Roots[0])!);
 
             Assert.Equal(screen.A.PrefabService.Name.Value, headers[0]);
-            Assert.Equal(new[] { "Add Layer", "Add Filter", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
+            Assert.Equal(new[] { "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
                 headers.Skip(2));
         }
 
@@ -159,9 +183,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var cameras = Screen.Headers(screen.OpenMenu(screen.Group<CamerasGroup>(0))!);
             var lights = Screen.Headers(screen.OpenMenu(screen.Group<LightsGroup>(0))!);
 
-            Assert.Equal(new[] { "Entities", "-", "Add Entity", "Add Fullscreen Quad", "Add Text" }, entities);
-            Assert.Equal(new[] { "Cameras", "-", "Add Camera" }, cameras);
-            Assert.Equal(new[] { "Lights", "-", "Add Light" }, lights);
+            Assert.Equal(new[] { "Entities", "-", "Add" }, entities);
+            Assert.Equal(new[] { "Cameras", "-", "Add" }, cameras);
+            Assert.Equal(new[] { "Lights", "-", "Add" }, lights);
         }
 
         [AvaloniaFact]
@@ -176,7 +200,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var headers = Screen.Headers(screen.OpenMenu(entityNode)!);
 
-            Assert.Equal(new[] { "Add Texture", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
+            Assert.Equal(new[] { "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
                 headers.Skip(2));
             Assert.DoesNotContain(headers, header => header is "Add Entity" or "Add Fullscreen Quad" or "Add Text" or "Add Layer");
         }
@@ -209,7 +233,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            Screen.Click(screen.OpenMenu(screen.Tree.Roots[1])!, "Add Layer");
+            screen.OpenAddPanel(screen.OpenMenu(screen.Tree.Roots[1])!);
+            screen.Pick("Layer");
 
             Assert.Equal(2, screen.B.LayerManager.ManagerData.Items.Count);
             Assert.Equal(2, screen.Tree.Roots[1].Children.Count(child => child.Item != null));
@@ -222,30 +247,34 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var headers = Screen.Headers(screen.OpenMenu(screen.LayerNodeOfA(0))!);
 
-            Assert.Equal(new[] { "Add", "Add Filter", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
+            Assert.Equal(new[] { "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
                 headers.Skip(2));
         }
 
         [AvaloniaFact]
-        public void Open_TheAddSubmenuOfALayer_OffersEntitiesCameraAndLight()
+        public void Open_TheAddPanelOfALayer_OffersContentFilterAndModifier()
         {
             var screen = Show();
 
-            var add = Screen.Submenu(screen.OpenMenu(screen.LayerNodeOfA(0))!, "Add");
+            var panel = screen.OpenAddPanel(screen.OpenMenu(screen.LayerNodeOfA(0))!);
 
-            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" },
-                add.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()));
+            Assert.True(panel.IsOpen);
+            Assert.Equal(new[] { "Content", "Filter", "Modifier" }, panel.List.Groups!.Select(group => group.Header));
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, panel.List.Groups!.First().Items.Select(item => item.Text));
         }
 
         [AvaloniaFact]
-        public void Click_TheAddSubmenuOfALayer_AddsEachKindToItsList()
+        public void Pick_EachKindInTheAddPanelOfALayer_AddsItToItsList()
         {
             var screen = Show();
             var layer = screen.LayerOfA(1);
             var node = screen.LayerNodeOfA(1);
 
             foreach (var header in new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" })
-                Screen.ClickSub(screen.OpenMenu(node)!, "Add", header);
+            {
+                screen.OpenAddPanel(screen.OpenMenu(node)!);
+                screen.Pick(header);
+            }
 
             Assert.Collection(layer.ModelEntityManager.ManagerData.Items,
                 item => Assert.IsType<Entity>(item),
@@ -312,18 +341,21 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var headers = Screen.Headers(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!);
 
-            Assert.Equal(new[] { "Entities", "-", "Add Entity", "Add Fullscreen Quad", "Add Text" }, headers);
+            Assert.Equal(new[] { "Entities", "-", "Add" }, headers);
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, screen.OpenAddPanel(screen.TreeView.ContextMenu!).List.Groups!.Single().Items.Select(item => item.Text));
         }
 
         [AvaloniaFact]
-        public void Click_TheAddRowsOfTheEntitiesGroup_AddTheirTypeToTheLayer()
+        public void Pick_TheRowsOfTheEntitiesGroupPanel_AddTheirTypeToTheLayer()
         {
             var screen = Show();
             var layer = screen.LayerOfA(0);
 
-            Screen.Click(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!, "Add Entity");
-            Screen.Click(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!, "Add Fullscreen Quad");
-            Screen.Click(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!, "Add Text");
+            foreach (var header in new[] { "Entity", "Fullscreen Quad", "Text" })
+            {
+                screen.OpenAddPanel(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!);
+                screen.Pick(header);
+            }
 
             Assert.Collection(layer.ModelEntityManager.ManagerData.Items,
                 item => Assert.IsType<Entity>(item),
@@ -333,13 +365,15 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Click_TheAddRowOfTheCamerasOrLightsGroup_AddsACameraOrALight()
+        public void Pick_ThePanelOfTheCamerasOrLightsGroup_AddsACameraOrALight()
         {
             var screen = Show();
             var layer = screen.LayerOfA(0);
 
-            Screen.Click(screen.OpenMenu(screen.Group<CamerasGroup>(0))!, "Add Camera");
-            Screen.Click(screen.OpenMenu(screen.Group<LightsGroup>(0))!, "Add Light");
+            screen.OpenAddPanel(screen.OpenMenu(screen.Group<CamerasGroup>(0))!);
+            screen.Pick("Camera");
+            screen.OpenAddPanel(screen.OpenMenu(screen.Group<LightsGroup>(0))!);
+            screen.Pick("Light");
 
             Assert.IsType<Camera>(Assert.Single(layer.CameraManager.ManagerData.Items));
             Assert.IsType<LightEntity>(Assert.Single(layer.LightManager.ManagerData.Items));
@@ -354,7 +388,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var headers = Screen.Headers(screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!);
 
-            Assert.Equal(new[] { "Add Texture", "Add Modifier", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
+            Assert.Equal(new[] { "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Remove" },
                 headers.Skip(2));
         }
 
@@ -379,13 +413,13 @@ namespace CMiX.Studio.Avalonia.Tests
                 .Select(item => item.Header?.ToString()).SingleOrDefault();
 
         [AvaloniaFact]
-        public void Open_TheMenuOfAComposition_HighlightsAddLayer()
+        public void Open_TheMenuOfAComposition_HighlightsAdd()
         {
             var screen = Show();
 
             var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
 
-            Assert.Equal("Add Layer", AnchorOf(menu));
+            Assert.Equal("Add", AnchorOf(menu));
         }
 
         [AvaloniaFact]
@@ -396,12 +430,12 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.LayerNodeOfA(0))!));
-            Assert.Equal("Add Entity", AnchorOf(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!));
+            Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!));
             Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!));
         }
 
         [AvaloniaFact]
-        public void Open_TheMenuAfterANewComposition_StillHighlightsAddLayer()
+        public void Open_TheMenuAfterANewComposition_StillHighlightsAdd()
         {
             var screen = Show();
             screen.TreeView.RaiseEvent(new ContextRequestedEventArgs { Source = screen.TreeView });
@@ -410,7 +444,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
 
-            Assert.Equal("Add Layer", AnchorOf(menu));
+            Assert.Equal("Add", AnchorOf(menu));
         }
 
         [AvaloniaFact]
@@ -422,9 +456,9 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Tree.Roots[0])!));
             Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Tree.Roots[1])!));
 
-            Screen.Click(screen.OpenMenu(screen.Tree.Roots[0])!, "Add Layer");
+            Screen.Click(screen.OpenMenu(screen.Tree.Roots[0])!, "Add");
 
-            Assert.Equal("Add Layer", AnchorOf(screen.OpenMenu(screen.Tree.Roots[0])!));
+            Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.Tree.Roots[0])!));
         }
 
         [AvaloniaFact]

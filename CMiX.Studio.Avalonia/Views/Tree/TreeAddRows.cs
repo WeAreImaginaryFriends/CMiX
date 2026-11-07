@@ -12,6 +12,6 @@ namespace CMiX.Studio.Avalonia.Views
     internal static class TreeAddRows
     {
         public static IReadOnlyList<RowMenuAdd> ToRows(this IReadOnlyList<TreeAdd> adds) =>
-            adds.Select(add => new RowMenuAdd(add.Id, add.Header, add.Execute, add.Children?.ToList().ToRows(), add.Secondary)).ToList();
+            adds.Select(add => new RowMenuAdd(add.Id, add.Header, add.Execute)).ToList();
     }
 }

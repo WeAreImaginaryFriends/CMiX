@@ -42,11 +42,17 @@ namespace CMiX.Studio.Avalonia.Views
         // The name of the + of a row in the theme of the row (see ProjectTree.axaml).
         private const string AddRowButtonName = "AddRowButton";
 
+        // The panel of the Add row of the menus of the rows. One panel serves every menu.
+        private readonly AddPanel menuAddPanel = new();
+
         // The panel of the + of the rows. One panel serves every row.
         private readonly AddPanel rowAddPanel = new();
 
         // The node of the row that the left button pressed and that can be dragged. A drag clears it.
         private TreeNode? pressedNode;
+
+        // The panel of the Add row of the menus. A test reads it.
+        internal AddPanel MenuAddPanel => menuAddPanel;
 
         // The panel that the + of a row opens. A test reads it.
         internal AddPanel RowAddPanel => rowAddPanel;
@@ -317,22 +323,24 @@ namespace CMiX.Studio.Avalonia.Views
         private ContextMenu CreateSpaceMenu(ProjectTree tree) =>
             PrefabRowMenu.Create(treeView, RowMenuKind.Group, () => null, tree.GetAdds(null).ToRows(), () => "Project");
 
-        private static ContextMenu? CreateMenu(TreeViewItem row, TreeNode node, ProjectTree tree)
+        // The menu of a row. Its Add row opens the Add panel beside the menu, with what the row takes.
+        private ContextMenu? CreateMenu(TreeViewItem row, TreeNode node, ProjectTree tree)
         {
-            var adds = tree.GetAdds(node).ToRows();
+            var hasAdds = tree.GetAddGroups(node).Count > 0;
             var kind = node.Item == null ? RowMenuKind.Group
                 : node.Item is CompositionModel or LayerModel ? RowMenuKind.Composable
                 : RowMenuKind.Slot;
 
-            if (kind == RowMenuKind.Group && adds.Count == 0)
+            if (kind == RowMenuKind.Group && !hasAdds)
                 return null;
 
             return PrefabRowMenu.Create(
                 row,
                 kind,
                 () => node.Owner != null && node.Item != null ? (node.Owner, node.Item) : null,
-                adds,
-                () => node.Header);
+                Array.Empty<RowMenuAdd>(),
+                () => node.Header,
+                addRow: hasAdds ? new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node), node.Item is null or CompositionModel or LayerModel) : null);
         }
 
         // The + of a row opens the Add panel of that row, on the right of the +. The selection stays as it is: the panel is for the row

@@ -4,14 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
+using CMiX.UI.AttachedProperties;
 using CMiX.UI.Controls.Parts;
 using CMiX.UI.Controls.String;
+using CMiX.UI.Popups;
 
 namespace CMiX.Studio.Avalonia.Views.Managers
 {
@@ -22,6 +26,7 @@ namespace CMiX.Studio.Avalonia.Views.Managers
     public sealed class PrefabRowMenu
     {
         // The ids of the rows (see MenuAnchor.Id). The labels can change without touching them.
+        private const string AddId = "row.add";
         private const string DuplicateId = "row.duplicate";
         private const string RenameId = "row.rename";
         private const string MoveUpId = "row.move-up";
@@ -35,21 +40,27 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         private readonly Func<TextBoxEditable?> _nameBox;
         private readonly Func<(PrefabManager Manager, IControl Item)?> _target;
         private readonly IReadOnlyList<RowMenuAdd> _adds;
+        private readonly AddMenuRow? _addRow;
         private readonly TitledContextMenu _builder;
         private readonly List<MenuItem> _towardsTheStart = new();
         private readonly List<MenuItem> _towardsTheEnd = new();
+        private MenuItem? _addItem;
+        private ContextMenu? _menu;
+        private DispatcherTimer? _openTimer;
 
         private PrefabRowMenu(Control row, Func<TextBoxEditable?> nameBox, Func<(PrefabManager Manager, IControl Item)?> target,
-                              IReadOnlyList<RowMenuAdd> adds, Func<string>? title)
+                              IReadOnlyList<RowMenuAdd> adds, Func<string>? title, AddMenuRow? addRow = null)
         {
             _row = row;
             _nameBox = nameBox;
             _target = target;
             _adds = adds;
+            _addRow = addRow;
             // The menu opens on the row that was used last, if it has it. Before that it opens on the first row that adds, so a click
-            // right after the creation of an item can add what goes in it (a layer in a composition). Rows without such an add open on Duplicate. The submenus of modifiers, filters and textures are secondary.
+            // right after the creation of an item can add what goes in it (a layer in a composition). Rows without such an add open on Duplicate.
+            // The Add row of the panel counts as such an add.
             _builder = new TitledContextMenu(row, title ?? (() => (row.DataContext as IPrefab)?.PrefabService.Name.Value?.Trim() ?? string.Empty),
-                                             adds.FirstOrDefault(add => !add.Secondary)?.Id ?? DuplicateId);
+                                             addRow is { Primary: true } ? AddId : adds.FirstOrDefault()?.Id ?? DuplicateId);
         }
 
         // Gives a row of a list the menu of the kind of the list. The menu is built once the row is in the window,
@@ -70,10 +81,11 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         // Makes the menu of a row that is not in a list box, such as a row of the project tree. The target says which item
         // the menu acts on, and in which list it is. The adds are the rows at the top. The title is the first line of the menu.
         public static ContextMenu Create(Control row, RowMenuKind kind, Func<(PrefabManager Manager, IControl Item)?> target,
-                                         IReadOnlyList<RowMenuAdd> adds, Func<string> title, Func<TextBoxEditable?>? nameBox = null)
+                                         IReadOnlyList<RowMenuAdd> adds, Func<string> title, Func<TextBoxEditable?>? nameBox = null,
+                                         AddMenuRow? addRow = null)
         {
             nameBox ??= () => row.GetVisualDescendants().OfType<TextBoxEditable>().FirstOrDefault();
-            var builder = new PrefabRowMenu(row, nameBox, target, adds, title);
+            var builder = new PrefabRowMenu(row, nameBox, target, adds, title, addRow);
             var menu = builder.BuildFor(kind);
 
             // The caller opens the menu in code, which does not raise Opening, and builds a new menu for each opening.
@@ -83,13 +95,16 @@ namespace CMiX.Studio.Avalonia.Views.Managers
 
         private ContextMenu BuildFor(RowMenuKind kind)
         {
+            if (_addRow != null)
+                AddPanelRow();
+
             foreach (var add in _adds)
                 Add(add);
 
             if (kind == RowMenuKind.Group)
                 return Build();
 
-            if (_adds.Count > 0)
+            if (_adds.Count > 0 || _addRow != null)
                 Line();
 
             Duplicate();
@@ -114,24 +129,84 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             return Build();
         }
 
-        // A row that adds, or a submenu of such rows. Posted so the popup closes before the bound list changes.
-        private void Add(RowMenuAdd add)
+        // A row that adds one thing. Posted so the popup closes before the bound list changes.
+        private void Add(RowMenuAdd add) =>
+            _builder.Action(add.Id, add.Header, () => Dispatcher.UIThread.Post(() => add.Execute?.Invoke()));
+
+        // The time the pointer rests on the Add row before the panel opens beside the menu.
+        private static readonly TimeSpan PanelDelay = TimeSpan.FromMilliseconds(250);
+
+        // The Add row opens the Add panel beside the menu. The pointer resting on the row, a click, Enter and the Right key open it.
+        // The menu stays open while the panel is open. The row does not close the menu itself.
+        private void AddPanelRow()
         {
-            if (add.Children is not { Count: > 0 } children)
+            _addItem = _builder.Action(AddId, new MenuItem { Header = "Add", StaysOpenOnClick = true });
+            _addItem.Click += (_, _) => OpenAddPanel();
+            _addItem.PointerEntered += (_, _) => ScheduleAddPanel();
+            _addItem.PointerExited += (_, _) =>
             {
-                _builder.Action(add.Id, add.Header, () => Dispatcher.UIThread.Post(() => add.Execute?.Invoke()));
+                if (_addRow?.Panel.IsOpen != true)
+                    StopTimer();
+            };
+            _addItem.KeyDown += (_, e) =>
+            {
+                if (e.Key == Key.Right)
+                {
+                    OpenAddPanel();
+                    e.Handled = true;
+                }
+            };
+        }
+
+        private void ScheduleAddPanel()
+        {
+            if (_openTimer == null)
+            {
+                _openTimer = new DispatcherTimer { Interval = PanelDelay };
+                _openTimer.Tick += (_, _) =>
+                {
+                    StopTimer();
+                    OpenAddPanel();
+                };
+            }
+
+            _openTimer.Stop();
+            _openTimer.Start();
+        }
+
+        private void StopTimer() => _openTimer?.Stop();
+
+        private void CloseAddPanel()
+        {
+            StopTimer();
+            _addRow?.Panel.Close();
+        }
+
+        // Opens the panel on the right of the menu, with its search field on the Add row. The panel keeps away from the card of the menu,
+        // not from the row, because the row is inside the padding of the card.
+        private void OpenAddPanel()
+        {
+            if (_addRow == null || _addItem == null || _menu is not { IsOpen: true })
                 return;
-            }
 
-            var submenu = new MenuItem { Header = add.Header };
-            foreach (var child in children)
-            {
-                var row = new MenuItem { Header = child.Header };
-                row.Click += (_, _) => Dispatcher.UIThread.Post(() => child.Execute?.Invoke());
-                submenu.Items.Add(row);
-            }
+            var groups = _addRow.Groups();
+            if (groups.Count == 0)
+                return;
 
-            _builder.Action(add.Id, submenu);
+            _addRow.Panel.Open(_addItem, PopupSide.Right, groups, null, CardEdgeRect(_addItem), _addItem.FindAncestorOfType<PopupFrame>());
+            ContextMenuPointerAway.SetCompanion(_menu, _addRow.Panel.Card);
+        }
+
+        // The rectangle of the row, made wider up to the right edge of the visible card of the menu.
+        private static Rect CardEdgeRect(Control row)
+        {
+            var rect = PopupAnchoring.RectOf(row);
+            if (row.FindAncestorOfType<PopupFrame>() is not { } frame || TopLevel.GetTopLevel(row) is not { } top
+                || frame.TranslatePoint(new Point(frame.Bounds.Width, 0), top) is not { } corner)
+                return rect;
+
+            var edge = corner.X - PopupFrame.ShadowMargin.Right;
+            return new Rect(rect.X, rect.Y, Math.Max(rect.Width, edge - rect.X), rect.Height);
         }
 
         private void Duplicate() => Row(DuplicateId, "Duplicate", (manager, item) => manager.DuplicateItem(item));
@@ -159,8 +234,44 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         private ContextMenu Build()
         {
             var menu = _builder.Build();
+            _menu = menu;
             menu.Opening += (_, _) => RefreshMoveRows();
+            if (_addRow != null)
+                WireAddPanel(menu, _addRow);
+
             return menu;
+        }
+
+        // The panel and the menu close together. A pick or a click away from the panel closes the menu too. Escape in the panel, and
+        // the pointer on another row, close only the panel. The menu looks after the panel only while it is open, because one panel
+        // serves many menus.
+        private void WireAddPanel(ContextMenu menu, AddMenuRow addRow)
+        {
+            var panel = addRow.Panel;
+            EventHandler closeMenu = (_, _) => menu.Close();
+
+            foreach (var item in menu.ItemsSource?.OfType<MenuItem>() ?? Enumerable.Empty<MenuItem>())
+            {
+                if (!ReferenceEquals(item, _addItem))
+                    item.PointerEntered += (_, _) => CloseAddPanel();
+            }
+
+            menu.Opened += (_, _) =>
+            {
+                panel.Picked += closeMenu;
+                panel.Dismissed += closeMenu;
+
+                // The Add row can open under the pointer (see MenuAnchor), and then no enter comes.
+                if (_addItem != null && MenuAnchor.GetIsAnchor(_addItem))
+                    ScheduleAddPanel();
+            };
+            menu.Closed += (_, _) =>
+            {
+                panel.Picked -= closeMenu;
+                panel.Dismissed -= closeMenu;
+                CloseAddPanel();
+                ContextMenuPointerAway.SetCompanion(menu, null);
+            };
         }
 
         private MenuItem Row(string id, string header, Action<PrefabManager, IControl> action) =>

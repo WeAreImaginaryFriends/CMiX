@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -38,6 +39,7 @@ namespace CMiX.Studio.Avalonia.Views
         private readonly TextBlock title = new() { VerticalAlignment = VerticalAlignment.Center };
         private readonly GroupedSearchList list = new();
         private readonly Dictionary<TreeCategory, IBrush?> brushes = new();
+        private bool closedByCode;
 
         public AddPanel()
         {
@@ -50,6 +52,7 @@ namespace CMiX.Studio.Avalonia.Views
             anchoring = PopupAnchoring.Use(flyout);
             anchoring.Placed += result => card.Place(result);
 
+            flyout.Closed += OnFlyoutClosed;
             list.Picked += OnPicked;
             list.Cancelled += (_, _) => Close();
         }
@@ -63,6 +66,13 @@ namespace CMiX.Studio.Avalonia.Views
             remove => flyout.Closed -= value;
         }
 
+        // Raised when the user picks a row, before the panel closes and the add runs.
+        public event EventHandler? Picked;
+
+        // Raised when the panel closes by itself: a click away, the loss of the focus. It is not raised when the code closes the panel
+        // (Close), when Escape closes it, or when a pick closes it.
+        public event EventHandler? Dismissed;
+
         // For the tests: the rule of the place, the list and the card.
         internal PopupAnchoring Anchoring => anchoring;
         internal GroupedSearchList List => list;
@@ -70,8 +80,10 @@ namespace CMiX.Studio.Avalonia.Views
         internal TextBlock Title => title;
 
         // Opens the panel on one side of the anchor. The header is a line of text above the search field, such as "Add to Layer 02".
-        // Nothing opens when there is nothing to add.
-        public void Open(Control anchor, PopupSide side, IReadOnlyList<TreeAddGroup> groups, string? header = null)
+        // The pass through element keeps receiving the pointer while the panel is open, when the popups share the window with the content (the
+        // overlay mode): the menu that opened the panel stays usable. Nothing opens when there is nothing to add.
+        public void Open(Control anchor, PopupSide side, IReadOnlyList<TreeAddGroup> groups, string? header = null, Rect? anchorRect = null,
+                         IInputElement? passThrough = null)
         {
             if (groups.Count == 0)
                 return;
@@ -88,6 +100,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             anchoring.Side = side;
             anchoring.Along = null;
+            anchoring.Anchor = anchorRect;
             anchoring.AlignOffset = side is PopupSide.Left or PopupSide.Right
                 ? SearchCenter(anchor, rowHeight)
                 : anchor.Bounds.Width / 2 + BelowOverhang;
@@ -96,10 +109,27 @@ namespace CMiX.Studio.Avalonia.Views
             if (anchor.TryFindResource("FlyoutPresenterCard", out var theme) && theme is ControlTheme presenterTheme)
                 flyout.FlyoutPresenterTheme = presenterTheme;
 
+            flyout.OverlayInputPassThroughElement = passThrough;
             flyout.ShowAt(anchor);
         }
 
-        public void Close() => flyout.Hide();
+        // Closes the panel from the code. The panel raises Closed but not Dismissed.
+        public void Close()
+        {
+            if (!flyout.IsOpen)
+                return;
+
+            closedByCode = true;
+            flyout.Hide();
+        }
+
+        private void OnFlyoutClosed(object? sender, EventArgs e)
+        {
+            var byCode = closedByCode;
+            closedByCode = false;
+            if (!byCode)
+                Dismissed?.Invoke(this, EventArgs.Empty);
+        }
 
         // The distance from the top of the card to the middle of the search field: the border, the padding, the header and its space.
         private double SearchCenter(Control scope, double rowHeight)
@@ -112,6 +142,7 @@ namespace CMiX.Studio.Avalonia.Views
         private void OnPicked(object? sender, PickerPickedEventArgs e)
         {
             var add = e.Item.Value as TreeAdd;
+            Picked?.Invoke(this, EventArgs.Empty);
             Close();
 
             // Posted so the popup is gone before the lists change.

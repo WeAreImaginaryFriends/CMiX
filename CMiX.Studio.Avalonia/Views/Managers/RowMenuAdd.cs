@@ -3,11 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using CMiX.Studio.Avalonia.ViewModels.Tree;
 
 namespace CMiX.Studio.Avalonia.Views.Managers
 {
-    // A row that adds something, at the top of the menu of a row (see PrefabRowMenu).
-    // The id has the prefix of the menu, such as "row.add-layer".
-    // A row with children is a submenu: it opens a panel with the rows of its children, and it runs nothing itself.
-    public sealed record RowMenuAdd(string Id, string Header, Action? Execute = null, IReadOnlyList<RowMenuAdd>? Children = null, bool Secondary = false);
+    // A row that adds one thing, at the top of the menu of a row (see PrefabRowMenu).
+    // The id has the prefix of the menu, such as "row.add-composition".
+    public sealed record RowMenuAdd(string Id, string Header, Action? Execute = null);
+
+    // The Add row of a menu. It opens the Add panel beside the menu, with the groups that Groups gives when the row opens it.
+    // One panel can serve many menus, because only one menu is open at a time.
+    // Primary is true when the Add row is the main use of the menu, so the menu opens on it (see MenuAnchor). It is false for a row that is
+    // more often duplicated or renamed than filled.
+    public sealed record AddMenuRow(AddPanel Panel, Func<IReadOnlyList<TreeAddGroup>> Groups, bool Primary = true);
 }

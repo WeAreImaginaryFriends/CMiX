@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core.Undo;
@@ -28,6 +29,9 @@ namespace CMiX.Studio.Avalonia.Tests
             {
                 foreach (var toolbar in window.GetVisualDescendants().OfType<ProjectTreeToolbar>())
                     toolbar.Panel.Close();
+
+                if (window.GetVisualDescendants().OfType<ProjectTreeView>().FirstOrDefault() is { } treeView)
+                    treeView.MenuAddPanel.Close();
 
                 foreach (var control in window.GetVisualDescendants().OfType<Control>())
                     control.ContextMenu?.Close();
@@ -93,28 +97,31 @@ namespace CMiX.Studio.Avalonia.Tests
                 .ToList();
 
         [AvaloniaFact]
-        public void GetAdds_ALayerRow_ListsTheSameAddsAsTheRowMenuAndTheToolbar()
+        public void GetAddGroups_ALayerRow_ListsTheSameGroupsInTheRowMenuAndTheToolbar()
         {
             var screen = Show();
             var node = screen.LayerNode;
             var model = Flat(screen.Tree.GetAdds(node));
 
-            // The menu of the row: the title, a separator, then the add rows up to the next separator.
+            // The Add row of the menu of the row opens a panel with the groups of the row.
             var row = screen.RowOf(node);
             row.RaiseEvent(new ContextRequestedEventArgs { Source = row });
             Dispatcher.UIThread.RunJobs();
-            var rowMenu = Flat(screen.TreeView.ContextMenu!.Items.OfType<MenuItem>().Skip(2).TakeWhile(item => !Equals(item.Header, "-")));
-            screen.TreeView.ContextMenu!.Close();
+            var menu = screen.TreeView.ContextMenu!;
+            menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, "Add")).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            Dispatcher.UIThread.RunJobs();
+            var rowGroups = screen.View.MenuAddPanel.List.Groups!.Select(group => group.Header).ToList();
+            menu.Close();
 
-            // The panel of the toolbar: the content of the layer, then the groups it holds, then the project.
+            // The panel of the toolbar: the same groups, then the project.
             screen.Tree.SelectedNode = node;
             screen.Click(screen.AddButton);
             var groups = screen.Panel.List.Groups!.ToList();
 
             Assert.NotEmpty(model);
-            Assert.Equal(model, rowMenu);
+            Assert.Equal(new[] { "Content", "Filter", "Modifier" }, rowGroups);
+            Assert.Equal(rowGroups.Append("Project"), groups.Select(group => group.Header));
             Assert.Equal(model.Take(5), groups[0].Items.Select(item => item.Text));
-            Assert.Equal(new[] { "Filter", "Modifier", "Project" }, groups.Skip(1).Select(group => group.Header));
         }
 
         [AvaloniaFact]
