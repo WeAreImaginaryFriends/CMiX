@@ -360,7 +360,7 @@ first. See `InteractionHostTests`.
 
 ## Menus and popups
 
-Every menu and popup has one look. The control `PopupFrame` holds it: the shadow, the rounded translucent panel and the padding. No other file defines this look.
+Every menu and popup has one look. The control `PopupFrame` holds it: the shadow, the dark card with a thin border, and the padding. No other file defines this look. A row of a menu can show a shortcut, an arrow, a quiet title and a warning color (see `ContextMenu.axaml`).
 
 | Popup | Theme | Use |
 |---|---|---|
@@ -395,9 +395,43 @@ A popup, a flyout or a context menu can close when the pointer moves away from i
 - A `Flyout` or a `MenuFlyout` uses the behavior `CloseFlyoutOnPointerAwayBehavior`. It only checks the distance.
 - A `ContextMenu` with the theme `ContextMenuDefault` has it already, for example the Reset menu of a value editor. The theme sets the attached property `ContextMenuPointerAway.IsEnabled`. Set it to false on a menu to switch the rule off.
 
-All three use the class `PointerAwayCloser`. A new kind of popup needs only a small wrapper around it.
+All three use the class `PointerAwayCloser`. A new kind of popup needs only a small wrapper around it. A context menu can have a companion, a second control that counts as a part of the menu (`ContextMenuPointerAway.Companion`).
 
 The pointer is away when it is farther than `Distance` from the content and from the control that opened it. The default is 64. The pointer on the control that opened the popup is never away, also when the control is much wider than the popup. After the user types in a text box of the popup, the popup stays open, because a close would lose the text. The behaviors only check the distance when the pointer moves.
+
+### The card, the tip and the place of a popup
+
+A tooltip and the Add panel use one card. A menu uses the same colors. These parts are in CMiX.UI:
+
+- `PopupCard` is the content of a tooltip or a panel: a dark card with a border of one pixel, the room of the shadow around it, and a tip that is hidden until the placement shows it. Its colors are the tokens `PopupCardBackgroundBrush` and `PopupCardBorderBrush`. Its padding is the token `PopupCardPadding`. `PopupFrame` has the same fill and border, so a menu and a card look alike.
+- `PopupTip` is the small triangle on one edge of the card. `PopupCard.Place` puts it on the edge that faces the anchor, at the offset that the placement gives.
+- `PopupPlacement.Place` is the one rule that puts a card next to an anchor. It has no UI, so a test can check numbers. It takes the anchor, the size of the card, the room that the card may use, the wanted side (top, bottom, left or right), the gap (8) and the margin (8). The card goes on the wanted side. With no room there, it goes on the opposite side. With room on neither side, it goes on the side with more room. Along the side, the card follows a point (`Along`), stops at the margin, and the tip keeps pointing at the point.
+- `PopupAnchoring` applies the rule to a tooltip, a popup, a flyout or a context menu. Avalonia asks for the place with a callback and gives the size of the popup and the control. `PopupAnchoring` turns them into a request, runs the rule, and gives the corner of the card back. The coordinates are those of the window of the control, in device independent pixels. For a control inside a menu, the window is the popup of the menu. The room is the working area of the screen of the control. A popup is larger than its card by the room of the shadow (`PopupFrame.ShadowMargin`), and `PopupAnchoring` takes that room out.
+
+Avalonia asks for the place again when an offset of a tooltip or a popup changes. A change of `PopupAnchoring.Along` alone moves nothing. A tooltip that follows the pointer changes `Along`, then changes its horizontal offset by a step.
+
+### Tooltips
+
+A view sets `ToolTip.Tip` and nothing else. `ToolTipDefaults` gives the control the placement when it gets a tip:
+
+- The tooltip opens 8 pixels from the control and never covers it. It follows the pointer along the control, and its tip points at the pointer. Near the edge of the screen it stops 8 pixels from the edge. With no room below, it opens above.
+- `ToolTipDefaults.Side` sets the side of one control: `Bottom` by default, `Right` or `Left` for a control in a strip at the side of the window. A tooltip at the side follows the pointer in y.
+- A control that has its own `ToolTip.Placement` keeps it. `ToolTipSourceTests` fails when an AXAML file sets the placement or an offset of a tooltip.
+- A plain string shows as a title. A `TipContent` shows a title, a shortcut, a description, the reason why a control is disabled, and a footer. A line that is null is not shown. The reason has its own color.
+- `ButtonIcon` builds the `TipContent` from `Tip`, `TipShortcut`, `TipDescription` and `DisabledReason`. The reason shows while the button is disabled, also when a command disables it, and the tooltip then shows on a disabled button. The toolbar of the tree binds `TipShortcut` to the shortcut map, so a changed shortcut shows in the tip.
+
+### The Add panel
+
+The Add panel adds something under a node of the tree. One `AddPanel` serves each place that opens it. It is in the Studio, and it uses the list `GroupedSearchList` of CMiX.UI.
+
+- `ProjectTree.GetAddGroups` gives the groups for a node: Layer, Content, Texture, Filter, Modifier, Modulator and Project. They follow from what the node can hold (`TreeGroup.GroupsOf`). A group with nothing to add is left out. `withProject` adds the Project group, because a composition can be added under any node.
+- `GroupedSearchList` shows a search field and the groups with their number of rows. A group with more than 8 rows starts closed. The search opens every group that has a match. It knows no type of the app: the owner gives `PickerGroup` and `PickerItem` and gets the picked row back.
+- `AddPanel.Open` takes an anchor and a side. The panel puts itself on that side. On the right or the left of the anchor, the search field lines up with the middle of the anchor. A pick closes the panel, then runs the add.
+- Five places open it: the + of a row (to its right), the Add row of the menu of a row (to the right of the menu), the Add button of the toolbar over the tree (under the button, with the header "Add to" and the node), the shortcut `Tree.Add` (Shift+A) and the toolbar button when nothing is selected, which adds a composition at once.
+- The Add row of a menu is made by `PrefabRowMenu` from an `AddMenuRow`. The pointer on the row for a short time, a click, Enter and the Right key open the panel. The pointer on another row closes it. The menu and the panel close together, except for Escape in the panel, which closes only the panel. The panel is a companion of the menu (`ContextMenuPointerAway.Companion`), so the pointer on the panel is not away from the menu.
+- The + of a row is `AddRowButton` in the theme of the row. The tree ignores a press on it, so it starts no drag and changes no selection.
+
+A test that opens a menu at the pointer must put the pointer at the left of the window first. A menu opens at the pointer, and the panel opens to its right, so a pointer that moves right with each click takes the panel out of the window. A click on a row of a popup in a headless test needs a pointer move onto the row first.
 
 ## Sync over Redis
 

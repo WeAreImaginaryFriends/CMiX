@@ -77,6 +77,21 @@ While you drag a row, the rows that take it inside are lit, with no border: for 
 
 A row can move inside its list. It can also move to a list of the same kind of another owner: an entity to another layer, a modifier to another entity, a filter, a texture or a modulator to another owner of the same kind of list.
 
+### Adding to the tree
+
+One panel adds things under a row. It has a search field, then groups with the number of their rows, such as Content, Filter and Modifier. The groups follow from what the row can hold. A layer holds content (entities, fullscreen quads, text, cameras and lights), filters and modifiers. An entity holds textures and modifiers. A group of rows shows only its own kind. A group with many rows starts closed, and the search opens it.
+
+The panel opens in four ways:
+
+- The + at the right of a row. It shows over the row under the pointer, and on the selected row. A group row always shows it. The panel opens to its right.
+- The Add row of the menu of a row. The panel opens to the right of the menu, with its search field on the Add row.
+- The Add button of the toolbar over the tree. The panel opens under the button and names the selected row. With nothing selected, the button adds a composition at once.
+- The shortcut `Tree.Add` (Shift+A) on the selected row.
+
+The panel of the toolbar has a last group, Project, so a composition can be added under any row. The search field has the focus when the panel opens. Down and Up move over the rows, Enter picks a row, and Escape clears the text and then closes the panel.
+
+A tooltip is a dark card with a tip that points at the pointer. It shows a title and, for the buttons of the toolbar, the shortcut. A disabled button says why in its tooltip.
+
 ## Keyboard shortcuts
 
 The Studio reads its keyboard shortcuts from `%AppData%\CMiX\studio-shortcuts.json`. This file is separate from `studio-settings.json`. When the file is missing, the Studio writes it with the defaults. When the Studio cannot write it, the Studio starts with the defaults.
