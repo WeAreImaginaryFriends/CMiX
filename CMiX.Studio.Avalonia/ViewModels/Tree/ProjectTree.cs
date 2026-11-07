@@ -220,6 +220,67 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             return choices;
         }
 
+        // What can be added under a node, in groups for the Add panel: Content, Filter, Modifier and so on. The groups follow what the node
+        // holds (see GetAdds), but the headers of the items have no "Add". A group with nothing to add is left out.
+        // With no node, only the Project group is offered. With withProject, the Project group comes last, as the composition can be added
+        // whatever is selected. A row that is a group of a layer or of an item gives the one group of its own list, named by its kind.
+        public IReadOnlyList<TreeAddGroup> GetAddGroups(TreeNode? node, bool withProject = false)
+        {
+            var groups = new List<TreeAddGroup>();
+            if (node == null)
+            {
+                withProject = true;
+            }
+            else if (node.Item is Composition && node.ChildManager is { } layers)
+            {
+                groups.Add(new TreeAddGroup("group.layer", "Layer", TreeCategory.Composable,
+                    new[] { AddOf("row.add-layer", "Layer", layers, typeof(Layer)) with { Category = TreeCategory.Composable } }));
+                groups.AddRange(HeldGroups(node.Item));
+            }
+            else if (node.Item is Layer own)
+            {
+                var content = TreeGroup.GroupsOf(own).OfType<LayerGroup>().SelectMany(LayerItemsOf).ToList();
+                groups.Add(new TreeAddGroup("group.content", "Content", null, content));
+                groups.AddRange(HeldGroups(own));
+            }
+            else if (node.Item != null)
+            {
+                groups.AddRange(HeldGroups(node.Item));
+            }
+            else if (node.Group is LayerGroup layerGroup)
+            {
+                groups.Add(new TreeAddGroup("group.content", TreeCategories.Label(layerGroup.Category, 1), layerGroup.Category, LayerItemsOf(layerGroup).ToList()));
+            }
+            else if (node.Group is { } held)
+            {
+                groups.Add(HeldGroupOf(held));
+            }
+
+            if (withProject)
+            {
+                groups.Add(new TreeAddGroup("group.project", "Project", TreeCategory.Composable,
+                    new[] { AddOf("row.add-composition", "Composition", compositions, typeof(Composition)) with { Category = TreeCategory.Composable } }));
+            }
+
+            return groups.Where(group => group.Items.Count > 0).ToList();
+        }
+
+        // The groups of an item for what it can hold: textures, filters, modifiers and modulators.
+        private static IEnumerable<TreeAddGroup> HeldGroups(IControl item) =>
+            TreeGroup.GroupsOf(item).Where(group => group is not LayerGroup).Select(HeldGroupOf);
+
+        private static TreeAddGroup HeldGroupOf(TreeGroup group)
+        {
+            var name = TreeCategories.Label(group.Category, 1);
+            var items = group.AddableTypes
+                .Select(type => AddOf("row.add-" + type.Name, AddableTypes.LabelOf(type), group.Manager, type) with { Category = group.Category })
+                .ToList();
+            return new TreeAddGroup("group.add-" + name.ToLowerInvariant(), name, group.Category, items);
+        }
+
+        private static IEnumerable<TreeAdd> LayerItemsOf(LayerGroup group) =>
+            group.AddableTypes.Select(type => LayerAddOf(group, type, string.Empty) with { Category = group.Category });
+
         // The add choices of the selected node. The tree makes them again when the selection changes.
         public IReadOnlyList<TreeAdd> SelectedAdds => selectedAdds;
 

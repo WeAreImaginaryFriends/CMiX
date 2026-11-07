@@ -8,5 +8,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 {
     // Something that can be added under a node of the tree. The id has the prefix of the menu, such as "row.add-layer".
     // A row with children is a submenu: it adds nothing itself, and its children add.
-    public sealed record TreeAdd(string Id, string Header, Action? Execute = null, IReadOnlyList<TreeAdd>? Children = null, bool Secondary = false);
+    // The category is the kind of what the row adds. The Add panel shows its color. It is null for a row that does not say it.
+    public sealed record TreeAdd(string Id, string Header, Action? Execute = null, IReadOnlyList<TreeAdd>? Children = null, bool Secondary = false,
+                                 TreeCategory? Category = null);
 }
