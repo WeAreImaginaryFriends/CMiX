@@ -9,7 +9,7 @@ using Xunit;
 
 namespace CMiX.UI.Tests
 {
-    // A tooltip is a card: the color of the tokens PopupCardBackgroundBrush and PopupCardBorderBrush. A string shows as a title, and a
+    // A tooltip is a card: the color of the token PopupBackgroundBrush, with no outline. A string shows as a title, and a
     // TipContent shows its lines.
     public class ToolTipLookTests
     {
@@ -31,10 +31,9 @@ namespace CMiX.UI.Tests
 
             var card = tip.GetVisualDescendants().OfType<Border>().First(part => part.Name == "PART_Card");
 
-            var fill = ((ISolidColorBrush)Application.Current!.FindResource("PopupCardBackgroundBrush")!).Color;
-            var border = ((ISolidColorBrush)Application.Current!.FindResource("PopupCardBorderBrush")!).Color;
+            var fill = ((ISolidColorBrush)Application.Current!.FindResource("PopupBackgroundBrush")!).Color;
             Assert.Equal(fill, ((ISolidColorBrush)card.Background!).Color);
-            Assert.Equal(border, ((ISolidColorBrush)card.BorderBrush!).Color);
+            Assert.Equal(new Thickness(0), card.BorderThickness);
         }
 
         [AvaloniaFact]

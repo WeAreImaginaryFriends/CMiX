@@ -58,12 +58,11 @@ namespace CMiX.UI.Tests
             var (menu, _) = Open();
 
             var frame = menu.GetVisualDescendants().OfType<PopupFrame>().First();
-            var card = frame.GetVisualDescendants().OfType<Border>().First(border => border.BorderThickness == new Thickness(1) && border.Background != null);
+            var card = frame.GetVisualDescendants().OfType<Border>().First(border => border.CornerRadius != default && border.Background is ISolidColorBrush);
 
-            var fill = ((ISolidColorBrush)Application.Current!.FindResource("PopupCardBackgroundBrush")!).Color;
-            var line = ((ISolidColorBrush)Application.Current!.FindResource("PopupCardBorderBrush")!).Color;
+            var fill = ((ISolidColorBrush)Application.Current!.FindResource("PopupBackgroundBrush")!).Color;
             Assert.Equal(fill, ((ISolidColorBrush)card.Background!).Color);
-            Assert.Equal(line, ((ISolidColorBrush)card.BorderBrush!).Color);
+            Assert.Equal(new Thickness(0), card.BorderThickness);
             Assert.Equal(1, card.Opacity);
         }
 

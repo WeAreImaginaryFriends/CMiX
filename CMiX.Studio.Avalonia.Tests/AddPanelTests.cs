@@ -93,9 +93,9 @@ namespace CMiX.Studio.Avalonia.Tests
             Open(setup, PopupSide.Right);
 
             Assert.True(setup.Panel.IsOpen);
-            Assert.Equal(new[] { "Content", "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, setup.Panel.List.VisibleTexts.Take(6));
-            Assert.Contains("Filter", setup.Panel.List.VisibleTexts);
-            Assert.Contains("Modifier", setup.Panel.List.VisibleTexts);
+            var texts = setup.Panel.List.VisibleTexts;
+            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, setup.Panel.List.Groups!.Select(group => group.Header));
+            Assert.Equal(new[] { "Content", "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, texts.Skip(texts.ToList().IndexOf("Content")).Take(6));
         }
 
         [AvaloniaFact]
@@ -184,21 +184,24 @@ namespace CMiX.Studio.Avalonia.Tests
             Open(setup, PopupSide.Right);
             Open(setup, PopupSide.Right, node: setup.Scene.CompositionNode);
 
-            Assert.Equal("Layer", setup.Panel.List.VisibleTexts[0]);
+            Assert.Equal(new[] { "Layer", "Layer" }, setup.Panel.List.VisibleTexts.Take(2));
             Assert.True(setup.Panel.IsOpen);
         }
 
         [AvaloniaFact]
         public void Open_TheRows_HaveTheColorOfTheirKind()
         {
+            CMiX.Studio.Avalonia.Themes.StudioIcons.Register();
             var setup = Show();
 
             Open(setup, PopupSide.Right);
 
-            var row = setup.Panel.List.RowVisuals[1];
-            var square = ((StackPanel)row.Child!).Children.OfType<Border>().Single();
+            var texts = setup.Panel.List.VisibleTexts;
+            var row = setup.Panel.List.RowVisuals.Where((visual, index) => !visual.Classes.Contains("header") && texts[index] == "Entity").First();
+            var icon = ((StackPanel)row.Child!).Children.OfType<CMiX.UI.Controls.AppIcon>().Single();
             var entity = (Color)Application.Current!.FindResource("CategoryEntity")!;
-            Assert.Equal(entity, ((ISolidColorBrush)square.Background!).Color);
+            Assert.Equal("Geometry", icon.IconKey);
+            Assert.Equal(entity, ((ISolidColorBrush)icon.Foreground!).Color);
         }
 
         [AvaloniaFact]

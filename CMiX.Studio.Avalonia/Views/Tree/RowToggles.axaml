@@ -4,9 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
 
-    <!-- The toggle column of a row of the tree, at the right of the colored row. The DataContext is the tree node.
-         The squares are ComposableToggles of the row size. The column has the width of the spaces and all the squares (TreeToggleWidth,
-         see ProjectTreeView), so the colored rows all end at the same place. A new toggle is a new square and a wider column. -->
+    <!-- The toggles of a row of the tree, inside the colored row, at its right end. The DataContext is the tree node.
+         The slots are ComposableToggles of the row size, with no fill: the icons show on the color of the row. The column has the width of the spaces and all the slots (TreeToggleWidth,
+         see ProjectTreeView), so the icons of all rows line up. A new toggle is a new slot and a wider column. -->
     <StackPanel
         Width="{DynamicResource TreeToggleWidth}"
         Background="Transparent"

@@ -1,161 +1,259 @@
 using CMiX.Core.Compositing;
+using CMiX.Core.Modulation.Modulators;
 using CMiX.Core.Rendering.Cameras;
 using CMiX.Core.Rendering.Lights;
+using CMiX.Core.Texturing.Filters;
+using CMiX.Core.Texturing.Sources;
 using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using Xunit;
 using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
+using Camera = CMiX.Core.Rendering.Cameras.Camera;
 using Composition = CMiX.Core.Compositing.Composition;
 using Layer = CMiX.Core.Compositing.Layer;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // ProjectTree.GetAddGroups gives the Add panel what it shows: the groups of what a node can take, from the interfaces of the node.
+    // ProjectTree.GetAddGroups gives the Add panel what it shows. Every node gets the same groups in the same order. An entry that the node
+    // cannot take is there, not enabled. What a node can take comes from the interfaces of the node.
     public class ProjectTreeAddGroupsTests
     {
+        private static readonly string[] AllGroups = { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" };
+
         // A composition with two layers.
         private static Scene CreateScene() => TreeFixtures.CreateScene([2]);
 
         private static string[] Headers(IEnumerable<TreeAddGroup> groups) => groups.Select(group => group.Header).ToArray();
 
-        private static string[] ItemHeaders(TreeAddGroup group) => group.Items.Select(item => item.Header).ToArray();
+        private static TreeAddGroup GroupOf(IEnumerable<TreeAddGroup> groups, string header) => groups.Single(group => group.Header == header);
 
-        [Fact]
-        public void GetAddGroups_ACompositionNode_OffersLayerFilterAndModifier()
+        // The headers of the entries of a group that the node can take.
+        private static string[] Enabled(IEnumerable<TreeAddGroup> groups, string header) =>
+            GroupOf(groups, header).Items.Where(item => item.Enabled).Select(item => item.Header).ToArray();
+
+        private static int EnabledCount(IEnumerable<TreeAddGroup> groups, string header) => Enabled(groups, header).Length;
+
+        // The entities of a layer: an entity, a fullscreen quad, a text, a camera and a light.
+        private static Scene SceneWithContent()
         {
             var scene = CreateScene();
-
-            var groups = scene.Tree.GetAddGroups(scene.CompositionNode);
-
-            Assert.Equal(new[] { "Layer", "Filter", "Modifier" }, Headers(groups));
-            Assert.Equal(new[] { "Layer" }, ItemHeaders(groups[0]));
-        }
-
-        [Fact]
-        public void GetAddGroups_ALayerNode_OffersContentFilterAndModifier()
-        {
-            var scene = CreateScene();
-
-            var groups = scene.Tree.GetAddGroups(scene.LayerNode);
-
-            Assert.Equal(new[] { "Content", "Filter", "Modifier" }, Headers(groups));
-            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, ItemHeaders(groups[0]));
-        }
-
-        [Theory]
-        [InlineData(typeof(Entity), new[] { "Texture", "Modifier" })]
-        [InlineData(typeof(FullscreenQuad), new[] { "Texture" })]
-        [InlineData(typeof(TextEntity), new[] { "Modifier" })]
-        public void GetAddGroups_AnEntityNode_OffersWhatTheEntityHolds(Type type, string[] expected)
-        {
-            var scene = CreateScene();
-            scene.Layer.ModelEntityManager.AddItem(type);
-            var entity = Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0];
-
-            Assert.Equal(expected, Headers(scene.Tree.GetAddGroups(entity)));
-        }
-
-        [Fact]
-        public void GetAddGroups_ACameraOrALightNode_OffersOnlyModifiers()
-        {
-            var scene = CreateScene();
+            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
+            scene.Layer.ModelEntityManager.AddItem(typeof(FullscreenQuad));
+            scene.Layer.ModelEntityManager.AddItem(typeof(TextEntity));
             scene.Layer.CameraManager.AddItem(typeof(Camera));
             scene.Layer.LightManager.AddItem(typeof(LightEntity));
-
-            Assert.Equal(new[] { "Modifier" }, Headers(scene.Tree.GetAddGroups(Scene.Group<CamerasGroup>(scene.LayerNode).Children[0])));
-            Assert.Equal(new[] { "Modifier" }, Headers(scene.Tree.GetAddGroups(Scene.Group<LightsGroup>(scene.LayerNode).Children[0])));
+            scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
+            return scene;
         }
 
         [Fact]
-        public void GetAddGroups_NoNode_OffersTheProjectGroupOnly()
+        public void GetAddGroups_AnyNode_ListsTheSameGroupsInTheSameOrder()
+        {
+            var scene = SceneWithContent();
+
+            foreach (var node in scene.All().Cast<TreeNode?>().Append(null))
+                Assert.Equal(AllGroups, Headers(scene.Tree.GetAddGroups(node)));
+        }
+
+        [Fact]
+        public void GetAddGroups_AnyNode_ListsTheSameEntries()
+        {
+            var scene = SceneWithContent();
+            var expected = scene.Tree.GetAddGroups(null).SelectMany(group => group.Items).Select(item => item.Id).ToList();
+
+            foreach (var node in scene.All())
+                Assert.Equal(expected, scene.Tree.GetAddGroups(node).SelectMany(group => group.Items).Select(item => item.Id));
+        }
+
+        [Fact]
+        public void GetAddGroups_NoNode_EnablesOnlyTheProject()
         {
             var scene = CreateScene();
 
             var groups = scene.Tree.GetAddGroups(null);
 
-            Assert.Equal(new[] { "Project" }, Headers(groups));
-            Assert.Equal(new[] { "Composition" }, ItemHeaders(groups[0]));
+            Assert.Equal(new[] { "Composition" }, groups.SelectMany(group => group.Items).Where(item => item.Enabled).Select(item => item.Header));
         }
 
         [Fact]
-        public void GetAddGroups_WithTheProject_PutsTheProjectGroupLast()
+        public void GetAddGroups_ACompositionNode_EnablesTheLayerTheFiltersAndTheModifiersOfItsType()
         {
             var scene = CreateScene();
 
-            var groups = scene.Tree.GetAddGroups(scene.LayerNode, withProject: true);
+            var groups = scene.Tree.GetAddGroups(scene.CompositionNode);
 
-            Assert.Equal(new[] { "Content", "Filter", "Modifier", "Project" }, Headers(groups));
+            Assert.Equal(new[] { "Layer" }, Enabled(groups, "Layer"));
+            Assert.Empty(Enabled(groups, "Content"));
+            Assert.Empty(Enabled(groups, "Texture"));
+            Assert.Equal(AddableTypes.ForInterface(typeof(ITextureFilter)).Count, EnabledCount(groups, "Filter"));
+            Assert.Equal(AddableTypes.ForOwner(typeof(Composition)).Count, EnabledCount(groups, "Modifier"));
+            Assert.Empty(Enabled(groups, "Modulator"));
+            Assert.Equal(new[] { "Composition" }, Enabled(groups, "Project"));
         }
 
         [Fact]
-        public void GetAddGroups_AGroupRow_OffersOneGroupOfItsOwnList()
+        public void GetAddGroups_ALayerNode_EnablesTheContentTheFiltersAndTheModifiersOfItsType()
         {
             var scene = CreateScene();
 
-            var cameras = scene.Tree.GetAddGroups(Scene.Group<CamerasGroup>(scene.LayerNode));
-            var filters = scene.Tree.GetAddGroups(Scene.Group<FiltersGroup>(scene.LayerNode));
+            var groups = scene.Tree.GetAddGroups(scene.LayerNode);
 
-            var group = Assert.Single(cameras);
-            Assert.Equal("Camera", group.Header);
-            Assert.Equal(new[] { "Camera" }, ItemHeaders(group));
-            Assert.Equal("Filter", Assert.Single(filters).Header);
+            Assert.Empty(Enabled(groups, "Layer"));
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, Enabled(groups, "Content"));
+            Assert.Empty(Enabled(groups, "Texture"));
+            Assert.Equal(AddableTypes.ForInterface(typeof(ITextureFilter)).Count, EnabledCount(groups, "Filter"));
+            Assert.Equal(AddableTypes.ForOwner(typeof(Layer)).Count, EnabledCount(groups, "Modifier"));
+        }
+
+        [Theory]
+        [InlineData(typeof(Entity), true, true)]
+        [InlineData(typeof(FullscreenQuad), true, false)]
+        [InlineData(typeof(TextEntity), false, true)]
+        public void GetAddGroups_AnEntityNode_EnablesWhatTheEntityHolds(Type type, bool textures, bool modifiers)
+        {
+            var scene = CreateScene();
+            scene.Layer.ModelEntityManager.AddItem(type);
+            var entity = Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0];
+
+            var groups = scene.Tree.GetAddGroups(entity);
+
+            Assert.Equal(textures, EnabledCount(groups, "Texture") > 0);
+            Assert.Equal(modifiers, EnabledCount(groups, "Modifier") > 0);
+            Assert.Empty(Enabled(groups, "Content"));
+            Assert.Empty(Enabled(groups, "Filter"));
         }
 
         [Fact]
-        public void GetAddGroups_EveryNode_GivesItemsWithoutTheWordAdd()
+        public void GetAddGroups_ACameraOrALightNode_EnablesOnlyModifiers()
         {
             var scene = CreateScene();
-            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
-            scene.Layer.CameraManager.AddItem(typeof(Camera));
-
-            var headers = scene.All().SelectMany(node => scene.Tree.GetAddGroups(node, withProject: true)).SelectMany(ItemHeaders).ToList();
-
-            Assert.NotEmpty(headers);
-            Assert.DoesNotContain(headers, header => header.StartsWith("Add ", StringComparison.Ordinal));
-        }
-
-        [Fact]
-        public void GetAddGroups_EveryNode_OffersTheSameAddsAsGetAdds()
-        {
-            var scene = CreateScene();
-            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
-            scene.Layer.ModelEntityManager.AddItem(typeof(FullscreenQuad));
             scene.Layer.CameraManager.AddItem(typeof(Camera));
             scene.Layer.LightManager.AddItem(typeof(LightEntity));
+
+            foreach (var node in new[] { Scene.Group<CamerasGroup>(scene.LayerNode).Children[0], Scene.Group<LightsGroup>(scene.LayerNode).Children[0] })
+            {
+                var groups = scene.Tree.GetAddGroups(node);
+
+                Assert.True(EnabledCount(groups, "Modifier") > 0);
+                Assert.Empty(Enabled(groups, "Texture"));
+                Assert.Empty(Enabled(groups, "Filter"));
+                Assert.Empty(Enabled(groups, "Content"));
+            }
+        }
+
+        [Fact]
+        public void GetAddGroups_AFilterNode_EnablesTheModulators()
+        {
+            var scene = SceneWithContent();
+            var filter = Scene.Group<FiltersGroup>(scene.LayerNode).Children[0];
+
+            var groups = scene.Tree.GetAddGroups(filter);
+
+            Assert.Equal(AddableTypes.ForInterface(typeof(IModulator)).Count, EnabledCount(groups, "Modulator"));
+        }
+
+        [Fact]
+        public void GetAddGroups_AGroupRow_EnablesOnlyTheKindOfItsOwnList()
+        {
+            var scene = CreateScene();
+
+            Assert.Equal(new[] { "Camera" }, Enabled(scene.Tree.GetAddGroups(Scene.Group<CamerasGroup>(scene.LayerNode)), "Content"));
+            Assert.Equal(new[] { "Light" }, Enabled(scene.Tree.GetAddGroups(Scene.Group<LightsGroup>(scene.LayerNode)), "Content"));
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, Enabled(scene.Tree.GetAddGroups(Scene.Group<EntitiesGroup>(scene.LayerNode)), "Content"));
+
+            var filters = scene.Tree.GetAddGroups(Scene.Group<FiltersGroup>(scene.LayerNode));
+            Assert.Equal(AddableTypes.ForInterface(typeof(ITextureFilter)).Count, EnabledCount(filters, "Filter"));
+            Assert.Empty(Enabled(filters, "Content"));
+        }
+
+        [Fact]
+        public void GetAddGroups_TheModifiersGroupOfAnEntity_EnablesTheModifiersOfThatEntity()
+        {
+            var scene = CreateScene();
+            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
+            var group = Scene.Group<ModifiersGroup>(Scene.Group<EntitiesGroup>(scene.LayerNode).Children[0]);
+
+            var groups = scene.Tree.GetAddGroups(group);
+
+            Assert.Equal(AddableTypes.ForOwner(typeof(Entity)).Count, EnabledCount(groups, "Modifier"));
+            Assert.Empty(Enabled(groups, "Texture"));
+        }
+
+        [Fact]
+        public void GetAddGroups_EveryNode_EnablesTheProjectAndEveryEnabledEntryHasAnAction()
+        {
+            var scene = SceneWithContent();
+
+            foreach (var node in scene.All())
+            {
+                var groups = scene.Tree.GetAddGroups(node);
+
+                Assert.Equal(new[] { "Composition" }, Enabled(groups, "Project"));
+                foreach (var item in groups.SelectMany(group => group.Items))
+                    Assert.Equal(item.Enabled, item.Execute != null);
+            }
+        }
+
+        [Fact]
+        public void GetAddGroups_TheEntries_HaveNoWordAddAndTheirKind()
+        {
+            var scene = CreateScene();
+
+            var groups = scene.Tree.GetAddGroups(scene.LayerNode);
+
+            Assert.DoesNotContain(groups.SelectMany(group => group.Items), item => item.Header.StartsWith("Add ", StringComparison.Ordinal));
+            Assert.Equal(
+                new TreeCategory?[] { TreeCategory.Entity, TreeCategory.Entity, TreeCategory.Entity, TreeCategory.Camera, TreeCategory.Light },
+                GroupOf(groups, "Content").Items.Select(item => item.Category));
+            Assert.Null(GroupOf(groups, "Content").Category);
+            Assert.All(GroupOf(groups, "Filter").Items, item => Assert.Equal(TreeCategory.Filter, item.Category));
+            Assert.All(GroupOf(groups, "Modifier").Items, item => Assert.Equal(TreeCategory.Modifier, item.Category));
+            Assert.All(GroupOf(groups, "Texture").Items, item => Assert.Equal(TreeCategory.Texture, item.Category));
+            Assert.All(GroupOf(groups, "Modulator").Items, item => Assert.Equal(TreeCategory.Modulator, item.Category));
+        }
+
+        [Fact]
+        public void GetAddGroups_TheEntries_HaveTheIconOfTheirTypeWhenItHasOne()
+        {
+            var scene = CreateScene();
+
+            var groups = scene.Tree.GetAddGroups(scene.LayerNode);
+
+            Assert.Equal(new[] { "LayerScene" }, GroupOf(groups, "Layer").Items.Select(item => item.IconKey));
+            Assert.Equal(new[] { "Geometry", "FullscreenQuad", "TextIcon", "Camera", "MeshLight" }, GroupOf(groups, "Content").Items.Select(item => item.IconKey));
+            Assert.Equal(new[] { "Composition" }, GroupOf(groups, "Project").Items.Select(item => item.IconKey));
+            foreach (var header in new[] { "Texture", "Filter", "Modifier", "Modulator" })
+                Assert.All(GroupOf(groups, header).Items, item => Assert.Null(item.IconKey));
+        }
+
+        [Fact]
+        public void GetAddGroups_ForEveryNode_EnablesTheSameAddsAsGetAdds()
+        {
+            var scene = SceneWithContent();
 
             foreach (var node in scene.All())
             {
                 var expected = scene.Tree.GetAdds(node)
                     .SelectMany(add => add.Children ?? new[] { add })
                     .Select(add => add.Id)
+                    .OrderBy(id => id, StringComparer.Ordinal)
                     .ToList();
-                var actual = scene.Tree.GetAddGroups(node).SelectMany(group => group.Items).Select(item => item.Id).ToList();
+                var actual = scene.Tree.GetAddGroups(node)
+                    .SelectMany(group => group.Items)
+                    .Where(item => item.Enabled && item.Id != "row.add-composition")
+                    .Select(item => item.Id)
+                    .OrderBy(id => id, StringComparer.Ordinal)
+                    .ToList();
 
                 Assert.Equal(expected, actual);
             }
         }
 
         [Fact]
-        public void GetAddGroups_TheItems_CarryTheKindOfWhatTheyAdd()
+        public void Execute_TheEntriesOfALayerNode_AddWhatTheyName()
         {
             var scene = CreateScene();
-
-            var groups = scene.Tree.GetAddGroups(scene.LayerNode);
-
-            Assert.Equal(
-                new TreeCategory?[] { TreeCategory.Entity, TreeCategory.Entity, TreeCategory.Entity, TreeCategory.Camera, TreeCategory.Light },
-                groups[0].Items.Select(item => item.Category));
-            Assert.Null(groups[0].Category);
-            Assert.Equal(TreeCategory.Filter, groups[1].Category);
-            Assert.All(groups[1].Items, item => Assert.Equal(TreeCategory.Filter, item.Category));
-            Assert.All(groups[2].Items, item => Assert.Equal(TreeCategory.Modifier, item.Category));
-        }
-
-        [Fact]
-        public void Execute_TheItemsOfALayerNode_AddWhatTheyName()
-        {
-            var scene = CreateScene();
-            var content = scene.Tree.GetAddGroups(scene.LayerNode)[0];
+            var content = GroupOf(scene.Tree.GetAddGroups(scene.LayerNode), "Content");
 
             content.Items.Single(item => item.Header == "Camera").Execute!();
             content.Items.Single(item => item.Header == "Entity").Execute!();
@@ -165,14 +263,15 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void Execute_TheLayerAndTheProjectItems_AddALayerAndAComposition()
+        public void Execute_TheLayerAndTheProjectEntries_AddALayerAndAComposition()
         {
             var scene = CreateScene();
             var layers = scene.A.LayerManager.ManagerData.Items.Count;
             var compositions = scene.Project.CompositionManager.ManagerData.Items.Count;
+            var groups = scene.Tree.GetAddGroups(scene.CompositionNode);
 
-            scene.Tree.GetAddGroups(scene.CompositionNode).Single(group => group.Header == "Layer").Items[0].Execute!();
-            scene.Tree.GetAddGroups(scene.CompositionNode, withProject: true).Single(group => group.Header == "Project").Items[0].Execute!();
+            GroupOf(groups, "Layer").Items[0].Execute!();
+            GroupOf(groups, "Project").Items[0].Execute!();
 
             Assert.Equal(layers + 1, scene.A.LayerManager.ManagerData.Items.Count);
             Assert.Equal(compositions + 1, scene.Project.CompositionManager.ManagerData.Items.Count);

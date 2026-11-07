@@ -83,7 +83,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Show_AFilter_ClosesTheBlendAndOpensTheOtherPanels()
+        public void Show_AFilter_OpensEveryPanelTheBlendToo()
         {
             var provider = TestServiceProviderFactory.Create();
             var blur = (CMiX.Core.Texturing.Filters.Blur)provider.GetRequiredService<ControlFactory>().Create(typeof(CMiX.Core.Texturing.Filters.Blur));
@@ -91,12 +91,36 @@ namespace CMiX.Studio.Avalonia.Tests
             new Window { Content = view, Width = 500, Height = 800 }.Show();
             Dispatcher.UIThread.RunJobs();
 
-            var blend = view.GetVisualDescendants().OfType<ExpanderIndented>()
-                .Single(expander => expander.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "Blend"));
+            Assert.All(view.GetVisualDescendants().OfType<ExpanderIndented>(), expander => Assert.True(expander.IsExpanded, "Closed panel: " + expander.Header));
+        }
 
-            Assert.False(blend.IsExpanded);
-            Assert.All(view.GetVisualDescendants().OfType<ExpanderIndented>().Where(expander => !ReferenceEquals(expander, blend)),
-                expander => Assert.True(expander.IsExpanded, "Closed panel: " + expander.Header));
+        [AvaloniaFact]
+        public void Select_EveryKindOfNode_ShowsOnlyOpenExpandersInTheInspector()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(CMiX.Core.Compositing.Composition));
+            var composition = (CMiX.Core.Compositing.Composition)viewModel.Project.CompositionManager.ManagerData.Items[0];
+            composition.LayerManager.AddItem(typeof(CMiX.Core.Compositing.Layer));
+            var layer = (CMiX.Core.Compositing.Layer)composition.LayerManager.ManagerData.Items[0];
+            layer.ModelEntityManager.AddItem(typeof(CMiX.Core.Compositing.Entity));
+            layer.ModelEntityManager.AddItem(typeof(CMiX.Core.Compositing.FullscreenQuad));
+            layer.ModelEntityManager.AddItem(typeof(CMiX.Core.Compositing.TextEntity));
+            layer.CameraManager.AddItem(typeof(CMiX.Core.Rendering.Cameras.Camera));
+            layer.LightManager.AddItem(typeof(CMiX.Core.Rendering.Lights.LightEntity));
+            layer.TextureModifierManager.AddItem(typeof(CMiX.Core.Texturing.Filters.Blur));
+            TestServiceProviderFactory.Pump();
+            TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
+            TestServiceProviderFactory.Pump();
+            var inspector = window.GetVisualDescendants().OfType<CMiX.Studio.Avalonia.Views.Inspector>().Single();
+
+            foreach (var node in viewModel.ProjectTree.VisibleNodes().ToList())
+            {
+                viewModel.ProjectTree.SelectedNode = node;
+                TestServiceProviderFactory.Pump();
+
+                var closed = inspector.GetVisualDescendants().OfType<Expander>().Where(expander => expander.IsEffectivelyVisible && !expander.IsExpanded).ToList();
+                Assert.True(closed.Count == 0, node.Header + " has a closed expander.");
+            }
         }
     }
 }

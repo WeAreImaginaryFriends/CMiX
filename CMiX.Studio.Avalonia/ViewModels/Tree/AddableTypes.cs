@@ -26,6 +26,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 .Where(IsAddable)
                 .Where(type => type.IsDefined(typeof(ModifierPanelAttribute), true) && ListRules.CanHold(ownerType, type)));
 
+        // Every modifier type, whatever the owner. The Add panel lists them all, and greys the ones that the selected node cannot take.
+        public static IReadOnlyList<Type> AllModifiers() =>
+            Cached(typeof(ModifierPanelAttribute), () => typeof(ModifierPanelAttribute).Assembly
+                .GetTypes()
+                .Where(IsAddable)
+                .Where(type => type.IsDefined(typeof(ModifierPanelAttribute), true)));
+
         // The types that implement an interface, in the assembly of the interface.
         public static IReadOnlyList<Type> ForInterface(Type interfaceType) =>
             Cached(interfaceType, () => interfaceType.Assembly

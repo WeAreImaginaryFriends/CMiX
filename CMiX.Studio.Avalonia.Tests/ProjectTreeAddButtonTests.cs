@@ -96,25 +96,6 @@ namespace CMiX.Studio.Avalonia.Tests
             return screen;
         }
 
-        [Fact]
-        public void CanAdd_EveryNodeOfTheTree_IsTrue()
-        {
-            var scene = TreeFixtures.CreateScene([2]);
-            scene.Layer.ModelEntityManager.AddItem(typeof(Entity));
-            scene.Layer.CameraManager.AddItem(typeof(Camera));
-
-            Assert.All(scene.All(), node => Assert.True(node.CanAdd, node.Header));
-        }
-
-        [Fact]
-        public void IsGroupRow_ARowWithoutAnItem_IsTrue()
-        {
-            var scene = TreeFixtures.CreateScene([2]);
-
-            Assert.True(Scene.Group<EntitiesGroup>(scene.LayerNode).IsGroupRow);
-            Assert.False(scene.LayerNode.IsGroupRow);
-        }
-
         [AvaloniaFact]
         public void Show_ARowThatIsNeitherHoveredNorSelected_HasNoVisiblePlus()
         {
@@ -155,12 +136,36 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Show_AGroupRow_AlwaysShowsItsPlus()
+        public void Show_AGroupRowThatIsNeitherHoveredNorSelected_HasNoVisiblePlus()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = null;
             var group = Scene.Group<EntitiesGroup>(screen.Scene.LayerNode);
 
+            screen.Settle();
+
+            Assert.False(screen.PlusOf(group).IsEffectivelyVisible);
+        }
+
+        [AvaloniaFact]
+        public void Hover_AGroupRow_ShowsItsPlusLikeAnyOtherRow()
+        {
+            var screen = Show();
+            screen.Scene.Tree.SelectedNode = null;
+            var group = Scene.Group<EntitiesGroup>(screen.Scene.LayerNode);
+
+            screen.Hover(screen.BorderOf(group));
+
+            Assert.True(screen.PlusOf(group).IsEffectivelyVisible);
+        }
+
+        [AvaloniaFact]
+        public void Select_AGroupRow_ShowsItsPlus()
+        {
+            var screen = Show();
+            var group = Scene.Group<EntitiesGroup>(screen.Scene.LayerNode);
+
+            screen.Scene.Tree.SelectedNode = group;
             screen.Settle();
 
             Assert.True(screen.PlusOf(group).IsEffectivelyVisible);
@@ -216,7 +221,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var box = panel.Card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Card");
             var search = panel.List.GetVisualDescendants().OfType<TextBox>().Single(text => text.Name == "PART_Search");
             Assert.True(panel.IsOpen);
-            Assert.Equal(new[] { "Content", "Filter", "Modifier" }, panel.List.Groups!.Select(group => group.Header));
+            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, panel.List.Groups!.Select(group => group.Header));
             Assert.Equal(origin.X + plus.Bounds.Width + 8, box.TranslatePoint(default, screen.Window)!.Value.X, 0.51);
             Assert.Equal(origin.Y + plus.Bounds.Height / 2, search.TranslatePoint(new Point(0, search.Bounds.Height / 2), screen.Window)!.Value.Y, 0.51);
             Assert.Same(screen.Scene.LayerNodeOfA(1), screen.Scene.Tree.SelectedNode);

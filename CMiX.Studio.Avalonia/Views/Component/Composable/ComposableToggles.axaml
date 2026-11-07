@@ -9,7 +9,8 @@
          A slot with no button is empty and darker (Grey100): the visibility slot of a group (no item), the mask slot of an item
          that is not an IComposable. The mask template is for IComposable only: a template for any object also catches the text of
          the tooltip, and the tooltip is an empty box.
-         Sizes: no class is the inspector header (ControlHeightMD), "row" is the tree (TreeRowHeight, TreeRowSpacing), "small" is the
+         Sizes: no class is the inspector header (ControlHeightMD), "row" is the tree (TreeRowHeight, TreeRowSpacing, no fill: the icons sit
+         inside the colored row), "small" is the
          composable lists (ControlHeightXS, no fill, the mask first and the visibility on the far right). -->
     <UserControl.Styles>
         <Style Selector="Border.slot">
@@ -34,6 +35,9 @@
         <Style Selector="Views|ComposableToggles.row Border.slot">
             <Setter Property="Width" Value="{DynamicResource TreeRowHeight}" />
             <Setter Property="Height" Value="{DynamicResource TreeRowHeight}" />
+        </Style>
+        <Style Selector="Views|ComposableToggles.row Border.slot, Views|ComposableToggles.row Border.slot.empty">
+            <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="Views|ComposableToggles.row Border.gap">
             <Setter Property="Width" Value="{DynamicResource TreeRowSpacing}" />

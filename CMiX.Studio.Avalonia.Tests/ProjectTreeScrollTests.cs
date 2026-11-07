@@ -50,7 +50,8 @@ namespace CMiX.Studio.Avalonia.Tests
         private Point RowPoint(ProjectTreeView view, TreeNode node)
         {
             var row = ItemOf(view, node).GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
-            return row.TranslatePoint(new Point(row.Bounds.Width - 20, row.Bounds.Height / 2), window!)!.Value;
+            // Left of the toggles, which end the row.
+            return row.TranslatePoint(new Point(row.Bounds.Width - 80, row.Bounds.Height / 2), window!)!.Value;
         }
 
         // Scrolls until a layer row is near the bottom edge of the view, where its whole block is not in view. Returns that layer.

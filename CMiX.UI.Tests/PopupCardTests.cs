@@ -40,11 +40,9 @@ namespace CMiX.UI.Tests
         {
             var (_, box, _) = Show();
 
-            var fill = (ISolidColorBrush)Application.Current!.FindResource("PopupCardBackgroundBrush")!;
-            var border = (ISolidColorBrush)Application.Current!.FindResource("PopupCardBorderBrush")!;
+            var fill = (ISolidColorBrush)Application.Current!.FindResource("PopupBackgroundBrush")!;
             Assert.Equal(fill.Color, ((ISolidColorBrush)box.Background!).Color);
-            Assert.Equal(border.Color, ((ISolidColorBrush)box.BorderBrush!).Color);
-            Assert.Equal(new Thickness(1), box.BorderThickness);
+            Assert.Equal(new Thickness(0), box.BorderThickness);
             Assert.Equal((CornerRadius)Application.Current!.FindResource("CornerRadiusLargeAll")!, box.CornerRadius);
         }
 

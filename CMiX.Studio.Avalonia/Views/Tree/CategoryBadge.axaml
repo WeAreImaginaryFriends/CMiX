@@ -4,13 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
 
-    <!-- The icon of an item on a square in the color of its kind, as in the title bar of the inspector. The DataContext is a tree node.
-         The square is as high as a row, with the corners of the controls, and the fill of a selected row of the tree: the same color as the row. The icon is white. The tree
+    <!-- The icon of an item in the title bar of the inspector, on the color of the bar. The DataContext is a tree node.
+         The square is as high as a row and has no fill of its own: the bar has the color of the kind. The icon is white. The tree
          does not use it: a row of the tree shows its kind with its fill (see TreeToneConverter). -->
     <Border
         Width="{DynamicResource ControlHeightMD}"
         Height="{DynamicResource ControlHeightMD}"
-        Background="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}"
         CornerRadius="{DynamicResource CornerRadiusAll}">
         <ui:AppIcon
             HorizontalAlignment="Center"

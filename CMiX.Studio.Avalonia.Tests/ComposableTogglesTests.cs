@@ -46,14 +46,14 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Color Brush(string key) => ((ISolidColorBrush)Application.Current!.FindResource(key)!).Color;
 
         [AvaloniaFact]
-        public void Show_ALayer_HasAVisibilityAndAMaskToggle()
+        public void Show_ALayerRow_HasAVisibilityAndAMaskToggleWithNoFill()
         {
             var slots = Slots(Show(Create(typeof(Layer)), "row", window => window.Resources["TreeRowHeight"] = 24.0));
 
             Assert.Equal(2, slots.Count);
             Assert.Same(Application.Current!.FindResource("ToggleButtonVisibility"), Visible(slots[0])!.Theme);
             Assert.Same(Application.Current!.FindResource("ToggleButtonMask"), Visible(slots[1])!.Theme);
-            Assert.All(slots, slot => Assert.Equal(Brush("PanelBackgroundLevel2Brush"), ((ISolidColorBrush)slot.Background!).Color));
+            Assert.All(slots, slot => Assert.Equal(global::Avalonia.Media.Colors.Transparent, ((ISolidColorBrush)slot.Background!).Color));
         }
 
         [AvaloniaFact]

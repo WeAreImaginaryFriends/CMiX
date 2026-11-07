@@ -184,7 +184,7 @@ namespace CMiX.UI.Tests
         [AvaloniaFact]
         public void PopupBackground_IsOneToken_ThatTheFramesRead()
         {
-            Assert.Equal(Grey(100), Token("PopupBackgroundBrush"));
+            Assert.Equal(Avalonia.Media.Color.Parse("#FF1A1A1C"), Token("PopupBackgroundBrush"));
         }
     }
 }

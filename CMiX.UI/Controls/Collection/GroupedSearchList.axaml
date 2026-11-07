@@ -15,6 +15,12 @@
         <Style Selector="Border.row.highlighted">
             <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
         </Style>
+        <Style Selector="Border.row.disabled">
+            <Setter Property="Opacity" Value="0.4" />
+        </Style>
+        <Style Selector="Border.row.header.dimmed">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
         <Style Selector="Border.row.header TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource Grey900Brush}" />
         </Style>
@@ -46,8 +52,9 @@
 
         <ScrollViewer
             x:Name="PART_Scroll"
-            HorizontalScrollBarVisibility="Hidden"
-            VerticalScrollBarVisibility="Hidden"
+            HorizontalScrollBarVisibility="Disabled"
+            Theme="{DynamicResource ScrollViewerOverlay}"
+            VerticalScrollBarVisibility="Auto"
             ui:ScrollStep.ItemHeight="{DynamicResource ControlHeightMD}"
             ui:ScrollStep.ItemSpacing="0"
             ui:ScrollStep.VisibleItemCount="{Binding VisibleRows, ElementName=groupedList}">

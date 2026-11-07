@@ -23,14 +23,9 @@
                 x:Name="colorPickerPopup"
                 ui:TogglePopup.Toggle="{Binding ElementName=PopupToggle}"
                 Placement="Top">
-                <Border
-                    x:Name="popupBorder"
-                    Background="{DynamicResource Grey200Brush}"
-                    CornerRadius="{DynamicResource CornerRadiusAll}">
-                    <ui:ColorPickerFull
-                        Margin="8"
-                        SelectedColor="{Binding Value, Converter={StaticResource ColorToHex}, Mode=TwoWay}" />
-                </Border>
+                <ui:PopupFrame>
+                    <ui:ColorPickerFull SelectedColor="{Binding Value, Converter={StaticResource ColorToHex}, Mode=TwoWay}" />
+                </ui:PopupFrame>
             </Popup>
 
         </Panel>

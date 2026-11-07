@@ -16,9 +16,7 @@
                     <Panel>
                         <Border
                             Name="PART_Card"
-                            Background="{DynamicResource PopupCardBackgroundBrush}"
-                            BorderBrush="{DynamicResource PopupCardBorderBrush}"
-                            BorderThickness="1"
+                            Background="{DynamicResource PopupBackgroundBrush}"
                             CornerRadius="{DynamicResource CornerRadiusLargeAll}"
                             Padding="{TemplateBinding Padding}">
                             <ContentPresenter
@@ -29,9 +27,8 @@
 
                         <ui:PopupTip
                             Name="PART_Tip"
-                            Fill="{DynamicResource PopupCardBackgroundBrush}"
-                            IsVisible="{TemplateBinding ShowsTip}"
-                            Stroke="{DynamicResource PopupCardBorderBrush}" />
+                            Fill="{DynamicResource PopupBackgroundBrush}"
+                            IsVisible="{TemplateBinding ShowsTip}" />
                     </Panel>
 
                 </Border>

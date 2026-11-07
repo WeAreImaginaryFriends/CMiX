@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CMiX.UI.Themes;
 
 namespace CMiX.UI.Controls.Collection
 {
@@ -78,7 +79,7 @@ namespace CMiX.UI.Controls.Collection
             set => SetValue(VisibleRowsProperty, value);
         }
 
-        // The color of the square before a row, from the Kind of the row. Without it, or when it gives null, the row has no square.
+        // The color of the icon of a row, from the Kind of the row. Without it, or when it gives null, the icon has the color of the text.
         public Func<object?, IBrush?>? KindBrush { get; set; }
 
         public event EventHandler<PickerPickedEventArgs>? Picked;
@@ -95,7 +96,10 @@ namespace CMiX.UI.Controls.Collection
         public IReadOnlyList<Border> RowVisuals => rows.Select(row => row.Visual).ToList();
 
         // The state of a group: open or closed, as the user sees it.
-        public bool IsOpen(PickerGroup group) => Searching || (group.Items.Count <= CollapseFrom) != flipped.Contains(group);
+        public bool IsOpen(PickerGroup group) => Searching || StartsOpen(group) != flipped.Contains(group);
+
+        // A group starts open when it is small and has a row that can be picked.
+        private bool StartsOpen(PickerGroup group) => group.Items.Count <= CollapseFrom && group.HasEnabledItems;
 
         private bool Searching => !string.IsNullOrEmpty(SearchText);
 
@@ -145,7 +149,7 @@ namespace CMiX.UI.Controls.Collection
             // The highlight stays on the header that was opened or closed. Else it starts on the first row, or on the first header.
             var start = keepOn == null ? -1 : rows.FindIndex(row => row.Item == null && row.Group == keepOn);
             if (start < 0)
-                start = rows.FindIndex(row => row.Item != null);
+                start = rows.FindIndex(row => row.Item is { IsEnabled: true });
             Highlight(start < 0 && rows.Count > 0 ? 0 : start);
         }
 
@@ -154,10 +158,14 @@ namespace CMiX.UI.Controls.Collection
             var index = rows.Count;
             rows.Add(row);
             PART_Rows.Children.Add(row.Visual);
-            row.Visual.PointerEntered += (_, _) => Highlight(index, scroll: false);
+            row.Visual.PointerEntered += (_, _) =>
+            {
+                if (IsUsable(index))
+                    Highlight(index, scroll: false);
+            };
             row.Visual.PointerReleased += (_, e) =>
             {
-                if (e.InitialPressMouseButton == MouseButton.Left)
+                if (e.InitialPressMouseButton == MouseButton.Left && IsUsable(index))
                 {
                     Activate(index);
                     e.Handled = true;
@@ -181,27 +189,49 @@ namespace CMiX.UI.Controls.Collection
             var row = new Border { Padding = new Thickness(6, 0), Child = grid };
             row.Classes.Add("row");
             row.Classes.Add("header");
+            if (!group.HasEnabledItems)
+                row.Classes.Add("dimmed");
+
             return row;
         }
 
+        // A row shows its icon when it has one and the key is registered. A row with no icon shows only its text.
         private Border ItemRow(PickerItem item)
         {
             var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 8 };
-            if (KindBrush?.Invoke(item.Kind) is { } brush)
+            if (item.IconKey is { } key && Icons.Kinds.ContainsKey(key))
             {
-                var size = Number("IconSizeXS", 12) * 0.8;
-                panel.Children.Add(new Border
-                {
-                    Width = size, Height = size, Background = brush,
-                    CornerRadius = new CornerRadius(2), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                });
+                var icon = new AppIcon { IconKey = key, Size = Number("IconSizeXS", 12), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
+                if (KindBrush?.Invoke(item.Kind) is { } brush)
+                    icon.Foreground = brush;
+
+                panel.Children.Add(icon);
             }
 
             panel.Children.Add(new TextBlock { Text = item.Text, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });
 
             var row = new Border { Padding = new Thickness(24, 0, 8, 0), Child = panel };
             row.Classes.Add("row");
+            if (!item.IsEnabled)
+                row.Classes.Add("disabled");
+
             return row;
+        }
+
+        // A header and a row that is enabled can be highlighted, clicked and picked. A row that is not enabled cannot.
+        private bool IsUsable(int index) =>
+            index >= 0 && index < rows.Count && (rows[index].Item == null || rows[index].Item!.IsEnabled);
+
+        // The row after the highlighted one in a direction that can be used, or the highlighted row when there is none.
+        private int Step(int direction)
+        {
+            for (var index = highlighted + direction; index >= 0 && index < rows.Count; index += direction)
+            {
+                if (IsUsable(index))
+                    return index;
+            }
+
+            return highlighted;
         }
 
         private double Number(string key, double fallback) =>
@@ -228,6 +258,9 @@ namespace CMiX.UI.Controls.Collection
                 return;
 
             var row = rows[index];
+            if (row.Item is { IsEnabled: false })
+                return;
+
             if (row.Item == null)
             {
                 Toggle(row.Group);
@@ -261,12 +294,12 @@ namespace CMiX.UI.Controls.Collection
             switch (e.Key)
             {
                 case Key.Down:
-                    Highlight(highlighted + 1);
+                    Highlight(Step(1));
                     e.Handled = true;
                     break;
 
                 case Key.Up:
-                    Highlight(highlighted - 1);
+                    Highlight(Step(-1));
                     e.Handled = true;
                     break;
 

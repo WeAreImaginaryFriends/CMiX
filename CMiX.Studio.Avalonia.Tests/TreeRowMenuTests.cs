@@ -256,15 +256,15 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Open_TheAddPanelOfALayer_OffersContentFilterAndModifier()
+        public void Open_TheAddPanelOfALayer_EnablesTheContent()
         {
             var screen = Show();
 
             var panel = screen.OpenAddPanel(screen.OpenMenu(screen.LayerNodeOfA(0))!);
 
             Assert.True(panel.IsOpen);
-            Assert.Equal(new[] { "Content", "Filter", "Modifier" }, panel.List.Groups!.Select(group => group.Header));
-            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, panel.List.Groups!.First().Items.Select(item => item.Text));
+            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, panel.List.Groups!.Select(group => group.Header));
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, panel.List.Groups!.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
         }
 
         [AvaloniaFact]
@@ -339,14 +339,14 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Open_TheMenuOfTheEntitiesGroup_OffersOnlyEntities()
+        public void Open_TheMenuOfTheEntitiesGroup_EnablesOnlyEntities()
         {
             var screen = Show();
 
             var headers = Screen.Headers(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!);
 
             Assert.Equal(new[] { "Entities", "-", "Add" }, headers);
-            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, screen.OpenAddPanel(screen.TreeView.ContextMenu!).List.Groups!.Single().Items.Select(item => item.Text));
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, screen.OpenAddPanel(screen.TreeView.ContextMenu!).List.Groups!.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
         }
 
         [AvaloniaFact]
@@ -593,7 +593,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Open_TheMenuOfARow_MarksTheTitleTheAddRowAndTheRemoveRow()
+        public void Open_TheMenuOfARow_MarksTheTitleAndTheAddRowOnly()
         {
             var screen = Show();
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -603,11 +603,11 @@ namespace CMiX.Studio.Avalonia.Tests
             var title = layer.Items.OfType<MenuItem>().First();
             Assert.Contains("title", title.Classes);
             Assert.Contains("opens", RowOf(layer, "Add").Classes);
-            Assert.Contains("danger", RowOf(layer, "Delete").Classes);
+            Assert.DoesNotContain("danger", RowOf(layer, "Delete").Classes);
             Assert.DoesNotContain("danger", RowOf(layer, "Duplicate").Classes);
 
             var entity = screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!;
-            Assert.Contains("danger", RowOf(entity, "Remove").Classes);
+            Assert.DoesNotContain("danger", RowOf(entity, "Remove").Classes);
         }
     }
 }

@@ -140,9 +140,9 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(height / 2, iconMiddle, 1);
         }
 
-        // The icon of the title bar is on a square in the color of the kind of the selected row.
+        // The whole title bar has the color of the kind of the selected row. The badge has no fill of its own.
         [AvaloniaFact]
-        public void Select_AnItem_ShowsItsIconOnASquareOfTheKindColorInTheHeader()
+        public void Select_AnItem_ColorsTheWholeHeaderWithTheKindColor()
         {
             var screen = Show();
             var palette = CMiX.Studio.Avalonia.Themes.CategoryPalette.FromApplication();
@@ -152,7 +152,8 @@ namespace CMiX.Studio.Avalonia.Tests
                 var square = screen.Header.GetVisualDescendants().OfType<CategoryBadge>().Single().GetVisualDescendants().OfType<Border>().First();
 
                 var expected = palette.For(node.Category!.Value, node.ComposableDepth, node.KindDepth).FillSelected;
-                Assert.Equal(expected, ((global::Avalonia.Media.ISolidColorBrush)square.Background!).Color);
+                Assert.Equal(expected, ((global::Avalonia.Media.ISolidColorBrush)screen.Header.Background!).Color);
+                Assert.Null(square.Background);
                 Assert.Equal(node.IconKey, screen.HeaderIcon.IconKey);
             }
         }

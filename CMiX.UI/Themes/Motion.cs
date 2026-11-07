@@ -9,7 +9,11 @@ namespace CMiX.UI.Themes
     // The time and the easing of the animations of the library, so that every animation moves the same way.
     public static class Motion
     {
-        public static readonly TimeSpan Duration = TimeSpan.FromMilliseconds(100);
+        // Every expander opens and closes with this time and this easing: the panel and its chevron both use them.
+        public static readonly TimeSpan Duration = TimeSpan.FromMilliseconds(160);
+
+        // A fade of a mark, such as the dimming of a row during a drag. It is quick and soft.
+        public static readonly TimeSpan FadeDuration = TimeSpan.FromMilliseconds(120);
 
         public static Easing Easing => new CubicEaseOut();
     }

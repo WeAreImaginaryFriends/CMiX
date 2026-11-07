@@ -24,11 +24,9 @@
     <SolidColorBrush x:Key="PanelBackgroundLevel3Brush" Color="{DynamicResource Grey400}" />
 
     <!-- The background of every popup, flyout, drop down and context menu. PopupFrame and DropdownFrame read it. -->
-    <SolidColorBrush x:Key="PopupBackgroundBrush" Color="{DynamicResource Grey100}" />
+    <SolidColorBrush x:Key="PopupBackgroundBrush" Color="{DynamicResource PopupCardBackground}" />
 
-    <!-- The card of a tooltip and of the Add panel (PopupCard): its fill and its border. -->
-    <SolidColorBrush x:Key="PopupCardBackgroundBrush" Color="{DynamicResource PopupCardBackground}" />
-    <SolidColorBrush x:Key="PopupCardBorderBrush" Color="{DynamicResource PopupCardBorder}" />
+    <!-- The line of a tooltip that says why a control is disabled, and the colors of a menu row that takes something away. -->
     <SolidColorBrush x:Key="PopupCardWarningBrush" Color="{DynamicResource PopupCardWarning}" />
     <SolidColorBrush x:Key="PopupCardDangerBrush" Color="{DynamicResource PopupCardDanger}" />
 

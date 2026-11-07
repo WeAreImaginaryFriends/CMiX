@@ -22,8 +22,8 @@ using Project = CMiX.Core.Compositing.Project;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // The toggles of a row are on their own squares, at the right of the colored row and outside it. The visibility toggle is the
-    // first square and the mask toggle follows it.
+    // The toggles of a row are icons inside the colored row, at its right end, with no fill. The visibility toggle is the
+    // first slot and the mask toggle follows it.
     public class ProjectTreeRowTogglesTests : IDisposable
     {
         private Window? window;
@@ -50,7 +50,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private Rect BoundsIn(Control control) => new(control.TranslatePoint(new Point(0, 0), window!)!.Value, control.Bounds.Size);
 
         [AvaloniaFact]
-        public void Show_TheSquares_AreRightOfTheColoredRow()
+        public void Show_TheToggles_AreInsideTheColoredRow()
         {
             var (view, tree) = Show();
 
@@ -58,7 +58,7 @@ namespace CMiX.Studio.Avalonia.Tests
             {
                 var row = BoundsIn(RowOf(view, node));
                 foreach (var square in SquaresOf(ColumnOf(view, node)))
-                    Assert.True(BoundsIn(square).Left >= row.Right, $"A toggle of {node.Header} is inside the colored row.");
+                    Assert.True(BoundsIn(square).Left >= row.Left && BoundsIn(square).Right <= row.Right + 0.01, $"A toggle of {node.Header} is outside the colored row.");
             }
         }
 
@@ -121,7 +121,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var squares = SquaresOf(ColumnOf(view, composition)).Select(BoundsIn).ToList();
             var space = Convert.ToDouble(((Control)view).Resources["TreeRowSpacing"]);
 
-            Assert.Equal(space, squares[0].Left - row.Right, 3);
+            Assert.Equal(row.Right, squares[1].Right, 3);
             Assert.Equal(space, squares[1].Left - squares[0].Right, 3);
             Assert.All(squares, square =>
             {
@@ -150,29 +150,28 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Show_TheSquares_HaveTheBackgroundOfTheSecondPanelLevel()
+        public void Show_TheSlots_HaveNoFill()
         {
             var (view, tree) = Show();
-            var expected = ((ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel2Brush")!).Color;
+            var expected = global::Avalonia.Media.Colors.Transparent;
 
             foreach (var square in SquaresOf(ColumnOf(view, tree.Roots[0])))
                 Assert.Equal(expected, ((ISolidColorBrush)square.Background!).Color);
         }
 
         [AvaloniaFact]
-        public void Show_ASquareWithNoButton_IsDarkerThanASquareWithOne()
+        public void Show_ASlotWithNoButton_HasNoFillEither()
         {
             var (view, tree) = Show();
-            var darkest = ((ISolidColorBrush)Application.Current!.FindResource("Grey100Brush")!).Color;
-            var level2 = ((ISolidColorBrush)Application.Current!.FindResource("PanelBackgroundLevel2Brush")!).Color;
             var entities = tree.Roots[0].Children[0].Children[0];
+            var clear = global::Avalonia.Media.Colors.Transparent;
             var entity = entities.Children[0];
 
-            // A group has two empty squares. An entity has the eye on a normal square, then an empty square.
-            Assert.All(SquaresOf(ColumnOf(view, entities)), square => Assert.Equal(darkest, ((ISolidColorBrush)square.Background!).Color));
+            // A group has two empty slots. An entity has the eye in a slot, then an empty slot. None has a fill.
+            Assert.All(SquaresOf(ColumnOf(view, entities)), square => Assert.Equal(clear, ((ISolidColorBrush)square.Background!).Color));
             var entitySquares = SquaresOf(ColumnOf(view, entity));
-            Assert.Equal(level2, ((ISolidColorBrush)entitySquares[0].Background!).Color);
-            Assert.Equal(darkest, ((ISolidColorBrush)entitySquares[1].Background!).Color);
+            Assert.Equal(clear, ((ISolidColorBrush)entitySquares[0].Background!).Color);
+            Assert.Equal(clear, ((ISolidColorBrush)entitySquares[1].Background!).Color);
         }
 
         [AvaloniaFact]

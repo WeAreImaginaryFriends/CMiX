@@ -1,11 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CMiX.UI.Controls;
 using CMiX.UI.Controls.Collection;
 using Xunit;
 
@@ -23,7 +25,7 @@ namespace CMiX.UI.Tests
             { "Orbit", "Target", "Zoom", "Alpha", "Color", "Visibility", "Flip", "Grid", "Rotation", "Scale" };
 
         private static PickerGroup Group(string header, string[] names, string kind) =>
-            new(header, names.Select(name => new PickerItem(name, name, kind)).ToList(), kind);
+            new(header, names.Select(name => new PickerItem(name, name, kind, kind == "content" ? "Add" : null)).ToList(), kind);
 
         private static (Window Window, GroupedSearchList List, List<PickerPickedEventArgs> Picks) Show()
         {
@@ -114,14 +116,123 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void Show_AKindWithABrush_ColorsTheSquareOfItsRows()
+        public void Show_ARowWithAnIconAndAKind_ColorsTheIcon()
         {
             var (_, list, _) = Show();
 
             var entity = list.RowVisuals[1];
-            var square = ((StackPanel)entity.Child!).Children.OfType<Border>().Single();
+            var icon = ((StackPanel)entity.Child!).Children.OfType<AppIcon>().Single();
 
-            Assert.Equal(Colors.Red, ((ISolidColorBrush)square.Background!).Color);
+            Assert.Equal("Add", icon.IconKey);
+            Assert.Equal(Colors.Red, ((ISolidColorBrush)icon.Foreground!).Color);
+        }
+
+        [AvaloniaFact]
+        public void Show_ARowWithoutAnIconOrWithAnUnknownKey_ShowsOnlyItsText()
+        {
+            var list = new GroupedSearchList
+            {
+                Groups = new[]
+                {
+                    new PickerGroup("Group", new[] { new PickerItem("No icon"), new PickerItem("Unknown", IconKey: "NoSuchIconKey") }),
+                },
+                Width = 240,
+            };
+            new Window { Content = list, Width = 400, Height = 600 }.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.All(list.RowVisuals.Skip(1), row => Assert.Empty(((StackPanel)row.Child!).Children.OfType<AppIcon>()));
+            Assert.Equal(new[] { "Group", "No icon", "Unknown" }, list.VisibleTexts);
+        }
+
+        private static GroupedSearchList ShowWithDisabledRows(out List<PickerPickedEventArgs> picks)
+        {
+            var picked = new List<PickerPickedEventArgs>();
+            var list = new GroupedSearchList
+            {
+                Groups = new[]
+                {
+                    new PickerGroup("Open", new[] { new PickerItem("First"), new PickerItem("Off", IsEnabled: false), new PickerItem("Last") }),
+                    new PickerGroup("Nothing", new[] { new PickerItem("Never", IsEnabled: false) }),
+                },
+                Width = 240,
+            };
+            list.Picked += (_, e) => picked.Add(e);
+            new Window { Content = list, Width = 400, Height = 600 }.Show();
+            Dispatcher.UIThread.RunJobs();
+            picks = picked;
+            return list;
+        }
+
+        [AvaloniaFact]
+        public void Show_ARowThatIsNotEnabled_IsGreyed()
+        {
+            var list = ShowWithDisabledRows(out _);
+
+            var off = list.RowVisuals[2];
+
+            Assert.Contains("disabled", off.Classes);
+            Assert.Equal(0.4, off.Opacity);
+            Assert.DoesNotContain("disabled", list.RowVisuals[1].Classes);
+        }
+
+        [AvaloniaFact]
+        public void Show_AGroupWithNoEnabledRow_StartsClosedWithAGreyedHeader()
+        {
+            var list = ShowWithDisabledRows(out _);
+
+            Assert.Equal(new[] { "Open", "First", "Off", "Last", "Nothing" }, list.VisibleTexts);
+            Assert.Contains("dimmed", list.RowVisuals[4].Classes);
+            Assert.Equal(0.5, list.RowVisuals[4].Opacity);
+        }
+
+        [AvaloniaFact]
+        public void Press_DownAndUp_SkipARowThatIsNotEnabled()
+        {
+            var list = ShowWithDisabledRows(out _);
+            Assert.Equal(1, list.HighlightedIndex);
+
+            Press(list, Key.Down);
+            Assert.Equal(3, list.HighlightedIndex);
+
+            Press(list, Key.Up);
+            Assert.Equal(1, list.HighlightedIndex);
+        }
+
+        [AvaloniaFact]
+        public void Click_ARowThatIsNotEnabled_PicksNothingAndMovesNoHighlight()
+        {
+            var list = ShowWithDisabledRows(out var picks);
+            var window = (Window)list.GetVisualRoot()!;
+
+            Click(window, list.RowVisuals[2]);
+
+            Assert.Empty(picks);
+            Assert.Equal(1, list.HighlightedIndex);
+        }
+
+        [AvaloniaFact]
+        public void Type_TextOfARowThatIsNotEnabled_ShowsItGreyedAndPicksNothing()
+        {
+            var list = ShowWithDisabledRows(out var picks);
+
+            Type(list, "off");
+            Press(list, Key.Enter);
+
+            Assert.Equal(new[] { "Open", "Off" }, list.VisibleTexts);
+            Assert.Contains("disabled", list.RowVisuals[1].Classes);
+            Assert.Empty(picks);
+        }
+
+        [AvaloniaFact]
+        public void Show_TheRows_HaveAnOverlayScrollBar()
+        {
+            var (_, list, _) = Show();
+
+            var scroll = list.GetVisualDescendants().OfType<ScrollViewer>().Single(viewer => viewer.Name == "PART_Scroll");
+
+            Assert.Equal(ScrollBarVisibility.Auto, scroll.VerticalScrollBarVisibility);
+            Assert.Same(Application.Current!.FindResource("ScrollViewerOverlay"), scroll.Theme);
         }
 
         [AvaloniaFact]

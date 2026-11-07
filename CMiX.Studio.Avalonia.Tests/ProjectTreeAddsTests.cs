@@ -119,9 +119,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var groups = screen.Panel.List.Groups!.ToList();
 
             Assert.NotEmpty(model);
-            Assert.Equal(new[] { "Content", "Filter", "Modifier" }, rowGroups);
-            Assert.Equal(rowGroups.Append("Project"), groups.Select(group => group.Header));
-            Assert.Equal(model.Take(5), groups[0].Items.Select(item => item.Text));
+            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, rowGroups);
+            Assert.Equal(rowGroups, groups.Select(group => group.Header));
+            Assert.Equal(model.Take(5), groups.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
         }
 
         [AvaloniaFact]

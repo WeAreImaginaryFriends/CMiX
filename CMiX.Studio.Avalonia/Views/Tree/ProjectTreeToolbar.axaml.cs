@@ -42,7 +42,7 @@ namespace CMiX.Studio.Avalonia.Views
             }
 
             var node = tree.SelectedNode;
-            panel.Open(AddButton, PopupSide.Bottom, tree.GetAddGroups(node, withProject: true), node == null ? null : "Add to " + node.Header);
+            panel.Open(AddButton, PopupSide.Bottom, tree.GetAddGroups(node), node == null ? null : "Add to " + node.Header);
         }
     }
 }

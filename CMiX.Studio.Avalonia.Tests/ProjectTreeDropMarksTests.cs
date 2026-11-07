@@ -66,12 +66,12 @@ namespace CMiX.Studio.Avalonia.Tests
             foreach (var node in All(tree.Roots))
             {
                 Assert.Equal(node.IsDropCandidate ? ToneOf(node).FillHover : ToneOf(node).Fill, FillOf(view, node));
-                Assert.Equal(node.IsDimmed, Part(view, node, "DimLayer").IsEffectivelyVisible);
+                Assert.Equal(node.IsDimmed, Part(view, node, "DimLayer").Classes.Contains("dimmed"));
             }
 
             Assert.True(All(tree.Roots).Any(node => node.IsDropCandidate));
             Assert.True(All(tree.Roots).Any(node => node.IsDimmed));
-            Assert.False(Part(view, source, "DimLayer").IsEffectivelyVisible);
+            Assert.False(Part(view, source, "DimLayer").Classes.Contains("dimmed"));
         }
 
         [AvaloniaFact]
@@ -87,7 +87,7 @@ namespace CMiX.Studio.Avalonia.Tests
             foreach (var node in All(tree.Roots))
             {
                 Assert.Equal(ToneOf(node).Fill, FillOf(view, node));
-                Assert.False(Part(view, node, "DimLayer").IsEffectivelyVisible);
+                Assert.False(Part(view, node, "DimLayer").Classes.Contains("dimmed"));
             }
         }
 
@@ -119,7 +119,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Settle();
 
             Assert.True(composition.IsDropHint);
-            Assert.False(Part(view, composition, "DimLayer").IsEffectivelyVisible);
+            Assert.False(Part(view, composition, "DimLayer").Classes.Contains("dimmed"));
             Assert.Equal(ToneOf(composition).Fill, FillOf(view, composition));
         }
 
@@ -145,7 +145,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(frame.BorderThickness.Top > 0);
             Assert.False(frame.IsHitTestVisible);
             Assert.Equal(ToneOf(layer).Fill, FillOf(view, layer));
-            Assert.False(Part(view, layer, "DimLayer").IsEffectivelyVisible);
+            Assert.False(Part(view, layer, "DimLayer").Classes.Contains("dimmed"));
 
             tree.EndDrag();
             Settle();
@@ -162,7 +162,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var cover = Part(view, tree.Roots[0], "DimLayer");
 
             Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("TreeBackgroundBrush")!).Color, ((ISolidColorBrush)cover.Background!).Color);
-            Assert.Equal(Convert.ToDouble(Application.Current!.FindResource("TreeDimOpacity")), cover.Opacity);
+            Assert.Contains("dimmed", cover.Classes);
+            Assert.Contains(cover.Transitions!, transition => transition is global::Avalonia.Animation.DoubleTransition { Property: var property } && property == Visual.OpacityProperty);
             Assert.False(cover.IsHitTestVisible);
         }
 

@@ -60,9 +60,10 @@
                 <!-- The marks of a drag are drawn over the whole item: the row and the rows under it. -->
                 <Panel>
                 <StackPanel>
-                    <!-- The chevron is at the left of the colored row, outside it, after the indent of the row. The toggles are at the right
-                         of the colored row, outside it. The column starts with the space of the rows. Only the chevron expands a row. -->
-                    <Grid Name="RowGrid" ColumnDefinitions="Auto,*,Auto,Auto">
+                    <!-- The chevron is at the left of the colored row, outside it, after the indent of the row. The toggles are inside the colored
+                         row, at its right end, as icons with no fill (see RowToggles). The + is at the right of the colored row, outside it.
+                         Only the chevron expands a row. -->
+                    <Grid Name="RowGrid" ColumnDefinitions="Auto,*,Auto">
                     <ToggleButton
                         Name="PART_ExpandCollapseChevron"
                         Grid.Column="0"
@@ -84,13 +85,16 @@
                                  renames it. -->
                             <Grid
                                 Name="RowContent"
+                                ColumnDefinitions="*,Auto"
                                 Margin="{DynamicResource TreeRowContentMargin}">
                                 <ContentPresenter
                                     Name="RowHeaderPresenter"
+                                    Grid.Column="0"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Center"
                                     Content="{TemplateBinding Header}"
                                     ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                                <Views:RowToggles Grid.Column="1" VerticalAlignment="Center" />
                             </Grid>
                             <!-- The marks of a drag over the rows, drawn over the row: they take no room and no click. A row that can not take
                                  the node is covered with the background of the tree, so it recedes. A row that can take it has a
@@ -99,9 +103,16 @@
                                 Name="DimLayer"
                                 Background="{DynamicResource TreeBackgroundBrush}"
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
+                                Classes.dimmed="{Binding IsDimmed}"
                                 IsHitTestVisible="False"
-                                IsVisible="{Binding IsDimmed}"
-                                Opacity="{DynamicResource TreeDimOpacity}" />
+                                Opacity="0">
+                                <!-- The cover fades in and out (Motion.FadeDuration), so a row does not jump when a drag starts or ends. -->
+                                <Border.Transitions>
+                                    <Transitions>
+                                        <DoubleTransition Property="Opacity" Duration="0:0:0.12" Easing="CubicEaseOut" />
+                                    </Transitions>
+                                </Border.Transitions>
+                            </Border>
                             <!-- The selected row has a thin border in the bright color of its kind. It is drawn over the row, inside it, so the row
                                  does not change its size. Its thickness is one pixel of the screen (see ProjectTreeView.SetRowMetrics). -->
                             <Border
@@ -128,18 +139,15 @@
                                 IsVisible="False" />
                         </Panel>
                     </Border>
-                    <Views:RowToggles Grid.Column="2" />
                     <!-- The + of the row, at the far right, after the toggles. The host keeps its room whether the + shows or not, so the
                          toggles never move. The + opens the Add panel of the row (see ProjectTreeView). It is not focusable, and the tree
                          ignores a press on it, so it starts no drag and selects nothing. -->
                     <Panel
-                        Grid.Column="3"
+                        Grid.Column="2"
                         Width="{DynamicResource TreeRowHeight}"
                         Height="{DynamicResource TreeRowHeight}">
                         <ui:ButtonIcon
                             Name="AddRowButton"
-                            Classes.addable="{Binding CanAdd}"
-                            Classes.group="{Binding IsGroupRow}"
                             Focusable="False"
                             IconKey="Add"
                             Tip="Add" />
@@ -207,24 +215,24 @@
         <Style Selector="^:droptarget /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
         </Style>
+        <Style Selector="^ /template/ Border#DimLayer.dimmed">
+            <Setter Property="Opacity" Value="{DynamicResource TreeDimOpacity}" />
+        </Style>
         <!-- A row that refuses the dragged node keeps its fill and shows a thin frame in a muted warning tone. -->
         <Style Selector="^ /template/ Border#RowBorder.dropblocked Border#BlockedFrame">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
         </Style>
-        <!-- The + shows over the row under the pointer (soft) and on the selected row (solid), and always on a group row. A row that has
-             nothing to add never shows it. The pointer is tested on the grid of the row, which holds the + and does not hold the children. -->
+        <!-- The + shows over the row under the pointer (soft) and on the selected row (solid), on every row, a group row too. The pointer is
+             tested on the grid of the row, which holds the + and does not hold the children. -->
         <Style Selector="^ /template/ ui|ButtonIcon#AddRowButton">
             <Setter Property="IsVisible" Value="False" />
             <Setter Property="Opacity" Value="0.6" />
         </Style>
-        <Style Selector="^ /template/ Grid#RowGrid:pointerover ui|ButtonIcon#AddRowButton.addable">
+        <Style Selector="^ /template/ Grid#RowGrid:pointerover ui|ButtonIcon#AddRowButton">
             <Setter Property="IsVisible" Value="True" />
         </Style>
-        <Style Selector="^ /template/ ui|ButtonIcon#AddRowButton.addable.group">
-            <Setter Property="IsVisible" Value="True" />
-        </Style>
-        <Style Selector="^:selected /template/ ui|ButtonIcon#AddRowButton.addable">
+        <Style Selector="^:selected /template/ ui|ButtonIcon#AddRowButton">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="Opacity" Value="1" />
         </Style>

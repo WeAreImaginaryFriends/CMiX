@@ -222,14 +222,6 @@ namespace CMiX.Studio.Avalonia.Views.Managers
 
             return row;
         }
-
-        // A row that takes something away has the warning color.
-        private static MenuItem Danger(MenuItem row)
-        {
-            row.Classes.Add("danger");
-            return row;
-        }
-
         private void Duplicate() => ShowShortcut(Row(DuplicateId, "Duplicate", (manager, item) => manager.DuplicateItem(item)), "Tree.Duplicate");
 
         private void Rename() => ShowShortcut(Row(RenameId, "Rename", (_, _) =>
@@ -246,9 +238,9 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             _towardsTheEnd.Add(Row(MoveToBottomId, "Move To Bottom", (manager, item) => manager.MoveItemTo(item, manager.ManagerData.Items.Count - 1)));
         }
 
-        private void Remove(string header) => Danger(ShowShortcut(Row(RemoveId, header, (manager, item) => manager.RemoveItem(item)), "Tree.Remove"));
+        private void Remove(string header) => ShowShortcut(Row(RemoveId, header, (manager, item) => manager.RemoveItem(item)), "Tree.Remove");
 
-        private void RemoveEverywhere(string header) => Danger(Row(RemoveEverywhereId, header, (manager, item) => manager.RemoveEverywhere(item)));
+        private void RemoveEverywhere(string header) => Row(RemoveEverywhereId, header, (manager, item) => manager.RemoveEverywhere(item));
 
         private void Line() => _builder.Line();
 

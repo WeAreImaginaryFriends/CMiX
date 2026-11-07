@@ -124,7 +124,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void SlotMenu_OfAList_ShowsNoShortcutAndMarksTheTitleAndTheRemoveRow()
+        public void SlotMenu_OfAList_ShowsNoShortcutAndMarksTheTitleOnly()
         {
             var (_, list) = ShowSlotList(RowMenuKind.Slot, 2);
 
@@ -132,7 +132,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.All(rows, row => Assert.Null(row.InputGesture));
             Assert.Contains("title", rows[0].Classes);
-            Assert.Contains("danger", rows.Single(row => Equals(row.Header, "Remove")).Classes);
+            Assert.DoesNotContain("danger", rows.Single(row => Equals(row.Header, "Remove")).Classes);
             Assert.DoesNotContain("danger", rows.Single(row => Equals(row.Header, "Duplicate")).Classes);
         }
     }

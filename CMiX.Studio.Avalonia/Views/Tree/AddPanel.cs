@@ -131,12 +131,12 @@ namespace CMiX.Studio.Avalonia.Views
                 Dismissed?.Invoke(this, EventArgs.Empty);
         }
 
-        // The distance from the top of the card to the middle of the search field: the border, the padding, the header and its space.
+        // The distance from the top of the card to the middle of the search field: the padding, the header and its space.
         private double SearchCenter(Control scope, double rowHeight)
         {
             var padding = scope.TryFindResource("PopupCardPadding", out var value) && value is Thickness thickness ? thickness : new Thickness(10, 8);
             var header = title.IsVisible ? rowHeight + Spacing : 0;
-            return 1 + padding.Top + header + rowHeight / 2;
+            return padding.Top + header + rowHeight / 2;
         }
 
         private void OnPicked(object? sender, PickerPickedEventArgs e)
@@ -150,7 +150,7 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         private static PickerGroup ToPicker(TreeAddGroup group) =>
-            new(group.Header, group.Items.Select(item => new PickerItem(item.Header, item, item.Category)).ToList(), group.Category);
+            new(group.Header, group.Items.Select(item => new PickerItem(item.Header, item, item.Category, item.IconKey, item.Enabled)).ToList(), group.Category);
 
         // The bright color of a kind, the same one as the tree row of that kind.
         private IBrush? BrushOf(Control scope, object? kind)

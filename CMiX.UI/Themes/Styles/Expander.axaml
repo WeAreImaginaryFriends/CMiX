@@ -192,6 +192,8 @@
       </ControlTheme>
 
   <ControlTheme x:Key="{x:Type ui:ExpanderIndented}" TargetType="ui:ExpanderIndented">
+    <!-- Open by default, as Expander is. A section that starts closed sets IsExpanded to False itself. -->
+    <Setter Property="IsExpanded" Value="True" />
     <Setter Property="Background" Value="{DynamicResource PanelBackgroundLevel1Brush}" />
     <!-- CHANGED: was Transparent -->
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />

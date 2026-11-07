@@ -344,13 +344,10 @@ namespace CMiX.Studio.Avalonia.Views
         // The menu of a row. Its Add row opens the Add panel beside the menu, with what the row takes.
         private ContextMenu? CreateMenu(TreeViewItem row, TreeNode node, ProjectTree tree)
         {
-            var hasAdds = tree.GetAddGroups(node).Count > 0;
             var kind = node.Item == null ? RowMenuKind.Group
                 : node.Item is CompositionModel or LayerModel ? RowMenuKind.Composable
                 : RowMenuKind.Slot;
 
-            if (kind == RowMenuKind.Group && !hasAdds)
-                return null;
 
             return PrefabRowMenu.Create(
                 row,
@@ -358,7 +355,7 @@ namespace CMiX.Studio.Avalonia.Views
                 () => node.Owner != null && node.Item != null ? (node.Owner, node.Item) : null,
                 Array.Empty<RowMenuAdd>(),
                 () => node.Header,
-                addRow: hasAdds ? new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node), node.Item is null or CompositionModel or LayerModel) : null,
+                addRow: new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node), node.Item is null or CompositionModel or LayerModel),
                 gestureOf: command => tree.Shortcuts[command]);
         }
 

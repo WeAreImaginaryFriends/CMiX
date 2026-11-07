@@ -28,11 +28,15 @@ namespace CMiX.Studio.Avalonia.Views
             InitializeComponent();
             titleBar.PointerPressed += TitleBar_PointerPressed;
             Closing += OnClosing;
+            Opened += (_, _) => { if (DockOnOpen) WindowDock.DockRight(this); };
             InstallToggleDrag();
             // A text box gets Ctrl+Z first. A key that it does not handle still undoes or redoes the project.
             KeyBindingTextGuard.Install(this, afterTextBox: true);
             AddHandler(ProjectTreeView.NodeChosenEvent, (_, e) => ShowInspector(e.Source as Visual));
         }
+
+        // The window opens on the right edge of the screen, as high as the working area. A program can turn this off.
+        public bool DockOnOpen { get; set; } = true;
 
         // A click on a row of the tree shows the inspector, which has the editor of that row. A program can turn this off.
         public bool OpenInspectorOnTreeClick { get; set; } = true;

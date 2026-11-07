@@ -11,8 +11,9 @@ using CMiX.UI.Popups;
 namespace CMiX.UI
 {
     // Where every tooltip of the app opens: on one side of the control that has it, 8 pixels away, never over it (see PopupPlacement).
-    // The card follows the pointer along the control, and its tip points at the pointer. Near the edge of the screen it stops 8 pixels from
-    // the edge and the tip keeps following the pointer. With no room on its side, it opens on the other side.
+    // The card opens at the pointer along the control, and its tip points at the pointer. It stays where it opened.
+    // Near the edge of the screen it stops 8 pixels from the edge and the tip keeps pointing at the pointer.
+    // With no room on its side, it opens on the other side.
     // A view does not set ToolTip.Placement or the offsets. It sets ToolTip.Tip only, and Side for a control whose tooltip goes
     // to the right or to the left of it.
     // The default value of the placement cannot be changed for all controls, so a control gets it when it gets a tip.
@@ -91,18 +92,15 @@ namespace CMiX.UI
 
             private bool Vertical => anchoring.Side is PopupSide.Top or PopupSide.Bottom;
 
-            // Avalonia asks for the place again when an offset of the tooltip changes, and the rule ignores the offset. So a small change of
-            // the horizontal offset moves a tooltip that is open.
+            // The point that the tooltip follows is the pointer as the tooltip opens. It follows the pointer until it opens, then it stays
+            // where it opened, so it never moves under the pointer while the user reads it.
             private void OnPointer(object? sender, PointerEventArgs e)
             {
-                if (TopLevel.GetTopLevel(control) is not { } top)
+                if (ToolTip.GetIsOpen(control) || TopLevel.GetTopLevel(control) is not { } top)
                     return;
 
                 var point = e.GetPosition(top);
                 anchoring.Along = Vertical ? point.X : point.Y;
-
-                if (ToolTip.GetIsOpen(control))
-                    ToolTip.SetHorizontalOffset(control, ToolTip.GetHorizontalOffset(control) == 0 ? 1 : 0);
             }
         }
     }

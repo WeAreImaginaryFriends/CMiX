@@ -480,8 +480,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var boxRight = box.TranslatePoint(new Point(box.Bounds.Width, 0), screen.Window)!.Value.X;
             var coloredRight = colored.TranslatePoint(new Point(colored.Bounds.Width, 0), screen.Window)!.Value.X;
 
-            // The box reaches the end of the colored row.
-            Assert.True(coloredRight - boxRight <= 4, $"The name box ends {coloredRight - boxRight} px before the end of the row.");
+            // The box reaches the toggles, which end the colored row.
+            var toggles = row.GetVisualDescendants().OfType<RowToggles>().First().Bounds.Width;
+            Assert.True(coloredRight - boxRight <= toggles + 4, $"The name box ends {coloredRight - boxRight} px before the end of the row.");
             Assert.True(box.Bounds.Width > content.Bounds.Width / 2, "The name box is less than half of the row.");
         }
 

@@ -100,11 +100,11 @@ namespace CMiX.UI.Tests
         [AvaloniaFact]
         public void Tokens_OfTheCard_AreTheDarkNeutralColors()
         {
-            var fill = (ISolidColorBrush)Application.Current!.FindResource("PopupCardBackgroundBrush")!;
-            var border = (ISolidColorBrush)Application.Current!.FindResource("PopupCardBorderBrush")!;
+            var fill = (ISolidColorBrush)Application.Current!.FindResource("PopupBackgroundBrush")!;
+            var border = Application.Current!.FindResource("PopupCardBorderBrush");
 
             Assert.Equal(Color.Parse("#1A1A1C"), fill.Color);
-            Assert.Equal(Color.Parse("#3A3A3E"), border.Color);
+            Assert.Same(AvaloniaProperty.UnsetValue, border);
         }
 
         private static double Distance(Point a, Point b) => Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));

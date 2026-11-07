@@ -378,7 +378,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Click(screen.ButtonOf("AddButton"));
 
             Assert.True(screen.Panel.IsOpen);
-            Assert.Equal(new[] { "Layer", "Filter", "Modifier", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.GroupHeaders());
             Assert.Equal("Add to " + screen.Scene.B.PrefabService.Name.Value, screen.Panel.Title.Text);
             Assert.Equal(1, screen.Scene.B.LayerManager.ManagerData.Items.Count);
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
@@ -403,7 +403,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Click_AddWithAnEntitySelected_OffersTheEntityGroupsAndTheProject()
+        public void Click_AddWithAnEntitySelected_EnablesTheEntityGroupsAndTheProject()
         {
             var screen = Show();
             screen.Scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
@@ -413,7 +413,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Click(screen.ButtonOf("AddButton"));
 
             Assert.True(screen.Panel.IsOpen);
-            Assert.Equal(new[] { "Texture", "Modifier", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.GroupHeaders());
             Assert.Equal(2, screen.Scene.Project.CompositionManager.ManagerData.Items.Count);
         }
 
@@ -439,9 +439,9 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Click(screen.ButtonOf("AddButton"));
 
             Assert.True(screen.Panel.IsOpen);
-            Assert.Equal(new[] { "Content", "Filter", "Modifier", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.GroupHeaders());
             Assert.Equal("Add to " + layer.Header, screen.Panel.Title.Text);
-            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, screen.Panel.List.Groups!.First().Items.Select(item => item.Text));
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text", "Camera", "Light" }, screen.Panel.List.Groups!.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
             Assert.Empty(screen.Scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
         }
 
@@ -505,8 +505,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Click(screen.ButtonOf("AddButton"));
 
-            Assert.Equal(new[] { "Entity", "Project" }, screen.GroupHeaders());
-            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, screen.Panel.List.Groups!.First().Items.Select(item => item.Text));
+            Assert.Equal(new[] { "Layer", "Content", "Texture", "Filter", "Modifier", "Modulator", "Project" }, screen.GroupHeaders());
+            Assert.Equal(new[] { "Entity", "Fullscreen Quad", "Text" }, screen.Panel.List.Groups!.Single(group => group.Header == "Content").Items.Where(item => item.IsEnabled).Select(item => item.Text));
         }
 
         [AvaloniaFact]

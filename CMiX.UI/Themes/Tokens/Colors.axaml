@@ -48,9 +48,8 @@
     <!-- A muted warning tone, not a full red: the frame of a tree row that refuses a dragged node. -->
     <Color x:Key="DropBlocked">#FFB0675C</Color>
 
-    <!-- The card of a tooltip and of the Add panel: a dark neutral card with a thin border. -->
+    <!-- The background of every popup: the card of a tooltip, the Add panel, a menu, a flyout and a drop down. It has no outline. -->
     <Color x:Key="PopupCardBackground">#FF1A1A1C</Color>
-    <Color x:Key="PopupCardBorder">#FF3A3A3E</Color>
     <!-- The line of a tooltip that says why a control is disabled. -->
     <Color x:Key="PopupCardWarning">#FFD9A066</Color>
     <!-- The text of a row of a menu that takes something away, such as Delete. -->

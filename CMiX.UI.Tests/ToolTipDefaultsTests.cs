@@ -133,7 +133,7 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void Move_ThePointerWhileTheTooltipIsOpen_MovesTheCardWithIt()
+        public void Move_ThePointerWhileTheTooltipIsOpen_KeepsTheCardWhereItOpened()
         {
             var (window, button) = Show(width: 300);
             Move(window, new Point(150, 110));
@@ -142,7 +142,7 @@ namespace CMiX.UI.Tests
             Move(window, new Point(220, 110));
 
             var (card, box) = Read(window);
-            Assert.Equal(220 - ToolTipDefaults.PointerAlign, box.X, 0.51);
+            Assert.Equal(150 - ToolTipDefaults.PointerAlign, box.X, 0.51);
             Assert.Equal(ToolTipDefaults.PointerAlign, card.TipOffset, 0.51);
         }
 

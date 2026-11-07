@@ -31,12 +31,12 @@
 
     <DockPanel>
 
-        <!-- The icon of the selected node on a square in the color of its kind, and its name. -->
+        <!-- The title bar: the icon of the selected node and its name, on the color of its kind (the fill of a selected row of the tree). -->
         <Border
             Name="header"
             Height="{DynamicResource ControlHeightXL}"
             Padding="8,0"
-            Background="{DynamicResource Grey200Brush}"
+            Background="{Binding SelectedNode, Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}"
             DockPanel.Dock="Top"
             IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
             <!-- The badge, the name, and at the right end the toggles of the item (see ComposableToggles).
