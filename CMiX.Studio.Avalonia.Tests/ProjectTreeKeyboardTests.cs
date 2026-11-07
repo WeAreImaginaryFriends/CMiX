@@ -28,7 +28,13 @@ namespace CMiX.Studio.Avalonia.Tests
     {
         private Window? window;
 
-        public void Dispose() => window?.Close();
+        public void Dispose()
+        {
+            foreach (var view in window?.GetVisualDescendants().OfType<ProjectTreeView>() ?? Enumerable.Empty<ProjectTreeView>())
+                view.RowAddPanel.Close();
+
+            window?.Close();
+        }
 
         private sealed record Screen(ProjectTreeView View, ProjectTree Tree, UndoManager Undo, Composition Composition, ShortcutMap Shortcuts);
 
@@ -140,7 +146,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Press(PhysicalKey.Escape);
             ItemOf(screen.View, screen.Tree.Roots[0].Children[0]).Focus();
             Settle();
-            Assert.Equal(6, screen.View.KeyBindings.Count);
+            Assert.Equal(7, screen.View.KeyBindings.Count);
         }
 
         [AvaloniaFact]
@@ -189,6 +195,64 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(new Thickness(1), frame.BorderThickness);
             Assert.Equal(((ISolidColorBrush)selection.BorderBrush!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
             Assert.False(Part(screen.View, screen.Tree.Roots[0].Children[0], "FocusFrame").IsVisible);
+        }
+
+        [AvaloniaFact]
+        public void Press_ShiftA_OpensTheAddPanelOnTheRightOfThePlusOfTheSelectedRow()
+        {
+            var screen = Show();
+            var first = screen.Tree.Roots[0].Children[0];
+
+            Press(PhysicalKey.A, RawInputModifiers.Shift);
+
+            var panel = screen.View.RowAddPanel;
+            var plus = ItemOf(screen.View, first).GetVisualDescendants().OfType<CMiX.UI.Controls.Boolean.ButtonIcon>()
+                .First(button => button.Name == "AddRowButton" && ReferenceEquals(button.DataContext, first));
+            var host = (Control)plus.GetVisualParent()!;
+            var hostBox = host.TranslatePoint(default, window!)!.Value;
+            var card = panel.Card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Card");
+            Assert.True(panel.IsOpen);
+            Assert.Equal(new[] { "Content", "Filter", "Modifier" }, panel.List.Groups!.Select(group => group.Header));
+            Assert.Equal(hostBox.X + host.Bounds.Width + 8, card.TranslatePoint(default, window!)!.Value.X, 0.51);
+        }
+
+        [AvaloniaFact]
+        public void Press_ShiftAWithNothingSelected_AddsACompositionAtOnce()
+        {
+            var screen = Show();
+            screen.Tree.SelectedNode = null;
+            Settle();
+            var before = screen.Tree.Roots.Count;
+
+            Press(PhysicalKey.A, RawInputModifiers.Shift);
+
+            Assert.Equal(before + 1, screen.Tree.Roots.Count);
+            Assert.False(screen.View.RowAddPanel.IsOpen);
+        }
+
+        [AvaloniaFact]
+        public void Press_ShiftAWhileANameBoxIsEdited_OpensNoPanel()
+        {
+            var screen = Show();
+            Press(PhysicalKey.F2);
+
+            Press(PhysicalKey.A, RawInputModifiers.Shift);
+
+            Assert.False(screen.View.RowAddPanel.IsOpen);
+        }
+
+        [AvaloniaFact]
+        public void Press_AGestureOfTheMap_ReplacesTheDefaultShiftA()
+        {
+            var screen = Show();
+            screen.Shortcuts.Set("Tree.Add", new KeyGesture(Key.N, KeyModifiers.Control));
+            Settle();
+
+            Press(PhysicalKey.A, RawInputModifiers.Shift);
+            Assert.False(screen.View.RowAddPanel.IsOpen);
+
+            Press(PhysicalKey.N, RawInputModifiers.Control);
+            Assert.True(screen.View.RowAddPanel.IsOpen);
         }
     }
 }

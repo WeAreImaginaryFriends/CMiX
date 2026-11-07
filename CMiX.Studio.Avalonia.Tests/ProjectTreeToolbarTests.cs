@@ -72,6 +72,35 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public void AddSelectedCommand_ANodeSelected_AsksTheViewToOpenThePanelOfThatNode()
+        {
+            var scene = CreateScene();
+            scene.Tree.SelectedNode = scene.LayerNodeOfA(1);
+            TreeNode? asked = null;
+            scene.Tree.AddRequested += (_, node) => asked = node;
+
+            Assert.True(scene.Tree.AddSelectedCommand.CanExecute(null));
+            scene.Tree.AddSelectedCommand.Execute(null);
+
+            Assert.Same(scene.LayerNodeOfA(1), asked);
+            Assert.Equal(2, scene.Project.CompositionManager.ManagerData.Items.Count);
+        }
+
+        [Fact]
+        public void AddSelectedCommand_NothingSelected_AddsACompositionAtOnce()
+        {
+            var scene = CreateScene();
+            scene.Tree.SelectedNode = null;
+            var asked = 0;
+            scene.Tree.AddRequested += (_, _) => asked++;
+
+            scene.Tree.AddSelectedCommand.Execute(null);
+
+            Assert.Equal(0, asked);
+            Assert.Equal(3, scene.Project.CompositionManager.ManagerData.Items.Count);
+        }
+
+        [Fact]
         public void Add_WithACompositionSelected_AddsALayerToIt()
         {
             var scene = CreateScene();

@@ -30,13 +30,14 @@ namespace CMiX.Studio.Avalonia.Tests
             var map = new ShortcutMap(FilePath);
 
             Assert.Equal(
-                new[] { "Edit.Undo", "Edit.Redo", "Edit.RedoAlt", "Tree.Rename", "Tree.Remove", "Tree.Duplicate", "Tree.MoveUp", "Tree.MoveDown", "Tree.Open" },
+                new[] { "Edit.Undo", "Edit.Redo", "Edit.RedoAlt", "Tree.Add", "Tree.Rename", "Tree.Remove", "Tree.Duplicate", "Tree.MoveUp", "Tree.MoveDown", "Tree.Open" },
                 map.Names);
             foreach (var name in map.Names)
                 Assert.NotNull(map[name]);
 
             Assert.Equal(new KeyGesture(Key.Z, KeyModifiers.Control | KeyModifiers.Shift), map["Edit.Redo"]);
             Assert.Equal(new KeyGesture(Key.Up, KeyModifiers.Alt), map["Tree.MoveUp"]);
+            Assert.Equal(new KeyGesture(Key.A, KeyModifiers.Shift), map["Tree.Add"]);
         }
 
         [Fact]

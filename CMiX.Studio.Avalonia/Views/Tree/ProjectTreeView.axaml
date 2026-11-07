@@ -19,6 +19,7 @@
     <!-- The gestures come from the shortcut map (the names Tree.*). The bindings pause while a name box is edited (KeyBindingTextGuard).
          The arrow keys move the soft selection (see OnKeyDownTunnel). -->
     <UserControl.KeyBindings>
+        <KeyBinding Command="{Binding AddSelectedCommand}" Gesture="{Binding Shortcuts[Tree.Add]}" />
         <KeyBinding Command="{Binding RenameSelectedCommand}" Gesture="{Binding Shortcuts[Tree.Rename]}" />
         <KeyBinding Command="{Binding RemoveItemCommand}" Gesture="{Binding Shortcuts[Tree.Remove]}" />
         <KeyBinding Command="{Binding DuplicateItemCommand}" Gesture="{Binding Shortcuts[Tree.Duplicate]}" />

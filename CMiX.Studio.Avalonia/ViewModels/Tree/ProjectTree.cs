@@ -58,6 +58,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             RemoveItemCommand = new RelayCommand(
                 () => { if (SelectedPlace() is var (list, item, _)) list.RemoveItem(item); },
                 () => SelectedPlace() != null);
+            AddSelectedCommand = new RelayCommand(RequestAdd, () => HasAdds);
             RenameSelectedCommand = new RelayCommand(
                 () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => selectedNode?.Item != null);
@@ -68,6 +69,21 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The gestures of the key bindings of the tree view (the names Tree.*).
         public ShortcutMap Shortcuts { get; }
+
+        // Opens the Add panel of the selected row (Tree.Add). With nothing selected it adds a composition at once, as the Add button of the
+        // toolbar does. The view handles the request (see AddRequested).
+        public IRelayCommand AddSelectedCommand { get; }
+
+        // The view handles this request: it opens the Add panel on the row of the node.
+        public event EventHandler<TreeNode>? AddRequested;
+
+        private void RequestAdd()
+        {
+            if (selectedNode is { } node)
+                AddRequested?.Invoke(this, node);
+            else if (SelectedAdds.Count == 1)
+                AddItemCommand.Execute(SelectedAdds[0]);
+        }
 
         // Starts the rename of the selected row. The view sets the name box of the row to edit mode (see RenameRequested).
         public IRelayCommand RenameSelectedCommand { get; }
@@ -336,6 +352,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             MoveItemUpCommand?.NotifyCanExecuteChanged();
             MoveItemDownCommand?.NotifyCanExecuteChanged();
             RemoveItemCommand?.NotifyCanExecuteChanged();
+            AddSelectedCommand?.NotifyCanExecuteChanged();
             RenameSelectedCommand?.NotifyCanExecuteChanged();
         }
 

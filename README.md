@@ -95,6 +95,7 @@ The file maps a command name to a gesture:
 | `Edit.Undo` | Ctrl+Z | Undo |
 | `Edit.Redo` | Ctrl+Shift+Z | Redo |
 | `Edit.RedoAlt` | Ctrl+Y | Redo |
+| `Tree.Add` | Shift+A | Open the Add panel of the selected row |
 | `Tree.Rename` | F2 | Rename the selected row |
 | `Tree.Remove` | Delete | Remove the selected item |
 | `Tree.Duplicate` | Ctrl+D | Duplicate the selected item |

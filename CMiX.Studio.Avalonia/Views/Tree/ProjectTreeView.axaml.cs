@@ -170,6 +170,22 @@ namespace CMiX.Studio.Avalonia.Views
             RevealRow(node);
         }
 
+        // Tree.Add: the Add panel of the row of the node opens on the right of the + of that row, as a click on the + opens it. The + can be
+        // hidden, but its host keeps its room, so the panel opens in the same place.
+        private void OnAddRequested(object? sender, TreeNode node)
+        {
+            if (DataContext is not ProjectTree tree || rowIndex.FindItem(node) is not { } item)
+                return;
+
+            RevealRow(node);
+            var button = item.GetVisualDescendants().OfType<ButtonIcon>()
+                .FirstOrDefault(plus => plus.Name == AddRowButtonName && ReferenceEquals(plus.DataContext, node));
+            if (button == null)
+                return;
+
+            rowAddPanel.Open(button.GetVisualParent() as Control ?? button, PopupSide.Right, tree.GetAddGroups(node));
+        }
+
         // Starts the rename of the row of the node: the name box of the row goes to edit mode.
         private void OnRenameRequested(object? sender, TreeNode node)
         {
@@ -208,6 +224,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             watched.PropertyChanged += OnWatchedPropertyChanged;
             watched.RenameRequested += OnRenameRequested;
+            watched.AddRequested += OnAddRequested;
         }
 
         private void Unwatch()
@@ -217,6 +234,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             watched.PropertyChanged -= OnWatchedPropertyChanged;
             watched.RenameRequested -= OnRenameRequested;
+            watched.AddRequested -= OnAddRequested;
         }
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
