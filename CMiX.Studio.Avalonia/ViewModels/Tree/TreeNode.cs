@@ -124,6 +124,15 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public bool HasKindCounts => kindCounts.Count > 0;
 
+        // True for a group row. It has no item. The + of a group row always shows.
+        public bool IsGroupRow => Item == null;
+
+        // True when something can be added under the row. A row with nothing to add has no +. What a row takes follows from its type,
+        // so the answer is made once.
+        public bool CanAdd => canAdd ??= tree.GetAddGroups(this).Count > 0;
+
+        private bool? canAdd;
+
         // The item that has a mask: a composition or a layer. The other rows have none.
         public IControl? MaskOwner => Item is Composition or Layer ? Item : null;
 
