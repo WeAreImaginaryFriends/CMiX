@@ -1,24 +1,39 @@
 // SPDX-FileCopyrightText: 2017-2026 CloneProduction Shanghai Company Limited and CMiX contributors
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using CMiX.UI.Controls.Parts;
+using CMiX.UI.Popups;
 
 namespace CMiX.UI
 {
-    // Where every tooltip of the app opens: below the control that has it, 8 pixels away from it.
-    // The popup of a tooltip has the room of the shadow around the box (see the ToolTip theme), so the offset is the
-    // gap minus that room. A view does not set ToolTip.Placement or the offsets. It sets ToolTip.Tip only.
-    // Avalonia moves the tooltip above the control when there is no room below.
-    // The default value of the two properties cannot be changed for all controls, so a control gets them when it gets a tip.
-    // A view can still set its own value for one control, and that value stays.
+    // Where every tooltip of the app opens: on one side of the control that has it, 8 pixels away, never over it (see PopupPlacement).
+    // The card follows the pointer along the control, and its tip points at the pointer. Near the edge of the screen it stops 8 pixels from
+    // the edge and the tip keeps following the pointer. With no room on its side, it opens on the other side.
+    // A view does not set ToolTip.Placement or the offsets. It sets ToolTip.Tip only, and Side for a control whose tooltip goes
+    // to the right or to the left of it.
+    // The default value of the placement cannot be changed for all controls, so a control gets it when it gets a tip.
+    // A view can still set its own placement for one control, and that placement stays.
     public static class ToolTipDefaults
     {
         public const double Gap = 8;
 
+        // The distance from the start of the card to the pointer, so the tip is never at a corner of the card.
+        public const double PointerAlign = 24;
+
         private static bool applied;
+
+        private static readonly ConditionalWeakTable<Control, Follower> followers = new();
+
+        // The side of the control where its tooltip opens. Top and bottom tooltips follow the pointer in x. Left and right tooltips follow it in y.
+        public static readonly AttachedProperty<PopupSide> SideProperty =
+            AvaloniaProperty.RegisterAttached<Control, PopupSide>("Side", typeof(ToolTipDefaults), PopupSide.Bottom);
+
+        public static void SetSide(Control control, PopupSide value) => control.SetValue(SideProperty, value);
+        public static PopupSide GetSide(Control control) => control.GetValue(SideProperty);
 
         // The theme calls this when it is made. A second call does nothing.
         public static void Apply()
@@ -30,17 +45,65 @@ namespace CMiX.UI
             ToolTip.TipProperty.Changed.AddClassHandler<Control>((control, e) =>
             {
                 if (e.NewValue != null)
-                    PlaceBelow(control);
+                    Place(control);
+            });
+            SideProperty.Changed.AddClassHandler<Control>((control, _) =>
+            {
+                if (followers.TryGetValue(control, out var follower))
+                    follower.Refresh();
             });
         }
 
-        public static void PlaceBelow(Control control)
-        {
-            if (!control.IsSet(ToolTip.PlacementProperty))
-                control.SetCurrentValue(ToolTip.PlacementProperty, PlacementMode.Bottom);
+        // The place of the tooltip of a control, or null when the control has none. A test reads it.
+        internal static PopupAnchoring? AnchoringOf(Control control) => followers.TryGetValue(control, out var follower) ? follower.Anchoring : null;
 
-            if (!control.IsSet(ToolTip.VerticalOffsetProperty))
-                control.SetCurrentValue(ToolTip.VerticalOffsetProperty, Gap - PopupFrame.ShadowMargin.Top);
+        // Makes the tooltip of a control follow the rule, once. A control with its own placement keeps it.
+        public static void Place(Control control)
+        {
+            if (followers.TryGetValue(control, out _) || control.IsSet(ToolTip.PlacementProperty))
+                return;
+
+            followers.Add(control, new Follower(control));
+        }
+
+        // The place of the tooltip of one control. It listens to the pointer on the control and updates the point that the card follows.
+        private sealed class Follower
+        {
+            private readonly Control control;
+            private readonly PopupAnchoring anchoring;
+
+            public PopupAnchoring Anchoring => anchoring;
+
+            public Follower(Control control)
+            {
+                this.control = control;
+                anchoring = PopupAnchoring.Use(control);
+                anchoring.Gap = Gap;
+                anchoring.AlignOffset = PointerAlign;
+                anchoring.Placed += result => ToolTipCard.SetResult(control, result);
+                Refresh();
+
+                control.PointerEntered += OnPointer;
+                control.AddHandler(InputElement.PointerMovedEvent, OnPointer, Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
+            }
+
+            public void Refresh() => anchoring.Side = GetSide(control);
+
+            private bool Vertical => anchoring.Side is PopupSide.Top or PopupSide.Bottom;
+
+            // Avalonia asks for the place again when an offset of the tooltip changes, and the rule ignores the offset. So a small change of
+            // the horizontal offset moves a tooltip that is open.
+            private void OnPointer(object? sender, PointerEventArgs e)
+            {
+                if (TopLevel.GetTopLevel(control) is not { } top)
+                    return;
+
+                var point = e.GetPosition(top);
+                anchoring.Along = Vertical ? point.X : point.Y;
+
+                if (ToolTip.GetIsOpen(control))
+                    ToolTip.SetHorizontalOffset(control, ToolTip.GetHorizontalOffset(control) == 0 ? 1 : 0);
+            }
         }
     }
 }

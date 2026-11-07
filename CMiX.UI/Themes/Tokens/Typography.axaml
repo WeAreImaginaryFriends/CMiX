@@ -4,4 +4,7 @@
 
     <x:Double x:Key="DefaultFontSize">10</x:Double>
 
+    <!-- The font of a shortcut and of a command name in a tooltip. -->
+    <FontFamily x:Key="FontFamilyMono">Cascadia Mono,Consolas,Menlo,monospace</FontFamily>
+
 </ResourceDictionary>

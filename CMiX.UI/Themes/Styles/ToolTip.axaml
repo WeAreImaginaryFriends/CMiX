@@ -1,26 +1,77 @@
 ﻿<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="using:System"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
 
+    <!-- A tooltip is a card (see PopupCard) with a tip that points at the pointer (see ToolTipDefaults). A plain string shows as a title.
+         A TipContent shows its lines: the title and the shortcut, the description, the reason why the control is disabled, and a footer.
+         The templates are in the presenter, so no template of a parent changes the look of a tip. -->
     <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <ControlTemplate>
-                <Border
-                    Margin="8"
-                    Background="{DynamicResource PopupBackgroundBrush}"
-                    BorderBrush="{DynamicResource Shadow}"
-                    BorderThickness="1,0,1,2"
-                    CornerRadius="{DynamicResource CornerRadiusAll}">
-                    <Border Margin="8">
-                        <ContentPresenter
-                            Name="PART_ContentPresenter"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}" />
-                    </Border>
-                </Border>
+                <ui:ToolTipCard>
+                    <ContentPresenter
+                        Name="PART_ContentPresenter"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}">
+                        <ContentPresenter.DataTemplates>
+
+                            <DataTemplate DataType="sys:String">
+                                <TextBlock
+                                    MaxWidth="{DynamicResource TipMaxWidth}"
+                                    FontSize="{DynamicResource FontSizeMD}"
+                                    FontWeight="Medium"
+                                    Foreground="{DynamicResource ActiveForegroundBrush}"
+                                    Text="{Binding}"
+                                    TextWrapping="Wrap" />
+                            </DataTemplate>
+
+                            <DataTemplate DataType="ui:TipContent">
+                                <StackPanel MaxWidth="{DynamicResource TipMaxWidth}" Spacing="{DynamicResource SpacingSM}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock
+                                            FontSize="{DynamicResource FontSizeMD}"
+                                            FontWeight="Medium"
+                                            Foreground="{DynamicResource ActiveForegroundBrush}"
+                                            Text="{Binding Title}"
+                                            TextWrapping="Wrap" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontFamily="{DynamicResource FontFamilyMono}"
+                                            Foreground="{DynamicResource Grey800Brush}"
+                                            IsVisible="{Binding Shortcut, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                            Text="{Binding Shortcut}" />
+                                    </Grid>
+                                    <TextBlock
+                                        Foreground="{DynamicResource Grey900Brush}"
+                                        IsVisible="{Binding Description, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                        Text="{Binding Description}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Foreground="{DynamicResource PopupCardWarningBrush}"
+                                        IsVisible="{Binding Reason, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                        Text="{Binding Reason}"
+                                        TextWrapping="Wrap" />
+                                    <Border
+                                        BorderBrush="{DynamicResource Grey400Brush}"
+                                        BorderThickness="0,1,0,0"
+                                        IsVisible="{Binding Footer, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                        Padding="0,4,0,0">
+                                        <TextBlock
+                                            FontFamily="{DynamicResource FontFamilyMono}"
+                                            Foreground="{DynamicResource Grey700Brush}"
+                                            Text="{Binding Footer}" />
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+
+                        </ContentPresenter.DataTemplates>
+                    </ContentPresenter>
+                </ui:ToolTipCard>
             </ControlTemplate>
         </Setter>
     </ControlTheme>

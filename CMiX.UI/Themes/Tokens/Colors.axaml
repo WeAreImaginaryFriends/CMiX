@@ -51,6 +51,8 @@
     <!-- The card of a tooltip and of the Add panel: a dark neutral card with a thin border. -->
     <Color x:Key="PopupCardBackground">#FF1A1A1C</Color>
     <Color x:Key="PopupCardBorder">#FF3A3A3E</Color>
+    <!-- The line of a tooltip that says why a control is disabled. -->
+    <Color x:Key="PopupCardWarning">#FFD9A066</Color>
 
     <Color x:Key="Text">#FFE0E0E0</Color>
     <Color x:Key="ActiveText">#FFFFFFFF</Color>

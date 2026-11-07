@@ -80,7 +80,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var toggle = ItemOf(view, tree.Roots[0]).GetVisualDescendants().OfType<RowToggles>().First()
                 .GetVisualDescendants().OfType<ToggleButton>().Single(button => Equals(ToolTip.GetTip(button), "Mask"));
 
-            Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(toggle));
+            Assert.Equal(PlacementMode.Custom, ToolTip.GetPlacement(toggle));
+            Assert.Equal(CMiX.UI.Popups.PopupSide.Bottom, CMiX.UI.ToolTipDefaults.GetSide(toggle));
         }
 
         [AvaloniaFact]
@@ -93,7 +94,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal("Visible", ToolTip.GetTip(toggle));
             Assert.Equal(new[] { "Visible" }, TextOfTooltip(toggle));
-            Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(toggle));
+            Assert.Equal(PlacementMode.Custom, ToolTip.GetPlacement(toggle));
+            Assert.Equal(CMiX.UI.Popups.PopupSide.Bottom, CMiX.UI.ToolTipDefaults.GetSide(toggle));
         }
 
         [AvaloniaFact]
@@ -120,7 +122,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var square = Assert.Single(SquaresOf(view, entities));
 
             Assert.Equal("2 Entities", TextOfTooltip(square).Single());
-            Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(square));
+            Assert.Equal(PlacementMode.Custom, ToolTip.GetPlacement(square));
+            Assert.Equal(CMiX.UI.Popups.PopupSide.Bottom, CMiX.UI.ToolTipDefaults.GetSide(square));
         }
 
         [Theory]
@@ -162,7 +165,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Settle();
 
             Assert.Equal(new[] { "A Translate cannot go to a layer" }, TextOfTooltip(row));
-            Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(row));
+            Assert.Equal(PlacementMode.Custom, ToolTip.GetPlacement(row));
+            Assert.Equal(CMiX.UI.Popups.PopupSide.Bottom, CMiX.UI.ToolTipDefaults.GetSide(row));
 
             tree.EndDrag();
             Settle();

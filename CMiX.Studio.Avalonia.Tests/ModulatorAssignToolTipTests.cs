@@ -79,7 +79,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (_, _, inner) = Show();
 
-            Assert.Equal(PlacementMode.Bottom, ToolTip.GetPlacement(inner));
+            Assert.Equal(PlacementMode.Custom, ToolTip.GetPlacement(inner));
+            Assert.Equal(CMiX.UI.Popups.PopupSide.Bottom, CMiX.UI.ToolTipDefaults.GetSide(inner));
         }
 
         [Fact]
