@@ -39,4 +39,17 @@
         </Setter>
     </ControlTheme>
 
+    <!-- A FlyoutPresenter for a flyout whose content is a PopupCard. The card has its own frame, shadow and tip, so the presenter adds none. -->
+    <ControlTheme x:Key="FlyoutPresenterCard" TargetType="FlyoutPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter
+                    Name="PART_ContentPresenter"
+                    Content="{TemplateBinding Content}"
+                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
 </ResourceDictionary>

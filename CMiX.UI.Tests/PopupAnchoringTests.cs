@@ -66,17 +66,21 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void Use_APopupOrAMenu_GivesThemTheCustomPlacement()
+        public void Use_APopupAMenuOrAFlyout_GivesThemTheCustomPlacement()
         {
             var popup = new Popup();
             var menu = new ContextMenu();
             PopupAnchoring.Use(popup);
             PopupAnchoring.Use(menu);
+            var flyout = new Flyout();
+            PopupAnchoring.Use(flyout);
 
             Assert.Equal(PlacementMode.Custom, popup.Placement);
             Assert.NotNull(popup.CustomPopupPlacementCallback);
             Assert.Equal(PlacementMode.Custom, menu.Placement);
             Assert.NotNull(menu.CustomPopupPlacementCallback);
+            Assert.Equal(PlacementMode.Custom, flyout.Placement);
+            Assert.NotNull(flyout.CustomPopupPlacementCallback);
         }
 
         [AvaloniaFact]

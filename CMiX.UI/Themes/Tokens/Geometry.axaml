@@ -85,6 +85,9 @@
     <!-- The space inside the card of a tooltip and of the Add panel: SpacingMD above and below, 10 at the sides. -->
     <Thickness x:Key="PopupCardPadding">10,8</Thickness>
 
+    <!-- The width of the list inside the Add panel, without the card around it. -->
+    <x:Double x:Key="AddPanelWidth">200</x:Double>
+
     <!-- The project tree. Tests pin the numbers that the code also holds. -->
     <!-- The indent of one level, and the width of the chevron. -->
     <x:Double x:Key="TreeIndent">16</x:Double>

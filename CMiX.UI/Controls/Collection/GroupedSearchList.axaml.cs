@@ -86,16 +86,16 @@ namespace CMiX.UI.Controls.Collection
         // The user asked to leave the list: Escape with an empty field.
         public event EventHandler? Cancelled;
 
-        // The text of the visible rows, in order, for a test. A header is its text, and a row is its text.
-        internal IReadOnlyList<string> VisibleTexts => rows.Select(row => row.Item?.Text ?? row.Group.Header).ToList();
+        // The text of the visible rows, in order: a header gives its text, and a row gives its text. A test reads them.
+        public IReadOnlyList<string> VisibleTexts => rows.Select(row => row.Item?.Text ?? row.Group.Header).ToList();
 
         // The index of the highlighted row in the visible rows, or -1.
-        internal int HighlightedIndex => highlighted;
+        public int HighlightedIndex => highlighted;
 
-        internal IReadOnlyList<Border> RowVisuals => rows.Select(row => row.Visual).ToList();
+        public IReadOnlyList<Border> RowVisuals => rows.Select(row => row.Visual).ToList();
 
         // The state of a group: open or closed, as the user sees it.
-        internal bool IsOpen(PickerGroup group) => Searching || (group.Items.Count <= CollapseFrom) != flipped.Contains(group);
+        public bool IsOpen(PickerGroup group) => Searching || (group.Items.Count <= CollapseFrom) != flipped.Contains(group);
 
         private bool Searching => !string.IsNullOrEmpty(SearchText);
 

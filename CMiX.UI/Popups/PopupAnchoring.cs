@@ -67,6 +67,15 @@ namespace CMiX.UI.Popups
             return anchoring;
         }
 
+        // Makes a flyout use this rule.
+        public static PopupAnchoring Use(PopupFlyoutBase flyout, PopupAnchoring? anchoring = null)
+        {
+            anchoring ??= new PopupAnchoring();
+            flyout.Placement = PlacementMode.Custom;
+            flyout.CustomPopupPlacementCallback = anchoring.Place;
+            return anchoring;
+        }
+
         // Makes a context menu use this rule.
         public static PopupAnchoring Use(ContextMenu menu, PopupAnchoring? anchoring = null)
         {
