@@ -48,6 +48,10 @@
     <!-- A muted warning tone, not a full red: the frame of a tree row that refuses a dragged node. -->
     <Color x:Key="DropBlocked">#FFB0675C</Color>
 
+    <!-- The card of a tooltip and of the Add panel: a dark neutral card with a thin border. -->
+    <Color x:Key="PopupCardBackground">#FF1A1A1C</Color>
+    <Color x:Key="PopupCardBorder">#FF3A3A3E</Color>
+
     <Color x:Key="Text">#FFE0E0E0</Color>
     <Color x:Key="ActiveText">#FFFFFFFF</Color>
 
