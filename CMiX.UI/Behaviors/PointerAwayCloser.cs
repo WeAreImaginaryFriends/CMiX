@@ -15,7 +15,8 @@ namespace CMiX.UI.Behaviors
     // Closes a popup, a flyout or a menu when the pointer goes away from it.
     // The owner calls Start when the content opens and Stop when it closes.
     // Start does nothing while isEnabled gives false, so the closer is the one place that decides whether the pointer is watched.
-    // The pointer is away when it is farther than the distance from the content and from the control that opened it.
+    // The pointer is away when it is farther than the distance from the content, from the control that opened it, and from the companion.
+    // The companion is a second control that belongs to the content, such as a panel that opens beside a menu.
     // It is not away after the user typed in a text box of the content, or while a value of the content is
     // in edit mode, because a close would lose the text.
     // It does not close while a control of the content holds the pointer, for example a slider that is dragged,
@@ -30,18 +31,21 @@ namespace CMiX.UI.Behaviors
         private readonly Func<bool> isEnabled;
         private readonly Func<Control?> content;
         private readonly Func<Control?> target;
+        private readonly Func<Control?>? companion;
         private readonly Action close;
         private TopLevel? topLevel;
         private Control? watchedContent;
         private bool keyPressed;
 
-        public PointerAwayCloser(Func<double> distance, Func<bool> isEnabled, Func<Control?> content, Func<Control?> target, Action close)
+        public PointerAwayCloser(Func<double> distance, Func<bool> isEnabled, Func<Control?> content, Func<Control?> target, Action close,
+                                 Func<Control?>? companion = null)
         {
             this.distance = distance;
             this.isEnabled = isEnabled;
             this.content = content;
             this.target = target;
             this.close = close;
+            this.companion = companion;
         }
 
         public void Start(TopLevel? pointerSource)
@@ -77,7 +81,7 @@ namespace CMiX.UI.Behaviors
             if (IsHeldByContent(e, popupContent))
                 return;
 
-            if (IsNear(popupContent, e) || IsNear(target(), e) || IsTyping(popupContent) || IsEditing(popupContent))
+            if (IsNear(popupContent, e) || IsNear(target(), e) || IsNear(companion?.Invoke(), e) || IsTyping(popupContent) || IsEditing(popupContent))
                 return;
 
             close();

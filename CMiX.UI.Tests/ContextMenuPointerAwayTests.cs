@@ -118,5 +118,28 @@ namespace CMiX.UI.Tests
         {
             Assert.Equal(64, ContextMenuPointerAway.GetDistance(new ContextMenu()));
         }
+
+        [AvaloniaFact]
+        public void TheMenu_WithACompanion_StaysOpenWhileThePointerIsNearTheCompanion()
+        {
+            var drag = NewDragValue(200);
+            var companion = new Border
+            {
+                Width = 100, Height = 100,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Background = Avalonia.Media.Brushes.Transparent,
+            };
+            var window = Host(new Panel { Children = { drag, companion } });
+            OpenMenu(drag);
+            ContextMenuPointerAway.SetCompanion(drag.ContextMenu!, companion);
+
+            Move(window, new Point(790, 490));
+            Assert.True(drag.ContextMenu.IsOpen);
+
+            ContextMenuPointerAway.SetCompanion(drag.ContextMenu, null);
+            Move(window, new Point(789, 489));
+            Assert.False(drag.ContextMenu.IsOpen);
+        }
     }
 }
