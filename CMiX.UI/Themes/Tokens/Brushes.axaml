@@ -30,6 +30,7 @@
     <SolidColorBrush x:Key="PopupCardBackgroundBrush" Color="{DynamicResource PopupCardBackground}" />
     <SolidColorBrush x:Key="PopupCardBorderBrush" Color="{DynamicResource PopupCardBorder}" />
     <SolidColorBrush x:Key="PopupCardWarningBrush" Color="{DynamicResource PopupCardWarning}" />
+    <SolidColorBrush x:Key="PopupCardDangerBrush" Color="{DynamicResource PopupCardDanger}" />
 
     <!-- The background of the project tree and the layer that dims a row. -->
     <SolidColorBrush x:Key="TreeBackgroundBrush" Color="{DynamicResource TreeBackground}" />

@@ -358,7 +358,8 @@ namespace CMiX.Studio.Avalonia.Views
                 () => node.Owner != null && node.Item != null ? (node.Owner, node.Item) : null,
                 Array.Empty<RowMenuAdd>(),
                 () => node.Header,
-                addRow: hasAdds ? new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node), node.Item is null or CompositionModel or LayerModel) : null);
+                addRow: hasAdds ? new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node), node.Item is null or CompositionModel or LayerModel) : null,
+                gestureOf: command => tree.Shortcuts[command]);
         }
 
         // The + of a row opens the Add panel of that row, on the right of the +. The selection stays as it is: the panel is for the row

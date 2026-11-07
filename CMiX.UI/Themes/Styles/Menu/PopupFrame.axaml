@@ -13,9 +13,10 @@
 
                     <Panel MinWidth="{TemplateBinding PanelMinWidth}">
                         <Border
-                            Background="{DynamicResource PopupBackgroundBrush}"
+                            Background="{DynamicResource PopupCardBackgroundBrush}"
+                            BorderBrush="{DynamicResource PopupCardBorderBrush}"
+                            BorderThickness="1"
                             CornerRadius="{DynamicResource CornerRadiusLargeAll}"
-                            Opacity="0.9"
                             Padding="0" />
 
                         <Border Padding="8">

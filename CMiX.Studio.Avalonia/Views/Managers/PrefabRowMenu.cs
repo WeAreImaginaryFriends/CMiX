@@ -41,6 +41,7 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         private readonly Func<(PrefabManager Manager, IControl Item)?> _target;
         private readonly IReadOnlyList<RowMenuAdd> _adds;
         private readonly AddMenuRow? _addRow;
+        private readonly Func<string, KeyGesture?>? _gestureOf;
         private readonly TitledContextMenu _builder;
         private readonly List<MenuItem> _towardsTheStart = new();
         private readonly List<MenuItem> _towardsTheEnd = new();
@@ -49,13 +50,14 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         private DispatcherTimer? _openTimer;
 
         private PrefabRowMenu(Control row, Func<TextBoxEditable?> nameBox, Func<(PrefabManager Manager, IControl Item)?> target,
-                              IReadOnlyList<RowMenuAdd> adds, Func<string>? title, AddMenuRow? addRow = null)
+                              IReadOnlyList<RowMenuAdd> adds, Func<string>? title, AddMenuRow? addRow = null, Func<string, KeyGesture?>? gestureOf = null)
         {
             _row = row;
             _nameBox = nameBox;
             _target = target;
             _adds = adds;
             _addRow = addRow;
+            _gestureOf = gestureOf;
             // The menu opens on the row that was used last, if it has it. Before that it opens on the first row that adds, so a click
             // right after the creation of an item can add what goes in it (a layer in a composition). Rows without such an add open on Duplicate.
             // The Add row of the panel counts as such an add.
@@ -82,10 +84,10 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         // the menu acts on, and in which list it is. The adds are the rows at the top. The title is the first line of the menu.
         public static ContextMenu Create(Control row, RowMenuKind kind, Func<(PrefabManager Manager, IControl Item)?> target,
                                          IReadOnlyList<RowMenuAdd> adds, Func<string> title, Func<TextBoxEditable?>? nameBox = null,
-                                         AddMenuRow? addRow = null)
+                                         AddMenuRow? addRow = null, Func<string, KeyGesture?>? gestureOf = null)
         {
             nameBox ??= () => row.GetVisualDescendants().OfType<TextBoxEditable>().FirstOrDefault();
-            var builder = new PrefabRowMenu(row, nameBox, target, adds, title, addRow);
+            var builder = new PrefabRowMenu(row, nameBox, target, adds, title, addRow, gestureOf);
             var menu = builder.BuildFor(kind);
 
             // The caller opens the menu in code, which does not raise Opening, and builds a new menu for each opening.
@@ -141,6 +143,8 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         private void AddPanelRow()
         {
             _addItem = _builder.Action(AddId, new MenuItem { Header = "Add", StaysOpenOnClick = true });
+            _addItem.Classes.Add("opens");
+            ShowShortcut(_addItem, "Tree.Add");
             _addItem.Click += (_, _) => OpenAddPanel();
             _addItem.PointerEntered += (_, _) => ScheduleAddPanel();
             _addItem.PointerExited += (_, _) =>
@@ -186,7 +190,8 @@ namespace CMiX.Studio.Avalonia.Views.Managers
         // not from the row, because the row is inside the padding of the card.
         private void OpenAddPanel()
         {
-            if (_addRow == null || _addItem == null || _menu is not { IsOpen: true })
+            StopTimer();
+            if (_addRow == null || _addItem == null || _menu is not { IsOpen: true } || _addRow.Panel.IsOpen)
                 return;
 
             var groups = _addRow.Groups();
@@ -209,25 +214,41 @@ namespace CMiX.Studio.Avalonia.Views.Managers
             return new Rect(rect.X, rect.Y, Math.Max(rect.Width, edge - rect.X), rect.Height);
         }
 
-        private void Duplicate() => Row(DuplicateId, "Duplicate", (manager, item) => manager.DuplicateItem(item));
+        // The shortcut of a command, on the right of its row. Only a menu that is given the gestures shows them (the menus of the tree).
+        private MenuItem ShowShortcut(MenuItem row, string command)
+        {
+            if (_gestureOf?.Invoke(command) is { } gesture)
+                row.InputGesture = gesture;
 
-        private void Rename() => Row(RenameId, "Rename", (_, _) =>
+            return row;
+        }
+
+        // A row that takes something away has the warning color.
+        private static MenuItem Danger(MenuItem row)
+        {
+            row.Classes.Add("danger");
+            return row;
+        }
+
+        private void Duplicate() => ShowShortcut(Row(DuplicateId, "Duplicate", (manager, item) => manager.DuplicateItem(item)), "Tree.Duplicate");
+
+        private void Rename() => ShowShortcut(Row(RenameId, "Rename", (_, _) =>
         {
             if (_nameBox() is { } nameBox)
                 nameBox.IsEditing = true;
-        });
+        }), "Tree.Rename");
 
         private void Moves()
         {
-            _towardsTheStart.Add(Row(MoveUpId, "Move Up", (manager, item) => MoveBy(manager, item, -1)));
-            _towardsTheEnd.Add(Row(MoveDownId, "Move Down", (manager, item) => MoveBy(manager, item, 1)));
+            _towardsTheStart.Add(ShowShortcut(Row(MoveUpId, "Move Up", (manager, item) => MoveBy(manager, item, -1)), "Tree.MoveUp"));
+            _towardsTheEnd.Add(ShowShortcut(Row(MoveDownId, "Move Down", (manager, item) => MoveBy(manager, item, 1)), "Tree.MoveDown"));
             _towardsTheStart.Add(Row(MoveToTopId, "Move To Top", (manager, item) => manager.MoveItemTo(item, 0)));
             _towardsTheEnd.Add(Row(MoveToBottomId, "Move To Bottom", (manager, item) => manager.MoveItemTo(item, manager.ManagerData.Items.Count - 1)));
         }
 
-        private void Remove(string header) => Row(RemoveId, header, (manager, item) => manager.RemoveItem(item));
+        private void Remove(string header) => Danger(ShowShortcut(Row(RemoveId, header, (manager, item) => manager.RemoveItem(item)), "Tree.Remove"));
 
-        private void RemoveEverywhere(string header) => Row(RemoveEverywhereId, header, (manager, item) => manager.RemoveEverywhere(item));
+        private void RemoveEverywhere(string header) => Danger(Row(RemoveEverywhereId, header, (manager, item) => manager.RemoveEverywhere(item)));
 
         private void Line() => _builder.Line();
 

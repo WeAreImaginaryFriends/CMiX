@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Core;
@@ -61,9 +62,12 @@ namespace CMiX.Studio.Avalonia.Tests
             public TreeNode LayerNodeOfA(int index) => Tree.Roots[0].Children[index];
             public TreeNode Group<T>(int layerIndex) where T : TreeGroup => LayerNodeOfA(layerIndex).Children.Single(group => group.Group is T);
 
-            // A right click on the row.
+            // A right click on the row. The pointer goes back to the left of the window first, so a menu that opens at the pointer
+            // never moves to the right of the last click and out of the window.
             public ContextMenu? OpenMenu(TreeNode node)
             {
+                Window.MouseMove(new Point(30, 30));
+                Dispatcher.UIThread.RunJobs();
                 var row = RowOf(node);
                 row.RaiseEvent(new ContextRequestedEventArgs { Source = row });
                 Dispatcher.UIThread.RunJobs();
@@ -128,8 +132,8 @@ namespace CMiX.Studio.Avalonia.Tests
             b.LayerManager.AddItem(typeof(Layer));
 
             var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var view = new ProjectTreeView { DataContext = tree };
-            var window = new Window { Content = view, Width = 400, Height = 900 };
+            var view = new ProjectTreeView { DataContext = tree, Width = 400, HorizontalAlignment = HorizontalAlignment.Left };
+            var window = new Window { Content = view, Width = 1200, Height = 900 };
             window.Show();
             Dispatcher.UIThread.RunJobs();
             var screen = new Screen { Window = window, View = view, Tree = tree, Project = project, A = a, B = b };
@@ -556,6 +560,54 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var box = screen.RowOf(node).GetVisualDescendants().OfType<CMiX.UI.Controls.String.TextBoxEditable>().First();
             Assert.True(box.IsEditing);
+        }
+
+        private static MenuItem RowOf(ContextMenu menu, string header) =>
+            menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, header));
+
+        [AvaloniaFact]
+        public void Open_TheMenuOfALayer_ShowsTheShortcutsOfTheMapOnItsRows()
+        {
+            var screen = Show();
+
+            var menu = screen.OpenMenu(screen.LayerNodeOfA(0))!;
+
+            Assert.Equal(new KeyGesture(Key.A, KeyModifiers.Shift), RowOf(menu, "Add").InputGesture);
+            Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Control), RowOf(menu, "Duplicate").InputGesture);
+            Assert.Equal(new KeyGesture(Key.F2), RowOf(menu, "Rename").InputGesture);
+            Assert.Equal(new KeyGesture(Key.Up, KeyModifiers.Alt), RowOf(menu, "Move Up").InputGesture);
+            Assert.Equal(new KeyGesture(Key.Down, KeyModifiers.Alt), RowOf(menu, "Move Down").InputGesture);
+            Assert.Equal(new KeyGesture(Key.Delete), RowOf(menu, "Delete").InputGesture);
+            Assert.Null(RowOf(menu, "Move To Top").InputGesture);
+        }
+
+        [AvaloniaFact]
+        public void Open_TheMenuAfterARebind_ShowsTheNewGesture()
+        {
+            var screen = Show();
+            screen.Tree.Shortcuts.Set("Tree.Duplicate", new KeyGesture(Key.D, KeyModifiers.Control | KeyModifiers.Shift));
+
+            var menu = screen.OpenMenu(screen.LayerNodeOfA(0))!;
+
+            Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Control | KeyModifiers.Shift), RowOf(menu, "Duplicate").InputGesture);
+        }
+
+        [AvaloniaFact]
+        public void Open_TheMenuOfARow_MarksTheTitleTheAddRowAndTheRemoveRow()
+        {
+            var screen = Show();
+            screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
+            Dispatcher.UIThread.RunJobs();
+
+            var layer = screen.OpenMenu(screen.LayerNodeOfA(0))!;
+            var title = layer.Items.OfType<MenuItem>().First();
+            Assert.Contains("title", title.Classes);
+            Assert.Contains("opens", RowOf(layer, "Add").Classes);
+            Assert.Contains("danger", RowOf(layer, "Delete").Classes);
+            Assert.DoesNotContain("danger", RowOf(layer, "Duplicate").Classes);
+
+            var entity = screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!;
+            Assert.Contains("danger", RowOf(entity, "Remove").Classes);
         }
     }
 }

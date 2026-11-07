@@ -122,5 +122,18 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Null(RowAt(slotList, 0).ContextMenu);
             Assert.Null(RowAt(repositoryList, 0).ContextMenu);
         }
+
+        [AvaloniaFact]
+        public void SlotMenu_OfAList_ShowsNoShortcutAndMarksTheTitleAndTheRemoveRow()
+        {
+            var (_, list) = ShowSlotList(RowMenuKind.Slot, 2);
+
+            var rows = OpenMenu(RowAt(list, 0));
+
+            Assert.All(rows, row => Assert.Null(row.InputGesture));
+            Assert.Contains("title", rows[0].Classes);
+            Assert.Contains("danger", rows.Single(row => Equals(row.Header, "Remove")).Classes);
+            Assert.DoesNotContain("danger", rows.Single(row => Equals(row.Header, "Duplicate")).Classes);
+        }
     }
 }

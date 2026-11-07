@@ -32,6 +32,7 @@ namespace CMiX.UI.Controls.Parts
             this.owner = owner;
             this.title = title;
             this.defaultAnchorId = defaultAnchorId;
+            titleItem.Classes.Add("title");
             items.Add(titleItem);
             items.Add(lineItem);
         }

@@ -53,6 +53,8 @@
     <Color x:Key="PopupCardBorder">#FF3A3A3E</Color>
     <!-- The line of a tooltip that says why a control is disabled. -->
     <Color x:Key="PopupCardWarning">#FFD9A066</Color>
+    <!-- The text of a row of a menu that takes something away, such as Delete. -->
+    <Color x:Key="PopupCardDanger">#FFE57373</Color>
 
     <Color x:Key="Text">#FFE0E0E0</Color>
     <Color x:Key="ActiveText">#FFFFFFFF</Color>

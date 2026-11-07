@@ -18,9 +18,13 @@
                     HorizontalAlignment="Stretch"
                     Background="{TemplateBinding Background}">
                     <Grid VerticalAlignment="Center">
+                        <!-- The icon, the label, the shortcut and the arrow of a row that opens something. The shortcut and the arrow have the
+                             same width in every row of a menu, so they line up. -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MenuGesture" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MenuArrow" />
                         </Grid.ColumnDefinitions>
                         <ContentControl
                             Name="PART_IconPresenter"
@@ -44,6 +48,23 @@
                                 </DataTemplate>
                             </ContentPresenter.DataTemplates>
                         </ContentPresenter>
+                        <TextBlock
+                            Name="PART_InputGestureText"
+                            Grid.Column="2"
+                            Margin="24,0,0,0"
+                            VerticalAlignment="Center"
+                            FontFamily="{DynamicResource FontFamilyMono}"
+                            Foreground="{DynamicResource Grey700Brush}"
+                            IsVisible="{TemplateBinding InputGesture, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureText}}" />
+                        <ui:AppIcon
+                            Name="PART_Arrow"
+                            Grid.Column="3"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            IconKey="ChevronRight"
+                            Opacity="0.7"
+                            Size="{DynamicResource IconSizeXS}" />
 
                         <Popup
                             Name="PART_Popup"
@@ -87,6 +108,28 @@
 
         <Style Selector="^:disabled /template/ Border#root">
             <Setter Property="Opacity" Value="0.5" />
+        </Style>
+
+        <!-- The arrow shows on a row that has a submenu, and on a row with the class opens (a row that opens a panel beside the menu). -->
+        <Style Selector="^:empty /template/ ui|AppIcon#PART_Arrow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^.opens /template/ ui|AppIcon#PART_Arrow">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+
+        <!-- The first row of a menu names its owner. It is quiet, and it is not dimmed as a disabled row. -->
+        <Style Selector="^.title /template/ Border#root">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="^.title /template/ ContentPresenter#PART_HeaderPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource Grey800Brush}" />
+            <Setter Property="FontWeight" Value="Medium" />
+        </Style>
+
+        <!-- A row that takes something away, such as Delete. -->
+        <Style Selector="^.danger /template/ ContentPresenter#PART_HeaderPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource PopupCardDangerBrush}" />
         </Style>
     </ControlTheme>
 
