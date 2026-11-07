@@ -1,0 +1,42 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
+
+    <!-- The room of the shadow is the outer padding, as in PopupFrame. The tip is inside that room. -->
+    <ControlTheme x:Key="{x:Type ui:PopupCard}" TargetType="ui:PopupCard">
+        <Setter Property="Padding" Value="{DynamicResource PopupCardPadding}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="Transparent"
+                    Effect="{DynamicResource DropShadowWindow}"
+                    Padding="{x:Static ui:PopupFrame.ShadowMargin}">
+
+                    <Panel>
+                        <Border
+                            Name="PART_Card"
+                            Background="{DynamicResource PopupCardBackgroundBrush}"
+                            BorderBrush="{DynamicResource PopupCardBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{DynamicResource CornerRadiusLargeAll}"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter
+                                Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}" />
+                        </Border>
+
+                        <ui:PopupTip
+                            Name="PART_Tip"
+                            Fill="{DynamicResource PopupCardBackgroundBrush}"
+                            IsVisible="{TemplateBinding ShowsTip}"
+                            Stroke="{DynamicResource PopupCardBorderBrush}" />
+                    </Panel>
+
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>
