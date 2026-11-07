@@ -9,6 +9,7 @@
     <ui:ColorToNoAlphaConverter x:Key="ColorToNoAlpha" />
 
     <ui:DoubleToStringConverter x:Key="DoubleToString" />
+    <ui:KeyGestureTextConverter x:Key="KeyGestureText" />
     <ui:DoubleAddConverter x:Key="DoubleAdd" />
 
     <ui:NullToVisibilityConverter x:Key="NullToVisibility" />

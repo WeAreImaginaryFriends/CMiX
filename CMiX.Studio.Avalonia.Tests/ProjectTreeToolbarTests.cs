@@ -541,7 +541,62 @@ namespace CMiX.Studio.Avalonia.Tests
             };
 
             foreach (var (name, tip) in expected)
-                Assert.Equal(tip, ToolTip.GetTip(screen.ButtonOf(name)));
+                Assert.Equal(tip, ToolTip.GetTip(screen.ButtonOf(name))?.ToString());
+        }
+
+        [AvaloniaFact]
+        public void Show_TheToolbarButtons_ShowTheShortcutsOfTheMapInTheirTips()
+        {
+            var screen = Show();
+            var expected = new Dictionary<string, string>
+            {
+                ["AddButton"] = "Shift+A",
+                ["DuplicateButton"] = "Ctrl+D",
+                ["MoveUpButton"] = "Alt+Up",
+                ["MoveDownButton"] = "Alt+Down",
+                ["RemoveButton"] = "Delete"
+            };
+
+            foreach (var (name, shortcut) in expected)
+                Assert.Equal(shortcut, Assert.IsType<CMiX.UI.Popups.TipContent>(ToolTip.GetTip(screen.ButtonOf(name))).Shortcut);
+        }
+
+        [AvaloniaFact]
+        public void Set_AnotherGestureInTheMap_ChangesTheShortcutInTheTip()
+        {
+            var screen = Show();
+
+            screen.Scene.Tree.Shortcuts.Set("Tree.Add", new KeyGesture(Key.N, KeyModifiers.Control));
+
+            Assert.Equal("Ctrl+N", Assert.IsType<CMiX.UI.Popups.TipContent>(ToolTip.GetTip(screen.ButtonOf("AddButton"))).Shortcut);
+        }
+
+        [AvaloniaFact]
+        public void Select_NothingToDuplicate_ShowsWhyInTheTipOfTheDisabledButton()
+        {
+            var screen = Show();
+            screen.Scene.Tree.SelectedNode = screen.Scene.Group<EntitiesGroup>(0);
+            Dispatcher.UIThread.RunJobs();
+
+            var button = screen.ButtonOf("DuplicateButton");
+            var tip = Assert.IsType<CMiX.UI.Popups.TipContent>(ToolTip.GetTip(button));
+
+            Assert.False(button.IsEffectivelyEnabled);
+            Assert.Equal("Select a row to duplicate.", tip.Reason);
+            Assert.True(ToolTip.GetShowOnDisabled(button));
+        }
+
+        [AvaloniaFact]
+        public void Select_ARowToDuplicate_ClearsTheReasonFromTheTip()
+        {
+            var screen = Show();
+            screen.Scene.Tree.SelectedNode = screen.Scene.Group<EntitiesGroup>(0);
+            Dispatcher.UIThread.RunJobs();
+
+            screen.Scene.Tree.SelectedNode = screen.Scene.LayerNodeOfA(0);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Null(Assert.IsType<CMiX.UI.Popups.TipContent>(ToolTip.GetTip(screen.ButtonOf("DuplicateButton"))).Reason);
         }
 
         // The look of the buttons before the change to ButtonIcon: 24 by 24, a transparent corner of 2, an icon of 16 at 0.9.

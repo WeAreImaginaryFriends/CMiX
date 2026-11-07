@@ -13,32 +13,41 @@
             Click="OnAddClick"
             IsEnabled="{Binding HasAdds}"
             IconKey="Add"
-            Tip="Add" />
+            Tip="Add"
+            TipShortcut="{Binding Shortcuts[Tree.Add], Converter={StaticResource KeyGestureText}}" />
 
         <ui:ButtonIcon
             x:Name="DuplicateButton"
             Command="{Binding DuplicateItemCommand}"
             IconKey="Duplicate"
-            Tip="Duplicate" />
+            DisabledReason="Select a row to duplicate."
+            Tip="Duplicate"
+            TipShortcut="{Binding Shortcuts[Tree.Duplicate], Converter={StaticResource KeyGestureText}}" />
 
         <ui:ButtonIcon
             x:Name="MoveUpButton"
             Command="{Binding MoveItemUpCommand}"
             IconKey="ArrowUp"
-            Tip="Move up" />
+            DisabledReason="Select a row that can move up."
+            Tip="Move up"
+            TipShortcut="{Binding Shortcuts[Tree.MoveUp], Converter={StaticResource KeyGestureText}}" />
 
         <ui:ButtonIcon
             x:Name="MoveDownButton"
             Command="{Binding MoveItemDownCommand}"
             IconKey="ArrowDown"
-            Tip="Move down" />
+            DisabledReason="Select a row that can move down."
+            Tip="Move down"
+            TipShortcut="{Binding Shortcuts[Tree.MoveDown], Converter={StaticResource KeyGestureText}}" />
 
         <ui:ButtonIcon
             x:Name="RemoveButton"
             Command="{Binding RemoveItemCommand}"
             DockPanel.Dock="Right"
             IconKey="Remove"
-            Tip="Remove" />
+            DisabledReason="Select a row to remove."
+            Tip="Remove"
+            TipShortcut="{Binding Shortcuts[Tree.Remove], Converter={StaticResource KeyGestureText}}" />
 
     </DockPanel>
 </UserControl>

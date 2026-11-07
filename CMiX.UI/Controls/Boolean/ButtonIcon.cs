@@ -3,10 +3,13 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using CMiX.UI.Popups;
 
 namespace CMiX.UI.Controls.Boolean
 {
     // A Button whose content is one icon. IconKey names the icon. Tip is the tooltip. An empty Tip gives no tooltip.
+    // TipShortcut and TipDescription add lines to the tooltip (see TipContent). DisabledReason is the line that explains why the button does
+    // nothing: it shows in the tooltip while the button is disabled, and the tooltip shows on a disabled button then.
     // The theme sets IconSize to IconSizeXS.
     public class ButtonIcon : Button
     {
@@ -26,6 +29,34 @@ namespace CMiX.UI.Controls.Boolean
         {
             get => GetValue(TipProperty);
             set => SetValue(TipProperty, value);
+        }
+
+        public static readonly StyledProperty<string?> TipShortcutProperty =
+            AvaloniaProperty.Register<ButtonIcon, string?>(nameof(TipShortcut));
+
+        // The shortcut of the command of the button, such as "Shift+A".
+        public string? TipShortcut
+        {
+            get => GetValue(TipShortcutProperty);
+            set => SetValue(TipShortcutProperty, value);
+        }
+
+        public static readonly StyledProperty<string?> TipDescriptionProperty =
+            AvaloniaProperty.Register<ButtonIcon, string?>(nameof(TipDescription));
+
+        public string? TipDescription
+        {
+            get => GetValue(TipDescriptionProperty);
+            set => SetValue(TipDescriptionProperty, value);
+        }
+
+        public static readonly StyledProperty<string?> DisabledReasonProperty =
+            AvaloniaProperty.Register<ButtonIcon, string?>(nameof(DisabledReason));
+
+        public string? DisabledReason
+        {
+            get => GetValue(DisabledReasonProperty);
+            set => SetValue(DisabledReasonProperty, value);
         }
 
         public static readonly StyledProperty<double> IconSizeProperty =
@@ -49,11 +80,23 @@ namespace CMiX.UI.Controls.Boolean
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == TipProperty)
+            if (change.Property == TipProperty || change.Property == TipShortcutProperty || change.Property == TipDescriptionProperty
+                || change.Property == DisabledReasonProperty || change.Property == IsEffectivelyEnabledProperty)
+                UpdateTip();
+        }
+
+        // A plain Tip is a string. With a shortcut, a description or a reason, the tip is a TipContent.
+        private void UpdateTip()
+        {
+            if (string.IsNullOrEmpty(Tip))
             {
-                var tip = change.GetNewValue<string?>();
-                ToolTip.SetTip(this, string.IsNullOrEmpty(tip) ? null : tip);
+                ToolTip.SetTip(this, null);
+                return;
             }
+
+            var reason = IsEffectivelyEnabled || string.IsNullOrEmpty(DisabledReason) ? null : DisabledReason;
+            ToolTip.SetTip(this, TipShortcut == null && TipDescription == null && reason == null ? Tip : new TipContent(Tip, TipShortcut, TipDescription, reason));
+            ToolTip.SetShowOnDisabled(this, !string.IsNullOrEmpty(DisabledReason));
         }
     }
 }
