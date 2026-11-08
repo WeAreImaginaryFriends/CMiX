@@ -57,9 +57,16 @@ namespace CMiX.Core.Processors
         public IReadOnlyList<Guid> GetTextureSourceIds(Guid compositionId) =>
             repository.Textures
                 .OfType<IHasCompositionID>()
-                .Where(source => source.CompositionID == compositionId && !visibility.IsHidden(((IControl)source).ID))
+                .Where(source => source.CompositionID == compositionId && !visibility.IsHidden(((IControl)source).ID) && !IsInHiddenList((IControl)source))
                 .Select(source => ((IControl)source).ID)
                 .ToArray();
+
+        // True when every list that holds the control is hidden. A control in no list is not in a hidden list.
+        private bool IsInHiddenList(IControl control)
+        {
+            var lists = repository.GetCollectionManagers(control);
+            return lists.Count > 0 && lists.All(list => list.Hidden?.Value == true);
+        }
 
         private sealed class LayerItems
         {

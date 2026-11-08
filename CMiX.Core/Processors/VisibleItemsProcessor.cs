@@ -6,7 +6,7 @@ using CMiX.Core.Prefabs.Managers;
 
 namespace CMiX.Core.Processors
 {
-    // Gives the ids of the visible items of a list, in the order of the list. A hidden item is not in the result.
+    // Gives the ids of the visible items of a list, in the order of the list. A hidden item is not in the result. A hidden list gives no item,\n    // and the items of it keep their own visibility.
     // The result of a list is built again only after the list or a visibility changed.
     // Call it from the thread that changes the controls.
     public class VisibleItemsProcessor
@@ -22,7 +22,7 @@ namespace CMiX.Core.Processors
         }
 
         public IReadOnlyList<Guid> GetVisibleIds(PrefabManager manager) =>
-            manager == null
+            manager == null || manager.Hidden.Value
                 ? Array.Empty<Guid>()
                 : entries.GetValue(manager.ManagerData, data => new Entry(data)).GetIds(visibility, visibilityVersion);
 

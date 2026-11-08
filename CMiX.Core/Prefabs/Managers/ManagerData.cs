@@ -13,7 +13,21 @@ namespace CMiX.Core.Prefabs.Managers
             Items.CollectionChanged += (s, e) => OnPropertyChanged(nameof(SelectedIndex));
         }
 
-        public Guid ID { get; set; } = Guid.NewGuid();
+        private Guid _id = Guid.NewGuid();
+
+        public Guid ID
+        {
+            get => _id;
+            set
+            {
+                if (_id == value) return;
+                _id = value;
+                IdChanged?.Invoke();
+            }
+        }
+
+        // Raised when the ID changes, so what is derived from it (the hide value of the list) follows.
+        public event Action IdChanged;
         public ObservableCollection<IControl> Items { get; } = new();
 
         private IControl _selectedItem;

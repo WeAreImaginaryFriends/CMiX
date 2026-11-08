@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows.Input;
+using CMiX.Core.BaseControls;
 using CMiX.Core.Networking;
 using CMiX.Core.Networking.Messages;
 using CMiX.Core.Prefabs.Messages;
@@ -18,6 +19,7 @@ namespace CMiX.Core.Prefabs.Managers
                              ControlMessenger controlMessenger,
                              MessageFactory messageFactory,
                              ControlActivationService activationService,
+                             GenericValue<bool> hidden,
                              UndoManager undoManager,
                              ManagerReorderServiceFactory reorderServiceFactory = null)
             : base(collection.ControlRepository, controlMessenger, messageFactory, activationService, undoManager)
@@ -26,6 +28,10 @@ namespace CMiX.Core.Prefabs.Managers
 
             Collection = collection;
             _controlFactory = controlFactory;
+            Hidden = hidden;
+            collection.Hidden = hidden;
+            UpdateHiddenId();
+            collection.ManagerData.IdChanged += UpdateHiddenId;
             _messageHandler = messageHandler;
             _sync = new CollectionSync(collection, controlMessenger, messageFactory);
             Collection.ManagerData.PropertyChanged += (s, e) =>
@@ -56,6 +62,12 @@ namespace CMiX.Core.Prefabs.Managers
         private bool isExpanded = true;
 
         public ManagerData ManagerData => Collection.ManagerData;
+
+        // True when the whole list is hidden: nothing of it is drawn, and the items keep their own visibility (see VisibleItemsProcessor).
+        public GenericValue<bool> Hidden { get; }
+
+        // The ID of the hide value comes from the ID of the list, so every peer and every fresh project has the same one.
+        private void UpdateHiddenId() => Hidden.ID = DerivedId.Of(ManagerData.ID, nameof(PrefabManagerModel.Hidden));
 
         private Guid _compositionID;
 
@@ -312,6 +324,7 @@ namespace CMiX.Core.Prefabs.Managers
         public override IControlModel ToModel() => new PrefabManagerModel
         {
             ID = ManagerData.ID,
+            Hidden = (GenericValueModel<bool>)Hidden.ToModel(),
             ManagerData = new ManagerDataModel
             {
                 ID = ManagerData.ID,
@@ -329,6 +342,9 @@ namespace CMiX.Core.Prefabs.Managers
         {
             var m = (PrefabManagerModel)model;
             ManagerData.ID = m.ManagerData.ID;
+            if (m.Hidden != null)
+                Hidden.FromModel(m.Hidden);
+            UpdateHiddenId();
         }
     }
 }

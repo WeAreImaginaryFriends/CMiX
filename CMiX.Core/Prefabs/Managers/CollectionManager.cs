@@ -15,6 +15,9 @@ namespace CMiX.Core.Prefabs.Managers
         }
 
         public ManagerData ManagerData { get; }
+
+        // True when the whole list is hidden. The manager of the list gives it (see PrefabManager.Hidden). It is null until then.
+        public BaseControls.GenericValue<bool> Hidden { get; set; }
         public ControlRepository ControlRepository { get; }
         private readonly ControlFactory _controlFactory;
 

@@ -77,5 +77,70 @@ namespace CMiX.Core.Tests
 
             Assert.Empty(processor.GetVisibleIds(null));
         }
+
+        [Fact]
+        public void GetVisibleIds_AHiddenList_GivesNoItemAndKeepsTheStateOfTheItems()
+        {
+            var (processor, layer) = Create(3);
+            var items = Items(layer.ModelEntityManager);
+            ((IPrefab)items[1]).PrefabService.Visibility.Value = true;
+
+            layer.ModelEntityManager.Hidden.Value = true;
+            Assert.Empty(processor.GetVisibleIds(layer.ModelEntityManager));
+            Assert.True(((IPrefab)items[1]).PrefabService.Visibility.Value);
+            Assert.False(((IPrefab)items[0]).PrefabService.Visibility.Value);
+
+            // The item that was hidden before stays hidden when the list shows again.
+            layer.ModelEntityManager.Hidden.Value = false;
+            Assert.Equal(new[] { items[0].ID, items[2].ID }, processor.GetVisibleIds(layer.ModelEntityManager));
+        }
+
+        [Fact]
+        public void GetVisibleIds_AHiddenList_DoesNotHideTheOtherLists()
+        {
+            var (processor, layer) = Create(2);
+            layer.CameraManager.AddItem(typeof(CMiX.Core.Rendering.Cameras.Camera));
+
+            layer.ModelEntityManager.Hidden.Value = true;
+
+            Assert.Single(processor.GetVisibleIds(layer.CameraManager));
+        }
+
+        [Fact]
+        public void ToModel_AHiddenList_KeepsTheStateThroughFromModel()
+        {
+            var (_, layer) = Create(1);
+            layer.ModelEntityManager.Hidden.Value = true;
+
+            var model = (PrefabManagerModel)layer.ModelEntityManager.ToModel();
+
+            Assert.True(model.Hidden.Value);
+            layer.ModelEntityManager.Hidden.Value = false;
+            layer.ModelEntityManager.FromModel(model);
+            Assert.True(layer.ModelEntityManager.Hidden.Value);
+        }
+
+        [Fact]
+        public void FromModel_AModelWithoutTheState_LeavesTheListVisible()
+        {
+            var (_, layer) = Create(1);
+
+            layer.ModelEntityManager.FromModel(new PrefabManagerModel { ID = layer.ModelEntityManager.ID });
+
+            Assert.False(layer.ModelEntityManager.Hidden.Value);
+        }
+
+        [Fact]
+        public void Hidden_TheIdOfTheList_IsDerivedFromItAndFollowsIt()
+        {
+            var (_, layer) = Create(1);
+            var manager = layer.ModelEntityManager;
+
+            Assert.Equal(DerivedId.Of(manager.ManagerData.ID, "Hidden"), manager.Hidden.ID);
+
+            manager.ManagerData.ID = Guid.NewGuid();
+            Assert.Equal(DerivedId.Of(manager.ManagerData.ID, "Hidden"), manager.Hidden.ID);
+            Assert.Equal(manager.Hidden.ID, ((PrefabManagerModel)manager.ToModel()).Hidden.ID);
+        }
     }
 }
