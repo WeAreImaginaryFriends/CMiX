@@ -1,28 +1,30 @@
-﻿<UserControl
+﻿<Modulation:PanelModulatable
     x:Class="CMiX.Studio.Avalonia.Views.BubbleNoise"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
-    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
+    x:Name="bubbleNoise">
 
     <StackPanel Spacing="{DynamicResource SpacingMD}">
 
         <ui:StackPanelPositioned Spacing="{DynamicResource SpacingXXS}">
 
-            <ui:DragValue
-                Caption="Speed"
-                Value="{Binding Speed.Value}"
-                ResetCommand="{Binding Speed.ResetCommand}" />
+            <Modulation:DragValueModulatable
+                Caption="Time"
+                DataContext="{Binding Time}"
+                ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=bubbleNoise}" />
 
-            <ui:DragValue
+            <Modulation:DragValueModulatable
                 Caption="Frequency"
-                Value="{Binding Frequency.Value}"
-                ResetCommand="{Binding Frequency.ResetCommand}" />
+                DataContext="{Binding Frequency}"
+                ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=bubbleNoise}" />
 
-            <ui:DragValue
+            <Modulation:DragValueModulatable
                 Caption="Contrast"
-                Value="{Binding Contrast.Value}"
-                ResetCommand="{Binding Contrast.ResetCommand}" />
+                DataContext="{Binding Contrast}"
+                ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=bubbleNoise}" />
 
         </ui:StackPanelPositioned>
 
@@ -42,4 +44,4 @@
 
     </StackPanel>
 
-</UserControl>
+</Modulation:PanelModulatable>

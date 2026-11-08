@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using CMiX.Core.BaseControls;
+using CMiX.Core.Modulation;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 
@@ -14,25 +15,27 @@ namespace CMiX.Core.Texturing.Sources
                            PrefabManager modulatorManager,
                            Integer2 resolution,
                            GenericValue<bool> useCompositionResolution,
-                           GenericValue<float> speed,
-                           GenericValue<float> frequency,
-                           GenericValue<float> contrast,
+                           ModulatableValue<float> time,
+                           ModulatableValue<float> frequency,
+                           ModulatableValue<float> contrast,
                            GenericValue<string> backgroundColor,
                            GenericValue<string> bubbleColor)
             : base(prefabService, textureModifierManager, modulatorManager, useCompositionResolution)
         {
             Resolution = resolution;
-            Speed = speed;
+            Time = time;
             Frequency = frequency;
             Contrast = contrast;
             BackgroundColor = backgroundColor;
             BubbleColor = bubbleColor;
+
+            Modulators.Add(Time, Frequency, Contrast);
         }
 
         public Integer2 Resolution { get; set; }
-        public GenericValue<float> Speed { get; set; }
-        public GenericValue<float> Frequency { get; set; }
-        public GenericValue<float> Contrast { get; set; }
+        public ModulatableValue<float> Time { get; set; }
+        public ModulatableValue<float> Frequency { get; set; }
+        public ModulatableValue<float> Contrast { get; set; }
         public GenericValue<string> BackgroundColor { get; set; }
         public GenericValue<string> BubbleColor { get; set; }
 
@@ -41,9 +44,9 @@ namespace CMiX.Core.Texturing.Sources
             var model = new BubbleNoiseModel
             {
                 Resolution = (Integer2Model)Resolution.ToModel(),
-                Speed = (GenericValueModel<float>)Speed.ToModel(),
-                Frequency = (GenericValueModel<float>)Frequency.ToModel(),
-                Contrast = (GenericValueModel<float>)Contrast.ToModel(),
+                Time = (ModulatableValueModel<float>)Time.ToModel(),
+                Frequency = (ModulatableValueModel<float>)Frequency.ToModel(),
+                Contrast = (ModulatableValueModel<float>)Contrast.ToModel(),
                 BackgroundColor = (GenericValueModel<string>)BackgroundColor.ToModel(),
                 BubbleColor = (GenericValueModel<string>)BubbleColor.ToModel()
             };
@@ -56,7 +59,7 @@ namespace CMiX.Core.Texturing.Sources
             var m = (BubbleNoiseModel)model;
             LoadBaseModel(m);
             Resolution.FromModel(m.Resolution);
-            Speed.FromModel(m.Speed);
+            Time.FromModel(m.Time);
             Frequency.FromModel(m.Frequency);
             Contrast.FromModel(m.Contrast);
             BackgroundColor.FromModel(m.BackgroundColor);

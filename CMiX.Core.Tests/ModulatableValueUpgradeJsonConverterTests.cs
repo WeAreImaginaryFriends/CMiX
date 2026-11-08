@@ -123,6 +123,22 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
+        public void Read_BubbleNoiseWithFlatSpeedFrequencyAndContrast_KeepsFrequencyAndContrastAndDropsSpeed()
+        {
+            var node = JsonSerializer.SerializeToNode(new BubbleNoiseModel(), ProjectSerializer.Options).AsObject();
+            node.Remove("Time");
+            node["Speed"] = JsonNode.Parse("{\"ID\":\"11111111-1111-1111-1111-111111111111\",\"Value\":9}");
+            node["Frequency"] = JsonNode.Parse("{\"ID\":\"22222222-2222-2222-2222-222222222222\",\"Value\":5}");
+            node["Contrast"] = JsonNode.Parse("{\"ID\":\"33333333-3333-3333-3333-333333333333\",\"Value\":0.4}");
+
+            var model = node.Deserialize<BubbleNoiseModel>(ProjectSerializer.Options);
+
+            Assert.Equal(5f, model.Frequency.Value.Value);
+            Assert.Equal(0.4f, model.Contrast.Value.Value);
+            Assert.Equal(0f, model.Time.Value.Value);
+        }
+
+        [Fact]
         public void Load_AFileWithAFlatGamma_OpensAndSavesTheNewShape()
         {
             using var directory = new TempDirectoryFixture();

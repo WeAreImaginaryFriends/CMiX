@@ -80,6 +80,17 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
+        public void BubbleNoise_Create_ModulatesTimeFrequencyAndContrast()
+        {
+            var bubbleNoise = (BubbleNoise)Create(typeof(BubbleNoise));
+
+            Assert.Equal(3, bubbleNoise.Modulators.Bindables.Count);
+            Assert.Contains(bubbleNoise.Modulators.Bindables, b => ReferenceEquals(b, bubbleNoise.Time));
+            Assert.Contains(bubbleNoise.Modulators.Bindables, b => ReferenceEquals(b, bubbleNoise.Frequency));
+            Assert.Contains(bubbleNoise.Modulators.Bindables, b => ReferenceEquals(b, bubbleNoise.Contrast));
+        }
+
+        [Fact]
         public void VideoPlayer_KeepsTheDoSeekValueThroughTheModel()
         {
             var player = (VideoPlayer)Create(typeof(VideoPlayer));
