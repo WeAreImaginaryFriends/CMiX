@@ -15,7 +15,7 @@ namespace CMiX.Core.Tests
         public static IEnumerable<object[]> SourceTypes => new[]
         {
             typeof(BubbleNoise), typeof(CheckerBoard), typeof(Gradient), typeof(GradientMesh),
-            typeof(Image), typeof(SequencePlayer), typeof(TouchBlob),
+            typeof(Image), typeof(Liquish), typeof(SequencePlayer), typeof(TouchBlob),
             typeof(TypeWriter), typeof(VideoIn), typeof(VideoPlayer),
         }.Select(type => new object[] { type });
 
