@@ -91,6 +91,16 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
+        public void CheckerBoard_Create_ModulatesCellCountXAndY()
+        {
+            var checkerBoard = (CheckerBoard)Create(typeof(CheckerBoard));
+
+            Assert.Equal(2, checkerBoard.Modulators.Bindables.Count);
+            Assert.Contains(checkerBoard.Modulators.Bindables, b => ReferenceEquals(b, checkerBoard.CellCount.X));
+            Assert.Contains(checkerBoard.Modulators.Bindables, b => ReferenceEquals(b, checkerBoard.CellCount.Y));
+        }
+
+        [Fact]
         public void VideoPlayer_KeepsTheDoSeekValueThroughTheModel()
         {
             var player = (VideoPlayer)Create(typeof(VideoPlayer));

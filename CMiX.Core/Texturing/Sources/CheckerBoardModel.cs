@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using CMiX.Core.BaseControls;
+using CMiX.Core.Modulation;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Transformation;
@@ -15,7 +16,7 @@ namespace CMiX.Core.Texturing.Sources
         public GenericValueModel<bool> UseCompositionResolution { get; set; } = new(false);
         public PrefabServiceModel PrefabService { get; set; } = new();
         public Transform2DModel Transform2D { get; set; } = new();
-        public Vector2Model CellCount { get; set; } = new(8.0f, 8.0f);
+        public ModulatableVector2Model CellCount { get; set; } = ModulatableVector2Model.Of(8.0f, 8.0f);
         public GenericValueModel<string> ColorA { get; set; } = new("#FFFFFF");
         public GenericValueModel<string> ColorB { get; set; } = new("#000000");
         public PrefabManagerModel TextureModifierManager { get; set; } = new();

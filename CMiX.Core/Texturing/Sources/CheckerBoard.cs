@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using CMiX.Core.BaseControls;
+using CMiX.Core.Modulation;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using CMiX.Core.Transformation;
@@ -17,7 +18,7 @@ namespace CMiX.Core.Texturing.Sources
                             PrefabManager modulatorManager,
                             Integer2 resolution,
                             GenericValue<bool> useCompositionResolution,
-                            Vector2 cellCount,
+                            ModulatableVector2 cellCount,
                             GenericValue<string> colorA,
                             GenericValue<string> colorB,
                             Transform2D transform2D)
@@ -28,11 +29,13 @@ namespace CMiX.Core.Texturing.Sources
             ColorB = colorB;
             CellCount = cellCount;
             Transform2D = transform2D;
+
+            Modulators.Add(CellCount.X, CellCount.Y);
         }
 
         public Integer2 Resolution { get; set; }
         public Transform2D Transform2D { get; set; }
-        public Vector2 CellCount { get; set; }
+        public ModulatableVector2 CellCount { get; set; }
         public GenericValue<string> ColorA { get; set; }
         public GenericValue<string> ColorB { get; set; }
 
@@ -42,7 +45,7 @@ namespace CMiX.Core.Texturing.Sources
             {
                 Resolution = (Integer2Model)Resolution.ToModel(),
                 Transform2D = (Transform2DModel)Transform2D.ToModel(),
-                CellCount = (Vector2Model)CellCount.ToModel(),
+                CellCount = (ModulatableVector2Model)CellCount.ToModel(),
                 ColorA = (GenericValueModel<string>)ColorA.ToModel(),
                 ColorB = (GenericValueModel<string>)ColorB.ToModel()
             };

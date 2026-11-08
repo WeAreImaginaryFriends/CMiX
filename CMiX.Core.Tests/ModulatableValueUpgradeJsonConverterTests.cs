@@ -139,6 +139,20 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
+        public void Read_CheckerBoardWithFlatCellCount_KeepsBothCells()
+        {
+            var node = JsonSerializer.SerializeToNode(new CheckerBoardModel(), ProjectSerializer.Options);
+            node["CellCount"] = JsonNode.Parse("{\"ID\":\"11111111-1111-1111-1111-111111111111\","
+                + "\"X\":{\"ID\":\"22222222-2222-2222-2222-222222222222\",\"Value\":6},"
+                + "\"Y\":{\"ID\":\"33333333-3333-3333-3333-333333333333\",\"Value\":3}}");
+
+            var model = node.Deserialize<CheckerBoardModel>(ProjectSerializer.Options);
+
+            Assert.Equal(6f, model.CellCount.X.Value.Value);
+            Assert.Equal(3f, model.CellCount.Y.Value.Value);
+        }
+
+        [Fact]
         public void Load_AFileWithAFlatGamma_OpensAndSavesTheNewShape()
         {
             using var directory = new TempDirectoryFixture();

@@ -1,15 +1,18 @@
-﻿<UserControl
+﻿<Modulation:PanelModulatable
     x:Class="CMiX.Studio.Avalonia.Views.CheckerBoard"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
-    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
+    x:Name="checkerBoard">
 
     <StackPanel Spacing="{DynamicResource SpacingMD}">
 
-        <ui:Vector2
+        <Modulation:Vector2Modulatable
             Caption="Cell Count"
-            DataContext="{Binding CellCount}" />
+            DataContext="{Binding CellCount}"
+            ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=checkerBoard}" />
 
         <ui:StackPanelPositioned Spacing="{DynamicResource SpacingXXS}">
 
@@ -30,4 +33,4 @@
 
     </StackPanel>
 
-</UserControl>
+</Modulation:PanelModulatable>
