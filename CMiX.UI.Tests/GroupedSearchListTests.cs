@@ -85,6 +85,23 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
+        public void Show_NotCollapsible_OpensEveryGroupAndTheHeadersAreOnlyNames()
+        {
+            var (window, list, picks) = Show();
+            list.Collapsible = false;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.All(list.Groups!, group => Assert.True(list.IsOpen(group)));
+            Assert.Empty(list.GetVisualDescendants().OfType<AppIcon>().Where(icon => icon.IconKey is "ChevronDown" or "ChevronRight"));
+
+            // A click on a header changes nothing and picks nothing, and the highlight skips the headers.
+            Click(window, list.RowVisuals.First(row => row.Classes.Contains("header")));
+            Assert.Empty(picks);
+            Assert.All(list.Groups!, group => Assert.True(list.IsOpen(group)));
+            Assert.DoesNotContain("header", list.RowVisuals[list.HighlightedIndex].Classes);
+        }
+
+        [AvaloniaFact]
         public void Show_TheGroups_HighlightsTheFirstRowNotTheFirstHeader()
         {
             var (_, list, _) = Show();

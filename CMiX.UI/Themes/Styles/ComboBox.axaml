@@ -74,6 +74,13 @@
                         PlacementTarget="{TemplateBinding}"
                         VerticalOffset="2">
                         <ui:DropdownFrame Name="DropDownBorder" HorizontalAlignment="Stretch">
+                            <DockPanel HorizontalAlignment="Stretch">
+                                <!-- The search field shows when the ComboBox is searchable (see ComboBoxSearch). -->
+                                <ui:SearchBox
+                                    Name="PART_ComboSearch"
+                                    Margin="4,4,4,2"
+                                    DockPanel.Dock="Top"
+                                    IsVisible="{Binding (ui:ComboBoxSearch.IsSearchable), RelativeSource={RelativeSource TemplatedParent}}" />
                             <Grid HorizontalAlignment="Stretch">
                                 <ScrollViewer
                                     Name="DropDownScrollViewer"
@@ -86,6 +93,7 @@
                                         ItemsPanel="{TemplateBinding ItemsPanel}" />
                                 </ScrollViewer>
                             </Grid>
+                            </DockPanel>
                         </ui:DropdownFrame>
                     </Popup>
 
@@ -130,6 +138,13 @@
         </Style>
         <Style Selector="^:pointerover:not(:selected) /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+        </Style>
+        <!-- The row that the arrow keys moved to while the search field has the focus (see ComboBoxSearch). It looks like a row under the pointer. -->
+        <Style Selector="^.highlighted:not(:selected) /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+        </Style>
+        <Style Selector="^.highlighted:selected /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
         </Style>
     </ControlTheme>
 

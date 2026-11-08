@@ -29,26 +29,9 @@
     <!-- The search field, then the groups. The rows scroll when there are more than VisibleRows. -->
     <StackPanel Spacing="4">
 
-        <Panel>
-
-            <TextBox
-                x:Name="PART_Search"
-                Height="{DynamicResource ControlHeightMD}"
-                Padding="28,0,6,0"
-                VerticalContentAlignment="Center"
-                Text="{Binding SearchText, ElementName=groupedList, Mode=TwoWay}"
-                Watermark="Search" />
-
-            <ui:AppIcon
-                Margin="8,0,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                IconKey="Search"
-                IsHitTestVisible="False"
-                Opacity="0.5"
-                Size="{DynamicResource IconSizeXS}" />
-
-        </Panel>
+        <ui:SearchBox
+            x:Name="PART_Search"
+            Text="{Binding SearchText, ElementName=groupedList, Mode=TwoWay}" />
 
         <ScrollViewer
             x:Name="PART_Scroll"

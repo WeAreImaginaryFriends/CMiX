@@ -15,7 +15,7 @@ using CMiX.UI.Themes;
 namespace CMiX.UI.Controls.Collection
 {
     // A list of groups with a search field above it. Each group has a header with the number of its rows, and its rows under it.
-    // A group with more rows than CollapseFrom starts closed. A click on a header opens or closes the group.
+    // A group with more rows than CollapseFrom starts closed. A click on a header opens or closes the group (see Collapsible).
     // With text in the field, the list shows the rows whose text holds it, in any case, in every group that has one, and the groups are open.
     // Down and Up move the highlight over the headers and the rows. Enter picks the highlighted row, or opens and closes the highlighted
     // header. Right and Left open and close the highlighted header while the field is empty. Escape clears the text, then raises Cancelled.
@@ -33,6 +33,7 @@ namespace CMiX.UI.Controls.Collection
             GroupsProperty.Changed.AddClassHandler<GroupedSearchList>((list, _) => list.RebuildIfAttached());
             SearchTextProperty.Changed.AddClassHandler<GroupedSearchList>((list, _) => list.RebuildIfAttached());
             CollapseFromProperty.Changed.AddClassHandler<GroupedSearchList>((list, _) => list.RebuildIfAttached());
+            CollapsibleProperty.Changed.AddClassHandler<GroupedSearchList>((list, _) => list.RebuildIfAttached());
         }
 
         public GroupedSearchList()
@@ -69,6 +70,17 @@ namespace CMiX.UI.Controls.Collection
             set => SetValue(CollapseFromProperty, value);
         }
 
+        // True when a click on a header opens and closes its group. A list that is not collapsible shows every group open, and a header is only
+        // the name of its category: it has no chevron and it takes no highlight and no click.
+        public static readonly StyledProperty<bool> CollapsibleProperty =
+            AvaloniaProperty.Register<GroupedSearchList, bool>(nameof(Collapsible), true);
+
+        public bool Collapsible
+        {
+            get => GetValue(CollapsibleProperty);
+            set => SetValue(CollapsibleProperty, value);
+        }
+
         // The number of rows that show before the list scrolls. A header counts as a row.
         public static readonly StyledProperty<int> VisibleRowsProperty =
             AvaloniaProperty.Register<GroupedSearchList, int>(nameof(VisibleRows), 10);
@@ -96,7 +108,7 @@ namespace CMiX.UI.Controls.Collection
         public IReadOnlyList<Border> RowVisuals => rows.Select(row => row.Visual).ToList();
 
         // The state of a group: open or closed, as the user sees it.
-        public bool IsOpen(PickerGroup group) => Searching || StartsOpen(group) != flipped.Contains(group);
+        public bool IsOpen(PickerGroup group) => !Collapsible || Searching || StartsOpen(group) != flipped.Contains(group);
 
         // A group starts open when it is small and has a row that can be picked.
         private bool StartsOpen(PickerGroup group) => group.Items.Count <= CollapseFrom && group.HasEnabledItems;
@@ -111,7 +123,7 @@ namespace CMiX.UI.Controls.Collection
             SearchText = string.Empty;
             flipped.Clear();
             Rebuild();
-            Dispatcher.UIThread.Post(() => PART_Search.Focus(), DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(() => PART_Search.FocusInput(), DispatcherPriority.Input);
         }
 
         private void RebuildIfAttached()
@@ -176,9 +188,12 @@ namespace CMiX.UI.Controls.Collection
         private Border HeaderRow(PickerGroup group, bool open)
         {
             var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
-            grid.Children.Add(new AppIcon { IconKey = open ? "ChevronDown" : "ChevronRight", Size = Number("IconSizeXS", 12), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });
 
-            var text = new TextBlock { Text = group.Header, Margin = new Thickness(6, 0, 0, 0), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
+            // A list that is not collapsible shows the name of the category only.
+            if (Collapsible)
+                grid.Children.Add(new AppIcon { IconKey = open ? "ChevronDown" : "ChevronRight", Size = Number("IconSizeXS", 12), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });
+
+            var text = new TextBlock { Text = group.Header, Margin = new Thickness(Collapsible ? 6 : 0, 0, 0, 0), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
             Grid.SetColumn(text, 1);
             grid.Children.Add(text);
 
@@ -207,7 +222,7 @@ namespace CMiX.UI.Controls.Collection
 
             panel.Children.Add(new TextBlock { Text = item.Text, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });
 
-            var row = new Border { Padding = new Thickness(24, 0, 8, 0), Child = panel };
+            var row = new Border { Padding = new Thickness(Collapsible ? 24 : 12, 0, 8, 0), Child = panel };
             row.Classes.Add("row");
             if (!item.IsEnabled)
                 row.Classes.Add("disabled");
@@ -217,7 +232,7 @@ namespace CMiX.UI.Controls.Collection
 
         // A header and a row that is enabled can be highlighted, clicked and picked. A row that is not enabled cannot.
         private bool IsUsable(int index) =>
-            index >= 0 && index < rows.Count && (rows[index].Item == null || rows[index].Item!.IsEnabled);
+            index >= 0 && index < rows.Count && (rows[index].Item == null ? Collapsible : rows[index].Item!.IsEnabled);
 
         // The row after the highlighted one in a direction that can be used, or the highlighted row when there is none.
         private int Step(int direction)

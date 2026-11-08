@@ -25,7 +25,8 @@
                     ui:PositionedControl.Position="None"
                     ItemsSource="{Binding ItemsSource, ElementName=comboBox}"
                     ItemTemplate="{Binding ItemTemplate, ElementName=comboBox}"
-                    SelectedItem="{Binding SelectedItem, ElementName=comboBox, Mode=OneWay}" />
+                    SelectedItem="{Binding SelectedItem, ElementName=comboBox, Mode=OneWay}"
+                    ui:ComboBoxSearch.IsSearchable="{Binding IsSearchable, ElementName=comboBox}" />
 
             </Border>
 

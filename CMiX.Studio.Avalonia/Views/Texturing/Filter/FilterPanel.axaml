@@ -60,6 +60,7 @@
 
                 <ui:ComboBoxCaptioned
                     Caption="Blend Mode"
+                    IsSearchable="True"
                     ItemsSource="{x:Static Resources:EnumProviders.BlendMode}"
                     ResetCommand="{Binding Blend.BlendMode.ResetCommand}"
                     SelectedItem="{Binding Blend.BlendMode.Value}" />

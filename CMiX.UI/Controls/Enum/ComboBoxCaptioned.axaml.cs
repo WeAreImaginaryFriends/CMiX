@@ -165,6 +165,15 @@ namespace CMiX.UI.Controls.Enum
             set => SetValue(SelectedItemProperty, value);
         }
 
+        // True when the drop-down has a search field (see ComboBoxSearch).
+        public static readonly StyledProperty<bool> IsSearchableProperty =
+            AvaloniaProperty.Register<ComboBoxCaptioned, bool>(nameof(IsSearchable));
+        public bool IsSearchable
+        {
+            get => GetValue(IsSearchableProperty);
+            set => SetValue(IsSearchableProperty, value);
+        }
+
         public static readonly StyledProperty<ICommand?> ResetCommandProperty =
             AvaloniaProperty.Register<ComboBoxCaptioned, ICommand?>(nameof(ResetCommand));
         public ICommand? ResetCommand

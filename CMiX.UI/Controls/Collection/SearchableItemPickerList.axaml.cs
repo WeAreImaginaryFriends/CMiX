@@ -66,7 +66,7 @@ namespace CMiX.UI.Controls.Collection
                 _watched.CollectionChanged += OnItemsChanged;
 
             Filter();
-            Dispatcher.UIThread.Post(() => PART_Search.Focus(), DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(() => PART_Search.FocusInput(), DispatcherPriority.Input);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

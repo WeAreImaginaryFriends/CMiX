@@ -12,6 +12,7 @@
         <ui:ComboBoxCaptioned
             IsVisible="{Binding !Mask.IsMask.Value}"
             Caption="Blend Mode"
+            IsSearchable="True"
             ItemsSource="{x:Static Resources:EnumProviders.BlendMode}"
             ResetCommand="{Binding Compositing.BlendMode.ResetCommand}"
             SelectedItem="{Binding Compositing.BlendMode.Value, Mode=TwoWay}" />

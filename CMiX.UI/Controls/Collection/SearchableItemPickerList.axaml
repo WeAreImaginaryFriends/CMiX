@@ -9,27 +9,9 @@
     <StackPanel Spacing="4">
 
         <!-- The magnifier is inside the field, at its left. The text starts after it. -->
-        <Panel>
-
-            <TextBox
-                x:Name="PART_Search"
-                Height="{DynamicResource ControlHeightMD}"
-                Padding="28,0,6,0"
-                VerticalContentAlignment="Center"
-                Text="{Binding SearchText, ElementName=searchablePicker, Mode=TwoWay}"
-                Watermark="Search" />
-
-            <ui:AppIcon
-                x:Name="PART_SearchIcon"
-                Margin="8,0,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                IconKey="Search"
-                IsHitTestVisible="False"
-                Opacity="0.5"
-                Size="{DynamicResource IconSizeXS}" />
-
-        </Panel>
+        <ui:SearchBox
+            x:Name="PART_Search"
+            Text="{Binding SearchText, ElementName=searchablePicker, Mode=TwoWay}" />
 
         <ui:ItemPickerList
             x:Name="PART_List"
