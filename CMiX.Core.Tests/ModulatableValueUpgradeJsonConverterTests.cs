@@ -1,8 +1,13 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using CMiX.Core.Compositing;
 using CMiX.Core.Modulation;
 using CMiX.Core.Persistence;
 using CMiX.Core.Serialization;
+using CMiX.Core.Rendering;
 using CMiX.Core.Texturing.Filters;
+using CMiX.Core.Texturing.Sources;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CMiX.Core.Tests
@@ -103,6 +108,70 @@ namespace CMiX.Core.Tests
             var withoutText = JsonSerializer.Serialize(model, without);
 
             Assert.Equal(withoutText, withText);
+        }
+
+        [Fact]
+        public void Read_GradientWithFlatGamma_KeepsTheGammaValue()
+        {
+            var node = JsonSerializer.SerializeToNode(new GradientModel(), ProjectSerializer.Options);
+            node["Gamma"] = JsonNode.Parse("{\"ID\":\"11111111-1111-1111-1111-111111111111\",\"Value\":1.8}");
+
+            var model = node.Deserialize<GradientModel>(ProjectSerializer.Options);
+
+            Assert.Equal(1.8f, model.Gamma.Value.Value);
+            Assert.Equal(A, model.Gamma.ID);
+        }
+
+        [Fact]
+        public void Load_AFileWithAFlatGamma_OpensAndSavesTheNewShape()
+        {
+            using var directory = new TempDirectoryFixture();
+            var path = Path.Combine(directory.Path, "flat-gamma.cmix");
+            ProjectSerializer.Save(BuildProjectWithAGradient(), path);
+            var root = JsonNode.Parse(File.ReadAllText(path));
+            var gradient = FindObjectWithKey(root, "Gamma");
+            gradient["Gamma"] = JsonNode.Parse("{\"ID\":\"11111111-1111-1111-1111-111111111111\",\"Value\":1.8}");
+            File.WriteAllText(path, root.ToJsonString());
+
+            var loaded = ProjectSerializer.Load(path);
+            ProjectSerializer.Save(loaded, path);
+
+            var saved = File.ReadAllText(path);
+            var gamma = FindObjectWithKey(JsonNode.Parse(saved), "Gamma")["Gamma"];
+            Assert.Equal(1.8f, gamma["Value"]["Value"].GetValue<float>());
+            Assert.Matches(@"""Gamma"": \{[^}]*""Value"": \{", saved);
+        }
+
+        private static ProjectModel BuildProjectWithAGradient()
+        {
+            var project = TestServiceProviderFactory.Create().GetRequiredService<Project>();
+            project.CompositionManager.AddItem(typeof(Composition));
+            var composition = (Composition)project.CompositionManager.SelectedItem;
+            composition.LayerManager.AddItem(typeof(Layer));
+            var layer = (Layer)composition.LayerManager.SelectedItem;
+            layer.ModelEntityManager.AddItem(typeof(Entity));
+            var entity = (Entity)layer.ModelEntityManager.SelectedItem;
+            entity.Material.DiffuseTexture.TextureManager.AddItem(typeof(Gradient));
+            return (ProjectModel)project.ToModel();
+        }
+
+        private static JsonObject FindObjectWithKey(JsonNode node, string key)
+        {
+            if (node is JsonObject obj)
+            {
+                if (obj.ContainsKey(key))
+                    return obj;
+                foreach (var child in obj)
+                    if (child.Value != null && FindObjectWithKey(child.Value, key) is { } found)
+                        return found;
+            }
+            else if (node is JsonArray array)
+            {
+                foreach (var child in array)
+                    if (child != null && FindObjectWithKey(child, key) is { } found)
+                        return found;
+            }
+            return null;
         }
 
         [Fact]

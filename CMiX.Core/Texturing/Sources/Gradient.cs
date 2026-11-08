@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using CMiX.Core.BaseControls;
+using CMiX.Core.Modulation;
 using CMiX.Core.Prefabs;
 using CMiX.Core.Prefabs.Managers;
 using static CMiX.Core.ControlExtensions;
@@ -17,7 +18,7 @@ namespace CMiX.Core.Texturing.Sources
                         GenericValue<bool> useCompositionResolution,
                         GenericValue<string> from,
                         GenericValue<string> to,
-                        GenericValue<float> gamma,
+                        ModulatableValue<float> gamma,
                         GenericValue<bool> horizontal)
             : base(prefabService, textureModifierManager, modulatorManager, useCompositionResolution)
         {
@@ -26,12 +27,14 @@ namespace CMiX.Core.Texturing.Sources
             To = to;
             Gamma = gamma;
             Horizontal = horizontal;
+
+            Modulators.Add(Gamma);
         }
 
         public Integer2 Resolution { get; set; }
         public GenericValue<string> From { get; set; }
         public GenericValue<string> To { get; set; }
-        public GenericValue<float> Gamma { get; set; }
+        public ModulatableValue<float> Gamma { get; set; }
         public GenericValue<bool> Horizontal { get; set; }
 
         public override IControlModel ToModel()
@@ -39,7 +42,7 @@ namespace CMiX.Core.Texturing.Sources
             var model = new GradientModel
             {
                 Resolution = (Integer2Model)Resolution.ToModel(),
-                Gamma = (GenericValueModel<float>)Gamma.ToModel(),
+                Gamma = (ModulatableValueModel<float>)Gamma.ToModel(),
                 From = (GenericValueModel<string>)From.ToModel(),
                 To = (GenericValueModel<string>)To.ToModel(),
                 Horizontal = (GenericValueModel<bool>)Horizontal.ToModel()

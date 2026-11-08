@@ -1,17 +1,19 @@
-﻿<UserControl
+﻿<Modulation:PanelModulatable
     x:Class="CMiX.Studio.Avalonia.Views.Gradient"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
-    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
+    x:Name="gradient">
 
     <StackPanel>
 
-        <ui:DragValue
+        <Modulation:DragValueModulatable
             Margin="0,0,0,8"
             Caption="Gamma"
-            Value="{Binding Gamma.Value}"
-            ResetCommand="{Binding Gamma.ResetCommand}" />
+            DataContext="{Binding Gamma}"
+            ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=gradient}" />
 
         <ui:StackPanelPositioned Spacing="{DynamicResource SpacingXXS}">
 
@@ -35,4 +37,4 @@
 
     </StackPanel>
 
-</UserControl>
+</Modulation:PanelModulatable>

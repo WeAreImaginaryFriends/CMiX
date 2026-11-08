@@ -72,6 +72,14 @@ namespace CMiX.Core.Tests
         }
 
         [Fact]
+        public void Gradient_Create_ModulatesGamma()
+        {
+            var gradient = (Gradient)Create(typeof(Gradient));
+
+            Assert.Same(gradient.Gamma, Assert.Single(gradient.Modulators.Bindables));
+        }
+
+        [Fact]
         public void VideoPlayer_KeepsTheDoSeekValueThroughTheModel()
         {
             var player = (VideoPlayer)Create(typeof(VideoPlayer));
