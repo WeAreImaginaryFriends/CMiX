@@ -14,9 +14,9 @@ namespace CMiX.Core.Tests
     {
         public static IEnumerable<object[]> SourceTypes => new[]
         {
-            typeof(BubbleNoise), typeof(CheckerBoard), typeof(Gradient), typeof(Image),
-            typeof(SequencePlayer), typeof(TouchBlob), typeof(TypeWriter), typeof(VideoIn),
-            typeof(VideoPlayer),
+            typeof(BubbleNoise), typeof(CheckerBoard), typeof(Gradient), typeof(GradientMesh),
+            typeof(Image), typeof(SequencePlayer), typeof(TouchBlob),
+            typeof(TypeWriter), typeof(VideoIn), typeof(VideoPlayer),
         }.Select(type => new object[] { type });
 
         private static TextureSourceBase Create(Type type) =>
