@@ -16,7 +16,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         // Every icon has the one size IconSizeXS, and a slot that holds an icon (the icon of a menu row) is not smaller than the icon.
         [Fact]
-        public void EveryIconSizeAndIconSlotInTheAxaml_IsIconSizeXS()
+        public void Check_EveryIconSizeAndSlotInTheAxaml_IsIconSizeXS()
         {
             var other = new List<string>();
             var size = new Regex(@"<(?:ui:)?AppIcon\b[^>]*?\bSize=""([^""]+)""", RegexOptions.Singleline);
