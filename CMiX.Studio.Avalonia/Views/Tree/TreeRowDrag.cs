@@ -116,21 +116,23 @@ namespace CMiX.Studio.Avalonia.Views
             pressed = null;
             source = node;
             this.pointer = pointer;
+
+            // The picture is taken before the rows change their look for the drag, so it is the row as the user pressed it.
+            ShowGhost(node, pressPoint, position);
             tree()?.BeginDrag(node);
             pointer.Capture(treeView);
             cursorBefore = treeView.Cursor;
             treeView.Cursor = MoveCursor;
-            ShowGhost(node, position);
         }
 
         // The copy of the dragged row that follows the pointer. A test reads it.
         internal TreeDragGhost Ghost => ghost;
 
-        private void ShowGhost(TreeNode node, Point position)
+        private void ShowGhost(TreeNode node, Point grabbed, Point position)
         {
             var item = treeView.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(row => ReferenceEquals(row.DataContext, node));
             if (item != null && TreeRows.RowBorderOf(item) is { } row)
-                ghost.Show(row, treeView, position);
+                ghost.Show(row, treeView, grabbed, position);
         }
 
         // Marks the place of the drop under the pointer and keeps the scroll of the drag going.

@@ -57,7 +57,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         private static TreeNode LastEntity(ProjectTree tree) =>
-            tree.Roots[0].Children[1].Children.Single(child => child.Group is EntitiesGroup).Children[1];
+            tree.CompositionNodes()[0].Children[0].Children[1].Children.Single(child => child.Group is EntitiesGroup).Children[1];
 
         [AvaloniaFact]
         public void ContainerPrepared_ForNestedItems_FillsTheIndexForEveryRow()

@@ -28,8 +28,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_FromAPointer_SetsThePointerOrigin()
         {
             var tree = CreateTree();
-            var layer = tree.Roots[0].Children[1];
-            tree.Select(tree.Roots[0], SelectionOrigin.Program);
+            var layer = tree.CompositionNodes()[0].Children[0].Children[1];
+            tree.Select(tree.CompositionNodes()[0], SelectionOrigin.Program);
 
             tree.SelectedNode = layer;
 
@@ -41,8 +41,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_FromAProgram_SetsTheProgramOrigin()
         {
             var tree = CreateTree();
-            var layer = tree.Roots[0].Children[1];
-            tree.SelectedNode = tree.Roots[0];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[1];
+            tree.SelectedNode = tree.CompositionNodes()[0];
             SelectionOrigin? originAtTheChange = null;
             tree.PropertyChanged += (_, e) =>
             {
@@ -61,11 +61,11 @@ namespace CMiX.Studio.Avalonia.Tests
         public async Task DropAsync_AfterAMove_SelectsWithTheProgramOrigin()
         {
             var tree = CreateTree();
-            var layer = tree.Roots[0].Children[0];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
             tree.SelectedNode = layer;
             Assert.Equal(SelectionOrigin.Pointer, tree.Origin);
 
-            await tree.DropAsync(layer, tree.Roots[1], DropPosition.Inside);
+            await tree.DropAsync(layer, tree.CompositionNodes()[1], DropPosition.Inside);
 
             Assert.Same(layer.Item, tree.SelectedNode?.Item);
             Assert.Equal(SelectionOrigin.Program, tree.Origin);

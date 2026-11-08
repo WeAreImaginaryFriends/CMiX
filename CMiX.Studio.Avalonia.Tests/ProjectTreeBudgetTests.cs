@@ -63,7 +63,7 @@ namespace CMiX.Studio.Avalonia.Tests
             foreach (var node in nodes)
                 node.PropertyChanged += (_, _) => changes++;
 
-            tree.BeginDrag(EntitiesOf(tree.Roots[0].Children[0]).Children[0]);
+            tree.BeginDrag(EntitiesOf(tree.CompositionNodes()[0].Children[0].Children[0]).Children[0]);
             tree.EndDrag();
 
             var bound = 4 * nodes.Count + 2 * parents;
@@ -75,8 +75,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void KindCounts_AfterALeafIsAdded_RecomputesEachAncestorOnce()
         {
             var (tree, firstLayer) = CreateTree();
-            var composition = tree.Roots[0];
-            var layer = composition.Children[0];
+            var composition = tree.CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
             var group = EntitiesOf(layer);
             var before = (Group: group.KindCountsComputations, Layer: layer.KindCountsComputations, Composition: composition.KindCountsComputations);
 
@@ -92,7 +92,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             // The other layers are collapsed, so the window lays out fewer rows. The last layer is open.
             var (tree, _) = CreateTree();
-            foreach (var layer in tree.Roots[0].Children.Take(Layers - 1))
+            foreach (var layer in tree.CompositionNodes()[0].Children[0].Children.Take(Layers - 1))
                 layer.IsExpanded = false;
 
             var view = new ProjectTreeView { DataContext = tree };
@@ -104,7 +104,7 @@ namespace CMiX.Studio.Avalonia.Tests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             window.UpdateLayout();
             Dispatcher.UIThread.RunJobs();
-            var last = EntitiesOf(tree.Roots[0].Children[Layers - 1]).Children[EntitiesPerLayer - 1];
+            var last = EntitiesOf(tree.CompositionNodes()[0].Children[0].Children[Layers - 1]).Children[EntitiesPerLayer - 1];
 
             var first = view.RowIndex.FindItem(last);
             var walks = view.RowIndex.FallbackWalks;

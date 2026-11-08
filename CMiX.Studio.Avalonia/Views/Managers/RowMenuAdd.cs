@@ -14,6 +14,6 @@ namespace CMiX.Studio.Avalonia.Views.Managers
     // The Add row of a menu. It opens the Add panel beside the menu, with the groups that Groups gives when the row opens it.
     // One panel can serve many menus, because only one menu is open at a time.
     // Primary is true when the Add row is the main use of the menu, so the menu opens on it (see MenuAnchor). It is false for a row that is
-    // more often duplicated or renamed than filled. OpensAtOnce is true when the panel opens as soon as the menu opens (the key Tree.Add).
-    public sealed record AddMenuRow(AddPanel Panel, Func<IReadOnlyList<TreeAddGroup>> Groups, bool Primary = true, bool OpensAtOnce = false);
+    // more often duplicated or renamed than filled.
+    public sealed record AddMenuRow(AddPanel Panel, Func<IReadOnlyList<TreeAddGroup>> Groups, bool Primary = true);
 }

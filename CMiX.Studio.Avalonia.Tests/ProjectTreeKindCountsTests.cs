@@ -51,7 +51,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void KindCounts_AnEmptyRow_IsEmpty()
         {
             var scene = CreateScene();
-            var secondLayer = scene.CompositionNode.Children[1];
+            var secondLayer = scene.CompositionNode.Children[0].Children[1];
 
             Assert.Empty(secondLayer.KindCounts);
             Assert.False(secondLayer.HasKindCounts);
@@ -89,7 +89,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(scene.LayerNode.ShowsKindCounts);
             Assert.Contains(nameof(TreeNode.ShowsKindCounts), changes);
 
-            var empty = scene.CompositionNode.Children[1];
+            var empty = scene.CompositionNode.Children[0].Children[1];
             empty.IsExpanded = false;
             Assert.False(empty.ShowsKindCounts);
         }

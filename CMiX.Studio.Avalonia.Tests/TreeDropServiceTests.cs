@@ -243,7 +243,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Locate_TheBottomHalfOfTheLastRowOfABlock_IsAfterTheWholeBlock(double fraction)
         {
             var scene = CreateScene();
-            var lastRow = Scene.Group<ModifiersGroup>(scene.LayerNodeOfB(0));
+            var lastRow = Scene.Group<LightsGroup>(scene.LayerNodeOfB(0));
 
             var place = service.Locate(scene.LayerNodeOfA(0), lastRow, fraction);
 

@@ -44,13 +44,13 @@ namespace CMiX.Studio.Avalonia.Tests
             var inspector = window.GetVisualDescendants().OfType<Inspector>().Single();
             TestServiceProviderFactory.Pump();
 
-            var compositionNode = tree.Roots[0];
+            var compositionNode = tree.CompositionNodes()[0];
             TreeNode EntityOf(int layer, int index) =>
-                compositionNode.Children[layer].Children.Single(child => child.Group is EntitiesGroup).Children[index];
+                compositionNode.Children[0].Children[layer].Children.Single(child => child.Group is EntitiesGroup).Children[index];
             var steps = new (string Name, TreeNode Node, int Views, long Bound)[]
             {
                 ("entity", EntityOf(0, 0), 1, 1500),
-                ("layer", compositionNode.Children[Layers / 2], 1, 600),
+                ("layer", compositionNode.Children[0].Children[Layers / 2], 1, 600),
                 ("composition", compositionNode, 1, 400),
                 ("entity again", EntityOf(Layers - 1, EntitiesPerLayer - 1), 1, 1200),
             };

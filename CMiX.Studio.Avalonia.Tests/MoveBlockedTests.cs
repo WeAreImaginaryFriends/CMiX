@@ -40,7 +40,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var (tree, notice, a, _) = CreateScene();
             ShareAnEntity(a);
 
-            await tree.DropAsync(tree.Roots[0].Children[0], tree.Roots[1], DropPosition.Inside);
+            await tree.DropAsync(tree.CompositionNodes()[0].Children[0].Children[0], tree.CompositionNodes()[1], DropPosition.Inside);
 
             var message = Assert.Single(notice.Messages);
             Assert.Contains(a.PrefabService.Name.Value, message);
@@ -52,7 +52,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (tree, notice, a, b) = CreateScene();
 
-            await tree.DropAsync(tree.Roots[0].Children[0], tree.Roots[1], DropPosition.Inside);
+            await tree.DropAsync(tree.CompositionNodes()[0].Children[0].Children[0], tree.CompositionNodes()[1], DropPosition.Inside);
 
             Assert.Empty(notice.Messages);
             Assert.Single(a.LayerManager.ManagerData.Items);
@@ -65,7 +65,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var (tree, _, a, _) = CreateScene(withNotice: false);
             ShareAnEntity(a);
 
-            await tree.DropAsync(tree.Roots[0].Children[0], tree.Roots[1], DropPosition.Inside);
+            await tree.DropAsync(tree.CompositionNodes()[0].Children[0].Children[0], tree.CompositionNodes()[1], DropPosition.Inside);
 
             Assert.Equal(2, a.LayerManager.ManagerData.Items.Count);
         }
@@ -75,8 +75,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (tree, _, _, _) = CreateScene();
 
-            Assert.True(tree.CanDrop(tree.Roots[0], tree.Roots[1], DropPosition.After));
-            Assert.False(tree.CanDrop(tree.Roots[0], tree.Roots[1], DropPosition.Inside));
+            Assert.True(tree.CanDrop(tree.CompositionNodes()[0], tree.CompositionNodes()[1], DropPosition.After));
+            Assert.False(tree.CanDrop(tree.CompositionNodes()[0], tree.CompositionNodes()[1], DropPosition.Inside));
         }
 
         [AvaloniaFact]

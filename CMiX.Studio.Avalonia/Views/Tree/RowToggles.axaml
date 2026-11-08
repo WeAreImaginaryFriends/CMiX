@@ -7,7 +7,15 @@
     <!-- The toggles of a row of the tree, inside the colored row, at its right end. The DataContext is the tree node.
          The slots are ComposableToggles of the row size, with no fill: the icons show on the color of the row. The column has the width of the spaces and all the slots (TreeToggleWidth,
          see ProjectTreeView), so the icons of all rows line up. A new toggle is a new slot and a wider column. -->
+    <!-- A row under a hidden parent, a list or an item (see TreeNode.IsUnderHiddenParent): its visibility toggles look as if they were disabled. They still work. -->
+    <UserControl.Styles>
+        <Style Selector="StackPanel.hiddenabove ToggleButton#visibilityToggle, StackPanel.hiddenabove ToggleButton#groupHideToggle">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </UserControl.Styles>
+
     <StackPanel
+        Classes.hiddenabove="{Binding IsUnderHiddenParent}"
         Width="{DynamicResource TreeToggleWidth}"
         Background="Transparent"
         HorizontalAlignment="Left"
@@ -17,7 +25,25 @@
         <!-- It has no width: with the space between the children, it makes the space between the colored row and the first square. -->
         <Border Width="0" />
 
-        <Views:ComposableToggles Classes="row" DataContext="{Binding Item}" />
+        <Panel>
+
+            <Views:ComposableToggles Classes="row" DataContext="{Binding Item}" />
+
+            <!-- The hide button of a group row (Entities, Filters, Cameras and so on): it hides the whole list, and what is in it, in the engine. It is in
+                 the place of the visibility of an item. The items keep their own visibility, so showing the list again brings back what was shown. -->
+            <Border
+                Width="{DynamicResource TreeRowHeight}"
+                Height="{DynamicResource TreeRowHeight}"
+                HorizontalAlignment="Right"
+                Background="Transparent"
+                IsVisible="{Binding Group, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <ToggleButton
+                    x:Name="groupHideToggle"
+                    IsChecked="{Binding Group.Manager.Hidden.Value}"
+                    Theme="{DynamicResource ToggleButtonVisibility}" />
+            </Border>
+
+        </Panel>
 
     </StackPanel>
 

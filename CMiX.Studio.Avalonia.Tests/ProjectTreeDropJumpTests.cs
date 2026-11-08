@@ -83,15 +83,15 @@ namespace CMiX.Studio.Avalonia.Tests
             scroller.Offset = new Vector(0, 800);
             Settle();
 
-            var source = tree.Roots[0].Children.Where(node => node.Item != null).Last(layer => Top(view, layer) is > 20 and < 440);
-            var target = tree.Roots[1];
+            var source = tree.CompositionNodes()[0].Children[0].Children.Last(layer => Top(view, layer) is > 20 and < 440);
+            var target = tree.CompositionNodes()[1];
             var kept = All(tree.Roots).Where(node => !node.IsOrIsUnder(source)).First(node => Top(view, node) >= 0);
             var offset = scroller.Offset.Y;
             var top = Top(view, kept);
 
             Drop(view, source, target);
 
-            Assert.Equal(7, target.Children.Count(node => node.Item != null));
+            Assert.Equal(7, target.Children[0].Children.Count);
             Assert.Equal(offset, scroller.Offset.Y, 1);
             Assert.Equal(top, Top(view, kept), 1);
         }
@@ -103,7 +103,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scroller.Offset = new Vector(0, 300);
             Settle();
 
-            var layers = tree.Roots[0].Children.Where(node => node.Item != null).Where(layer => Top(view, layer) is > 20 and < 440).ToList();
+            var layers = tree.CompositionNodes()[0].Children[0].Children.Where(layer => Top(view, layer) is > 20 and < 440).ToList();
             var source = layers[0];
             var target = layers[^1];
             var offset = scroller.Offset.Y;

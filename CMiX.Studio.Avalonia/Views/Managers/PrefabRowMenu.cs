@@ -283,9 +283,7 @@ namespace CMiX.Studio.Avalonia.Views.Managers
                 panel.Dismissed += closeMenu;
 
                 // The Add row can open under the pointer (see MenuAnchor), and then no enter comes.
-                if (addRow.OpensAtOnce)
-                    Dispatcher.UIThread.Post(OpenAddPanel, DispatcherPriority.Loaded);
-                else if (_addItem != null && MenuAnchor.GetIsAnchor(_addItem))
+                if (_addItem != null && MenuAnchor.GetIsAnchor(_addItem))
                     ScheduleAddPanel();
             };
             menu.Closed += (_, _) =>

@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using CMiX.Core;
+using CMiX.Core.BaseControls;
 using CMiX.Core.Compositing;
 using CMiX.Core.Modifiers;
 using CMiX.Core.Modulation.Modulators;
@@ -48,10 +49,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             }
 
             Category = item != null ? TreeCategories.Of(item) : group?.Category;
-            ComposableDepth = parent == null ? 0 : parent.ComposableDepth + (parent.Category == TreeCategory.Composable ? 1 : 0);
+
+            // A row tells its rows below when it is hidden or shown, so they look greyed (see IsUnderHiddenParent).
+            hiddenSource = HiddenSourceOf(group, item);
+            if (hiddenSource != null)
+                hiddenSource.PropertyChanged += OnHiddenChanged;
+            // A group of composables (Compositions, Layers) takes no level of its own: the compositions and the layers have the same colors as before.
+            ComposableDepth = parent == null ? 0 : parent.ComposableDepth + (parent.Category == TreeCategory.Composable && parent.Item != null ? 1 : 0);
             KindDepth = parent == null ? 0 : parent.KindDepth + (parent.Category != null && Category != null && parent.Category != Category ? 1 : 0);
 
-            ChildManager = childManager ?? (item is Composition composition ? composition.LayerManager : null);
+            ChildManager = childManager ?? (group?.Manager);
             if (ChildManager != null)
             {
                 foreach (var child in ChildManager.ManagerData.Items)
@@ -72,7 +79,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         }
 
         // The lists that an item holds, as groups (see TreeGroup.GroupsOf). A group row has no item. The inspector shows the panel of the group.
-        private void AddGroups(IControl item)
+        internal void AddGroups(IControl item)
         {
             foreach (var group in TreeGroup.GroupsOf(item))
                 Children.Add(new TreeNode(tree, this, null, null, group.Header, group.Manager, group));
@@ -311,10 +318,54 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 tree.SelectFromModel(node);
         }
 
+        // The hide state of a row: the whole list of a group (its Hidden value), or the visibility of an item. A row that has none is never hidden.
+        // The engine draws nothing of what is under a hidden row, but the rows under it keep their own state.
+        private readonly INotifyPropertyChanged? hiddenSource;
+
+        private static INotifyPropertyChanged? HiddenSourceOf(TreeGroup? group, IControl? item) =>
+            group != null ? group.Manager.Hidden : (item as IPrefab)?.PrefabService.Visibility;
+
+        public bool IsHidden => hiddenSource switch
+        {
+            GenericValue<bool> value => value.Value,
+            _ => false
+        };
+
+        // True when any row above this one is hidden: a hidden list, or a hidden item such as a layer or a composition. The visibility toggles of the
+        // row look greyed then, as if they were disabled, but they work: the row keeps its own visibility, and it shows again with its parents.
+        public bool IsUnderHiddenParent
+        {
+            get
+            {
+                for (var parent = Parent; parent != null; parent = parent.Parent)
+                    if (parent.IsHidden)
+                        return true;
+
+                return false;
+            }
+        }
+
+        private void OnHiddenChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Value")
+                RaiseUnderHiddenParentChanged();
+        }
+
+        private void RaiseUnderHiddenParentChanged()
+        {
+            foreach (var child in Children)
+            {
+                child.OnPropertyChanged(nameof(IsUnderHiddenParent));
+                child.RaiseUnderHiddenParentChanged();
+            }
+        }
         public void Dispose()
         {
             if (Item is IPrefab prefab)
                 prefab.PrefabService.Name.PropertyChanged -= OnNameChanged;
+
+            if (hiddenSource != null)
+                hiddenSource.PropertyChanged -= OnHiddenChanged;
 
             if (ChildManager != null)
             {

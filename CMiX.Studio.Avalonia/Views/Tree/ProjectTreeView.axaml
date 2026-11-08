@@ -35,6 +35,17 @@
         DockPanel.Dock="Top"
         Padding="{DynamicResource TreeToolbarPadding}" />
 
+    <!-- The stripes are behind the tree, in the same cell, and follow its rows. A row is one pitch (row height plus space) from the next, so
+         the bands stay under the rows whatever is open. The rows have their own fill, so the stripes show between them and beside them. -->
+    <Grid>
+
+    <ui:RowStripes
+        x:Name="stripes"
+        Opacity="0.6"
+        Brush="{DynamicResource PanelBackgroundLevel1Brush}"
+        RowHeight="{DynamicResource TreeRowHeight}"
+        RowSpacing="{DynamicResource TreeRowGap}" />
+
     <TreeView
         x:Name="treeView"
         AutoScrollToSelectedItem="False"
@@ -109,6 +120,8 @@
         </TreeView.DataTemplates>
 
     </TreeView>
+
+    </Grid>
 
     </DockPanel>
 

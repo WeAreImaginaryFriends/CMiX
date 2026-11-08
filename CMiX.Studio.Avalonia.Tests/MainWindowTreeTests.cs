@@ -115,8 +115,8 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
             TestServiceProviderFactory.Pump();
 
-            // A composition and its two groups (filters and modifiers), a layer and its five groups.
-            Assert.Equal(before + 9, tree.GetVisualDescendants().OfType<TreeViewItem>().Count());
+            // A composition and its three groups (layers, filters and modifiers), a layer and its five groups.
+            Assert.Equal(before + 10, tree.GetVisualDescendants().OfType<TreeViewItem>().Count());
         }
 
         [AvaloniaFact]
@@ -130,7 +130,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.SelectMainTab(window, "Settings");
             var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
 
-            tree.RaiseEvent(new NodeChosenEventArgs(ProjectTreeView.NodeChosenEvent, tree, viewModel.ProjectTree.Roots[0]));
+            tree.RaiseEvent(new NodeChosenEventArgs(ProjectTreeView.NodeChosenEvent, tree, viewModel.ProjectTree.CompositionNodes()[0]));
             TestServiceProviderFactory.Pump();
 
             // Each side keeps its content, and the tab that the user picked stays picked.

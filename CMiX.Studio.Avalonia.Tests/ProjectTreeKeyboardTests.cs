@@ -49,14 +49,15 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = TreeTestScreen.Show(tree, 500, 700, settle: false);
             window = screen.Window;
             var view = screen.View;
-            tree.Roots[0].IsExpanded = true;
-            foreach (var layer in tree.Roots[0].Children)
+            tree.CompositionNodes()[0].IsExpanded = true;
+            tree.CompositionNodes()[0].Children[0].IsExpanded = true;
+            foreach (var layer in tree.CompositionNodes()[0].Children[0].Children)
                 layer.IsExpanded = false;
             Settle();
 
-            tree.SelectedNode = tree.Roots[0].Children[0];
+            tree.SelectedNode = tree.CompositionNodes()[0].Children[0].Children[0];
             Settle();
-            ItemOf(view, tree.Roots[0].Children[0]).Focus();
+            ItemOf(view, tree.CompositionNodes()[0].Children[0].Children[0]).Focus();
             Settle();
             undo.Clear();
             return new Screen(view, tree, undo, composition, shortcuts);
@@ -73,8 +74,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void ArrowDown_MovesTheSoftSelection_WithNoUndoStep()
         {
             var screen = Show();
-            var first = screen.Tree.Roots[0].Children[0];
-            var second = screen.Tree.Roots[0].Children[1];
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
             var selectedLayer = screen.Composition.LayerManager.SelectedItem;
 
             Press(PhysicalKey.ArrowDown);
@@ -89,7 +90,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Press_Enter_SelectsTheChain()
         {
             var screen = Show();
-            var second = screen.Tree.Roots[0].Children[1];
+            var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
             Press(PhysicalKey.ArrowDown);
 
             Press(PhysicalKey.Enter);
@@ -103,7 +104,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Press_F2_StartsTheRename()
         {
             var screen = Show();
-            var first = screen.Tree.Roots[0].Children[0];
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var box = Part(screen.View, first, "RowBorder").GetVisualDescendants().OfType<TextBoxEditable>().First();
 
             Press(PhysicalKey.F2);
@@ -115,7 +116,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Press_Delete_RemovesTheSelectedItem()
         {
             var screen = Show();
-            var first = screen.Tree.Roots[0].Children[0];
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
 
             Press(PhysicalKey.Delete);
 
@@ -144,7 +145,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Empty(screen.View.KeyBindings);
 
             Press(PhysicalKey.Escape);
-            ItemOf(screen.View, screen.Tree.Roots[0].Children[0]).Focus();
+            ItemOf(screen.View, screen.Tree.CompositionNodes()[0].Children[0].Children[0]).Focus();
             Settle();
             Assert.Equal(6, screen.View.KeyBindings.Count);
         }
@@ -184,7 +185,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void FocusFrame_OfTheSoftSelectedRow_IsAOnePixelBorderInTheSelectionColor()
         {
             var screen = Show();
-            var second = screen.Tree.Roots[0].Children[1];
+            var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
 
             Press(PhysicalKey.ArrowDown);
 
@@ -194,7 +195,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(selection.IsVisible);
             Assert.Equal(new Thickness(1), frame.BorderThickness);
             Assert.Equal(((ISolidColorBrush)selection.BorderBrush!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
-            Assert.False(Part(screen.View, screen.Tree.Roots[0].Children[0], "FocusFrame").IsVisible);
+            Assert.False(Part(screen.View, screen.Tree.CompositionNodes()[0].Children[0].Children[0], "FocusFrame").IsVisible);
         }
     }
 }

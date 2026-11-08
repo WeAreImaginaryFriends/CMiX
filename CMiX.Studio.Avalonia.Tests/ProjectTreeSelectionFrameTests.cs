@@ -45,8 +45,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_ARow_GivesOnlyThatRowTheFrame()
         {
             var (view, tree) = Show();
-            var layer = tree.Roots[0].Children[0];
-            var other = tree.Roots[0].Children[1];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
+            var other = tree.CompositionNodes()[0].Children[0].Children[1];
 
             Assert.False(Part(view, layer, "SelectionFrame").IsEffectivelyVisible);
 
@@ -55,7 +55,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.True(Part(view, layer, "SelectionFrame").IsEffectivelyVisible);
             Assert.False(Part(view, other, "SelectionFrame").IsEffectivelyVisible);
-            Assert.False(Part(view, tree.Roots[0], "SelectionFrame").IsEffectivelyVisible);
+            Assert.False(Part(view, tree.CompositionNodes()[0], "SelectionFrame").IsEffectivelyVisible);
         }
 
         [AvaloniaFact]
@@ -64,7 +64,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var (view, tree) = Show();
             var palette = CategoryPalette.FromApplication();
 
-            foreach (var node in new[] { tree.Roots[0], tree.Roots[0].Children[0], tree.Roots[0].Children[0].Children[0] })
+            foreach (var node in new[] { tree.CompositionNodes()[0], tree.CompositionNodes()[0].Children[0].Children[0], tree.CompositionNodes()[0].Children[0].Children[0].Children[0] })
             {
                 tree.SelectedNode = node;
                 Settle();
@@ -82,7 +82,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_AtEveryScaling_GivesAFrameOfOneScreenPixel(double scale)
         {
             var (view, tree) = Show(scale);
-            var layer = tree.Roots[0].Children[0];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
             tree.SelectedNode = layer;
             Settle();
 
@@ -98,7 +98,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_ARow_CoversItExactlyAndKeepsItInPlace()
         {
             var (view, tree) = Show();
-            var layer = tree.Roots[0].Children[0];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
             var row = Part(view, layer, "RowBorder");
             var before = (row.Bounds, row.TranslatePoint(new Point(0, 0), window!));
 
@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_ARow_GivesTheFrameTheCornersOfTheRow()
         {
             var (view, tree) = Show();
-            var layer = tree.Roots[0].Children[0];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
 
             Assert.Equal(Part(view, layer, "RowBorder").CornerRadius, Part(view, layer, "SelectionFrame").CornerRadius);
         }

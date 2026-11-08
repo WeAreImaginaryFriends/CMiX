@@ -222,6 +222,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 var expected = scene.Tree.GetAdds(node)
                     .SelectMany(add => add.Children ?? new[] { add })
                     .Select(add => add.Id)
+                    .Where(id => id != "row.add-composition")
                     .OrderBy(id => id, StringComparer.Ordinal)
                     .ToList();
                 var actual = scene.Tree.GetAddGroups(node)

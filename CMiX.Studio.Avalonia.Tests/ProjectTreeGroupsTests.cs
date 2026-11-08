@@ -29,18 +29,20 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
-            Assert.Equal(new[] { "Filters", "Modifiers" }, Scene.Headers(scene.CompositionNode));
-            Assert.Equal(new[] { true, true, false, false }, scene.CompositionNode.Children.Select(child => child.Item != null));
+            Assert.Equal(new[] { "Layers", "Filters", "Modifiers" }, Scene.Headers(scene.CompositionNode));
+            Assert.All(scene.CompositionNode.Children, child => Assert.Null(child.Item));
+            Assert.Same(scene.Composition.LayerManager, Scene.Group<LayersGroup>(scene.CompositionNode).ChildManager);
+            Assert.Equal(new[] { true, true }, Scene.LayersOf(scene.CompositionNode).Children.Select(child => child.Item != null));
             Assert.Same(scene.Composition.TextureModifierManager, Scene.Group<FiltersGroup>(scene.CompositionNode).ChildManager);
             Assert.Same(scene.Composition.ModifierManager, Scene.Group<ModifiersGroup>(scene.CompositionNode).ChildManager);
         }
 
         [Fact]
-        public void Build_ALayerNode_HasItsThreeListsThenFiltersAndModifiers()
+        public void Build_ALayerNode_HasEntitiesFiltersModifiersThenCamerasAndLights()
         {
             var scene = CreateScene();
 
-            Assert.Equal(new[] { "Entities", "Cameras", "Lights", "Filters", "Modifiers" }, Scene.Headers(scene.LayerNode));
+            Assert.Equal(new[] { "Entities", "Filters", "Modifiers", "Cameras", "Lights" }, Scene.Headers(scene.LayerNode));
             Assert.Same(scene.Layer.TextureModifierManager, Scene.Group<FiltersGroup>(scene.LayerNode).ChildManager);
             Assert.Same(scene.Layer.ModifierManager, Scene.Group<ModifiersGroup>(scene.LayerNode).ChildManager);
         }
@@ -119,16 +121,19 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
+            var layers = Scene.LayersOf(scene.CompositionNode);
+
             scene.Composition.LayerManager.AddItem(typeof(Layer));
-            Assert.Equal(new[] { true, true, true, false, false }, scene.CompositionNode.Children.Select(child => child.Item != null));
+            Assert.Equal(3, layers.Children.Count);
 
             scene.Composition.LayerManager.MoveItem(0, 2);
-            Assert.Equal(new[] { true, true, true, false, false }, scene.CompositionNode.Children.Select(child => child.Item != null));
-            Assert.Equal(scene.Composition.LayerManager.ManagerData.Items, scene.CompositionNode.Children.Where(child => child.Item != null).Select(child => child.Item));
+            Assert.Equal(scene.Composition.LayerManager.ManagerData.Items, layers.Children.Select(child => child.Item));
 
             scene.Composition.LayerManager.RemoveItem(scene.Composition.LayerManager.ManagerData.Items[0]);
-            Assert.Equal(new[] { true, true, false, false }, scene.CompositionNode.Children.Select(child => child.Item != null));
-            Assert.Equal(new[] { "Filters", "Modifiers" }, Scene.Headers(scene.CompositionNode));
+            Assert.Equal(2, layers.Children.Count);
+
+            // The groups of the composition stay after its Layers row.
+            Assert.Equal(new[] { "Layers", "Filters", "Modifiers" }, Scene.Headers(scene.CompositionNode));
         }
 
         [Fact]
@@ -138,8 +143,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.Composition.LayerManager.ClearAll();
 
-            Assert.Equal(new[] { "Filters", "Modifiers" }, Scene.Headers(scene.CompositionNode));
-            Assert.DoesNotContain(scene.CompositionNode.Children, child => child.Item != null);
+            Assert.Equal(new[] { "Layers", "Filters", "Modifiers" }, Scene.Headers(scene.CompositionNode));
+            Assert.Empty(Scene.LayersOf(scene.CompositionNode).Children);
         }
 
         [Fact]
@@ -350,7 +355,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.Layer.TextureModifierManager.AddItem(typeof(Blur));
             var filter = (Blur)scene.Layer.TextureModifierManager.ManagerData.Items[0];
             var service = new TreeDropService();
-            var otherFilters = Scene.Group<FiltersGroup>(scene.CompositionNode.Children[1]);
+            var otherFilters = Scene.Group<FiltersGroup>(scene.CompositionNode.Children[0].Children[1]);
 
             Assert.True(service.CanDrop(Scene.Group<FiltersGroup>(scene.LayerNode).Children[0], otherFilters, DropPosition.Inside));
             Assert.True(service.Drop(Scene.Group<FiltersGroup>(scene.LayerNode).Children[0], otherFilters, DropPosition.Inside).Moved);
@@ -403,5 +408,67 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(scene.Tree.CanDrag(Scene.Group<ModulatorsGroup>(filterNode)));
         }
 
+
+        [Fact]
+        public void GetAdds_TheLayersRow_OffersALayerAndAddsItToItsComposition()
+        {
+            var scene = CreateScene();
+            var layers = Scene.LayersOf(scene.CompositionNode);
+
+            var add = Assert.Single(scene.Tree.GetAdds(layers));
+            add.Execute!.Invoke();
+
+            Assert.Equal("row.add-layer", add.Id);
+            Assert.Equal(3, scene.Composition.LayerManager.ManagerData.Items.Count);
+        }
+
+        [Fact]
+        public void GetAdds_TheCompositionsRow_OffersAComposition()
+        {
+            var scene = CreateScene();
+
+            var add = Assert.Single(scene.Tree.GetAdds(scene.Tree.CompositionsNode()));
+            add.Execute!.Invoke();
+
+            Assert.Equal("row.add-composition", add.Id);
+            Assert.Equal(2, scene.Project.CompositionManager.ManagerData.Items.Count);
+        }
+
+        [Fact]
+        public void GetAddGroups_TheLayersRow_EnablesTheLayerAndTheComposition()
+        {
+            var scene = CreateScene();
+
+            var enabled = scene.Tree.GetAddGroups(Scene.LayersOf(scene.CompositionNode))
+                .SelectMany(group => group.Items).Where(item => item.Enabled).Select(item => item.Id).ToList();
+
+            Assert.Equal(new[] { "row.add-layer", "row.add-composition" }, enabled);
+        }
+
+        [Fact]
+        public void Hide_TheCompositionsRow_GreysTheCompositionsAndTheirLayers()
+        {
+            var scene = CreateScene();
+            var layer = scene.LayerNode;
+
+            scene.Project.CompositionManager.Hidden.Value = true;
+
+            Assert.True(scene.Tree.CompositionsNode().IsHidden);
+            Assert.False(scene.Tree.CompositionsNode().IsUnderHiddenParent);
+            Assert.True(scene.CompositionNode.IsUnderHiddenParent);
+            Assert.True(layer.IsUnderHiddenParent);
+        }
+
+        [Fact]
+        public void Hide_TheLayersRow_GreysTheLayersAndNotTheFiltersOfTheComposition()
+        {
+            var scene = CreateScene();
+
+            Scene.LayersOf(scene.CompositionNode).Group!.Manager.Hidden.Value = true;
+
+            Assert.True(scene.LayerNode.IsUnderHiddenParent);
+            Assert.False(Scene.Group<FiltersGroup>(scene.CompositionNode).IsUnderHiddenParent);
+            Assert.False(scene.CompositionNode.IsUnderHiddenParent);
+        }
     }
 }

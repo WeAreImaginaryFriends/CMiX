@@ -153,6 +153,12 @@
                         <Views:DiffuseTexture DataContext="{Binding Owner.Texture.DiffuseTexture}" />
                     </DataTemplate>
 
+                    <!-- The groups that make the structure (the compositions of the project, the layers of a composition) have no panel of their own yet:
+                         the rows of the tree list their items. The hide button of the row is the one control of a group. -->
+                    <DataTemplate DataType="{x:Type Tree:StructureGroup}">
+                        <Border />
+                    </DataTemplate>
+
                     <DataTemplate DataType="{x:Type Compositing:Entity}">
                         <Views:ModelEntity />
                     </DataTemplate>

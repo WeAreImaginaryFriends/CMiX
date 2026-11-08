@@ -61,7 +61,7 @@ namespace CMiX.Studio.Avalonia.Tests
             {
                 scroller.Offset = new Vector(0, offset);
                 Settle();
-                var found = tree.Roots[0].Children.FirstOrDefault(layer => RowTop(view, layer) is > 400 and < 440);
+                var found = tree.CompositionNodes()[0].Children[0].Children.FirstOrDefault(layer => RowTop(view, layer) is > 400 and < 440);
                 if (found != null)
                     return found;
             }
@@ -109,7 +109,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_FromAProgram_ScrollsTheRowIntoView()
         {
             var (view, tree, scroller) = Show();
-            var far = tree.Roots[0].Children[10];
+            var far = tree.CompositionNodes()[0].Children[0].Children[10];
             Assert.True(RowTop(view, far) > 500, "The row is not out of the view.");
 
             tree.Select(far, SelectionOrigin.Program);
@@ -125,7 +125,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_FromAPointer_DoesNotScroll()
         {
             var (view, tree, scroller) = Show();
-            var far = tree.Roots[0].Children[10];
+            var far = tree.CompositionNodes()[0].Children[0].Children[10];
             Assert.True(RowTop(view, far) > 500, "The row is not out of the view.");
 
             tree.Select(far, SelectionOrigin.Pointer);
@@ -142,7 +142,7 @@ namespace CMiX.Studio.Avalonia.Tests
         // Starts the drag of the first layer with the pointer and moves it to the height y of the scroll viewer.
         private void DragTo(ProjectTreeView view, ProjectTree tree, ScrollViewer scroller, double y)
         {
-            TreeDrag.Over(window!, RowPoint(view, tree.Roots[0].Children[0]), PointAt(scroller, y));
+            TreeDrag.Over(window!, RowPoint(view, tree.CompositionNodes()[0].Children[0].Children[0]), PointAt(scroller, y));
             Settle();
         }
 

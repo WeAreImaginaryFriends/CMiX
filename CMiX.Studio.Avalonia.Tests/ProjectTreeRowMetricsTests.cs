@@ -73,7 +73,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void TheRows_AreOneRowHeightPlusOneSpaceFromEachOther_WhateverIsOpen(double scale)
         {
             var (window, view, tree) = Show(scale, layers: 4);
-            var layers = tree.Roots[0].Children;
+            var layers = tree.CompositionNodes()[0].Children;
 
             foreach (var open in new[] { true, false })
             {

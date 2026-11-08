@@ -6,6 +6,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CMiX.Core.Prefabs;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
@@ -68,7 +69,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_TheToggles_PutTheMaskFirstAndTheEyeLast()
         {
             var (view, tree) = Show();
-            var composition = tree.Roots[0];
+            var composition = tree.CompositionNodes()[0];
             var squares = SquaresOf(ColumnOf(view, composition));
 
             Assert.Equal(2, squares.Count);
@@ -83,8 +84,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_AnEntity_HasOnlyTheEyeAtThePlaceOfTheCompositionEye()
         {
             var (view, tree) = Show();
-            var composition = tree.Roots[0];
-            var layer = composition.Children[0];
+            var composition = tree.CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
             var entities = layer.Children[0];
             var entity = entities.Children[0];
 
@@ -118,7 +119,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_TheSquares_AreARowHighWithTheSpaceOfTheRows(double scale)
         {
             var (view, tree) = Show(scale);
-            var composition = tree.Roots[0];
+            var composition = tree.CompositionNodes()[0];
             var row = BoundsIn(RowOf(view, composition));
             var squares = SquaresOf(ColumnOf(view, composition)).Select(BoundsIn).ToList();
             var space = Convert.ToDouble(((Control)view).Resources["TreeRowSpacing"]);
@@ -137,9 +138,10 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_TheToggle_IsInTheMiddleOfItsSquare()
         {
             var (view, tree) = Show();
-            var composition = tree.Roots[0];
+            var composition = tree.CompositionNodes()[0];
 
-            foreach (var square in SquaresOf(ColumnOf(view, composition)))
+            // The mask sits at the right of its square (see ComposableToggles), so only the eye is in the middle of its square.
+            foreach (var square in SquaresOf(ColumnOf(view, composition)).Skip(1))
             {
                 var toggle = BoundsIn(square.GetVisualDescendants().OfType<ToggleButton>().Single());
                 var box = BoundsIn(square);
@@ -152,12 +154,126 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void Show_TheMask_IsAboutAsFarFromTheEyeAsTheEyeIsFromTheEdgeOfTheRow()
+        {
+            var (view, tree) = Show();
+            var composition = tree.CompositionNodes()[0];
+            var squares = SquaresOf(ColumnOf(view, composition));
+            var mask = BoundsIn(squares[0].GetVisualDescendants().OfType<ToggleButton>().Single());
+            var eye = BoundsIn(squares[1].GetVisualDescendants().OfType<ToggleButton>().Single());
+            var row = BoundsIn(RowOf(view, composition));
+
+            var edge = row.Right - eye.Right;
+            Assert.InRange(eye.Left - mask.Right, edge - 1.5, edge + 1.5);
+        }
+
+        [AvaloniaFact]
+        public void Click_TheHideButtonOfAGroup_HidesTheListAndKeepsTheItemsAsTheyAre()
+        {
+            var (view, tree) = Show();
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
+            var entities = layer.Children.First(child => child.Group is EntitiesGroup);
+            entities.IsExpanded = false;
+            Settle();
+            var items = entities.Group!.Manager.ManagerData.Items;
+            var before = items.Select(item => ((IPrefab)item).PrefabService.Visibility.Value).ToList();
+
+            var button = ColumnOf(view, entities).GetVisualDescendants().OfType<ToggleButton>().Single(toggle => toggle.Name == "groupHideToggle");
+            Assert.True(button.IsEffectivelyVisible);
+            button.IsChecked = true;
+
+            Assert.True(entities.Group!.Manager.Hidden.Value);
+            Assert.Equal(before, items.Select(item => ((IPrefab)item).PrefabService.Visibility.Value));
+
+            button.IsChecked = false;
+            Assert.False(entities.Group.Manager.Hidden.Value);
+        }
+
+        [AvaloniaFact]
+        public void Click_TheHideButtonOfAGroup_GreysTheVisibilityTogglesBelowButLeavesThemEnabled()
+        {
+            var (view, tree) = Show();
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
+            var entities = layer.Children.First(child => child.Group is EntitiesGroup);
+            var entity = entities.Children[0];
+            ToggleButton EyeOf(TreeNode node) =>
+                ColumnOf(view, node).GetVisualDescendants().OfType<ToggleButton>().First(toggle => toggle.Name is "visibilityToggle" or "groupHideToggle" && toggle.IsEffectivelyVisible);
+
+            Assert.False(entity.IsUnderHiddenParent);
+            Assert.Equal(1, EyeOf(entity).Opacity);
+
+            entities.Group!.Manager.Hidden.Value = true;
+            Settle();
+
+            // The rows below look disabled, but they are not disabled. The button of the group itself is as it was.
+            Assert.True(entity.IsUnderHiddenParent);
+            Assert.Equal(0.5, EyeOf(entity).Opacity);
+            Assert.True(EyeOf(entity).IsEffectivelyEnabled);
+            Assert.False(entities.IsUnderHiddenParent);
+            Assert.Equal(1, EyeOf(entities).Opacity);
+            Assert.Equal(1, EyeOf(layer).Opacity);
+
+            entities.Group.Manager.Hidden.Value = false;
+            Settle();
+
+            Assert.False(entity.IsUnderHiddenParent);
+            Assert.Equal(1, EyeOf(entity).Opacity);
+        }
+
+        [AvaloniaFact]
+        public void Hide_AnItem_GreysEveryRowBelowItAtEveryDepth()
+        {
+            var (view, tree) = Show();
+            var composition = tree.CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
+            var entities = layer.Children.First(child => child.Group is EntitiesGroup);
+            var entity = entities.Children[0];
+            ToggleButton EyeOf(TreeNode node) =>
+                ColumnOf(view, node).GetVisualDescendants().OfType<ToggleButton>().First(toggle => toggle.Name is "visibilityToggle" or "groupHideToggle" && toggle.IsEffectivelyVisible);
+
+            // A hidden layer greys its groups and their items, and not itself or its composition.
+            ((CMiX.Core.Prefabs.IPrefab)layer.Item!).PrefabService.Visibility.Value = true;
+            Settle();
+
+            Assert.True(layer.IsHidden);
+            Assert.False(layer.IsUnderHiddenParent);
+            Assert.False(composition.IsUnderHiddenParent);
+            Assert.True(entities.IsUnderHiddenParent);
+            Assert.True(entity.IsUnderHiddenParent);
+            Assert.Equal(1, EyeOf(layer).Opacity);
+            Assert.Equal(0.5, EyeOf(entities).Opacity);
+            Assert.Equal(0.5, EyeOf(entity).Opacity);
+            Assert.True(EyeOf(entity).IsEffectivelyEnabled);
+
+            // Two hidden parents: the row stays greyed until both show again.
+            entities.Group!.Manager.Hidden.Value = true;
+            ((CMiX.Core.Prefabs.IPrefab)layer.Item!).PrefabService.Visibility.Value = false;
+            Settle();
+            Assert.True(entity.IsUnderHiddenParent);
+            Assert.False(entities.IsUnderHiddenParent);
+
+            entities.Group.Manager.Hidden.Value = false;
+            Settle();
+            Assert.False(entity.IsUnderHiddenParent);
+            Assert.Equal(1, EyeOf(entity).Opacity);
+        }
+
+        [AvaloniaFact]
+        public void Show_AnItemRowAndACompositionRow_HaveNoHideButtonOfAGroup()
+        {
+            var (view, tree) = Show();
+
+            foreach (var node in new[] { tree.CompositionNodes()[0], tree.CompositionNodes()[0].Children[0].Children[0] })
+                Assert.False(ColumnOf(view, node).GetVisualDescendants().OfType<ToggleButton>().Single(toggle => toggle.Name == "groupHideToggle").IsEffectivelyVisible);
+        }
+
+        [AvaloniaFact]
         public void Show_TheSlots_HaveNoFill()
         {
             var (view, tree) = Show();
             var expected = global::Avalonia.Media.Colors.Transparent;
 
-            foreach (var square in SquaresOf(ColumnOf(view, tree.Roots[0])))
+            foreach (var square in SquaresOf(ColumnOf(view, tree.CompositionNodes()[0])))
                 Assert.Equal(expected, ((ISolidColorBrush)square.Background!).Color);
         }
 
@@ -165,7 +281,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_ASlotWithNoButton_HasNoFillEither()
         {
             var (view, tree) = Show();
-            var entities = tree.Roots[0].Children[0].Children[0];
+            var entities = tree.CompositionNodes()[0].Children[0].Children[0].Children[0];
             var clear = global::Avalonia.Media.Colors.Transparent;
             var entity = entities.Children[0];
 
@@ -180,8 +296,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_TheColumn_HasTheWidthOfTheSpaceAndTheSquares()
         {
             var (view, tree) = Show();
-            var column = ColumnOf(view, tree.Roots[0]);
-            var row = BoundsIn(RowOf(view, tree.Roots[0]));
+            var column = ColumnOf(view, tree.CompositionNodes()[0]);
+            var row = BoundsIn(RowOf(view, tree.CompositionNodes()[0]));
 
             Assert.Equal(RowToggles.WidthFor(row.Height, Convert.ToDouble(view.Resources["TreeRowSpacing"])), column.Bounds.Width, 3);
         }

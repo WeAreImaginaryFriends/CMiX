@@ -92,7 +92,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Press_ShiftAWithTheFocusOutsideTheTree_OpensTheMenuWithTheAddPanelOpenAndExpanded()
+        public void Press_ShiftAWithTheFocusOutsideTheTree_OpensTheAddPanelOfTheSelectedRow()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
@@ -101,7 +101,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.Pump();
             TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
             TestServiceProviderFactory.Pump();
-            var layer = viewModel.ProjectTree.Roots[0].Children[0];
+            var layer = viewModel.ProjectTree.CompositionNodes()[0].Children[0].Children[0];
             viewModel.ProjectTree.SelectedNode = layer;
             TestServiceProviderFactory.Pump();
             window.Focus();
@@ -109,13 +109,17 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Press(window, PhysicalKey.A, RawInputModifiers.Shift);
 
-            // The menu of the row opens with its Add panel, not the panel of the + of the row.
+            // The panel opens at once, with no context menu first, and it is not the panel of the + of the row.
             var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
             TestServiceProviderFactory.Pump();
             Assert.False(view.RowAddPanel.IsOpen);
             Assert.True(view.MenuAddPanel.IsOpen);
             var groups = view.MenuAddPanel.List.Groups!.ToList();
             Assert.Equal("Project", groups[^1].Header);
+
+            // It is the panel of the selected row (a layer takes content), not of the project, and it has the title Add.
+            Assert.Contains(groups, group => group.Header == "Content");
+            Assert.Equal("Add", view.MenuAddPanel.Title.Text);
             Assert.All(groups, group => Assert.True(view.MenuAddPanel.List.IsOpen(group)));
             view.MenuAddPanel.Close();
         }
@@ -162,7 +166,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
             TestServiceProviderFactory.Pump();
-            viewModel.ProjectTree.SelectedNode = viewModel.ProjectTree.Roots[0];
+            viewModel.ProjectTree.SelectedNode = viewModel.ProjectTree.CompositionNodes()[0];
             viewModel.Shortcuts.Set("Tree.Add", new KeyGesture(Key.N, KeyModifiers.Control));
             TestServiceProviderFactory.Pump();
             window.Focus();

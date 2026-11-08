@@ -62,8 +62,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_RowsOfTwoKinds_HaveAFillPerKind()
         {
             var (_, view, tree) = Show();
-            var composition = tree.Roots[0];
-            var layer = composition.Children[0];
+            var composition = tree.CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
             var entities = layer.Children.Single(child => child.Group is EntitiesGroup);
             var entity = entities.Children[0];
 
@@ -75,8 +75,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_ARow_GivesOnlyThatRowTheSelectedFill()
         {
             var (window, view, tree) = Show();
-            var layer = tree.Roots[0].Children[0];
-            var other = tree.Roots[0].Children[1];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
+            var other = tree.CompositionNodes()[0].Children[0].Children[1];
 
             tree.SelectedNode = layer;
             Settle(window);
@@ -89,8 +89,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Hover_ARow_MakesItAsBrightAsASelectedRow()
         {
             var (window, view, tree) = Show();
-            var first = tree.Roots[0].Children[0];
-            var second = tree.Roots[0].Children[1];
+            var first = tree.CompositionNodes()[0].Children[0].Children[0];
+            var second = tree.CompositionNodes()[0].Children[0].Children[1];
 
             window.MouseMove(CenterOf(window, RowOf(view, second)));
             Settle(window);
@@ -108,7 +108,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_EachState_IsBrighterThanTheStateBefore()
         {
             var (_, _, tree) = Show();
-            var tone = ToneOf(tree.Roots[0].Children[0]);
+            var tone = ToneOf(tree.CompositionNodes()[0].Children[0].Children[0]);
 
             static int Sum(AvaloniaColor color) => color.R + color.G + color.B;
             Assert.True(Sum(tone.Fill) < Sum(tone.FillHover));

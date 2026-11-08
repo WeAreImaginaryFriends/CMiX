@@ -39,6 +39,11 @@
         <Style Selector="Views|ComposableToggles.row Border.slot, Views|ComposableToggles.row Border.slot.empty">
             <Setter Property="Background" Value="Transparent" />
         </Style>
+        <!-- In the tree the mask sits at the right of its square, so the space between the mask and the eye is about the space between the eye
+             and the right edge of the row. A mask in the middle of its square looks too far to the left. -->
+        <Style Selector="Views|ComposableToggles.row Border.mask ToggleButton">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
         <Style Selector="Views|ComposableToggles.row Border.gap">
             <Setter Property="Width" Value="{DynamicResource TreeRowSpacing}" />
         </Style>

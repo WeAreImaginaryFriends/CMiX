@@ -42,7 +42,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = TreeTestScreen.Show(tree, 500, 900);
             window = screen.Window;
             var view = screen.View;
-            var group = tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(child => child.Group is ModifiersGroup);
+            var group = tree.CompositionNodes()[0].Children[0].Children[0].Children[0].Children[0].Children.Single(child => child.Group is ModifiersGroup);
             return (view, tree, entity, group);
         }
 

@@ -35,7 +35,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     // It can also go to a list of the same kind of another owner: an entity to another layer, a modifier to another entity,
     // a filter, a texture or a modulator to another owner of the same kind of list.
     // A layer can also go to the layer list of another composition, if no item of it is shared with a layer that stays.
-    // A layer row passes an item that is dropped on it to the group of the item's kind under it (see InsideOf).
+    // A layer row passes an item that is dropped on it to the group of the item's kind under it, and a composition row passes a layer to its Layers
+    // group (see InsideOf). The compositions are the items of the Compositions group, and the layers are the items of a Layers group.
     public sealed class TreeDropService
     {
         // Where a drop lands when the pointer is over a row. The fraction is the height of the pointer on that row,
@@ -63,7 +64,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             if (ReferenceEquals(hovered, target))
             {
-                if (target.Item == null || (source.Item is Layer && target.Item is Composition))
+                if (target.Item == null)
                     return new DropPlace(target, DropPosition.Inside);
 
                 if (fraction < 0.5)
@@ -95,14 +96,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 return false;
 
             return ReferenceEquals(source.Owner, target.Owner)
-                || (source.Item is Layer && (target.Item is Layer || target.Item is Composition))
                 || CanMoveBetweenLists(source, target, rules);
         }
 
-        // The group of the kind of the dragged item under a layer row. Null for another row, for a layer, or when the layer has no such group.
+        // The group of the kind of the dragged item under a layer row, or under a composition row for a layer. Null for another row, or when the
+        // row has no such group.
         private static TreeNode? GroupUnder(TreeNode source, TreeNode target)
         {
-            if (target.Item is not Layer || source.Item is Layer || KindOfItem(source) is not { } kind)
+            var layerOnComposition = target.Item is Composition && source.Item is Layer;
+            var itemOnLayer = target.Item is Layer && source.Item is not Layer;
+            if (!(layerOnComposition || itemOnLayer) || KindOfItem(source) is not { } kind)
                 return null;
 
             return target.Children.FirstOrDefault(child => KindOfGroup(child) == kind);
@@ -231,9 +234,6 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (inside.Item == null)
                 return inside.ChildManager == null ? null : (inside.ChildManager, inside.Group);
 
-            if (inside.Item is Composition && source.Item is Layer)
-                return (inside.ChildManager!, null);
-
             return inside.Owner == null ? null : (inside.Owner, inside.Parent?.Group);
         }
 
@@ -241,7 +241,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private static string NameOfList(TreeNode source, TreeNode target)
         {
             var inside = InsideOf(source, target);
-            var holder = inside.Item == null || (inside.Item is Composition && source.Item is Layer) ? inside : inside.Parent;
+            var holder = inside.Item == null ? inside : inside.Parent;
             return (holder?.Item == null ? holder?.Parent : holder)?.Header ?? string.Empty;
         }
 
@@ -311,8 +311,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             }
 
             var layer = source.Header;
-            var from = source.Parent?.Header ?? string.Empty;
-            var to = (target.Item is Composition ? target : target.Parent)?.Header ?? string.Empty;
+            var from = CompositionOf(source)?.Header ?? string.Empty;
+            var to = CompositionOf(target)?.Header ?? string.Empty;
             var names = string.Join(", ", blocking.Select(item => item.PrefabService.Name.Value));
 
             return $"Cannot move \"{layer}\" to \"{to}\".\n"
@@ -339,8 +339,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 if (inside.ChildManager == null)
                     return null;
 
-                var takes = inside.Item is Composition ? source.Item is Layer : TakesDropOf(source, inside);
-                if (!takes)
+                if (!TakesDropOf(source, inside))
                     return null;
 
                 place = (inside.ChildManager, inside.ChildManager.ManagerData.Items.Count);

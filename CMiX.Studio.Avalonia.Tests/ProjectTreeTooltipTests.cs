@@ -64,7 +64,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (view, tree) = Show();
 
-            foreach (var node in new[] { tree.Roots[0], tree.Roots[0].Children[0] })
+            foreach (var node in new[] { tree.CompositionNodes()[0], tree.CompositionNodes()[0].Children[0].Children[0] })
             {
                 var toggle = ItemOf(view, node).GetVisualDescendants().OfType<RowToggles>().First()
                     .GetVisualDescendants().OfType<ToggleButton>().Single(button => Equals(ToolTip.GetTip(button), "Mask"));
@@ -77,7 +77,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_TheMaskToggle_OpensItsTooltipBelowIt()
         {
             var (view, tree) = Show();
-            var toggle = ItemOf(view, tree.Roots[0]).GetVisualDescendants().OfType<RowToggles>().First()
+            var toggle = ItemOf(view, tree.CompositionNodes()[0]).GetVisualDescendants().OfType<RowToggles>().First()
                 .GetVisualDescendants().OfType<ToggleButton>().Single(button => Equals(ToolTip.GetTip(button), "Mask"));
 
             Assert.Equal(PlacementMode.Custom, ToolTip.GetPlacement(toggle));
@@ -88,7 +88,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void VisibilityToggle_Show_HasTheVisibleTip()
         {
             var (view, tree) = Show();
-            var toggle = ItemOf(view, tree.Roots[0]).GetVisualDescendants().OfType<RowToggles>().First()
+            var toggle = ItemOf(view, tree.CompositionNodes()[0]).GetVisualDescendants().OfType<RowToggles>().First()
                 .GetVisualDescendants().OfType<ToggleButton>()
                 .First(button => ReferenceEquals(button.Theme, Application.Current!.FindResource("ToggleButtonVisibility")));
 
@@ -102,7 +102,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_ACountSquare_TellsHowManyOfWhichKindInItsTooltip()
         {
             var (view, tree) = Show();
-            var layer = tree.Roots[0].Children[0];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
             layer.IsExpanded = false;
             Settle();
 
@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_TheCountOfAGroup_NamesItsKindInItsTooltip()
         {
             var (view, tree) = Show();
-            var entities = tree.Roots[0].Children[0].Children.Single(child => child.Group is EntitiesGroup);
+            var entities = tree.CompositionNodes()[0].Children[0].Children[0].Children.Single(child => child.Group is EntitiesGroup);
             entities.IsExpanded = false;
             Settle();
 
@@ -153,7 +153,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void BlockedRow_DuringADrag_ShowsTheReason()
         {
             var (view, tree) = Show();
-            var layer = tree.Roots[0].Children[0];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
             var entity = layer.Children.Single(child => child.Group is EntitiesGroup).Children[0];
             ((Entity)entity.Item!).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
             Settle();
@@ -184,8 +184,8 @@ namespace CMiX.Studio.Avalonia.Tests
             var layer = (Layer)composition.LayerManager.ManagerData.Items[0];
             layer.ModelEntityManager.AddItem(typeof(Entity));
             var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
-            var compositionNode = tree.Roots[0];
-            var layerNode = compositionNode.Children[0];
+            var compositionNode = tree.CompositionNodes()[0];
+            var layerNode = compositionNode.Children[0].Children[0];
             var entities = layerNode.Children.Single(child => child.Group is EntitiesGroup);
 
             Assert.Same(composition, compositionNode.MaskOwner);

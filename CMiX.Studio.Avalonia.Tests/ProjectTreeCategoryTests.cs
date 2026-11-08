@@ -36,8 +36,8 @@ namespace CMiX.Studio.Avalonia.Tests
         [Fact]
         public void Build_EveryRow_HasTheKindOfItsItems()
         {
-            var composition = CreateTree().Roots[0];
-            var layer = composition.Children[0];
+            var composition = CreateTree().CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
             var entities = Child<EntitiesGroup>(layer);
             var entity = entities.Children[0];
             var modifier = Child<ModifiersGroup>(entity).Children[0];
@@ -60,8 +60,8 @@ namespace CMiX.Studio.Avalonia.Tests
         [Fact]
         public void ComposableDepth_ARow_CountsTheComposablesAroundIt()
         {
-            var composition = CreateTree().Roots[0];
-            var layer = composition.Children[0];
+            var composition = CreateTree().CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
             var entity = Child<EntitiesGroup>(layer).Children[0];
 
             Assert.Equal(0, composition.ComposableDepth);
@@ -73,8 +73,8 @@ namespace CMiX.Studio.Avalonia.Tests
         [Fact]
         public void KindDepth_ARow_CountsTheChangesOfKindDownToIt()
         {
-            var composition = CreateTree().Roots[0];
-            var layer = composition.Children[0];
+            var composition = CreateTree().CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
             var entities = Child<EntitiesGroup>(layer);
             var entity = entities.Children[0];
             var modifiers = Child<ModifiersGroup>(entity);
@@ -97,12 +97,12 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Add_ALayerLater_GivesItTheKindAndTheDepthOfALayer()
         {
             var tree = CreateTree();
-            var composition = tree.Roots[0];
+            var composition = tree.CompositionNodes()[0];
             var source = (Composition)composition.Item!;
 
             source.LayerManager.AddItem(typeof(Layer));
 
-            var added = composition.Children.Where(child => child.Item is Layer).Last();
+            var added = composition.Children[0].Children.Last();
             Assert.Equal(TreeCategory.Composable, added.Category);
             Assert.Equal(1, added.ComposableDepth);
         }

@@ -48,7 +48,7 @@ namespace CMiX.Studio.Avalonia.Tests
         private void Settle() => TreeTestScreen.Settle(window!);
 
         private static TreeNode FirstEntity(ProjectTree tree) =>
-            tree.Roots[0].Children[0].Children.Single(child => child.Group is EntitiesGroup).Children[0];
+            tree.CompositionNodes()[0].Children[0].Children[0].Children.Single(child => child.Group is EntitiesGroup).Children[0];
 
 
         private static CategoryTone ToneOf(TreeNode node) =>
@@ -111,7 +111,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void BeginDrag_ACollapsedRowWithACandidateUnderIt_LeavesTheRowUncovered()
         {
             var (view, tree) = Show();
-            var composition = tree.Roots[0];
+            var composition = tree.CompositionNodes()[0];
             composition.IsExpanded = false;
             Settle();
 
@@ -131,7 +131,7 @@ namespace CMiX.Studio.Avalonia.Tests
             ((Entity)FirstEntity(tree).Item!).ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
             Settle();
             var modifier = FirstEntity(tree).Children.Single(child => child.Group is ModifiersGroup).Children[0];
-            var layer = tree.Roots[0].Children[1];
+            var layer = tree.CompositionNodes()[0].Children[0].Children[1];
             Assert.False(Part(view, layer, "BlockedFrame").IsEffectivelyVisible);
 
             tree.BeginDrag(modifier);
@@ -159,7 +159,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var source = FirstEntity(tree);
             tree.BeginDrag(source);
             Settle();
-            var cover = Part(view, tree.Roots[0], "DimLayer");
+            var cover = Part(view, tree.CompositionNodes()[0], "DimLayer");
 
             Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("TreeBackgroundBrush")!).Color, ((ISolidColorBrush)cover.Background!).Color);
             Assert.Contains("dimmed", cover.Classes);
@@ -185,8 +185,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Drop_OnTheLitGroupOfFilters_MovesTheFilterThere()
         {
             var (view, tree) = Show();
-            var firstLayer = tree.Roots[0].Children[0];
-            var secondLayer = tree.Roots[0].Children[1];
+            var firstLayer = tree.CompositionNodes()[0].Children[0].Children[0];
+            var secondLayer = tree.CompositionNodes()[0].Children[0].Children[1];
             var filter = firstLayer.Children.Single(child => child.Group is FiltersGroup).Children[0];
             var target = secondLayer.Children.Single(child => child.Group is FiltersGroup);
             var lists = ((Layer)firstLayer.Item!, (Layer)secondLayer.Item!);

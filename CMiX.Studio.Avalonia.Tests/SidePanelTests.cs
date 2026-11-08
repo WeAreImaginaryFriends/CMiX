@@ -237,7 +237,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Empty(screen.Tabs);
             Assert.All(screen.Trees, tree => Assert.Same(screen.ViewModel.ProjectTree, tree.DataContext));
 
-            screen.ViewModel.ProjectTree.SelectedNode = screen.ViewModel.ProjectTree.Roots[0].Children[0];
+            screen.ViewModel.ProjectTree.SelectedNode = screen.ViewModel.ProjectTree.CompositionNodes()[0].Children[0].Children[0];
             TestServiceProviderFactory.Pump();
 
             Assert.All(screen.Trees, tree =>
@@ -325,7 +325,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.SelectMainTab(screen.Window, "Settings");
 
             var tree = Assert.Single(screen.Trees);
-            var layerNode = screen.ViewModel.ProjectTree.Roots[0].Children[0];
+            var layerNode = screen.ViewModel.ProjectTree.CompositionNodes()[0].Children[0].Children[0];
             var item = tree.GetVisualDescendants().OfType<TreeViewItem>().First(row => ReferenceEquals(row.DataContext, layerNode));
             var row = item.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");
             screen.Window.UpdateLayout();
@@ -345,7 +345,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
             Pick(screen, left: false, PanelChoice.Tree);
-            var layerNode = screen.ViewModel.ProjectTree.Roots[0].Children[0];
+            var layerNode = screen.ViewModel.ProjectTree.CompositionNodes()[0].Children[0].Children[0];
             var tree = screen.Trees[1];
             var item = tree.GetVisualDescendants().OfType<TreeViewItem>().First(row => ReferenceEquals(row.DataContext, layerNode));
             var row = item.GetVisualDescendants().OfType<Border>().First(border => border.Name == "RowBorder");

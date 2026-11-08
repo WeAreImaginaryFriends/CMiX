@@ -100,7 +100,7 @@ namespace CMiX.Studio.Avalonia.Tests
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
             TestServiceProviderFactory.Pump();
             var tree = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
-            var box = tree.GetVisualDescendants().OfType<TextBoxEditable>().First();
+            var box = tree.GetVisualDescendants().OfType<TextBoxEditable>().First(name => name.IsEffectivelyVisible);
 
             AssertSamePlace(Take(window, box));
         }

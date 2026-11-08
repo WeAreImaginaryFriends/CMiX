@@ -37,7 +37,7 @@ namespace CMiX.Studio.Avalonia.Views
         private readonly PopupAnchoring anchoring;
         private readonly PopupCard card = new();
         private readonly TextBlock title = new() { VerticalAlignment = VerticalAlignment.Center };
-        private readonly GroupedSearchList list = new() { CollapseFrom = int.MaxValue };
+        private readonly GroupedSearchList list = new() { Collapsible = false };
         private readonly Dictionary<TreeCategory, IBrush?> brushes = new();
         private bool closedByCode;
 
@@ -85,20 +85,11 @@ namespace CMiX.Studio.Avalonia.Views
         public void Open(Control anchor, PopupSide side, IReadOnlyList<TreeAddGroup> groups, string? header = null, Rect? anchorRect = null,
                          IInputElement? passThrough = null)
         {
-            groups = Available(groups);
-            if (groups.Count == 0)
+            if (!Prepare(anchor, groups, header))
                 return;
 
-            Close();
-
             var rowHeight = Number(anchor, "ControlHeightMD", 24);
-            title.Text = header;
-            title.IsVisible = !string.IsNullOrEmpty(header);
-            title.Height = rowHeight;
-            list.Width = Number(anchor, "AddPanelWidth", 200);
-            list.KindBrush = kind => BrushOf(anchor, kind);
-            list.Groups = groups.Select(ToPicker).ToList();
-
+            anchoring.Gap = DefaultGap;
             anchoring.Side = side;
             anchoring.Along = null;
             anchoring.Anchor = anchorRect;
@@ -106,6 +97,52 @@ namespace CMiX.Studio.Avalonia.Views
                 ? SearchCenter(anchor, rowHeight)
                 : anchor.Bounds.Width / 2 + BelowOverhang;
 
+            Show(anchor, passThrough);
+        }
+
+        // Opens the panel over a point of a control, with the middle of the search field under the point, so the user can type at once and
+        // the pointer has not moved. The point is in the coordinates of the control.
+        public void OpenAtPoint(Control reference, Point point, IReadOnlyList<TreeAddGroup> groups, string? header = null)
+        {
+            if (!Prepare(reference, groups, header) || TopLevel.GetTopLevel(reference) is not { } top || reference.TranslatePoint(point, top) is not { } inWindow)
+                return;
+
+            var rowHeight = Number(reference, "ControlHeightMD", 24);
+            var padding = PaddingOf(reference);
+
+            // The card hangs below the point by a negative gap: its top is above the point by the distance to the middle of the field.
+            anchoring.Side = PopupSide.Bottom;
+            anchoring.Gap = -SearchCenter(reference, rowHeight);
+            anchoring.Anchor = new Rect(inWindow, new Size(0, 0));
+            anchoring.Along = inWindow.X;
+            anchoring.AlignOffset = padding.Left + list.Width / 2;
+
+            Show(reference, null);
+        }
+
+        private const double DefaultGap = 8;
+
+        // Fills the card. False when there is nothing to show.
+        private bool Prepare(Control scope, IReadOnlyList<TreeAddGroup> groups, string? header)
+        {
+            groups = Available(groups);
+            if (groups.Count == 0)
+                return false;
+
+            Close();
+
+            var rowHeight = Number(scope, "ControlHeightMD", 24);
+            title.Text = header;
+            title.IsVisible = !string.IsNullOrEmpty(header);
+            title.Height = rowHeight;
+            list.Width = Number(scope, "AddPanelWidth", 200);
+            list.KindBrush = kind => BrushOf(scope, kind);
+            list.Groups = groups.Select(ToPicker).ToList();
+            return true;
+        }
+
+        private void Show(Control anchor, IInputElement? passThrough)
+        {
             card.ShowsTip = false;
             if (anchor.TryFindResource("FlyoutPresenterCard", out var theme) && theme is ControlTheme presenterTheme)
                 flyout.FlyoutPresenterTheme = presenterTheme;
@@ -133,9 +170,12 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         // The distance from the top of the card to the middle of the search field: the padding, the header and its space.
+        private static Thickness PaddingOf(Control scope) =>
+            scope.TryFindResource("PopupCardPadding", out var value) && value is Thickness thickness ? thickness : new Thickness(10, 8);
+
         private double SearchCenter(Control scope, double rowHeight)
         {
-            var padding = scope.TryFindResource("PopupCardPadding", out var value) && value is Thickness thickness ? thickness : new Thickness(10, 8);
+            var padding = PaddingOf(scope);
             var header = title.IsVisible ? rowHeight + Spacing : 0;
             return padding.Top + header + rowHeight / 2;
         }

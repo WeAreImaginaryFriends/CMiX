@@ -40,7 +40,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var view = screen.View;
             tree.SelectedNode = null;
             Settle();
-            return (view, tree, tree.Roots[0].Children[0], tree.Roots[0].Children[1]);
+            return (view, tree, tree.CompositionNodes()[0].Children[0].Children[0], tree.CompositionNodes()[0].Children[0].Children[1]);
         }
 
         private void Settle() => TreeTestScreen.Settle(window!);

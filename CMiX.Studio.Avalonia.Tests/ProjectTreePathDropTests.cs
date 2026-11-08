@@ -143,7 +143,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show(compositions: 1);
 
-            screen.Tree.DropPaths(screen.Tree.Roots[0], new[] { NewFile("one.png") });
+            screen.Tree.DropPaths(screen.Tree.CompositionNodes()[0], new[] { NewFile("one.png") });
 
             var composition = CompositionAt(screen, 0);
             Assert.Single(screen.Project.CompositionManager.ManagerData.Items);
@@ -155,7 +155,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show(compositions: 1, layersEach: 2);
 
-            screen.Tree.DropPaths(screen.Tree.Roots[0], new[] { NewFile("one.png") });
+            screen.Tree.DropPaths(screen.Tree.CompositionNodes()[0], new[] { NewFile("one.png") });
 
             var composition = CompositionAt(screen, 0);
             Assert.Equal(3, composition.LayerManager.ManagerData.Items.Count);
@@ -168,7 +168,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Drop_OnALayer_AddsTheEntityToThatLayer()
         {
             var screen = Show(compositions: 1, layersEach: 2);
-            var secondLayer = screen.Tree.Roots[0].Children[1];
+            var secondLayer = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
 
             screen.Tree.DropPaths(secondLayer, new[] { NewFile("one.png") });
 
@@ -182,7 +182,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Drop_OnTheGroupsOrItemsOfALayer_AddsTheEntityToThatLayer()
         {
             var screen = Show(compositions: 1, layersEach: 1);
-            var layerNode = screen.Tree.Roots[0].Children[0];
+            var layerNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var entities = layerNode.Children[0];
             var cameras = layerNode.Children[1];
             var layer = LayerAt(CompositionAt(screen, 0), 0);
@@ -200,7 +200,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show(compositions: 1);
 
-            screen.Tree.DropPaths(screen.Tree.Roots[0], new[] { NewFile("one.png"), NewFrames(), NewFile("notes.txt") });
+            screen.Tree.DropPaths(screen.Tree.CompositionNodes()[0], new[] { NewFile("one.png"), NewFrames(), NewFile("notes.txt") });
 
             var composition = CompositionAt(screen, 0);
             Assert.Single(composition.LayerManager.ManagerData.Items);
@@ -234,7 +234,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show(compositions: 1, layersEach: 1);
 
-            screen.Tree.DropPaths(screen.Tree.Roots[0].Children[0], new[] { NewFile("one.png"), NewFile("two.png") });
+            screen.Tree.DropPaths(screen.Tree.CompositionNodes()[0].Children[0].Children[0], new[] { NewFile("one.png"), NewFile("two.png") });
             screen.Undo.Undo();
 
             Assert.Empty(LayerAt(CompositionAt(screen, 0), 0).ModelEntityManager.ManagerData.Items);
@@ -300,7 +300,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show(compositions: 1, layersEach: 1);
 
-            Drag(screen, RowPoint(screen, screen.Tree.Roots[0]), FilesOf(screen.Window, NewFile("one.png")), RawDragEventType.Drop);
+            Drag(screen, RowPoint(screen, screen.Tree.CompositionNodes()[0]), FilesOf(screen.Window, NewFile("one.png")), RawDragEventType.Drop);
 
             var composition = CompositionAt(screen, 0);
             Assert.Equal(2, composition.LayerManager.ManagerData.Items.Count);
@@ -312,8 +312,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show(compositions: 1, layersEach: 1);
             var data = FilesOf(screen.Window, NewFile("one.png"));
-            var layer = screen.Tree.Roots[0].Children[0];
-            var composition = screen.Tree.Roots[0];
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var composition = screen.Tree.CompositionNodes()[0];
             var entities = layer.Children[0];
             var cameras = layer.Children[1];
             var palette = CategoryPalette.FromApplication();
@@ -351,7 +351,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show(compositions: 1, layersEach: 1);
             var layer = LayerAt(CompositionAt(screen, 0), 0);
 
-            screen.Tree.DropPaths(screen.Tree.Roots[0].Children[0], new[] { NewFile("one.png"), NewFrames(), NewFile("notes.txt") });
+            screen.Tree.DropPaths(screen.Tree.CompositionNodes()[0].Children[0].Children[0], new[] { NewFile("one.png"), NewFrames(), NewFile("notes.txt") });
             Assert.Equal(3, layer.ModelEntityManager.ManagerData.Items.Count);
             screen.Undo.Undo();
 
@@ -366,7 +366,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show(compositions: 1);
             var frames = NewFrames();
             var data = FilesOf(screen.Window, frames);
-            var composition = screen.Tree.Roots[0];
+            var composition = screen.Tree.CompositionNodes()[0];
             var point = RowPoint(screen, composition);
             var palette = CategoryPalette.FromApplication();
             var effects = DragDropEffects.Copy | DragDropEffects.Move;

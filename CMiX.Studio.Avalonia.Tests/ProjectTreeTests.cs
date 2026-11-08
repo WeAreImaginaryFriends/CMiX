@@ -21,10 +21,10 @@ namespace CMiX.Studio.Avalonia.Tests
         private static string NameOf(IControl item) => ((IPrefab)item).PrefabService.Name.Value;
 
         // The node of a layer of A.
-        private static TreeNode LayerNode(Scene scene, int index) => scene.Tree.Roots[0].Children[index];
+        private static TreeNode LayerNode(Scene scene, int index) => scene.Tree.CompositionNodes()[0].Children[0].Children[index];
 
-        // The layers of a composition. The groups of the composition (filters and modifiers) come after them.
-        private static IEnumerable<TreeNode> LayersOf(TreeNode composition) => composition.Children.Where(child => child.Item != null);
+        // The layers of a composition: the rows under its Layers group, which is the first row under the composition.
+        private static IEnumerable<TreeNode> LayersOf(TreeNode composition) => composition.Children[0].Children.Where(child => child.Item != null);
 
         private static TreeNode GroupNode<T>(TreeNode layerNode) where T : TreeGroup =>
             layerNode.Children.Single(group => group.Group is T);
@@ -33,14 +33,17 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Add_AnItem_StartsExpandedAndOpensItsParent()
         {
             var scene = CreateScene();
-            var composition = scene.Tree.Roots[0];
-            var before = composition.Children.Count(child => child.Item != null);
+            var composition = scene.Tree.CompositionNodes()[0];
+            var layers = composition.Children[0];
+            var before = layers.Children.Count;
             composition.IsExpanded = false;
+            layers.IsExpanded = false;
 
             scene.A.LayerManager.AddItem(typeof(Layer));
 
             Assert.True(composition.IsExpanded);
-            var added = composition.Children[before];
+            Assert.True(layers.IsExpanded);
+            var added = layers.Children[before];
             Assert.NotNull(added.Item);
             Assert.True(added.IsExpanded);
             Assert.All(added.Children, group => Assert.True(group.IsExpanded));
@@ -54,53 +57,58 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.Project.ApplySnapshot(model);
 
-            Assert.NotEmpty(scene.Tree.Roots);
-            Assert.All(scene.Tree.Roots, composition =>
-            {
-                Assert.False(composition.IsExpanded);
-                Assert.All(composition.Children, child => Assert.False(child.IsExpanded));
-            });
+            // Every row of the loaded project is collapsed: the compositions, the Layers rows and the layers. The Compositions row is the top of the
+            // tree and it stays open, so the compositions are in view.
+            Assert.NotEmpty(scene.Tree.CompositionNodes());
+            Assert.True(scene.Tree.CompositionsNode().IsExpanded);
+            Assert.All(TreeTestScreen.All(scene.Tree.CompositionNodes()), node => Assert.False(node.IsExpanded, node.Header));
 
-            // An item that the user adds after the load is expanded again.
+            // An item that the user adds after the load is expanded again, and so are the rows above it.
             var loaded = (Composition)scene.Project.CompositionManager.ManagerData.Items[0];
             loaded.LayerManager.AddItem(typeof(Layer));
-            Assert.True(scene.Tree.Roots[0].IsExpanded);
+            Assert.True(scene.Tree.CompositionNodes()[0].IsExpanded);
+            Assert.True(scene.Tree.CompositionNodes()[0].Children[0].IsExpanded);
         }
 
         [Fact]
-        public void Build_TheTree_PutsTheCompositionsAsRootsInListOrder()
+        public void Build_TheTree_PutsTheCompositionsUnderTheCompositionsRowInListOrder()
         {
             var scene = CreateScene();
 
-            Assert.Equal(new IControl[] { scene.A, scene.B }, scene.Tree.Roots.Select(node => node.Item));
-            Assert.Equal(new[] { NameOf(scene.A), NameOf(scene.B) }, scene.Tree.Roots.Select(node => node.Header));
+            var root = Assert.Single(scene.Tree.Roots);
+            Assert.IsType<CompositionsGroup>(root.Group);
+            Assert.Equal("Compositions", root.Header);
+            Assert.Same(scene.Project.CompositionManager, root.ChildManager);
+            Assert.Equal(new IControl[] { scene.A, scene.B }, scene.Tree.CompositionNodes().Select(node => node.Item));
+            Assert.Equal(new[] { NameOf(scene.A), NameOf(scene.B) }, scene.Tree.CompositionNodes().Select(node => node.Header));
         }
 
         [Fact]
-        public void Build_ACompositionNode_HasItsLayersAsChildren()
+        public void Build_ACompositionNode_HasItsLayersUnderTheLayersRow()
         {
             var scene = CreateScene();
 
-            Assert.Equal(scene.A.LayerManager.ManagerData.Items, LayersOf(scene.Tree.Roots[0]).Select(node => node.Item));
-            Assert.Same(scene.A.LayerManager, scene.Tree.Roots[0].ChildManager);
+            Assert.Equal(scene.A.LayerManager.ManagerData.Items, LayersOf(scene.Tree.CompositionNodes()[0]).Select(node => node.Item));
+            Assert.Null(scene.Tree.CompositionNodes()[0].ChildManager);
+            Assert.Same(scene.A.LayerManager, scene.Tree.CompositionNodes()[0].Children[0].ChildManager);
             Assert.Same(scene.A.LayerManager, LayerNode(scene, 0).Owner);
         }
 
         [Fact]
-        public void Build_ALayerNode_HasTheGroupsEntitiesCamerasAndLights()
+        public void Build_ALayerNode_HasEntitiesFiltersModifiersThenCamerasAndLights()
         {
             var scene = CreateScene();
             var layer = scene.LayerOfA(0);
 
             var node = LayerNode(scene, 0);
 
-            Assert.Equal(new[] { "Entities", "Cameras", "Lights", "Filters", "Modifiers" }, node.Children.Select(group => group.Header));
+            Assert.Equal(new[] { "Entities", "Filters", "Modifiers", "Cameras", "Lights" }, node.Children.Select(group => group.Header));
             Assert.All(node.Children, group => Assert.Null(group.Item));
             Assert.Same(layer.ModelEntityManager, node.Children[0].ChildManager);
-            Assert.Same(layer.CameraManager, node.Children[1].ChildManager);
-            Assert.Same(layer.LightManager, node.Children[2].ChildManager);
-            Assert.Same(layer.TextureModifierManager, node.Children[3].ChildManager);
-            Assert.Same(layer.ModifierManager, node.Children[4].ChildManager);
+            Assert.Same(layer.TextureModifierManager, node.Children[1].ChildManager);
+            Assert.Same(layer.ModifierManager, node.Children[2].ChildManager);
+            Assert.Same(layer.CameraManager, node.Children[3].ChildManager);
+            Assert.Same(layer.LightManager, node.Children[4].ChildManager);
         }
 
         [Fact]
@@ -127,7 +135,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.A.LayerManager.AddItem(typeof(Layer));
             scene.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
 
-            Assert.Equal(3, LayersOf(scene.Tree.Roots[0]).Count());
+            Assert.Equal(3, LayersOf(scene.Tree.CompositionNodes()[0]).Count());
             Assert.Single(GroupNode<EntitiesGroup>(LayerNode(scene, 0)).Children);
         }
 
@@ -138,7 +146,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.A.LayerManager.RemoveItem(scene.LayerOfA(0));
 
-            Assert.Single(LayersOf(scene.Tree.Roots[0]));
+            Assert.Single(LayersOf(scene.Tree.CompositionNodes()[0]));
         }
 
         [Fact]
@@ -149,8 +157,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.A.LayerManager.MoveItem(0, 1);
 
-            Assert.Same(first, scene.Tree.Roots[0].Children[1].Item);
-            Assert.Equal(scene.A.LayerManager.ManagerData.Items, LayersOf(scene.Tree.Roots[0]).Select(node => node.Item));
+            Assert.Same(first, scene.Tree.CompositionNodes()[0].Children[0].Children[1].Item);
+            Assert.Equal(scene.A.LayerManager.ManagerData.Items, LayersOf(scene.Tree.CompositionNodes()[0]).Select(node => node.Item));
         }
 
         [Fact]
@@ -161,7 +169,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.A.LayerManager.ManagerData.Move(0, 1);
 
-            Assert.Same(first, scene.Tree.Roots[0].Children[1].Item);
+            Assert.Same(first, scene.Tree.CompositionNodes()[0].Children[0].Children[1].Item);
         }
 
         [Fact]
@@ -182,17 +190,17 @@ namespace CMiX.Studio.Avalonia.Tests
 
             scene.B.LayerManager.MoveItemToManager(moved, scene.A.LayerManager, 0);
 
-            Assert.Single(LayersOf(scene.Tree.Roots[0]));
-            Assert.Equal(2, LayersOf(scene.Tree.Roots[1]).Count());
-            Assert.Same(moved, scene.Tree.Roots[1].Children[0].Item);
-            Assert.Same(scene.B.LayerManager, scene.Tree.Roots[1].Children[0].Owner);
+            Assert.Single(LayersOf(scene.Tree.CompositionNodes()[0]));
+            Assert.Equal(2, LayersOf(scene.Tree.CompositionNodes()[1]).Count());
+            Assert.Same(moved, scene.Tree.CompositionNodes()[1].Children[0].Children[0].Item);
+            Assert.Same(scene.B.LayerManager, scene.Tree.CompositionNodes()[1].Children[0].Children[0].Owner);
         }
 
         [Fact]
         public void Dispose_TheTree_StopsFollowingTheLists()
         {
             var scene = CreateScene();
-            var node = scene.Tree.Roots[0];
+            var node = scene.Tree.CompositionNodes()[0];
 
             scene.Tree.Dispose();
             scene.A.LayerManager.AddItem(typeof(Layer));
@@ -299,7 +307,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Remove_TheSelectedComposition_SelectsTheNeighbor()
         {
             var scene = CreateScene();
-            scene.Tree.SelectedNode = scene.Tree.Roots[1];
+            scene.Tree.SelectedNode = scene.Tree.CompositionNodes()[1];
 
             scene.Project.CompositionManager.RemoveItem(scene.B);
 
@@ -312,10 +320,11 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
             scene.Project.CompositionManager.RemoveItem(scene.A);
-            scene.Tree.SelectedNode = scene.Tree.Roots[0];
+            scene.Tree.SelectedNode = scene.Tree.CompositionNodes()[0];
 
             scene.Project.CompositionManager.RemoveItem(scene.B);
 
+            // The Compositions row is the top of the tree: it is not selected for the inspector, so the selection is empty.
             Assert.Null(scene.Tree.SelectedNode);
         }
     }

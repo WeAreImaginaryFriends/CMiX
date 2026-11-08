@@ -47,7 +47,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             Shortcuts = shortcuts ?? new ShortcutMap();
             this.project = project;
             compositions = project.CompositionManager;
-            root =new TreeNode(this, null, null, null, "Project", compositions);
+            // The one row under the root is the group of the compositions. The compositions are under it.
+            root = new TreeNode(this, null, null, null, "Project", null);
+            root.AddGroups(project);
 
             selectedAdds = GetAddChoices(null);
             AddItemCommand = new RelayCommand<TreeAdd?>(add => add?.Execute?.Invoke(), add => add == null ? HasAdds : add.Execute != null);
@@ -64,7 +66,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 () => { if (SelectedPlace() is var (list, item, _)) list.RemoveItem(item); },
                 () => SelectedPlace() != null);
             AddUnderPointerCommand = new RelayCommand(
-                () => MenuRequested?.Invoke(this, EventArgs.Empty),
+                () => AddRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree());
             RenameSelectedCommand = new RelayCommand(
                 () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
@@ -80,16 +82,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The gestures of the key bindings of the tree view (the names Tree.*).
         public ShortcutMap Shortcuts { get; }
 
-        // Opens the context menu of the row under the pointer (Tree.Add), with its Add panel open. Over the space under the rows, the menu
-        // is the one of the project. It adds nothing at once, not even a composition. The command runs only while the pointer is over the
+        // Opens the Add panel of the selected row at the pointer (Tree.Add). With nothing selected, the panel offers a composition. The panel
+        // adds nothing at once. The command runs only while the pointer is over the
         // tree, so the key works from anywhere over the tree and does nothing over the rest of the window.
         public IRelayCommand AddUnderPointerCommand { get; }
 
         // The view tells if the pointer is over the tree.
         public Func<bool> IsPointerOverTree { get; set; } = () => false;
 
-        // The view handles this request: it opens the menu of the row under the pointer.
-        public event EventHandler? MenuRequested;
+        // The view handles this request: it opens the Add panel.
+        public event EventHandler? AddRequested;
 
         // Starts the rename of the selected row. The view sets the name box of the row to edit mode (see RenameRequested).
         public IRelayCommand RenameSelectedCommand { get; }
@@ -202,8 +204,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (node == null)
                 return new[] { AddOf("row.add-composition", "Add Composition", compositions, typeof(Composition)) };
 
-            if (node.Item is Composition && node.ChildManager is { } layers)
-                return new[] { AddOf("row.add-layer", "Add Layer", layers, typeof(Layer)) }.Concat(HeldAdds(node.Item)).ToList();
+            if (node.Item is Composition composition)
+                return new[] { AddOf("row.add-layer", "Add Layer", composition.LayerManager, typeof(Layer)) }.Concat(HeldAdds(node.Item)).ToList();
 
             // A layer takes an item of any kind: the entities, then the camera and the light.
             if (node.Item is Layer own)
@@ -221,6 +223,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             // A group of a layer takes the kind of item of its list.
             if (node.Group is LayerGroup layerGroup)
                 return layerGroup.AddableTypes.Select(type => LayerAddOf(layerGroup, type, "Add ")).ToList();
+
+            // The group of the layers of a composition takes a layer, and the group of the compositions takes a composition.
+            if (node.Group is LayersGroup layersGroup)
+                return new[] { AddOf("row.add-layer", "Add Layer", layersGroup.Manager, typeof(Layer)) };
+
+            if (node.Group is CompositionsGroup)
+                return GetAdds(null);
 
             // A group of modifiers, filters or textures takes one of the types that its owner can hold.
             if (node.Group is { } held)
@@ -299,10 +308,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                     Take(AddOf("row.add-" + type.Name, AddableTypes.LabelOf(type), group.Manager, type));
             }
 
-            if (node?.Item is Composition && node.ChildManager is { } layers)
+            if (node?.Item is Composition composition)
             {
-                Take(AddOf("row.add-layer", "Layer", layers, typeof(Layer)));
-                foreach (var group in TreeGroup.GroupsOf(node.Item).Where(group => group is not LayerGroup))
+                Take(AddOf("row.add-layer", "Layer", composition.LayerManager, typeof(Layer)));
+                foreach (var group in TreeGroup.GroupsOf(node.Item).Where(group => group is not (LayerGroup or StructureGroup)))
                     TakeHeld(group);
             }
             else if (node?.Item is Layer own)
@@ -317,8 +326,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             }
             else if (node?.Item != null)
             {
-                foreach (var group in TreeGroup.GroupsOf(node.Item).Where(group => group is not LayerGroup))
+                foreach (var group in TreeGroup.GroupsOf(node.Item).Where(group => group is not (LayerGroup or StructureGroup)))
                     TakeHeld(group);
+            }
+            else if (node?.Group is LayersGroup layersGroup)
+            {
+                Take(AddOf("row.add-layer", "Layer", layersGroup.Manager, typeof(Layer)));
+            }
+            else if (node?.Group is CompositionsGroup)
+            {
+                // The composition is taken for every node, below.
             }
             else if (node?.Group is LayerGroup layerGroup)
             {
@@ -361,7 +378,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // can hold the kind.
         private static IReadOnlyList<TreeAdd> HeldAdds(IControl item) =>
             TreeGroup.GroupsOf(item)
-                .Where(group => group is not LayerGroup)
+                .Where(group => group is not (LayerGroup or StructureGroup))
                 .Select(group =>
                 {
                     var name = TreeCategories.Label(group.Category, 1);
@@ -642,6 +659,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             SetProperty(ref selectedNode, node, nameof(SelectedNode));
         }
 
+        // The root and the Compositions row, which is the one row under it, are the top of the tree. A selection does not move there.
+        private bool IsTop(TreeNode? node) => node == null || ReferenceEquals(node, root) || ReferenceEquals(node.Parent, root);
+
         // A node leaves the tree. A selection inside it moves to the parent.
         internal void NodeRemoved(TreeNode node)
         {
@@ -652,7 +672,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 return;
 
             Origin = SelectionOrigin.Program;
-            SetProperty(ref selectedNode, ReferenceEquals(node.Parent, root) ? null : node.Parent, nameof(SelectedNode));
+            SetProperty(ref selectedNode, IsTop(node.Parent) ? null : node.Parent, nameof(SelectedNode));
         }
 
         public void Dispose() => root.Dispose();

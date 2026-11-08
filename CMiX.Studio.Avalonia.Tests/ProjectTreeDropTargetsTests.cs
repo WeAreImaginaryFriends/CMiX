@@ -156,13 +156,14 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void BeginDrag_ALayer_LightsTheCompositionsAndMarksTheLayersAsNeighbors()
+        public void BeginDrag_ALayer_LightsTheCompositionsAndTheirLayersRowsAndMarksTheLayersAsNeighbors()
         {
             var scene = CreateScene();
 
             scene.Tree.BeginDrag(scene.Layer1);
 
-            Assert.Equal(new[] { scene.CompositionA, scene.CompositionB }, scene.Candidates());
+            // A composition row takes a layer through its Layers row, so both rows light.
+            Assert.Equal(new[] { scene.CompositionA, Scene.Group<LayersGroup>(scene.CompositionA), scene.CompositionB, Scene.Group<LayersGroup>(scene.CompositionB) }, scene.Candidates());
             Assert.Equal(new[] { scene.Layer2, scene.LayerOfB }, scene.Neighbors());
         }
 

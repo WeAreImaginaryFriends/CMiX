@@ -68,6 +68,7 @@
         </Panel>
 
         <ui:ExpanderIndented
+            Background="Transparent"
             Header="Geometry FX"
             Indentation="4">
 
@@ -107,7 +108,7 @@
         </ui:ExpanderIndented>
 
         <ui:ExpanderIndented
-
+            Background="Transparent"
             Header="Displacement"
             Indentation="4">
 

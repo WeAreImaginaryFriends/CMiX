@@ -86,6 +86,24 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void OpenAtPoint_APoint_PutsTheMiddleOfTheSearchFieldUnderIt()
+        {
+            var setup = Show();
+            var point = new Point(300, 250);
+
+            setup.Panel.OpenAtPoint(setup.Window, point, setup.Scene.Tree.GetAddGroups(setup.Scene.LayerNode), "Add");
+            Dispatcher.UIThread.RunJobs();
+            setup.Window.UpdateLayout();
+
+            var search = SearchOf(setup);
+            Assert.True(setup.Panel.IsOpen);
+            Assert.InRange(point.X, search.Left, search.Right);
+            Assert.Equal(point.Y, search.Center.Y, 1.5);
+            Assert.Equal(point.X, search.Center.X, 1.5);
+            Assert.Equal("Add", setup.Panel.Title.Text);
+        }
+
+        [AvaloniaFact]
         public void Open_AnyNode_OpensEveryGroupEvenALongOne()
         {
             var setup = Show();

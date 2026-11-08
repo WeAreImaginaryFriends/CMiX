@@ -59,7 +59,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 View.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
 
             public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
-            public TreeNode LayerNodeOfA(int index) => Tree.Roots[0].Children[index];
+            public TreeNode LayerNodeOfA(int index) => Tree.CompositionNodes()[0].Children[0].Children[index];
             public TreeNode Group<T>(int layerIndex) where T : TreeGroup => LayerNodeOfA(layerIndex).Children.Single(group => group.Group is T);
 
             // A right click on the row. The pointer goes back to the left of the window first, so a menu that opens at the pointer
@@ -150,7 +150,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            var headers = Screen.Headers(screen.OpenMenu(screen.Tree.Roots[0])!);
+            var headers = Screen.Headers(screen.OpenMenu(screen.Tree.CompositionNodes()[0])!);
 
             Assert.Equal(screen.A.PrefabService.Name.Value, headers[0]);
             Assert.Equal(new[] { "Add", "-", "Duplicate", "Rename", "-", "Move Up", "Move Down", "Move To Top", "Move To Bottom", "-", "Delete" },
@@ -162,7 +162,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
+            var menu = screen.OpenMenu(screen.Tree.CompositionNodes()[0])!;
 
             Assert.True(menu.IsOpen);
         }
@@ -171,9 +171,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public void RightClick_AnotherRow_OpensTheMenuOfThatRow()
         {
             var screen = Show();
-            screen.OpenMenu(screen.Tree.Roots[0]);
+            screen.OpenMenu(screen.Tree.CompositionNodes()[0]);
 
-            var menu = screen.OpenMenu(screen.Tree.Roots[1])!;
+            var menu = screen.OpenMenu(screen.Tree.CompositionNodes()[1])!;
 
             Assert.True(menu.IsOpen);
             Assert.Equal(screen.B.PrefabService.Name.Value, Screen.Headers(menu)[0]);
@@ -184,7 +184,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void RightClick_AGroupAfterItsComposition_OpensTheMenuOfTheGroup()
         {
             var screen = Show();
-            screen.OpenMenu(screen.Tree.Roots[0]);
+            screen.OpenMenu(screen.Tree.CompositionNodes()[0]);
             screen.OpenMenu(screen.LayerNodeOfA(0));
 
             var entities = Screen.Headers(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!);
@@ -203,7 +203,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
             var entityNode = screen.Group<EntitiesGroup>(0).Children[0];
-            screen.OpenMenu(screen.Tree.Roots[0]);
+            screen.OpenMenu(screen.Tree.CompositionNodes()[0]);
             screen.OpenMenu(screen.Group<EntitiesGroup>(0));
 
             var headers = Screen.Headers(screen.OpenMenu(entityNode)!);
@@ -222,7 +222,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             screen.LayerOfA(0).ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
-            var order = new[] { screen.Tree.Roots[0], screen.LayerNodeOfA(0), screen.Group<EntitiesGroup>(0), screen.Group<EntitiesGroup>(0).Children[0] };
+            var order = new[] { screen.Tree.CompositionNodes()[0], screen.LayerNodeOfA(0), screen.Group<EntitiesGroup>(0), screen.Group<EntitiesGroup>(0).Children[0] };
 
             for (var round = 0; round < rounds; round++)
                 foreach (var node in order)
@@ -241,11 +241,11 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            screen.OpenAddPanel(screen.OpenMenu(screen.Tree.Roots[1])!);
+            screen.OpenAddPanel(screen.OpenMenu(screen.Tree.CompositionNodes()[1])!);
             screen.Pick("Layer");
 
             Assert.Equal(2, screen.B.LayerManager.ManagerData.Items.Count);
-            Assert.Equal(2, screen.Tree.Roots[1].Children.Count(child => child.Item != null));
+            Assert.Equal(2, screen.Tree.CompositionNodes()[1].Children[0].Children.Count);
         }
 
         [AvaloniaFact]
@@ -311,10 +311,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            Screen.Click(screen.OpenMenu(screen.Tree.Roots[0])!, "Move Down");
+            Screen.Click(screen.OpenMenu(screen.Tree.CompositionNodes()[0])!, "Move Down");
 
             Assert.Equal(new IControl[] { screen.B, screen.A }, screen.Project.CompositionManager.ManagerData.Items);
-            Assert.Same(screen.B, screen.Tree.Roots[0].Item);
+            Assert.Same(screen.B, screen.Tree.CompositionNodes()[0].Item);
         }
 
         [AvaloniaFact]
@@ -322,7 +322,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
+            var menu = screen.OpenMenu(screen.Tree.CompositionNodes()[0])!;
 
             Assert.False(menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, "Move Up")).IsEnabled);
             Assert.True(menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, "Move Down")).IsEnabled);
@@ -425,7 +425,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
+            var menu = screen.OpenMenu(screen.Tree.CompositionNodes()[0])!;
 
             Assert.Equal("Add", AnchorOf(menu));
         }
@@ -451,7 +451,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.OpenAddPanel(screen.TreeView.ContextMenu!);
             screen.Pick("Composition");
 
-            var menu = screen.OpenMenu(screen.Tree.Roots[0])!;
+            var menu = screen.OpenMenu(screen.Tree.CompositionNodes()[0])!;
 
             Assert.Equal("Add", AnchorOf(menu));
         }
@@ -460,14 +460,14 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Open_TheMenuAgain_PutsTheLastRowUsedUnderThePointer()
         {
             var screen = Show();
-            Screen.Click(screen.OpenMenu(screen.Tree.Roots[0])!, "Duplicate");
+            Screen.Click(screen.OpenMenu(screen.Tree.CompositionNodes()[0])!, "Duplicate");
 
-            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Tree.Roots[0])!));
-            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Tree.Roots[1])!));
+            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Tree.CompositionNodes()[0])!));
+            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Tree.CompositionNodes()[1])!));
 
-            Screen.Click(screen.OpenMenu(screen.Tree.Roots[0])!, "Add");
+            Screen.Click(screen.OpenMenu(screen.Tree.CompositionNodes()[0])!, "Add");
 
-            Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.Tree.Roots[0])!));
+            Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.Tree.CompositionNodes()[0])!));
         }
 
         [AvaloniaFact]
@@ -500,7 +500,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
 
             Assert.DoesNotContain("Add Composition", Screen.Headers(screen.OpenMenu(screen.LayerNodeOfA(0))!));
-            Assert.DoesNotContain("Add Composition", Screen.Headers(screen.OpenMenu(screen.Tree.Roots[0])!));
+            Assert.DoesNotContain("Add Composition", Screen.Headers(screen.OpenMenu(screen.Tree.CompositionNodes()[0])!));
         }
 
         private static bool IsRenaming(TextBoxEditable box) =>

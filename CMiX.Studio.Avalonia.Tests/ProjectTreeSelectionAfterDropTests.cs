@@ -45,13 +45,13 @@ namespace CMiX.Studio.Avalonia.Tests
             TestServiceProviderFactory.ExpandAll(scene.Tree);
             target.IsExpanded = false;
             scene.LayerNodeOfA(1).IsExpanded = false;
-            scene.Tree.Roots[0].IsExpanded = false;
+            scene.Tree.CompositionNodes()[0].IsExpanded = false;
 
             await scene.Tree.DropAsync(node, target, DropPosition.Inside);
 
             Assert.True(target.IsExpanded);
             Assert.True(scene.LayerNodeOfA(1).IsExpanded);
-            Assert.True(scene.Tree.Roots[0].IsExpanded);
+            Assert.True(scene.Tree.CompositionNodes()[0].IsExpanded);
             Assert.True(target.Children[0].IsExpanded);
         }
 
@@ -75,10 +75,10 @@ namespace CMiX.Studio.Avalonia.Tests
             var node = scene.LayerNodeOfA(1);
             scene.Tree.SelectedNode = node;
 
-            await scene.Tree.DropAsync(node, scene.Tree.Roots[1], DropPosition.Inside);
+            await scene.Tree.DropAsync(node, scene.Tree.CompositionNodes()[1], DropPosition.Inside);
 
             Assert.Same(layer, scene.Tree.SelectedNode!.Item);
-            Assert.Same(scene.Tree.Roots[1], scene.Tree.SelectedNode.Parent);
+            Assert.Same(scene.Tree.CompositionNodes()[1].Children[0], scene.Tree.SelectedNode.Parent);
             Assert.Same(layer, scene.B.LayerManager.SelectedItem);
         }
 
@@ -135,7 +135,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.LayerOfA(1).ModelEntityManager.AddExistingItem((Core.Prefabs.IPrefab)layer.ModelEntityManager.ManagerData.Items[0]);
             scene.Tree.SelectedNode = scene.LayerNodeOfA(1);
 
-            await scene.Tree.DropAsync(node, scene.Tree.Roots[1], DropPosition.Inside);
+            await scene.Tree.DropAsync(node, scene.Tree.CompositionNodes()[1], DropPosition.Inside);
 
             Assert.Same(scene.LayerOfA(1), scene.Tree.SelectedNode!.Item);
         }

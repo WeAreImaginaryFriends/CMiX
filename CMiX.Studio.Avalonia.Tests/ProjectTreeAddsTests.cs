@@ -51,7 +51,7 @@ namespace CMiX.Studio.Avalonia.Tests
             public TreeView TreeView => View.GetVisualDescendants().OfType<TreeView>().First();
             public Button AddButton => View.GetVisualDescendants().OfType<Button>().First(button => button.Name == "AddButton");
             public AddPanel Panel => View.GetVisualDescendants().OfType<ProjectTreeToolbar>().First().Panel;
-            public TreeNode LayerNode => Tree.Roots[0].Children[0];
+            public TreeNode LayerNode => Tree.CompositionNodes()[0].Children[0].Children[0];
 
             public TreeViewItem RowOf(TreeNode node) =>
                 View.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));
@@ -144,7 +144,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void GetAdds_AnEntityRow_OffersNoAddComposition()
         {
             var screen = Show();
-            var entity = screen.Tree.Roots[0].Children[0].Children.Single(group => group.Group is EntitiesGroup).Children[0];
+            var entity = screen.Tree.CompositionNodes()[0].Children[0].Children[0].Children.Single(group => group.Group is EntitiesGroup).Children[0];
 
             var adds = screen.Tree.GetAdds(entity);
 
@@ -175,9 +175,9 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(new[] { "Add Composition" }, tree.SelectedAdds.Select(add => add.Header));
             Assert.True(tree.HasAdds);
 
-            tree.SelectedNode = tree.Roots[0];
+            tree.SelectedNode = tree.CompositionNodes()[0];
 
-            Assert.Equal(tree.GetAddChoices(tree.Roots[0]).Select(add => add.Header), tree.SelectedAdds.Select(add => add.Header));
+            Assert.Equal(tree.GetAddChoices(tree.CompositionNodes()[0]).Select(add => add.Header), tree.SelectedAdds.Select(add => add.Header));
             Assert.True(tree.AddItemCommand.CanExecute(null));
         }
     }

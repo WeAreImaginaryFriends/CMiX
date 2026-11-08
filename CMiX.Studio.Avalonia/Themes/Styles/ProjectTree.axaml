@@ -75,6 +75,7 @@
                         Grid.Column="1"
                         Height="{DynamicResource TreeRowHeight}"
                         Classes.candidate="{Binding IsDropCandidate}"
+                        Classes.dragsource="{Binding IsDragSource}"
                         Classes.dropblocked="{Binding IsDropBlocked}"
                         CornerRadius="{DynamicResource CornerRadiusAll}"
                         TextElement.Foreground="{DynamicResource ForegroundBrush}"
@@ -189,6 +190,10 @@
              A row with no fill would not take the pointer, so a row of an unknown kind has a clear fill. -->
         <Style Selector="^ /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=Fill}" />
+        </Style>
+        <!-- The row that is dragged stays in its place, faded: the copy of it follows the pointer (see TreeDragGhost). -->
+        <Style Selector="^ /template/ Border#RowBorder.dragsource">
+            <Setter Property="Opacity" Value="0.4" />
         </Style>
         <!-- A row that can take the node that is dragged has the fill of a row under the pointer, so it stands out from the rows that can not. -->
         <Style Selector="^ /template/ Border#RowBorder.candidate">

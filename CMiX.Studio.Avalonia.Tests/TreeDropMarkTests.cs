@@ -91,9 +91,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Mark_BeforeARow_PutsTheGapBelowOnTheRowAbove()
         {
             var (view, tree) = Show();
-            var node = tree.Roots[1];
+            var node = tree.CompositionNodes()[1];
             var above = TreeDropService.RowAbove(node)!;
-            Assert.NotSame(tree.Roots[0], above);
+            Assert.NotSame(tree.CompositionNodes()[0], above);
 
             view.Marker.Mark(ItemOf(view, node), DropPosition.Before);
 
@@ -107,7 +107,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Mark_BeforeTheFirstRow_PutsTheGapTopOnTheRow()
         {
             var (view, tree) = Show();
-            var item = ItemOf(view, tree.Roots[0]);
+            var item = ItemOf(view, tree.CompositionsNode());
 
             view.Marker.Mark(item, DropPosition.Before);
 
@@ -118,7 +118,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Mark_None_ClearsTheMarksOfTheRowAndTheBar()
         {
             var (view, tree) = Show();
-            var node = tree.Roots[1];
+            var node = tree.CompositionNodes()[1];
             var above = TreeDropService.RowAbove(node)!;
             view.Marker.Mark(ItemOf(view, node), DropPosition.Before);
 
@@ -134,7 +134,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Mark_BeforeARow_ShowsTheDropLineOfTheRowAbove()
         {
             var (view, tree) = Show();
-            var node = tree.Roots[1];
+            var node = tree.CompositionNodes()[1];
             var above = TreeDropService.RowAbove(node)!;
 
             view.Marker.Mark(ItemOf(view, node), DropPosition.Before);

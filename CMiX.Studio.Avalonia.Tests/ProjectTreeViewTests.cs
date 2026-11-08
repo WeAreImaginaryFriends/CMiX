@@ -118,7 +118,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var before = nodes.Select(node => HeaderOf(screen.RowOf(node)).TranslatePoint(new Point(0, 0), screen.Window)).ToList();
             var heightsBefore = nodes.Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height).ToList();
 
-            screen.DragOver(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction);
+            screen.DragOver(screen.Tree.CompositionNodes()[0].Children[0].Children[0], screen.Tree.CompositionNodes()[1], fraction);
 
             Assert.Equal(before, nodes.Select(node => HeaderOf(screen.RowOf(node)).TranslatePoint(new Point(0, 0), screen.Window)));
             Assert.Equal(heightsBefore, nodes.Select(node => HeaderOf(screen.RowOf(node)).Bounds.Height));
@@ -129,7 +129,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
             var spacing = Convert.ToDouble(screen.View.Resources["TreeRowGap"]);
-            var layerNode = screen.Tree.Roots[0].Children[0];
+            var layerNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var firstGroup = HeaderOf(screen.RowOf(layerNode.Children[0]));
             var secondGroup = HeaderOf(screen.RowOf(layerNode.Children[1]));
 
@@ -145,8 +145,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
             var spacing = Convert.ToDouble(screen.View.Resources["TreeRowGap"]);
-            var parent = HeaderOf(screen.RowOf(screen.Tree.Roots[0]));
-            var child = HeaderOf(screen.RowOf(screen.Tree.Roots[0].Children[0]));
+            var parent = HeaderOf(screen.RowOf(screen.Tree.CompositionNodes()[0]));
+            var child = HeaderOf(screen.RowOf(screen.Tree.CompositionNodes()[0].Children[0]));
 
             var gap = child.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y
                 - (parent.TranslatePoint(new Point(0, 0), screen.Window)!.Value.Y + parent.Bounds.Height);
@@ -189,12 +189,12 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ACompositionOnTheTopHalfOfACompositionRow_MarksTheDropBefore(double fraction)
         {
             var screen = ShowWithABlock();
-            var last = screen.Tree.Roots[2];
+            var last = screen.Tree.CompositionNodes()[2];
 
-            screen.DragOver(screen.Tree.Roots[0], last, fraction);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], last, fraction);
 
             Assert.Equal(DropPosition.Before, MarkOf(screen, last));
-            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(LastVisibleOf(screen.Tree.Roots[1]))));
+            Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(LastVisibleOf(screen.Tree.CompositionNodes()[1]))));
         }
 
         [AvaloniaTheory]
@@ -203,11 +203,11 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ACompositionOnTheBottomHalfOfTheLastRowOfABlock_MarksTheDropAfterTheBlock(double fraction)
         {
             var screen = ShowWithABlock();
-            var last = screen.Tree.Roots[2];
+            var last = screen.Tree.CompositionNodes()[2];
             var lastRow = LastVisibleOf(last);
             Assert.NotSame(last, lastRow);
 
-            screen.DragOver(screen.Tree.Roots[0], lastRow, fraction);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], lastRow, fraction);
 
             Assert.Equal(DropPosition.After, MarkOf(screen, last));
             Assert.Null(MarkOf(screen, lastRow));
@@ -220,9 +220,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ACompositionOnTheBottomHalfOfAnOpenCompositionRow_MarksNothing(double fraction)
         {
             var screen = ShowWithABlock();
-            var last = screen.Tree.Roots[2];
+            var last = screen.Tree.CompositionNodes()[2];
 
-            screen.DragOver(screen.Tree.Roots[0], last, fraction);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], last, fraction);
 
             Assert.False(IsMarkedBetween(screen, last));
             Assert.DoesNotContain(":droptarget", screen.RowOf(last).Classes);
@@ -234,9 +234,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ACompositionOnAMiddleRowOfABlock_MarksNothing(double fraction)
         {
             var screen = ShowWithABlock();
-            var last = screen.Tree.Roots[2];
+            var last = screen.Tree.CompositionNodes()[2];
 
-            screen.DragOver(screen.Tree.Roots[0], last.Children[0], fraction);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], last.Children[0], fraction);
 
             Assert.False(IsMarkedBetween(screen, last));
         }
@@ -245,12 +245,12 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ACollapsedCompositionRow_UsesBothHalves()
         {
             var screen = ShowWithABlock();
-            var last = screen.Tree.Roots[2];
+            var last = screen.Tree.CompositionNodes()[2];
             last.IsExpanded = false;
             Dispatcher.UIThread.RunJobs();
             screen.Window.UpdateLayout();
 
-            screen.DragOver(screen.Tree.Roots[0], last, 0.9);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], last, 0.9);
 
             Assert.Equal(DropPosition.After, MarkOf(screen, last));
             Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(last)));
@@ -260,10 +260,10 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_AfterABlock_DrawsTheBarUnderItsLastRow()
         {
             var screen = ShowWithABlock();
-            var last = screen.Tree.Roots[2];
+            var last = screen.Tree.CompositionNodes()[2];
             var lastRow = LastVisibleOf(last);
 
-            screen.DragOver(screen.Tree.Roots[0], lastRow, 0.9);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], lastRow, 0.9);
 
             var line = DropLineOf(screen.RowOf(lastRow));
             var lastRowHeader = HeaderOf(screen.RowOf(lastRow));
@@ -278,13 +278,13 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_BeforeABlock_DrawsTheBarAtItsTop()
         {
             var screen = ShowWithABlock();
-            var last = screen.Tree.Roots[2];
+            var last = screen.Tree.CompositionNodes()[2];
 
-            screen.DragOver(screen.Tree.Roots[0], last, 0.2);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], last, 0.2);
 
-            var above = HeaderOf(screen.RowOf(LastVisibleOf(screen.Tree.Roots[1])));
+            var above = HeaderOf(screen.RowOf(LastVisibleOf(screen.Tree.CompositionNodes()[1])));
             var below = HeaderOf(screen.RowOf(last));
-            var line = DropLineOf(screen.RowOf(LastVisibleOf(screen.Tree.Roots[1])));
+            var line = DropLineOf(screen.RowOf(LastVisibleOf(screen.Tree.CompositionNodes()[1])));
             Assert.True(line.IsVisible);
             // The bar fills the space between the two rows: the same space above it and under it.
             Assert.Equal(Top(screen, above) + above.Bounds.Height, Top(screen, line), 3);
@@ -295,8 +295,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ALayerOnTheBottomHalfOfTheLastRowOfALayer_MarksTheDropAfterIt()
         {
             var screen = Show();
-            var first = screen.Tree.Roots[0].Children[0];
-            var second = screen.Tree.Roots[0].Children[1];
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
             var lastRow = LastVisibleOf(second);
             Assert.NotSame(second, lastRow);
 
@@ -310,8 +310,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ALayerOnAMiddleRowOfALayer_MarksNothing()
         {
             var screen = Show();
-            var first = screen.Tree.Roots[0].Children[0];
-            var second = screen.Tree.Roots[0].Children[1];
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
 
             screen.DragOver(first, second.Children[0], 0.9);
 
@@ -326,9 +326,9 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            screen.DragOver(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], fraction);
+            screen.DragOver(screen.Tree.CompositionNodes()[0].Children[0].Children[0], screen.Tree.CompositionNodes()[1], fraction);
 
-            Assert.Contains(":droptarget", screen.RowOf(screen.Tree.Roots[1]).Classes);
+            Assert.Contains(":droptarget", screen.RowOf(screen.Tree.CompositionNodes()[1]).Classes);
         }
 
         private static TextBoxEditable NameBoxOf(TreeViewItem row) =>
@@ -364,7 +364,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DoubleClick_AwayFromTheName_ExpandsOrCollapsesTheRowWithoutARename(bool expanded)
         {
             var screen = Show();
-            var node = screen.Tree.Roots[0];
+            var node = screen.Tree.CompositionNodes()[0];
             node.IsExpanded = expanded;
             Dispatcher.UIThread.RunJobs();
             var row = screen.RowOf(node);
@@ -380,7 +380,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DoubleClick_OnTheIconOfARow_ExpandsOrCollapsesTheRow()
         {
             var screen = Show();
-            var node = screen.Tree.Roots[0];
+            var node = screen.Tree.CompositionNodes()[0];
             var row = screen.RowOf(node);
             var icon = row.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>().First();
             var point = icon.TranslatePoint(new Point(icon.Bounds.Width / 2, icon.Bounds.Height / 2), screen.Window)!.Value;
@@ -401,7 +401,7 @@ namespace CMiX.Studio.Avalonia.Tests
             modifiers.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
             ((CMiX.Core.Modulation.IModulatable)modifiers.ManagerData.Items[0]).ModulatorManager.AddItem(typeof(CMiX.Core.Modulation.Modulators.LFOModulator));
             Dispatcher.UIThread.RunJobs();
-            var modifierNode = screen.Tree.Roots[0].Children[0].Children[0].Children[0].Children.Single(group => group.Group is ModifiersGroup).Children[0];
+            var modifierNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0].Children[0].Children[0].Children.Single(group => group.Group is ModifiersGroup).Children[0];
             var entityNode = modifierNode.Children.Single(group => group.Group is ModulatorsGroup).Children[0];
             for (var ancestor = entityNode.Parent; ancestor != null; ancestor = ancestor.Parent)
                 ancestor.IsExpanded = true;
@@ -413,14 +413,14 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.False(IsRenaming(NameBoxOf(entityRow)));
             Assert.Equal(before, entityNode.IsExpanded);
-            Assert.True(screen.RowOf(screen.Tree.Roots[0]).IsExpanded);
+            Assert.True(screen.RowOf(screen.Tree.CompositionNodes()[0]).IsExpanded);
         }
 
         [AvaloniaFact]
         public void DoubleClick_OnAToggle_KeepsTheRowAsItIs()
         {
             var screen = Show();
-            var node = screen.Tree.Roots[0];
+            var node = screen.Tree.CompositionNodes()[0];
             var row = screen.RowOf(node);
             var visibility = ToggleWithTheme(row, "ToggleButtonVisibility");
             var before = screen.A.PrefabService.Visibility.Value;
@@ -436,7 +436,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DoubleClick_InTheInputWhileRenaming_KeepsTheRenameAndTheRow()
         {
             var screen = Show();
-            var node = screen.Tree.Roots[0];
+            var node = screen.Tree.CompositionNodes()[0];
             var row = screen.RowOf(node);
             var box = NameBoxOf(row);
             DoubleClick(screen, box.TranslatePoint(new Point(10, box.Bounds.Height / 2), screen.Window)!.Value);
@@ -454,7 +454,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DoubleClick_OnTheName_StartsTheRenameAndKeepsTheRow(bool expanded)
         {
             var screen = Show();
-            var node = screen.Tree.Roots[0];
+            var node = screen.Tree.CompositionNodes()[0];
             node.IsExpanded = expanded;
             Dispatcher.UIThread.RunJobs();
             var row = screen.RowOf(node);
@@ -472,7 +472,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_TheNameBox_FillsTheColoredRowAfterTheIcon()
         {
             var screen = Show();
-            var row = screen.RowOf(screen.Tree.Roots[0]);
+            var row = screen.RowOf(screen.Tree.CompositionNodes()[0]);
             var content = row.GetVisualDescendants().OfType<Grid>().First(grid => grid.Name == "RowContent");
             var box = NameBoxOf(row);
             var colored = HeaderOf(row);
@@ -490,7 +490,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Click_TheChevron_ExpandsAndCollapsesTheRow()
         {
             var screen = Show();
-            var node = screen.Tree.Roots[0];
+            var node = screen.Tree.CompositionNodes()[0];
             var row = screen.RowOf(node);
             var chevron = row.GetVisualDescendants().OfType<ToggleButton>().First(toggle => toggle.Name == "PART_ExpandCollapseChevron");
 
@@ -509,8 +509,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Hover_ARow_LightsOnlyThatRow()
         {
             var screen = Show();
-            var composition = screen.Tree.Roots[0];
-            var layer = composition.Children[0];
+            var composition = screen.Tree.CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
 
             screen.Window.MouseMove(screen.PointIn(layer, 0.5));
             Dispatcher.UIThread.RunJobs();
@@ -524,8 +524,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            Assert.Equal(2, TogglesOf(screen.RowOf(screen.Tree.Roots[0])).Count);
-            Assert.Equal(2, TogglesOf(screen.RowOf(screen.Tree.Roots[0].Children[0])).Count);
+            Assert.Equal(2, TogglesOf(screen.RowOf(screen.Tree.CompositionNodes()[0])).Count);
+            Assert.Equal(2, TogglesOf(screen.RowOf(screen.Tree.CompositionNodes()[0].Children[0].Children[0])).Count);
         }
 
         private static ToggleButton ToggleWithTheme(TreeViewItem row, string themeKey) =>
@@ -542,7 +542,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            foreach (var node in new[] { screen.Tree.Roots[0], screen.Tree.Roots[0].Children[0] })
+            foreach (var node in new[] { screen.Tree.CompositionNodes()[0], screen.Tree.CompositionNodes()[0].Children[0].Children[0] })
             {
                 var row = screen.RowOf(node);
                 var visibility = ToggleWithTheme(row, "ToggleButtonVisibility");
@@ -560,8 +560,8 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
             screen.Window.UpdateLayout();
-            var composition = screen.Tree.Roots[0];
-            var layer = composition.Children[0];
+            var composition = screen.Tree.CompositionNodes()[0];
+            var layer = composition.Children[0].Children[0];
             var entity = layer.Children[0].Children[0];
 
             var edges = new[] { composition, layer, entity }
@@ -572,16 +572,17 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Show_AnEntityRowAndAGroupRow_HaveOnlyTheVisibilityOrNoToggle()
+        public void Show_AnEntityRowAndAGroupRow_HaveOnlyTheVisibilityOrTheHideButtonOfTheList()
         {
             var screen = Show();
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
             Dispatcher.UIThread.RunJobs();
-            var layerNode = screen.Tree.Roots[0].Children[0];
+            var layerNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var group = layerNode.Children[0];
 
             Assert.Single(TogglesOf(screen.RowOf(group.Children[0])));
-            Assert.Empty(TogglesOf(screen.RowOf(group)));
+            // A group has the hide button of its list, which is a visibility toggle too.
+            Assert.Single(TogglesOf(screen.RowOf(group)));
         }
 
         [AvaloniaTheory]
@@ -591,7 +592,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
             var visibility = themeKey == "ToggleButtonVisibility";
-            var toggle = ToggleWithTheme(screen.RowOf(screen.Tree.Roots[0]), themeKey);
+            var toggle = ToggleWithTheme(screen.RowOf(screen.Tree.CompositionNodes()[0]), themeKey);
             var before = visibility ? screen.A.PrefabService.Visibility.Value : screen.A.Mask.IsMask.Value;
 
             toggle.IsChecked = !before;
@@ -605,7 +606,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Show_ARowOfAGroup_ShowsTheNameOfTheGroup()
         {
             var screen = Show();
-            var group = screen.Tree.Roots[0].Children[0].Children[0];
+            var group = screen.Tree.CompositionNodes()[0].Children[0].Children[0].Children[0];
 
             var texts = screen.RowOf(group).GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text);
 
@@ -616,7 +617,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Select_ARow_SelectsTheNode()
         {
             var screen = Show();
-            var node = screen.Tree.Roots[0].Children[1];
+            var node = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
 
             screen.TreeView.SelectedItem = node;
 
@@ -628,11 +629,11 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_TheLowerPartOfARow_MarksTheRowUntilTheDragEnds()
         {
             var screen = Show();
-            var row = screen.RowOf(screen.Tree.Roots[1]);
-            var lastRow = LastVisibleOf(screen.Tree.Roots[1]);
+            var row = screen.RowOf(screen.Tree.CompositionNodes()[1]);
+            var lastRow = LastVisibleOf(screen.Tree.CompositionNodes()[1]);
 
-            screen.DragOver(screen.Tree.Roots[0], lastRow, 0.9);
-            Assert.Equal(DropPosition.After, MarkOf(screen, screen.Tree.Roots[1]));
+            screen.DragOver(screen.Tree.CompositionNodes()[0], lastRow, 0.9);
+            Assert.Equal(DropPosition.After, MarkOf(screen, screen.Tree.CompositionNodes()[1]));
             Assert.Equal(DropMark.GapBelow, TreeDropMark.GetMark(screen.RowOf(lastRow)));
 
             TreeDrag.Cancel(screen.Window, screen.PointIn(lastRow, 0.9));
@@ -644,11 +645,11 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_TheMiddleOfACompositionRow_MarksItAsInside()
         {
             var screen = Show();
-            var layerNode = screen.Tree.Roots[0].Children[0];
+            var layerNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
 
-            screen.DragOver(layerNode, screen.Tree.Roots[1], 0.5);
+            screen.DragOver(layerNode, screen.Tree.CompositionNodes()[1], 0.5);
 
-            Assert.Contains(":droptarget", screen.RowOf(screen.Tree.Roots[1]).Classes);
+            Assert.Contains(":droptarget", screen.RowOf(screen.Tree.CompositionNodes()[1]).Classes);
         }
 
         [AvaloniaTheory]
@@ -657,7 +658,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_TheItemItself_MarksNothing(double fraction)
         {
             var screen = Show();
-            var node = screen.Tree.Roots[0];
+            var node = screen.Tree.CompositionNodes()[0];
 
             screen.DragOver(node, node, fraction);
 
@@ -669,10 +670,10 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ThePlaceOfTheItem_MarksNothing()
         {
             var screen = Show();
-            var next = screen.Tree.Roots[1];
+            var next = screen.Tree.CompositionNodes()[1];
 
             // The first composition before the second one: the same place.
-            screen.DragOver(screen.Tree.Roots[0], next, 0.1);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], next, 0.1);
 
             Assert.NotEqual(DropPosition.Before, MarkOf(screen, next));
         }
@@ -685,8 +686,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ANodeOfTheTree_ShowsOnlyTheMoveCursor(double fraction, bool allowed)
         {
             var screen = Show();
-            var source = screen.Tree.Roots[0];
-            var target = allowed ? screen.Tree.Roots[1] : source;
+            var source = screen.Tree.CompositionNodes()[0];
+            var target = allowed ? screen.Tree.CompositionNodes()[1] : source;
 
             screen.DragOver(source, target, fraction);
 
@@ -697,9 +698,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public void DragOver_ATargetThatIsNotAllowed_MarksNothing()
         {
             var screen = Show();
-            var group = screen.Tree.Roots[0].Children[0].Children[0];
+            var group = screen.Tree.CompositionNodes()[0].Children[0].Children[0].Children[0];
 
-            screen.DragOver(screen.Tree.Roots[0], group, 0.5);
+            screen.DragOver(screen.Tree.CompositionNodes()[0], group, 0.5);
 
             Assert.DoesNotContain(":droptarget", screen.RowOf(group).Classes);
             Assert.False(IsMarkedBetween(screen, group));
@@ -709,8 +710,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Drop_OnTheBottomHalfOfTheLastRowOfACompositionBlock_ReordersTheCompositions()
         {
             var screen = Show();
-            var nodeA = screen.Tree.Roots[0];
-            var nodeB = screen.Tree.Roots[1];
+            var nodeA = screen.Tree.CompositionNodes()[0];
+            var nodeB = screen.Tree.CompositionNodes()[1];
 
             screen.Drop(nodeA, LastVisibleOf(nodeB), 0.9);
 
@@ -724,7 +725,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var moved = screen.A.LayerManager.ManagerData.Items[0];
 
-            screen.Drop(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], 0.5);
+            screen.Drop(screen.Tree.CompositionNodes()[0].Children[0].Children[0], screen.Tree.CompositionNodes()[1], 0.5);
 
             Assert.Single(screen.A.LayerManager.ManagerData.Items);
             Assert.Same(moved, screen.B.LayerManager.ManagerData.Items[1]);
@@ -739,7 +740,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var entity = (IPrefab)layer.ModelEntityManager.ManagerData.Items[0];
             ((Layer)screen.A.LayerManager.ManagerData.Items[1]).ModelEntityManager.AddExistingItem(entity);
 
-            screen.Drop(screen.Tree.Roots[0].Children[0], screen.Tree.Roots[1], 0.5);
+            screen.Drop(screen.Tree.CompositionNodes()[0].Children[0].Children[0], screen.Tree.CompositionNodes()[1], 0.5);
 
             Assert.Equal(2, screen.A.LayerManager.ManagerData.Items.Count);
             Assert.Single(screen.B.LayerManager.ManagerData.Items);
@@ -749,12 +750,12 @@ namespace CMiX.Studio.Avalonia.Tests
         public void CanDrag_AGroupOrAnItem_IsTrueForTheItemOnly()
         {
             var screen = Show();
-            var layerNode = screen.Tree.Roots[0].Children[0];
+            var layerNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             ((Layer)screen.A.LayerManager.ManagerData.Items[0]).ModelEntityManager.AddItem(typeof(Entity));
 
             foreach (var group in layerNode.Children)
                 Assert.False(screen.Tree.CanDrag(group));
-            Assert.True(screen.Tree.CanDrag(screen.Tree.Roots[0]));
+            Assert.True(screen.Tree.CanDrag(screen.Tree.CompositionNodes()[0]));
             Assert.True(screen.Tree.CanDrag(layerNode));
             Assert.True(screen.Tree.CanDrag(layerNode.Children[0].Children[0]));
         }
@@ -764,7 +765,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Press_OnAGroupOrALayer_PreparesADragForTheLayerOnly()
         {
             var screen = Show();
-            var layerNode = screen.Tree.Roots[0].Children[0];
+            var layerNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var field = typeof(ProjectTreeView).GetField("pressedNode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
             screen.Window.UpdateLayout();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -794,7 +795,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void PointerPressed_ThatStartsADrag_RaisesNoNodeChosen()
         {
             var screen = Show();
-            var layerNode = screen.Tree.Roots[0].Children[0];
+            var layerNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var chosen = RecordChosen(screen);
             var start = screen.PointIn(layerNode, 0.5);
             var end = start + new Vector(0, 20);
@@ -812,7 +813,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void PointerReleased_WithoutADrag_RaisesNodeChosen()
         {
             var screen = Show();
-            var layerNode = screen.Tree.Roots[0].Children[0];
+            var layerNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var chosen = RecordChosen(screen);
             var point = screen.PointIn(layerNode, 0.5);
 
@@ -827,9 +828,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Drop_OnATargetThatIsNotAllowed_ChangesNothing()
         {
             var screen = Show();
-            var group = screen.Tree.Roots[0].Children[0].Children[0];
+            var group = screen.Tree.CompositionNodes()[0].Children[0].Children[0].Children[0];
 
-            screen.Drop(screen.Tree.Roots[1], group, 0.5);
+            screen.Drop(screen.Tree.CompositionNodes()[1], group, 0.5);
 
             Assert.Equal(new IControl[] { screen.A, screen.B }, screen.Project.CompositionManager.ManagerData.Items);
         }

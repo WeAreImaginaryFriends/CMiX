@@ -45,8 +45,8 @@ namespace CMiX.Studio.Avalonia.Tests
             public UndoManager UndoManager { get; init; } = null!;
 
             public ProjectTree Tree => ViewModel.ProjectTree;
-            public TreeNode CompositionNode => Tree.Roots[0];
-            public TreeNode LayerNode => CompositionNode.Children[0];
+            public TreeNode CompositionNode => Tree.CompositionNodes()[0];
+            public TreeNode LayerNode => CompositionNode.Children[0].Children[0];
             public TreeNode Group<T>() where T : TreeGroup => LayerNode.Children.Single(group => group.Group is T);
 
             // Found by its name: while no item is selected the scroll viewer is hidden and has no visual children yet.
@@ -601,7 +601,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var entity = screen.Group<EntitiesGroup>().Children[0];
             var item = entity.Item;
             Select(screen, entity);
-            var otherEntities = screen.CompositionNode.Children[1].Children.Single(group => group.Group is EntitiesGroup);
+            var otherEntities = screen.CompositionNode.Children[0].Children[1].Children.Single(group => group.Group is EntitiesGroup);
 
             await screen.Tree.DropAsync(entity, otherEntities, DropPosition.Inside);
             TestServiceProviderFactory.Pump();

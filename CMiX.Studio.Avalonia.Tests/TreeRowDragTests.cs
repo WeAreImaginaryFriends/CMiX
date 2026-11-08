@@ -108,7 +108,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Move_PastTheThreshold_BeginsTheDragAndCapturesThePointer()
         {
             var screen = Show();
-            var source = screen.Tree.Roots[0].Children[0];
+            var source = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var (_, captured) = WatchPointer(screen.Window);
             var start = screen.PointIn(source, 0.5);
 
@@ -132,8 +132,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Move_OverARow_MarksTheDropPlace()
         {
             var screen = Show();
-            var layer = screen.Tree.Roots[0].Children[0];
-            var target = screen.Tree.Roots[1];
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var target = screen.Tree.CompositionNodes()[1];
 
             TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
 
@@ -146,8 +146,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Wheel_DuringADrag_ScrollsTheTree()
         {
             var screen = Show(layersOfA: 12, height: 500);
-            var source = screen.Tree.Roots[0].Children[0];
-            var point = screen.PointIn(screen.Tree.Roots[0].Children[2], 0.5);
+            var source = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var point = screen.PointIn(screen.Tree.CompositionNodes()[0].Children[0].Children[2], 0.5);
             TreeDrag.Over(screen.Window, screen.PointIn(source, 0.5), point);
             Assert.Equal(0, screen.Scroller.Offset.Y);
 
@@ -164,8 +164,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Escape_DuringADrag_CancelsAndRestoresTheRows()
         {
             var screen = Show();
-            var layer = screen.Tree.Roots[0].Children[0];
-            var target = screen.Tree.Roots[1];
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var target = screen.Tree.CompositionNodes()[1];
             TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
             Assert.True(screen.Tree.IsDragging);
             screen.Undo.Clear();
@@ -187,8 +187,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void CaptureLost_DuringADrag_Cancels()
         {
             var screen = Show();
-            var layer = screen.Tree.Roots[0].Children[0];
-            var target = screen.Tree.Roots[1];
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var target = screen.Tree.CompositionNodes()[1];
             var (pointer, _) = WatchPointer(screen.Window);
             TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
             Assert.True(screen.Tree.IsDragging);
@@ -207,16 +207,16 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Release_OverATarget_DropsAndSelectsTheItem()
         {
             var screen = Show();
-            var layer = screen.Tree.Roots[0].Children[0];
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var moved = layer.Item;
-            var target = screen.Tree.Roots[1];
+            var target = screen.Tree.CompositionNodes()[1];
 
             TreeDrag.Drop(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
 
             Assert.Single(screen.A.LayerManager.ManagerData.Items);
             Assert.Same(moved, screen.B.LayerManager.ManagerData.Items[1]);
             Assert.Same(moved, screen.Tree.SelectedNode?.Item);
-            Assert.Same(target, screen.Tree.SelectedNode?.Parent);
+            Assert.Same(target.Children[0], screen.Tree.SelectedNode?.Parent);
             Assert.False(screen.View.RowDrag.IsDragging);
             Assert.False(screen.Tree.IsDragging);
             Assert.Null(screen.View.Marker.Marked);
@@ -234,9 +234,9 @@ namespace CMiX.Studio.Avalonia.Tests
             entity.ModifierManager.AddItem(typeof(CMiX.Core.Modulation.Modifiers.TranslateModifier));
             TestServiceProviderFactory.ExpandAll(screen.Tree);
             screen.Settle();
-            var entityNode = screen.Tree.Roots[0].Children[0].Children.Single(child => child.Group is EntitiesGroup).Children[0];
+            var entityNode = screen.Tree.CompositionNodes()[0].Children[0].Children[0].Children.Single(child => child.Group is EntitiesGroup).Children[0];
             var modifier = entityNode.Children.Single(child => child.Group is ModifiersGroup).Children[0];
-            var blocked = screen.Tree.Roots[0].Children[1];
+            var blocked = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
 
             TreeDrag.Over(screen.Window, screen.PointIn(modifier, 0.5), screen.PointIn(blocked, 0.5));
             Assert.True(blocked.IsDropBlocked);
@@ -259,8 +259,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Release_BetweenTwoRows_UsesTheMarkedRow()
         {
             var screen = Show();
-            var nodeA = screen.Tree.Roots[0];
-            var nodeB = screen.Tree.Roots[1];
+            var nodeA = screen.Tree.CompositionNodes()[0];
+            var nodeB = screen.Tree.CompositionNodes()[1];
             var lastRow = LastVisibleOf(nodeB);
             TreeDrag.Over(screen.Window, screen.PointIn(nodeA, 0.5), screen.PointIn(lastRow, 0.9));
             Assert.Same(screen.RowOf(nodeB), screen.View.Marker.Marked);
@@ -282,8 +282,8 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Drag_OfARow_ShowsACopyOfTheRowUnderThePointerUntilTheEnd()
         {
             var screen = Show();
-            var layer = screen.Tree.Roots[0].Children[0];
-            var target = screen.Tree.Roots[1];
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var target = screen.Tree.CompositionNodes()[1];
             var ghost = screen.View.RowDrag.Ghost;
             Assert.False(ghost.IsShown);
 
@@ -292,24 +292,116 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(ghost.IsShown);
             Assert.False(ghost.Ghost.IsHitTestVisible);
             Assert.Equal(screen.RowOf(layer).Bounds.Width > 0, ghost.Ghost.Width > 0);
-            Assert.IsType<VisualBrush>(ghost.Ghost.Background);
+            Assert.True(ghost.Ghost.Child is global::Avalonia.Controls.Image || ghost.Ghost.Background is VisualBrush);
 
-            // The copy keeps the point of the row that was grabbed under the pointer.
             var pointer = screen.PointIn(target, 0.5);
-            var copyTop = ghost.Ghost.TranslatePoint(new Point(0, ghost.Ghost.Bounds.Height / 2), screen.Window)!.Value.Y;
-            Assert.InRange(copyTop, pointer.Y - ghost.Ghost.Bounds.Height, pointer.Y + ghost.Ghost.Bounds.Height);
-
             TreeDrag.Cancel(screen.Window, pointer);
 
             Assert.False(ghost.IsShown);
+        }
+
+        [AvaloniaTheory]
+        [InlineData(0.15)]
+        [InlineData(0.5)]
+        [InlineData(0.7)]
+        public void Drag_OfARow_KeepsTheGrabbedPointOfTheRowUnderThePointer(double along)
+        {
+            var screen = Show();
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var target = screen.Tree.CompositionNodes()[1];
+            var header = screen.HeaderOf(layer);
+            var row = new Rect(header.TranslatePoint(default, screen.Window)!.Value, header.Bounds.Size);
+            var press = new Point(row.X + row.Width * along, row.Y + row.Height / 2);
+            var pointer = screen.PointIn(target, 0.5);
+
+            TreeDrag.Over(screen.Window, press, pointer);
+
+            // The copy has the size of the row, and the point that was pressed is where the pointer is.
+            var ghost = screen.View.RowDrag.Ghost.Ghost;
+            var copy = new Rect(ghost.TranslatePoint(default, screen.Window)!.Value, ghost.Bounds.Size);
+            Assert.Equal(row.Width, copy.Width, 1);
+            Assert.Equal(row.Height, copy.Height, 1);
+            Assert.Equal(pointer.X - (press.X - row.X), copy.X, 1.5);
+            Assert.Equal(pointer.Y - (press.Y - row.Y), copy.Y, 1.5);
+            TreeDrag.Cancel(screen.Window, pointer);
+        }
+
+        [AvaloniaFact]
+        public void Drag_OfARow_TheCopyThatTheWindowShowsHasTheFillTheIconAndTheNameOfTheRow()
+        {
+            var screen = Show();
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var target = screen.Tree.CompositionNodes()[1];
+
+            TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
+
+            // The window is drawn as the user sees it, and the pixels of the copy are read back. The copy is made opaque for the test, so
+            // the rows behind it do not mix in.
+            var ghost = screen.View.RowDrag.Ghost.Ghost;
+            ghost.Opacity = 1;
+            screen.Window.UpdateLayout();
+            var size = new PixelSize((int)Math.Ceiling(screen.Window.Bounds.Width), (int)Math.Ceiling(screen.Window.Bounds.Height));
+            var bitmap = new global::Avalonia.Media.Imaging.RenderTargetBitmap(size, new Vector(96, 96));
+            bitmap.Render(screen.Window);
+            using var stream = new MemoryStream();
+            bitmap.Save(stream);
+            stream.Position = 0;
+            using var decoded = global::Avalonia.Media.Imaging.WriteableBitmap.Decode(stream);
+            using var pixels = decoded.Lock();
+            int Pixel(int x, int y) => System.Runtime.InteropServices.Marshal.ReadInt32(pixels.Address, y * pixels.RowBytes + x * 4);
+
+            var origin = ghost.TranslatePoint(default, screen.Window)!.Value;
+            var left = (int)Math.Round(origin.X);
+            var top = (int)Math.Round(origin.Y);
+            var width = (int)Math.Round(ghost.Bounds.Width);
+            var height = (int)Math.Round(ghost.Bounds.Height);
+            var middle = top + height / 2;
+            var fill = Pixel(left + 2, middle);
+
+            // From edge to edge the copy has the fill, so nothing is cut at the right.
+            Assert.Equal(fill, Pixel(left + width - 3, middle));
+
+            int Different(int from, int to)
+            {
+                var count = 0;
+                for (var x = left + from; x < left + to; x++)
+                    for (var y = top; y < top + height; y++)
+                        if (Pixel(x, y) != fill)
+                            count++;
+                return count;
+            }
+
+            // The icon is at the left of the row, and the name is after it.
+            Assert.True(Different(4, 24) > 10, "The icon is not in the copy.");
+            Assert.True(Different(26, 120) > 20, "The name is not in the copy.");
+
+            TreeDrag.Cancel(screen.Window, screen.PointIn(target, 0.5));
+        }
+        [AvaloniaFact]
+        public void Drag_OfARow_FadesTheRowThatIsDraggedAndRestoresItAtTheEnd()
+        {
+            var screen = Show();
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var other = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
+            var target = screen.Tree.CompositionNodes()[1];
+            Assert.Equal(1, screen.HeaderOf(layer).Opacity);
+
+            TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
+
+            Assert.Equal(0.4, screen.HeaderOf(layer).Opacity);
+            Assert.Equal(1, screen.HeaderOf(other).Opacity);
+
+            TreeDrag.Cancel(screen.Window, screen.PointIn(target, 0.5));
+
+            Assert.Equal(1, screen.HeaderOf(layer).Opacity);
         }
 
         [AvaloniaFact]
         public void Cursor_DuringADrag_IsTheMoveCursor()
         {
             var screen = Show();
-            var layer = screen.Tree.Roots[0].Children[0];
-            var target = screen.Tree.Roots[1];
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var target = screen.Tree.CompositionNodes()[1];
             Assert.Null(screen.TreeView.Cursor);
 
             TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));

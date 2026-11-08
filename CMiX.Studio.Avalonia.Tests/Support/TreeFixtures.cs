@@ -25,12 +25,15 @@ namespace CMiX.Studio.Avalonia.Tests.Support
             public Layer Layer => LayerOfA(0);
             public Layer LayerOfA(int index) => (Layer)A.LayerManager.ManagerData.Items[index];
 
-            public TreeNode NodeA => Tree.Roots[0];
-            public TreeNode NodeB => Tree.Roots[1];
+            public TreeNode NodeA => Tree.CompositionNodes()[0];
+            public TreeNode NodeB => Tree.CompositionNodes()[1];
             public TreeNode CompositionNode => NodeA;
             public TreeNode LayerNode => LayerNodeOfA(0);
-            public TreeNode LayerNodeOfA(int index) => NodeA.Children[index];
-            public TreeNode LayerNodeOfB(int index) => NodeB.Children[index];
+            public TreeNode LayerNodeOfA(int index) => LayersOf(NodeA).Children[index];
+            public TreeNode LayerNodeOfB(int index) => LayersOf(NodeB).Children[index];
+
+            // The row of the layers of a composition: the Layers group, the first row under the composition.
+            public static TreeNode LayersOf(TreeNode composition) => Group<LayersGroup>(composition);
 
             // The group of this kind under a node.
             public static TreeNode Group<T>(TreeNode node) where T : TreeGroup => node.Children.Single(child => child.Group is T);

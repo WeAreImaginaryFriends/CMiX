@@ -47,10 +47,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (view, tree) = Show();
             var foreground = ColorOf((IBrush)Application.Current!.FindResource("ForegroundBrush")!);
-            var group = tree.Roots[0].Children[0].Children[0];
+            var group = tree.CompositionNodes()[0].Children[0].Children[0].Children[0];
             var name = ItemOf(view, group).GetVisualDescendants().OfType<TextBlock>().First(text => text.Text == group.Header);
 
-            foreach (var node in new[] { tree.Roots[0], tree.Roots[0].Children[0], group })
+            foreach (var node in new[] { tree.CompositionNodes()[0], tree.CompositionNodes()[0].Children[0].Children[0], group })
             {
                 var icon = ItemOf(view, node).GetVisualDescendants().OfType<AppIcon>().First();
                 Assert.Equal(1.0, icon.Opacity);

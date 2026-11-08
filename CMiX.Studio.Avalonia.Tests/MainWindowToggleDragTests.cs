@@ -32,7 +32,7 @@ namespace CMiX.Studio.Avalonia.Tests
             public ProjectTreeView TreeView { get; init; } = null!;
             public List<Layer> Layers { get; } = new();
 
-            public TreeNode LayerNode(int index) => ViewModel.ProjectTree.Roots[0].Children[index];
+            public TreeNode LayerNode(int index) => ViewModel.ProjectTree.CompositionNodes()[0].Children[0].Children[index];
 
             private TreeViewItem ItemOf(TreeNode node) =>
                 TreeView.GetVisualDescendants().OfType<TreeViewItem>().First(item => ReferenceEquals(item.DataContext, node));

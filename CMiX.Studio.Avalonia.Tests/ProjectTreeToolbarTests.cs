@@ -77,7 +77,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Tree.IsPointerOverTree = () => true;
             var asked = 0;
-            scene.Tree.MenuRequested += (_, _) => asked++;
+            scene.Tree.AddRequested += (_, _) => asked++;
 
             Assert.True(scene.Tree.AddUnderPointerCommand.CanExecute(null));
             scene.Tree.AddUnderPointerCommand.Execute(null);
@@ -110,7 +110,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Add_WithACompositionSelected_AddsALayerToIt()
         {
             var scene = CreateScene();
-            scene.Tree.SelectedNode = scene.Tree.Roots[1];
+            scene.Tree.SelectedNode = scene.Tree.CompositionNodes()[1];
 
             // The toolbar opens a menu for a selected node. Its first row is the layer.
             scene.Tree.GetAddChoices(scene.Tree.SelectedNode).Single(choice => choice.Header == "Add Layer").Execute!.Invoke();
@@ -124,10 +124,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = CreateScene();
 
-            scene.Tree.SelectedNode = scene.Tree.Roots[0];
+            scene.Tree.SelectedNode = scene.Tree.CompositionNodes()[0];
             Assert.Equal(new[] { true, true, false, true, true }, Enabled(scene.Tree));
 
-            scene.Tree.SelectedNode = scene.Tree.Roots[1];
+            scene.Tree.SelectedNode = scene.Tree.CompositionNodes()[1];
             Assert.Equal(new[] { true, true, true, false, true }, Enabled(scene.Tree));
         }
 
@@ -165,7 +165,7 @@ namespace CMiX.Studio.Avalonia.Tests
             string[] Headers(CMiX.Studio.Avalonia.ViewModels.Tree.TreeNode? node) => scene.Tree.GetAddChoices(node).Select(choice => choice.Header).ToArray();
 
             Assert.Equal(new[] { "Add Composition" }, Headers(null));
-            Assert.Equal(new[] { "Add Layer", "Add Filter", "Add Modifier", "Add Composition" }, Headers(scene.Tree.Roots[0]));
+            Assert.Equal(new[] { "Add Layer", "Add Filter", "Add Modifier", "Add Composition" }, Headers(scene.Tree.CompositionNodes()[0]));
             Assert.Equal("Add Composition", Headers(scene.LayerNodeOfA(0)).Last());
             Assert.Equal(new[] { "Add Camera", "Add Composition" }, Headers(scene.Group<CamerasGroup>(0)));
             Assert.Equal(new[] { "Add Texture", "Add Modifier", "Add Composition" }, Headers(scene.Group<EntitiesGroup>(0).Children[0]));
@@ -231,7 +231,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void MoveDownAndMoveUp_AComposition_MoveIt()
         {
             var scene = CreateScene();
-            scene.Tree.SelectedNode = scene.Tree.Roots[0];
+            scene.Tree.SelectedNode = scene.Tree.CompositionNodes()[0];
 
             scene.Tree.MoveItemDownCommand.Execute(null);
             Assert.Equal(new IControl[] { scene.B, scene.A }, scene.Project.CompositionManager.ManagerData.Items);
@@ -260,7 +260,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var raised = 0;
             scene.Tree.MoveItemDownCommand.CanExecuteChanged += (_, _) => raised++;
 
-            scene.Tree.SelectedNode = scene.Tree.Roots[0];
+            scene.Tree.SelectedNode = scene.Tree.CompositionNodes()[0];
 
             Assert.True(raised > 0);
         }
@@ -383,7 +383,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Click_AddWithACompositionSelected_OpensAPanelWithLayerAndTheProject()
         {
             var screen = Show();
-            screen.Scene.Tree.SelectedNode = screen.Scene.Tree.Roots[1];
+            screen.Scene.Tree.SelectedNode = screen.Scene.Tree.CompositionNodes()[1];
 
             screen.Click(screen.ButtonOf("AddButton"));
 
@@ -403,7 +403,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Click_TheLayerRow_AddsALayerToTheSelectedComposition()
         {
             var screen = Show();
-            screen.Scene.Tree.SelectedNode = screen.Scene.Tree.Roots[1];
+            screen.Scene.Tree.SelectedNode = screen.Scene.Tree.CompositionNodes()[1];
             screen.Click(screen.ButtonOf("AddButton"));
 
             screen.PickRow("Layer");
