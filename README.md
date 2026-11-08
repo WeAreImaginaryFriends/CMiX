@@ -59,6 +59,8 @@ The emergency save in the temp folder holds paths relative to that folder. Open 
 
 The start check reports "Not in sync" when you open a project on a machine other than the one that pushed the Redis snapshot, because the absolute paths differ. Click Push on that machine.
 
+A project file saved before version 1.0.0 stores the Gamma of a gradient, the Frequency and Contrast of a bubble noise and the Cell Count of a checker board as plain values. `ModulatableValueUpgradeJsonConverter` reads that shape into the modulatable shape when the file opens, and the next save writes the new shape. Remove the class, its line in `ProjectSerializer.Options`, its test class and this note when no project file from before that version needs to open.
+
 ## Project tree
 
 The tree shows the project as rows. The one row at the top is the group Compositions, and the compositions are under it. A composition holds the group Layers (with its layers under it), then its Filters and Modifiers. A layer holds Entities, Filters, Modifiers, Cameras and Lights. An item can hold textures, filters, modifiers and modulators. They are groups under the item. The groups Compositions and Layers have a hide button like the other groups, and they have no panel in the inspector yet. A layer dropped on a composition goes to the end of its Layers group.

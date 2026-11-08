@@ -9,7 +9,7 @@ namespace CMiX.Core.Persistence
         public static readonly JsonSerializerOptions Options = new()
         {
             WriteIndented = true,
-            Converters ={new IControlModelJsonConverter()}
+            Converters = { new IControlModelJsonConverter(), new ModulatableValueUpgradeJsonConverter() }
         };
 
         // Options for a project file: asset paths are relative to the folder of the file.
