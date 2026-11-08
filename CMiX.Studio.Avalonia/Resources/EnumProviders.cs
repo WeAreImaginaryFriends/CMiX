@@ -76,6 +76,9 @@ namespace CMiX.Studio.Avalonia.Resources
         public static CMiX.Core.Texturing.Filters.InvertChannel[] InvertChannel { get; } =
             Enum.GetValues<CMiX.Core.Texturing.Filters.InvertChannel>();
 
+        public static CMiX.Core.Texturing.Filters.PulseChannel[] PulseChannel { get; } =
+            Enum.GetValues<CMiX.Core.Texturing.Filters.PulseChannel>();
+
         public static SourceFontStyle[] FontStyle { get; } =
             Enum.GetValues<SourceFontStyle>();
 
