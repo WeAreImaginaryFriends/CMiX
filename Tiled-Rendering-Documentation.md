@@ -633,7 +633,7 @@ Confirmed by test:
 Implemented, not yet tested in vvvv:
 
 * `TileParams` with `CompositionTexelIndex`, and `ScreenTile`, in `Common/`. Verification item 9 is still open: `ScreenTile` compiles with `TileParams` inherited, and the plain methods in `TileParams` are callable from the vertex stage and from the pixel stage.
-* The eight tile aware sources: `BubbleNoise_CMiX`, `Checkerboard_CMiX`, `Gradient_CMiX`, `Gradient_Mesh_CMiX`, `MyNoise_CMiX`, `Noise_CMiX`, `Voronoi_Border_CMiX`, `Voronoi_Dots_CMiX`.
+* The nine tile aware sources: `BubbleNoise_CMiX`, `Checkerboard_CMiX`, `Gradient_CMiX`, `Gradient_Mesh_CMiX`, `Liquish_CMiX`, `MyNoise_CMiX`, `Noise_CMiX`, `Voronoi_Border_CMiX`, `Voronoi_Dots_CMiX`.
 * The tile aware filters: `BlurPassBase_CMiX`, `BlurPass1_CMiX`, `BlurPass2_CMiX`, `BlurPass3_CMiX`, `Edge_CMiX`, `Dither_CMiX`, `Displace_CMiX`, `ShiftRGB_CMiX`, `Tiles_CMiX`, `LEDPanel_CMiX`, `ASCII_CMiX`, `Halftone_CMiX`, `HeightShadows_Pass0_CMiX`, `HeightShadows_Pass1_CMiX`. `Tiles_CMiX` is the repository equivalent of the pixelate example in G4.
 * The 2^L alignment rule of section 2.5, with the tile end not clamped at the composition edge. It is documented. The patch side in the tile computation is not yet implemented.
 

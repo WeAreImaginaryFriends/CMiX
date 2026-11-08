@@ -52,6 +52,7 @@ Categories: G1 source, G2 per pixel, G3 neighbourhood, G4 position dependent, G5
 | `Sources/Checkerboard_CMiX_TextureFX.sdsl` | G1 | Adds `ScreenTile`. | 0 | Yes |
 | `Sources/Gradient_CMiX_TextureFX.sdsl` | G1 | Adds `ScreenTile`. | 0 | Yes |
 | `Sources/Gradient_Mesh_CMiX_TextureFX.sdsl` | G1 | Adds `ScreenTile`. The aspect comes from `CompositionResolution`. | 0 | Yes |
+| `Sources/Liquish_CMiX_TextureFX.sdsl` | G1, G9 | Adds `ScreenTile`. Time comes from the shared pin. | 0 | Yes |
 | `Sources/MyNoise_CMiX_TextureFX.sdsl` | G1 | Moved from `Filters/`. Adds `ScreenTile`. | 0 | Yes |
 | `Sources/Noise_CMiX_TextureFX.sdsl` | G1 | Adds `ScreenTile`. | 0 | Yes |
 | `Sources/Voronoi_Border_CMiX_TextureFX.sdsl` | G1 | Adds `ScreenTile`. | 0 | Yes. A pixel on a cell edge can differ. |
@@ -70,8 +71,10 @@ Categories: G1 source, G2 per pixel, G3 neighbourhood, G4 position dependent, G5
 | `Filters/Halftone_CMiX_TextureFX.sdsl` | G4, G5, `Texture1` static | Adds `TileParams`. The dot grid is in composition UV from `CompositionTexelIndex`. The `Texture0` samples go through `CompositionToTileUV` with `LinearSampler` instead of `LinearRepeatSampler`. The `Texture1` pattern keeps `LinearRepeatSampler`. | `1.5 * R / NumberOfTiles` | Yes. `Texture1` is a shared static pattern. |
 | `Filters/HeightShadows_Pass0_CMiX_TextureFX.sdsl` | G5, G9, no mip (level 0 only) | Adds `TileParams`. The ray marches in composition UV. The height samples go through `CompositionToTileUV`. The jitter seed is the composition texel index. | About `(RayLength + 4.8 * RayJitter) * R` | Yes. Only small `RayLength` and `RayJitter` values fit a pad. `Texture1` must be the same tile. |
 | `Filters/HeightShadows_Pass1_CMiX_TextureFX.sdsl` | G5, G9, Mip | Adds `TileParams`. The tap offsets are divided by `TileSize`. The seeds are the composition texel index. The LOD comes from `CompositionResolution`. | `1.25 * ShadowBlurAmount * R`, plus the mip footprint `2^lod`, with `lod` up to `0.25 * log2(max R)` | Yes, exact up to Lmax |
+| `Filters/Invert_CMiX_TextureFX.sdsl` | G2 | CMiX copy with more modes than the package shader. No code change. | 0 | Yes |
 | `Filters/TexArrayBlend_CMiX_TextureFX.sdsl` | G8, per pixel | Rename only. No code change. | 0 | Yes. All array slices must be the same tile. |
 | `Filters/Texturize_CMiX_TextureFX.sdsl` | G4, grid at the tile origin | Rename only. No code change. | n/a | No, unless its input `Texture0` is a shared static texture. |
+| `Utils/SetAlpha_CMiX_TextureFX.sdsl` | G2 | CMiX copy. A graph on the `AlphaMask` pin must be tile safe. | 0 | Yes |
 
 `Texturize_CMiX` samples `Texture0` near the tile origin for every pixel. A later conversion is possible: a grid in composition space and the aspect from `CompositionResolution`.
 
@@ -93,6 +96,7 @@ These files were in the repository before this work. The project uses the packag
 | `Filters/TriColorOperations.sdsl` | Pure include | n/a | VL.Addons.Stride, `shaders/TextureFX/Filters` |
 | `Filters/HSCB_Internal_TextureFX.sdsl` | Per pixel | 0 | VL.Addons.Stride, `shaders/TextureFX/Filters` |
 | `Filters/Invert_Internal_TextureFX.sdsl` | Per pixel | 0 | VL.Addons.Stride, `shaders/TextureFX/Filters` |
+| `Filters/Pulse_Internal_TextureFX.sdsl` | Per pixel. Never copied. The Pulse filter of CMiX uses the package node. | 0 | VL.Addons.Stride, `shaders/TextureFX/Filters` |
 | `Filters/Threshold_Internal_TextureFX.sdsl` | Per pixel. `fwidth` needs 2^L aligned tiles. | 0 | VL.Addons.Stride, `shaders/TextureFX/Filters` |
 | `Filters/TriColor_Internal_TextureFX.sdsl` | Per pixel | 0 | VL.Addons.Stride, `shaders/TextureFX/Filters` |
 | `Utils/SetAlpha_Internal_TextureFX.sdsl` | Per pixel. A graph on the `AlphaMask` pin must be tile safe. | 0 | VL.Addons.Stride, `shaders/TextureFX/Utils` |
@@ -103,7 +107,7 @@ These files were in the repository before this work. The project uses the packag
 | `Filters/Kaleidoscope_Internal_TextureFX.sdsl` | Not compliant, unbounded gather. It reaches the whole texture. | n/a | VL.Addons.Stride, `shaders/TextureFX/Filters` |
 | `Filters/Transform_Internal_TextureFX.sdsl` | Not compliant, unbounded gather. A rotation or a scale reaches across the composition. | n/a | VL.Addons.Stride, `shaders/TextureFX/Filters` |
 
-The folders `HappyLibs/` and `Utils/` are gone. `Common/` now contains only the two shared mixins.
+The folder `HappyLibs/` is gone. `Utils/` holds `SetAlpha_CMiX`. `Common/` contains only the two shared mixins.
 
 ## Verification
 
