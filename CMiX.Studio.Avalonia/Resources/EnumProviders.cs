@@ -106,6 +106,9 @@ namespace CMiX.Studio.Avalonia.Resources
         public static CMiX.Core.Texturing.Filters.HalftoneMode[] HalftoneMode { get; } =
             Enum.GetValues<CMiX.Core.Texturing.Filters.HalftoneMode>();
 
+        public static CMiX.Core.Texturing.Sources.GradientMeshType[] GradientMeshType { get; } =
+            Enum.GetValues<CMiX.Core.Texturing.Sources.GradientMeshType>();
+
         public static FontFamily[] SortedFontsCollection { get; } =
             FontManager.Current.SystemFonts.OrderBy(f => f.Name).ToArray();
     }

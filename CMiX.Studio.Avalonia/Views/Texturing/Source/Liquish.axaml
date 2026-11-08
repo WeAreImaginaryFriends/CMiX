@@ -1,0 +1,42 @@
+﻿<Modulation:PanelModulatable
+    x:Class="CMiX.Studio.Avalonia.Views.Liquish"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    x:Name="liquish">
+
+    <StackPanel Spacing="{DynamicResource SpacingMD}">
+
+        <Modulation:DragValueModulatable
+            Caption="Time"
+            DataContext="{Binding Time}"
+            ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=liquish}" />
+
+        <Modulation:Vector2Modulatable
+            Caption="Scale"
+            DataContext="{Binding Scale}"
+            ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=liquish}" />
+
+        <ui:StackPanelPositioned Spacing="{DynamicResource SpacingXXS}">
+
+            <ui:ColorSelector
+                Caption="Color A"
+                DataContext="{Binding ColorA}" />
+
+            <ui:ColorSelector
+                Caption="Color B"
+                DataContext="{Binding ColorB}" />
+
+            <ui:ColorSelector
+                Caption="Color C"
+                DataContext="{Binding ColorC}" />
+
+        </ui:StackPanelPositioned>
+
+        <Views:TextureResolution />
+
+    </StackPanel>
+
+</Modulation:PanelModulatable>

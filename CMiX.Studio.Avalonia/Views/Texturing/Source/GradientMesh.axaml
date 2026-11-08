@@ -1,0 +1,57 @@
+﻿<Modulation:PanelModulatable
+    x:Class="CMiX.Studio.Avalonia.Views.GradientMesh"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:Modulation="clr-namespace:CMiX.Studio.Avalonia.Views.Modulation"
+    xmlns:Resources="clr-namespace:CMiX.Studio.Avalonia.Resources"
+    xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    x:Name="gradientMesh">
+
+    <StackPanel Spacing="{DynamicResource SpacingMD}">
+
+        <ui:StackPanelPositioned Spacing="{DynamicResource SpacingXXS}">
+
+            <Modulation:DragValueModulatable
+                Caption="Time"
+                DataContext="{Binding Time}"
+                ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=gradientMesh}" />
+
+            <Modulation:DragValueModulatable
+                Caption="Rotation Speed"
+                DataContext="{Binding RotationSpeed}"
+                ModulatorManager="{Binding DataContext.ModulatorManager, ElementName=gradientMesh}" />
+
+        </ui:StackPanelPositioned>
+
+        <ui:StackPanelPositioned Spacing="{DynamicResource SpacingXXS}">
+
+            <ui:ColorSelector
+                Caption="Color 1"
+                DataContext="{Binding Color1}" />
+
+            <ui:ColorSelector
+                Caption="Color 2"
+                DataContext="{Binding Color2}" />
+
+            <ui:ColorSelector
+                Caption="Color 3"
+                DataContext="{Binding Color3}" />
+
+            <ui:ColorSelector
+                Caption="Color 4"
+                DataContext="{Binding Color4}" />
+
+        </ui:StackPanelPositioned>
+
+        <ui:ComboBoxCaptioned
+            Caption="Type"
+            ItemsSource="{x:Static Resources:EnumProviders.GradientMeshType}"
+            ResetCommand="{Binding GradientType.ResetCommand}"
+            SelectedItem="{Binding GradientType.Value}" />
+
+        <Views:TextureResolution />
+
+    </StackPanel>
+
+</Modulation:PanelModulatable>
