@@ -5,7 +5,6 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
 namespace CMiX.UI.Controls.Parts
@@ -64,13 +63,12 @@ namespace CMiX.UI.Controls.Parts
         }
 
         // The client area of the window that shows the visual, in screen pixels. For a visual in a popup, it is the
-        // window that opened the popup. Nothing when the visual is not shown. A test replaces it.
+        // popup itself: the popup holds the mouse during the drag, and the cursor must stay over it. Over the window
+        // that opened the popup, the drag can lose the mouse, and the popup then closes. Nothing when the visual is
+        // not shown. A test replaces it.
         internal static Func<Visual, PixelRect?> WindowBoundsAt { get; set; } = visual =>
         {
             var topLevel = TopLevel.GetTopLevel(visual);
-            while (topLevel is PopupRoot { ParentTopLevel: { } opener })
-                topLevel = opener;
-
             if (topLevel == null)
                 return null;
 

@@ -441,18 +441,27 @@ namespace CMiX.UI.Tests
             Assert.True(popup.IsOpen);
         }
 
-        // The cursor of a drag in the popup wraps at the edges of the window, not of the small popup.
-        // The headless platform shows a popup in the window itself, so this cannot check a popup with its own window.
+        // The cursor of a drag in the popup wraps at the edges of the window that shows the control. For a popup with
+        // its own window, that is the popup: the popup holds the mouse, and over the window that opened it the drag can
+        // lose the mouse. The headless platform shows a popup in the window itself, so this cannot check a popup with
+        // its own window: it checks that the bounds come from the top level of the control itself.
         [AvaloniaFact]
-        public void WindowBoundsAt_ASliderInThePopup_IsTheWindowThatOpenedThePopup()
+        public void WindowBoundsAt_ControlsInThePopup_IsTheClientAreaOfTheirOwnTopLevel()
         {
-            var (window, _, popup) = ShowSelectorWithOpenPopup();
-            var slider = popup.Child!.GetVisualDescendants().OfType<SliderCMiX>().First();
+            var (_, _, popup) = ShowSelectorWithOpenPopup();
 
-            var bounds = Controls.Parts.DragEditHelper.WindowBoundsAt(slider);
+            foreach (var control in new Control[]
+                     {
+                         popup.Child!.GetVisualDescendants().OfType<SliderCMiX>().First(),
+                         popup.Child!.GetVisualDescendants().OfType<ColorPickerWheel>().Single()
+                     })
+            {
+                var topLevel = TopLevel.GetTopLevel(control)!;
+                var topLeft = topLevel.PointToScreen(new Point(0, 0));
+                var size = topLevel.ClientSize;
 
-            var topLeft = window.PointToScreen(new Point(0, 0));
-            Assert.Equal(new PixelRect(topLeft.X, topLeft.Y, 1000, 600), bounds);
+                Assert.Equal(new PixelRect(topLeft.X, topLeft.Y, (int)size.Width, (int)size.Height), Controls.Parts.DragEditHelper.WindowBoundsAt(control));
+            }
         }
 
         [AvaloniaFact]
