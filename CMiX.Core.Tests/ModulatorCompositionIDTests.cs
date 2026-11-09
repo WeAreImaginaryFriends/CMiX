@@ -29,7 +29,7 @@ namespace CMiX.Core.Tests
         public static IEnumerable<object[]> ModulatorTypes => new[]
         {
             typeof(LFOModulator), typeof(RandomModulator), typeof(BeatRandomModulator),
-            typeof(FFTModulator), typeof(TrackingModulator),
+            typeof(FFTModulator), typeof(TrackingModulator), typeof(IntegratorModulator),
         }.Select(type => new object[] { type });
 
         [Theory]

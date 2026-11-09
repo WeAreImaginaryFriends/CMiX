@@ -15,6 +15,7 @@ namespace CMiX.Core.Tests
             [typeof(BeatLFOModulator)] = ModulatorCategory.Internal,
             [typeof(BeatRandomModulator)] = ModulatorCategory.Internal,
             [typeof(BeatStepModulator)] = ModulatorCategory.Internal,
+            [typeof(IntegratorModulator)] = ModulatorCategory.Internal,
             [typeof(RedisFloatModulator)] = ModulatorCategory.External,
             [typeof(RedisIntModulator)] = ModulatorCategory.External,
             [typeof(RedisBoolModulator)] = ModulatorCategory.External,

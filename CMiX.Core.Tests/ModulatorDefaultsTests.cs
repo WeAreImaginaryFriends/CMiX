@@ -139,5 +139,30 @@ namespace CMiX.Core.Tests
             Assert.False(beatLfo.Quantize.IsEnabled.Value);
             Assert.Equal(4, beatLfo.Quantize.Steps.Value);
         }
+
+        [Fact]
+        public void Create_IntegratorModulator_ConstructsAtItsIntendedDefaults()
+        {
+            var provider = TestServiceProviderFactory.Create();
+            var integrator = (IntegratorModulator)provider.GetRequiredService<ControlFactory>().Create(typeof(IntegratorModulator));
+
+            Assert.Equal(0.0f, integrator.Offset.Value);
+            Assert.True(integrator.Step.Value);
+            Assert.Equal(0.0f, integrator.ResetValue.Value);
+
+            integrator.Offset.Value = 1.0f;
+            integrator.Step.Value = false;
+            integrator.ResetValue.Value = 3.0f;
+
+            integrator.Offset.Reset();
+            integrator.Step.Reset();
+            integrator.ResetValue.Reset();
+
+            Assert.Equal(0.0f, integrator.Offset.Value);
+            Assert.True(integrator.Step.Value);
+            Assert.Equal(0.0f, integrator.ResetValue.Value);
+
+            Assert.NotNull(integrator.Reset);
+        }
     }
 }
