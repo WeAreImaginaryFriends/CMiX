@@ -7,9 +7,11 @@ using Avalonia.Input;
 
 namespace CMiX.UI.Controls.Parts
 {
-    // Keeps a drag going when the real cursor reaches the edge of the screen, like the continuous grab of Blender.
+    // Keeps a drag going when the real cursor reaches the edge of the window, like the continuous grab of Blender.
     // The cursor is hidden during the drag. At the edge it is placed near the opposite edge, and the jump is
     // taken out of the positions that this class returns, so the control sees one continuous movement.
+    // The cursor stays over the window, and so does the release. Over another window, the release can go to that
+    // window and the drag never ends. The window is cut to its screen, because the cursor cannot leave the screen.
     // One instance for each drag.
     internal sealed class DragCursorWrap
     {
@@ -31,6 +33,7 @@ namespace CMiX.UI.Controls.Parts
         private PixelPoint? arrival;
         private PixelPoint departure;
         private int waited;
+        private PixelRect? region;
         private Point last;
 
         public DragCursorWrap(Visual visual, Point start)
@@ -86,25 +89,47 @@ namespace CMiX.UI.Controls.Parts
             return dx * dx + dy * dy;
         }
 
+        // The part of the window on the screen of the point. The whole screen when the window is not known.
+        private PixelRect? RegionAt(PixelPoint point)
+        {
+            if (DragEditHelper.ScreenBoundsAt(visual, point) is not { } screenBounds)
+                return null;
+
+            if (DragEditHelper.WindowBoundsAt(visual) is not { } window)
+                return screenBounds;
+
+            var visible = window.Intersect(screenBounds);
+            return visible.Width > 0 && visible.Height > 0 ? visible : screenBounds;
+        }
+
         private bool TryFindWrap(PixelPoint screen, out PixelPoint destination)
         {
             destination = screen;
 
-            if (DragEditHelper.ScreenBoundsAt(visual, screen) is not { } bounds)
+            // Taken at the first move. A fast move can land on a neighbour screen, and the cursor is hidden there.
+            region ??= RegionAt(screen);
+            if (region is not { } bounds)
                 return false;
 
             var x = screen.X;
             var y = screen.Y;
 
-            if (x >= bounds.Right - 1 - TriggerDistance)
-                x = bounds.X + WrapInset;
-            else if (x <= bounds.X + TriggerDistance)
-                x = bounds.Right - 1 - WrapInset;
+            // A side too short for the inset would place the cursor on the trigger of the other edge.
+            if (bounds.Width > 4 * WrapInset)
+            {
+                if (x >= bounds.Right - 1 - TriggerDistance)
+                    x = bounds.X + WrapInset;
+                else if (x <= bounds.X + TriggerDistance)
+                    x = bounds.Right - 1 - WrapInset;
+            }
 
-            if (y >= bounds.Bottom - 1 - TriggerDistance)
-                y = bounds.Y + WrapInset;
-            else if (y <= bounds.Y + TriggerDistance)
-                y = bounds.Bottom - 1 - WrapInset;
+            if (bounds.Height > 4 * WrapInset)
+            {
+                if (y >= bounds.Bottom - 1 - TriggerDistance)
+                    y = bounds.Y + WrapInset;
+                else if (y <= bounds.Y + TriggerDistance)
+                    y = bounds.Bottom - 1 - WrapInset;
+            }
 
             destination = new PixelPoint(x, y);
             return destination != screen;

@@ -441,6 +441,20 @@ namespace CMiX.UI.Tests
             Assert.True(popup.IsOpen);
         }
 
+        // The cursor of a drag in the popup wraps at the edges of the window, not of the small popup.
+        // The headless platform shows a popup in the window itself, so this cannot check a popup with its own window.
+        [AvaloniaFact]
+        public void WindowBoundsAt_ASliderInThePopup_IsTheWindowThatOpenedThePopup()
+        {
+            var (window, _, popup) = ShowSelectorWithOpenPopup();
+            var slider = popup.Child!.GetVisualDescendants().OfType<SliderCMiX>().First();
+
+            var bounds = Controls.Parts.DragEditHelper.WindowBoundsAt(slider);
+
+            var topLeft = window.PointToScreen(new Point(0, 0));
+            Assert.Equal(new PixelRect(topLeft.X, topLeft.Y, 1000, 600), bounds);
+        }
+
         [AvaloniaFact]
         public void WithoutAHeldPointer_ThePopupStillClosesWhenThePointerGoesAway()
         {

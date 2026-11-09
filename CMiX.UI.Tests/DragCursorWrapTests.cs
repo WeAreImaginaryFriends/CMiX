@@ -15,8 +15,9 @@ using Xunit;
 
 namespace CMiX.UI.Tests
 {
-    // A drag goes on when the cursor reaches the edge of the screen: the cursor is placed near the opposite edge,
+    // A drag goes on when the cursor reaches the edge of the window: the cursor is placed near the opposite edge,
     // and the control sees one continuous movement, like the continuous grab of Blender.
+    // Most tests use a screen as big as the window, so the edges of the two are the same.
     public class DragCursorWrapTests
     {
         private const double FineSpeed = DragEditHelper.FineSpeed;
@@ -50,6 +51,7 @@ namespace CMiX.UI.Tests
             }
 
             public PixelRect Bounds { get; }
+            public IPointer Pointer => pointer;
             public PixelPoint Cursor { get; private set; }
 
             // How far the mouse really moved, without the jumps of the placements.
@@ -249,6 +251,76 @@ namespace CMiX.UI.Tests
             Assert.True(mouse.Placements >= 8, "placements: " + mouse.Placements);
             var expected = Math.Sqrt(Math.Pow(1 + FineSpeed * mouse.MovedX, 2) + Math.Pow(FineSpeed * mouse.MovedY, 2)) / Radius(wheel);
             Assert.InRange(wheel.Color.HSV_S, expected - 0.01, expected + 0.01);
+        }
+
+        // Two screens side by side. A fast move can land on the second screen before the cursor is placed back.
+        [AvaloniaTheory]
+        [InlineData(90)]
+        [InlineData(150)]
+        public void AFastWheelWithShift_StaysOnTheScreenOfTheDragNextToAnotherScreen(int step)
+        {
+            var spy = new CursorSpy();
+            var wheel = new ColorPickerWheel
+            {
+                Width = 200,
+                Height = 200,
+                Theme = (ControlTheme)Application.Current!.FindResource("ColorPickerWheel")!,
+                SelectedColor = Avalonia.Media.Colors.Red,
+            };
+            var window = Show(wheel);
+            var first = ScreenOf(window);
+            var second = new PixelRect(first.Right, first.Y, first.Width, first.Height);
+            using var keepSpy = spy;
+            using var screen = new FakeScreen(first);
+            DragEditHelper.ScreenBoundsAt = (_, point) => first.Contains(point) ? first : second;
+
+            var pointer = new Avalonia.Input.Pointer(Avalonia.Input.Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            var origin = wheel.TranslatePoint(new Point(0, 0), window)!.Value;
+            var press = new Point(origin.X + 101, origin.Y + 100);
+            wheel.RaiseEvent(new PointerPressedEventArgs(wheel, pointer, window, press, 0,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed), KeyModifiers.None)
+            { RoutedEvent = InputElement.PointerPressedEvent });
+            Dispatcher.UIThread.RunJobs();
+
+            var both = new PixelRect(first.X, first.Y, first.Width * 2, first.Height);
+            var mouse = new FakeMouse(window, wheel, pointer, spy, both, window.PointToScreen(press)) { ReportsPlacement = false };
+
+            for (var i = 0; i < 300; i++)
+            {
+                mouse.Move(step, 0);
+                Assert.True(first.Contains(mouse.Cursor), "the cursor left the screen of the drag: " + mouse.Cursor);
+            }
+
+            Assert.True(mouse.Placements >= 8, "placements: " + mouse.Placements);
+        }
+
+        // The window is a small part of the screen, as the Studio docked on the right edge. The cursor must not go over
+        // another window, where the release can go to that window.
+        [AvaloniaTheory]
+        [InlineData(20, 0)]
+        [InlineData(-20, 0)]
+        [InlineData(0, 20)]
+        [InlineData(0, -20)]
+        [InlineData(90, 13)]
+        public void Position_AWheelInAWindowSmallerThanTheScreen_KeepsTheCursorOverTheWindow(int dx, int dy)
+        {
+            var (wheel, mouse, spy, screen) = WheelDrag();
+            using var keepSpy = spy;
+            using var keepScreen = screen;
+            var window = ScreenOf((Window)TopLevel.GetTopLevel(wheel)!);
+            var bigScreen = new PixelRect(window.X - 800, window.Y - 300, 2000, 1200);
+            DragEditHelper.ScreenBoundsAt = (_, _) => bigScreen;
+            var big = new FakeMouse((Window)TopLevel.GetTopLevel(wheel)!, wheel, mouse.Pointer, spy, bigScreen, mouse.Cursor) { StaleMoves = 2 };
+
+            for (var i = 0; i < 200; i++)
+            {
+                big.Move(dx, dy);
+                Assert.True(window.Contains(big.Cursor), "the cursor left the window: " + big.Cursor);
+            }
+
+            Assert.True(big.Placements >= 4, "placements: " + big.Placements);
+            var expected = Math.Sqrt(Math.Pow(1 + FineSpeed * big.MovedX, 2) + Math.Pow(FineSpeed * big.MovedY, 2)) / Radius(wheel);
+            Assert.InRange(wheel.Color.HSV_S, Math.Min(expected, 1) - 0.01, Math.Min(expected, 1) + 0.01);
         }
 
         [AvaloniaFact]

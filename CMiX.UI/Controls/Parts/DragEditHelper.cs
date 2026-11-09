@@ -5,6 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
 namespace CMiX.UI.Controls.Parts
@@ -61,6 +62,22 @@ namespace CMiX.UI.Controls.Parts
             e.Pointer.Capture(null);
             return true;
         }
+
+        // The client area of the window that shows the visual, in screen pixels. For a visual in a popup, it is the
+        // window that opened the popup. Nothing when the visual is not shown. A test replaces it.
+        internal static Func<Visual, PixelRect?> WindowBoundsAt { get; set; } = visual =>
+        {
+            var topLevel = TopLevel.GetTopLevel(visual);
+            while (topLevel is PopupRoot { ParentTopLevel: { } opener })
+                topLevel = opener;
+
+            if (topLevel == null)
+                return null;
+
+            var topLeft = topLevel.PointToScreen(new Point(0, 0));
+            var bottomRight = topLevel.PointToScreen(new Point(topLevel.ClientSize.Width, topLevel.ClientSize.Height));
+            return new PixelRect(topLeft, bottomRight);
+        };
 
         public const double ClickThreshold = 3.0;
 
