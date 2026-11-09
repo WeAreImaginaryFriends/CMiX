@@ -50,7 +50,7 @@ namespace CMiX.UI.Controls.Number
                 _borderValueDisplay.PointerCaptureLost += (s, ev) =>
                 {
                     _interaction?.Dispose();
-                    PseudoClasses.Set(":pressed", false);
+                    EndDrag();
                 };
             }
 
@@ -137,23 +137,27 @@ namespace CMiX.UI.Controls.Number
 
         private void Border_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-            PseudoClasses.Set(":pressed", false);
+            if (_mouseDownPos != null && _borderValueDisplay != null)
+            {
+                var up = e.GetPosition(_borderValueDisplay);
+
+                if (!_dragging && Distance(up, _mouseDownPos.Value) < DragEditHelper.ClickThreshold)
+                    IsEditing = true;
+
+                if (_dragging && _cursorDownScreenPos != null)
+                    DragEditHelper.PlaceCursorAt(_cursorDownScreenPos.Value);
+            }
+
+            EndDrag();
             e.Pointer.Capture(null);
             _interaction?.Dispose();
+        }
 
-            if (_mouseDownPos == null || _borderValueDisplay == null)
-                return;
-
-            var up = e.GetPosition(_borderValueDisplay);
-
-            if (!_dragging && Distance(up, _mouseDownPos.Value) < DragEditHelper.ClickThreshold)
-                IsEditing = true;
-
-            _borderValueDisplay.ClearValue(CursorProperty);
-
-            if (_dragging && _cursorDownScreenPos != null)
-                DragEditHelper.PlaceCursorAt(_cursorDownScreenPos.Value);
-
+        // The pointer can be taken away without a release. The field must then stop following the mouse and show the cursor again.
+        private void EndDrag()
+        {
+            PseudoClasses.Set(":pressed", false);
+            _borderValueDisplay?.ClearValue(CursorProperty);
             _mouseDownPos = null;
             _wrap = null;
             _cursorDownScreenPos = null;

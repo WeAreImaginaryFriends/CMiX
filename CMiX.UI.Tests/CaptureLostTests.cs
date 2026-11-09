@@ -117,6 +117,84 @@ namespace CMiX.UI.Tests
             Assert.NotEqual(StandardCursorType.None, slider.Cursor?.GetType() == typeof(Cursor) ? StandardCursorType.Arrow : StandardCursorType.Arrow);
         }
 
+        // ---------------------------------------------------------------- the drag value
+
+        [AvaloniaFact]
+        public void ADragValue_WhoseCaptureIsLost_NoLongerFollowsTheMouse()
+        {
+            using var spy = new CursorSpy();
+            var drag = new DragValue { Width = 300, Height = 30, Value = 0 };
+            var window = Show(drag);
+            var border = drag.GetVisualDescendants().OfType<Border>().First(b => b.Name == "borderValueDisplay");
+            var pointer = WatchPointer(border);
+            var center = border.TranslatePoint(new Point(border.Bounds.Width / 2, border.Bounds.Height / 2), window)!.Value;
+
+            window.MouseMove(center);
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseMove(new Point(center.X + 20, center.Y));
+            window.MouseMove(new Point(center.X + 40, center.Y));
+            Dispatcher.UIThread.RunJobs();
+            Assert.NotEqual(0, drag.Value);
+            Assert.Equal(StandardCursorType.None.ToString(), border.Cursor?.ToString());
+
+            // Windows gives the mouse to another window: the release goes there.
+            pointer()!.Capture(null);
+            Dispatcher.UIThread.RunJobs();
+            var value = drag.Value;
+
+            // The mouse comes back over the field with no button down.
+            for (var i = 1; i <= 6; i++)
+            {
+                window.MouseMove(new Point(center.X + 20 - 10 * i, center.Y));
+                Dispatcher.UIThread.RunJobs();
+            }
+            window.MouseUp(new Point(center.X - 40, center.Y), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(value, drag.Value);
+            Assert.NotEqual(StandardCursorType.None.ToString(), border.Cursor?.ToString());
+            Assert.False(drag.Classes.Contains(":pressed"));
+            Assert.Empty(spy.Placed);
+            Assert.False(drag.IsEditing);
+        }
+
+        [AvaloniaFact]
+        public void ADragValue_ClickedWithoutAMove_StartsTheEdit()
+        {
+            var drag = new DragValue { Width = 300, Height = 30, Value = 0 };
+            var window = Show(drag);
+            var border = drag.GetVisualDescendants().OfType<Border>().First(b => b.Name == "borderValueDisplay");
+            var center = border.TranslatePoint(new Point(border.Bounds.Width / 2, border.Bounds.Height / 2), window)!.Value;
+
+            window.MouseMove(center);
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(drag.IsEditing);
+        }
+
+        [AvaloniaFact]
+        public void ADragValue_AfterADrag_PutsTheCursorBackWhereThePressWas()
+        {
+            using var spy = new CursorSpy();
+            var drag = new DragValue { Width = 300, Height = 30, Value = 0 };
+            var window = Show(drag);
+            var border = drag.GetVisualDescendants().OfType<Border>().First(b => b.Name == "borderValueDisplay");
+            var center = border.TranslatePoint(new Point(border.Bounds.Width / 2, border.Bounds.Height / 2), window)!.Value;
+
+            window.MouseMove(center);
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseMove(new Point(center.X + 20, center.Y));
+            window.MouseMove(new Point(center.X + 40, center.Y));
+            window.MouseUp(new Point(center.X + 40, center.Y), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Single(spy.Placed);
+            Assert.NotEqual(StandardCursorType.None.ToString(), border.Cursor?.ToString());
+            Assert.False(drag.IsEditing);
+        }
+
         // ---------------------------------------------------------------- the color wheel
 
         private static (ColorPickerWheel Wheel, Window Window, List<Avalonia.Media.Color> Colors) ShowWheel()
