@@ -610,7 +610,7 @@ namespace CMiX.Core.Networking
             var behindTail = false;
             await DispatchCurrentAsync(store, generation, () =>
             {
-                behindTail = IsJoined && IsBehindTail(tick.Tail);
+                behindTail = IsJoined && IsBehindTail(tick.Tail, tick.Position);
                 // The tail of another store is the true one. Every other tick only moves it up.
                 if (tick.Tail > TailId || behindTail) TailId = tick.Tail;
                 if (tick.Peers != null) ReplacePeers(tick.Peers);
@@ -637,8 +637,14 @@ namespace CMiX.Core.Networking
 
         // A replacement store with an earlier clock gives IDs below the own position. The reader
         // then waits for entries that never come, so the peer joins the new store from its snapshot.
-        private bool IsBehindTail(StreamPosition tail)
-            => tail != StreamPosition.Zero && tail < LastAppliedId;
+        // The tail is compared with the position from before the tail was read: own appends after
+        // the read, for example during a drag, move the position past that tail in the same store.
+        // A join after the read can lower the position, so the lower of the two positions counts.
+        private bool IsBehindTail(StreamPosition tail, StreamPosition positionAtRead)
+        {
+            var position = positionAtRead < LastAppliedId ? positionAtRead : LastAppliedId;
+            return tail != StreamPosition.Zero && tail < position;
+        }
 
         private void ReplacePeers(IReadOnlyList<PeerInfo> peers)
         {

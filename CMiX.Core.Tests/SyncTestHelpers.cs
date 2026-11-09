@@ -221,8 +221,16 @@ namespace CMiX.Core.Tests
             if (gate != null)
                 await gate();
 
-            return await _inner.ReadTailAsync();
+            var tail = await _inner.ReadTailAsync();
+            var after = AfterReadTail;
+            if (after != null)
+                await after();
+
+            return tail;
         }
+
+        // Lets a test hold a tail that was read, to check what happens when the tail is old at the tick.
+        public Func<Task> AfterReadTail { get; set; }
         public Task TrimAsync(StreamPosition minId) { Enter(); TrimCalls.Enqueue(minId); return _inner.TrimAsync(minId); }
         public Task HeartbeatAsync(string peerId, IReadOnlyDictionary<string, string> fields, TimeSpan ttl) { Enter(); return _inner.HeartbeatAsync(peerId, fields, ttl); }
         public Task<IReadOnlyList<PeerInfo>> ListPeersAsync() { Enter(); return _inner.ListPeersAsync(); }

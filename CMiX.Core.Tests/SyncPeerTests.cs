@@ -682,6 +682,42 @@ namespace CMiX.Core.Tests
             await WaitUntilAsync(() => peer.IsInSync, detail: () => $"tail={peer.TailId} last={peer.LastAppliedId}");
         }
 
+        // A presence tick reads the tail, and the own appends of a drag move the position on before the tick is applied.
+        // The old tail is then below the position, but the store is the same. The peer must not join again: a join
+        // drops the own edits that wait to be sent and applies the snapshot, so the value goes back.
+        [Fact]
+        public async Task PresenceTick_OwnAppendsPassTheReadTail_DoesNotJoinAgain()
+        {
+            var inner = new InMemorySyncStore(1000000);
+            var store = new WrappingSyncStore(inner);
+            var target = new RecordingSyncTarget { Model = ModelWithOneComposition() };
+            using var peer = CreatePeer(target, store);
+            peer.Start(Options("A"), autoJoin: true);
+            await WaitUntilAsync(() => peer.IsJoined);
+            var snapshotsBefore = target.SnapshotsApplied;
+
+            var reached = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            store.AfterReadTail = async () =>
+            {
+                reached.TrySetResult(true);
+                await release.Task;
+            };
+            await WaitUntilAsync(() => reached.Task.IsCompleted, 15000, () => $"status={peer.Status}");
+            store.AfterReadTail = null;
+
+            var heldTail = await inner.ReadTailAsync();
+            for (var i = 0; i < 5; i++)
+                peer.SendMessage(new MessageOnClick(Guid.NewGuid()));
+            await WaitUntilAsync(() => peer.LastAppliedId > heldTail, 5000, () => $"last={peer.LastAppliedId} held={heldTail}");
+
+            release.SetResult(true);
+            await Task.Delay(500);
+
+            Assert.Equal(snapshotsBefore, target.SnapshotsApplied);
+            Assert.True(peer.IsJoined);
+        }
+
         [Fact]
         public async Task Outgoing_KeepsOrder()
         {
