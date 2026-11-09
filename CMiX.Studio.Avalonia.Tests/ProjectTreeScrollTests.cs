@@ -158,14 +158,21 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (view, tree, scroller) = Show();
             DragTo(view, tree, scroller, scroller.Bounds.Height / 2);
+            // The timer of the drag also scrolls while the test runs the jobs. Read the offset after the move.
             MoveTo(scroller, scroller.Bounds.Height - 4);
+            var before = scroller.Offset.Y;
             Assert.True(view.AutoScrollStep() > 0);
-            Assert.True(scroller.Offset.Y > 0);
+            Assert.True(scroller.Offset.Y > before);
 
-            var down = scroller.Offset.Y;
+            // Some more steps down. A tick up during the next move must not bring the view to the top.
+            while (scroller.Offset.Y < 4 * DragAutoScroller.MaxScrollStep)
+                Assert.True(view.AutoScrollStep() > 0);
+
             MoveTo(scroller, 4);
+            before = scroller.Offset.Y;
+            Assert.True(before > 0);
             Assert.True(view.AutoScrollStep() < 0);
-            Assert.True(scroller.Offset.Y < down);
+            Assert.True(scroller.Offset.Y < before);
 
             TreeDrag.Cancel(window!, PointAt(scroller, 4));
             Assert.False(tree.IsDragging);
