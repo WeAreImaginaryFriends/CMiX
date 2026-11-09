@@ -146,7 +146,7 @@ namespace CMiX.Core.Tests
             var provider = TestServiceProviderFactory.Create();
             var integrator = (IntegratorModulator)provider.GetRequiredService<ControlFactory>().Create(typeof(IntegratorModulator));
 
-            Assert.Equal(0.0f, integrator.Offset.Value);
+            Assert.Equal(0.01f, integrator.Offset.Value);
             Assert.True(integrator.Step.Value);
             Assert.Equal(0.0f, integrator.ResetValue.Value);
 
@@ -158,7 +158,7 @@ namespace CMiX.Core.Tests
             integrator.Step.Reset();
             integrator.ResetValue.Reset();
 
-            Assert.Equal(0.0f, integrator.Offset.Value);
+            Assert.Equal(0.01f, integrator.Offset.Value);
             Assert.True(integrator.Step.Value);
             Assert.Equal(0.0f, integrator.ResetValue.Value);
 

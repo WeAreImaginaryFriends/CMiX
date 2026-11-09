@@ -46,7 +46,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var values = DragValues(view);
             Assert.Equal(2, values.Count);
-            Assert.Equal(0.0, values[0].Value);
+            Assert.Equal(0.01f, (float)values[0].Value);
             Assert.Equal(0.0, values[1].Value);
             Assert.True(view.GetVisualDescendants().OfType<ToggleButtonCaptioned>().Single().IsChecked);
         }
