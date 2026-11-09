@@ -220,6 +220,24 @@
         <Style Selector="^:droptarget /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
         </Style>
+        <!-- A row with no children has a grey fill, not the tone of its kind. The styles come after the tone styles, so they replace them.
+             The :empty class follows the number of children, so the fill changes when a row gets its first child or loses its last one.
+             The frames keep the color of the kind. -->
+        <Style Selector="^:empty /template/ Border#RowBorder">
+            <Setter Property="Background" Value="{DynamicResource Grey300Brush}" />
+        </Style>
+        <Style Selector="^:empty /template/ Border#RowBorder.candidate">
+            <Setter Property="Background" Value="{DynamicResource Grey400Brush}" />
+        </Style>
+        <Style Selector="^:empty /template/ Border#RowBorder:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Grey500Brush}" />
+        </Style>
+        <Style Selector="^:empty:selected /template/ Border#RowBorder">
+            <Setter Property="Background" Value="{DynamicResource Grey500Brush}" />
+        </Style>
+        <Style Selector="^:empty:droptarget /template/ Border#RowBorder">
+            <Setter Property="Background" Value="{DynamicResource Grey500Brush}" />
+        </Style>
         <Style Selector="^ /template/ Border#DimLayer.dimmed">
             <Setter Property="Opacity" Value="{DynamicResource TreeDimOpacity}" />
         </Style>

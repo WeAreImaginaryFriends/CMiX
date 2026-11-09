@@ -49,13 +49,53 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Point CenterOf(Window window, Border row) =>
             row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), window)!.Value;
 
+        private static AvaloniaColor Grey(string key) => ((ISolidColorBrush)Application.Current!.FindResource(key)!).Color;
+
         [AvaloniaFact]
-        public void Show_ARowAtRest_HasTheFillOfItsKind()
+        public void Show_ARowAtRest_HasTheFillOfItsKindOrGreyWithNoChildren()
         {
             var (_, view, tree) = Show();
 
             foreach (var node in All(tree.Roots))
-                Assert.Equal(ToneOf(node).Fill, FillOf(RowOf(view, node)));
+                Assert.Equal(node.Children.Count > 0 ? ToneOf(node).Fill : Grey("Grey300Brush"), FillOf(RowOf(view, node)));
+        }
+
+        [AvaloniaFact]
+        public void AddAndRemove_TheOnlyChild_ChangesTheFillBetweenGreyAndTheKind()
+        {
+            var (window, view, tree) = Show();
+            var layerNode = tree.CompositionNodes()[0].Children[0].Children[1];
+            var entities = layerNode.Children.Single(child => child.Group is EntitiesGroup);
+            var layer = (Layer)layerNode.Item!;
+
+            Assert.Empty(entities.Children);
+            Assert.Equal(Grey("Grey300Brush"), FillOf(RowOf(view, entities)));
+
+            layer.ModelEntityManager.AddItem(typeof(Entity));
+            Settle(window);
+
+            tree.SelectedNode = null;
+            Settle(window);
+            Assert.Equal(ToneOf(entities).Fill, FillOf(RowOf(view, entities)));
+
+            layer.ModelEntityManager.RemoveItem(layer.ModelEntityManager.ManagerData.Items[0]);
+            tree.SelectedNode = null;
+            Settle(window);
+
+            Assert.Equal(Grey("Grey300Brush"), FillOf(RowOf(view, entities)));
+        }
+
+        [AvaloniaFact]
+        public void Select_ARowWithNoChildren_GivesItABrighterGrey()
+        {
+            var (window, view, tree) = Show();
+            var entities = tree.CompositionNodes()[0].Children[0].Children[1].Children.Single(child => child.Group is EntitiesGroup);
+            Assert.Empty(entities.Children);
+
+            tree.SelectedNode = entities;
+            Settle(window);
+
+            Assert.Equal(Grey("Grey500Brush"), FillOf(RowOf(view, entities)));
         }
 
         [AvaloniaFact]

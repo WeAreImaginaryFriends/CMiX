@@ -65,7 +65,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             foreach (var node in All(tree.Roots))
             {
-                Assert.Equal(node.IsDropCandidate ? ToneOf(node).FillHover : ToneOf(node).Fill, FillOf(view, node));
+                Assert.Equal(ExpectedFill(node, node.IsDropCandidate ? ToneRole.FillHover : ToneRole.Fill), FillOf(view, node));
                 Assert.Equal(node.IsDimmed, Part(view, node, "DimLayer").Classes.Contains("dimmed"));
             }
 
@@ -86,7 +86,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             foreach (var node in All(tree.Roots))
             {
-                Assert.Equal(ToneOf(node).Fill, FillOf(view, node));
+                Assert.Equal(ExpectedFill(node, ToneRole.Fill), FillOf(view, node));
                 Assert.False(Part(view, node, "DimLayer").Classes.Contains("dimmed"));
             }
         }
@@ -195,7 +195,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TreeDrag.Over(window!, Center(view, filter), point);
             Assert.True(tree.IsDragging);
             Assert.Contains(":droptarget", ItemOf(view, target).Classes);
-            Assert.Equal(ToneOf(target).FillSelected, FillOf(view, target));
+            Assert.Equal(ExpectedFill(target, ToneRole.FillSelected), FillOf(view, target));
             TreeDrag.Release(window!, point);
 
             Assert.Empty(lists.Item1.TextureModifierManager.ManagerData.Items);

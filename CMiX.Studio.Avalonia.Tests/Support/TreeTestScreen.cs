@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Panels;
@@ -75,6 +76,21 @@ namespace CMiX.Studio.Avalonia.Tests.Support
         public static Color FillOf(Border border) => ((ISolidColorBrush)border.Background!).Color;
 
         public static Color FillOf(ProjectTreeView view, TreeNode node) => FillOf(RowOf(view, node));
+
+        // The fill that the theme gives to the row of the node for a role: the tone of its kind, or a grey when the node has no children.
+        public static Color ExpectedFill(TreeNode node, ToneRole role)
+        {
+            if (node.Children.Count > 0)
+                return CategoryPalette.FromApplication().For(node.Category!.Value, node.ComposableDepth, node.KindDepth).Of(role);
+
+            var key = role switch
+            {
+                ToneRole.Fill => "Grey300Brush",
+                ToneRole.FillHover => "Grey400Brush",
+                _ => "Grey500Brush"
+            };
+            return ((ISolidColorBrush)Application.Current!.FindResource(key)!).Color;
+        }
 
         // The nodes and all the nodes under them, in tree order.
         public static IEnumerable<TreeNode> All(IEnumerable<TreeNode> nodes) =>
