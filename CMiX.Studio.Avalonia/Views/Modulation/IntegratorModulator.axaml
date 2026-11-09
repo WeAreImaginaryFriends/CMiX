@@ -1,0 +1,36 @@
+<UserControl
+    x:Class="CMiX.Studio.Avalonia.Views.IntegratorModulator"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    d:DesignWidth="400">
+
+    <StackPanel Spacing="{DynamicResource SpacingMD}">
+
+        <ui:StackPanelPositioned Spacing="{DynamicResource SpacingXXS}">
+
+            <ui:DragValue
+                Caption="Offset"
+                Value="{Binding Offset.Value}"
+                ResetCommand="{Binding Offset.ResetCommand}" />
+
+            <ui:DragValue
+                Caption="Reset Value"
+                Value="{Binding ResetValue.Value}"
+                ResetCommand="{Binding ResetValue.ResetCommand}" />
+
+        </ui:StackPanelPositioned>
+
+        <ui:ToggleButtonCaptioned
+            Caption="Step"
+            IsChecked="{Binding Step.Value}"
+            ResetCommand="{Binding Step.ResetCommand}" />
+
+        <ui:ButtonCaptioned
+            Caption="Reset"
+            Command="{Binding Reset.ClickCommand}" />
+
+    </StackPanel>
+
+</UserControl>
