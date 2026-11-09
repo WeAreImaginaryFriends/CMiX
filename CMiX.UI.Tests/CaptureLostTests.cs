@@ -195,6 +195,98 @@ namespace CMiX.UI.Tests
             Assert.False(drag.IsEditing);
         }
 
+        // ---------------------------------------------------------------- Windows gives the mouse to another window
+
+        // Windows no longer gives the mouse to the window of the test. Avalonia does not see it, so its capture stays.
+        private sealed class MouseTakenByAnotherWindow : IDisposable
+        {
+            private readonly Func<Visual, bool> previous = Controls.Parts.DragEditHelper.HoldsMouse;
+
+            public MouseTakenByAnotherWindow() => Controls.Parts.DragEditHelper.HoldsMouse = _ => false;
+
+            public void Dispose() => Controls.Parts.DragEditHelper.HoldsMouse = previous;
+        }
+
+        [AvaloniaFact]
+        public void ASlider_WhoseWindowLostTheMouse_EndsTheDragOnTheNextMove()
+        {
+            using var spy = new CursorSpy();
+            var slider = new SliderCMiX { Minimum = 0, Maximum = 1, Value = 0.5, Width = 300, Height = 30, IsEditable = false };
+            var window = Show(slider);
+            var pointer = WatchPointer(slider);
+            var center = slider.TranslatePoint(new Point(150, 15), window)!.Value;
+
+            window.MouseMove(center);
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseMove(new Point(center.X + 10, center.Y));
+            Dispatcher.UIThread.RunJobs();
+            var value = slider.Value;
+
+            using (new MouseTakenByAnotherWindow())
+            {
+                window.MouseMove(new Point(center.X + 40, center.Y));
+                Dispatcher.UIThread.RunJobs();
+            }
+            window.MouseMove(new Point(center.X + 80, center.Y));
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Null(pointer()!.Captured);
+            Assert.Equal(value, slider.Value);
+            Assert.False(slider.Classes.Contains(":pressed"));
+            Assert.Empty(spy.Placed);
+        }
+
+        [AvaloniaFact]
+        public void ADragValue_WhoseWindowLostTheMouse_EndsTheDragOnTheNextMove()
+        {
+            using var spy = new CursorSpy();
+            var drag = new DragValue { Width = 300, Height = 30, Value = 0 };
+            var window = Show(drag);
+            var border = drag.GetVisualDescendants().OfType<Border>().First(b => b.Name == "borderValueDisplay");
+            var pointer = WatchPointer(border);
+            var center = border.TranslatePoint(new Point(border.Bounds.Width / 2, border.Bounds.Height / 2), window)!.Value;
+
+            window.MouseMove(center);
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseMove(new Point(center.X + 20, center.Y));
+            window.MouseMove(new Point(center.X + 40, center.Y));
+            Dispatcher.UIThread.RunJobs();
+            var value = drag.Value;
+
+            using (new MouseTakenByAnotherWindow())
+            {
+                window.MouseMove(new Point(center.X + 60, center.Y));
+                Dispatcher.UIThread.RunJobs();
+            }
+            window.MouseMove(new Point(center.X + 80, center.Y));
+            window.MouseUp(new Point(center.X + 80, center.Y), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(value, drag.Value);
+            Assert.NotEqual(StandardCursorType.None.ToString(), border.Cursor?.ToString());
+            Assert.Empty(spy.Placed);
+            Assert.False(drag.IsEditing);
+        }
+
+        [AvaloniaFact]
+        public void AWheel_WhoseWindowLostTheMouse_EndsTheDragOnTheNextMove()
+        {
+            var (wheel, window, colors) = ShowWheel();
+            var pointer = NewPointer();
+            var at = wheel.TranslatePoint(new Point(150, 100), window)!.Value;
+
+            Press(wheel, pointer, at, window);
+            var count = colors.Count;
+
+            using (new MouseTakenByAnotherWindow())
+                Move(wheel, pointer, new Point(at.X - 60, at.Y + 40), window);
+            Move(wheel, pointer, new Point(at.X - 100, at.Y - 40), window);
+
+            Assert.Null(pointer.Captured);
+            Assert.Equal(count, colors.Count);
+            Assert.DoesNotContain(":dragging", wheel.Classes);
+        }
+
         // ---------------------------------------------------------------- the color wheel
 
         private static (ColorPickerWheel Wheel, Window Window, List<Avalonia.Media.Color> Colors) ShowWheel()

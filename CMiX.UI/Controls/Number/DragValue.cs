@@ -114,6 +114,9 @@ namespace CMiX.UI.Controls.Number
             if (_mouseDownPos == null || _borderValueDisplay == null)
                 return;
 
+            if (DragEditHelper.LostTheMouse(_borderValueDisplay, e))
+                return;
+
             // The position goes on when the cursor is moved to the other side of the screen.
             var current = _wrap?.Position(e) ?? e.GetPosition(_borderValueDisplay);
 

@@ -5,6 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 
 namespace CMiX.UI.Controls.Parts
 {
@@ -38,6 +39,28 @@ namespace CMiX.UI.Controls.Parts
         // A test replaces it.
         internal static Func<Visual, PixelPoint, PixelRect?> ScreenBoundsAt { get; set; } = (visual, point) =>
             (TopLevel.GetTopLevel(visual) as WindowBase)?.Screens.ScreenFromPoint(point)?.Bounds;
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetCapture();
+
+        // False when Windows gave the mouse to another window during a drag, for example to the window that got the
+        // release. Avalonia 11.2 does not see this, and its capture stays on the control. A test replaces it.
+        internal static Func<Visual, bool> HoldsMouse { get; set; } = visual =>
+        {
+            var handle = TopLevel.GetTopLevel(visual)?.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+            return handle == IntPtr.Zero || GetCapture() == handle;
+        };
+
+        // Gives up the pointer when the window of the visual no longer holds the mouse. The control then ends its
+        // drag in its capture lost handler. Call it on each move of a drag.
+        public static bool LostTheMouse(Visual visual, PointerEventArgs e)
+        {
+            if (HoldsMouse(visual))
+                return false;
+
+            e.Pointer.Capture(null);
+            return true;
+        }
 
         public const double ClickThreshold = 3.0;
 

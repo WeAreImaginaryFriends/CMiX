@@ -71,6 +71,9 @@ namespace CMiX.UI.Controls.ColorPicker
         {
             if (_isDragging && e.Pointer.Captured == this)
             {
+                if (DragEditHelper.LostTheMouse(this, e))
+                    return;
+
                 // The position goes on when the cursor is moved to the other side of the screen.
                 var position = _wrap?.Position(e) ?? e.GetPosition(this);
 
