@@ -625,7 +625,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(new KeyGesture(Key.A, KeyModifiers.Shift), RowOf(menu, "Add").InputGesture);
             Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Shift), RowOf(menu, "Duplicate").InputGesture);
-            Assert.Equal(new KeyGesture(Key.F2), RowOf(menu, "Rename").InputGesture);
+            Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control), RowOf(menu, "Rename").InputGesture);
             Assert.Equal(new KeyGesture(Key.Up, KeyModifiers.Alt), RowOf(menu, "Move Up").InputGesture);
             Assert.Equal(new KeyGesture(Key.Down, KeyModifiers.Alt), RowOf(menu, "Move Down").InputGesture);
             Assert.Equal(new KeyGesture(Key.Delete), RowOf(menu, "Delete").InputGesture);

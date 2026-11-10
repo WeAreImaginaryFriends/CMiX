@@ -53,12 +53,12 @@ namespace CMiX.Studio.Avalonia.Tests
         [Fact]
         public void Load_AFileEntry_WinsOverTheDefault()
         {
-            WriteFile("{ \"Shortcuts\": { \"Tree.Rename\": \"Ctrl+R\" } }");
+            WriteFile("{ \"Shortcuts\": { \"Tree.Rename\": \"Ctrl+Shift+R\" } }");
             var map = new ShortcutMap(FilePath);
 
             map.Load();
 
-            Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control), map["Tree.Rename"]);
+            Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control | KeyModifiers.Shift), map["Tree.Rename"]);
             Assert.Equal(new KeyGesture(Key.Z, KeyModifiers.Control), map["Edit.Undo"]);
         }
 
@@ -66,13 +66,14 @@ namespace CMiX.Studio.Avalonia.Tests
         [Fact]
         public void Load_ARetiredDefault_GivesTheDefaultOfNow()
         {
-            WriteFile("{ \"Shortcuts\": { \"Tree.Duplicate\": \"Ctrl+D\", \"Tree.Rename\": \"Ctrl+R\" } }");
+            WriteFile("{ \"Shortcuts\": { \"Tree.Duplicate\": \"Ctrl+D\", \"Tree.Rename\": \"F2\", \"Tree.Remove\": \"Ctrl+Shift+R\" } }");
             var map = new ShortcutMap(FilePath);
 
             map.Load();
 
             Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Shift), map["Tree.Duplicate"]);
             Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control), map["Tree.Rename"]);
+            Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control | KeyModifiers.Shift), map["Tree.Remove"]);
         }
 
         [Fact]
@@ -83,7 +84,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             map.Load();
 
-            Assert.Equal(new KeyGesture(Key.F2), map["Tree.Rename"]);
+            Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control), map["Tree.Rename"]);
         }
 
         [Fact]
@@ -94,7 +95,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             map.Load();
 
-            Assert.Equal(new KeyGesture(Key.F2), map["Tree.Rename"]);
+            Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control), map["Tree.Rename"]);
             Assert.Equal("{ not json", File.ReadAllText(FilePath));
         }
 

@@ -121,7 +121,7 @@ The file maps a command name to a gesture:
     {
       "Shortcuts": {
         "Edit.Undo": "Ctrl+Z",
-        "Tree.Rename": "F2"
+        "Tree.Rename": "Ctrl+R"
       }
     }
 
@@ -134,7 +134,7 @@ The file maps a command name to a gesture:
 | `Tree.Menu` | W | Open the menu of the selected row at the pointer |
 | `Tree.Expand` | E | Expand or collapse the row that has the keyboard focus, else the selected row |
 | `Tree.Search` | Ctrl+F | Show the search row of the tree and put the focus in its box |
-| `Tree.Rename` | F2 | Rename the selected row |
+| `Tree.Rename` | Ctrl+R | Rename the selected row |
 | `Tree.Remove` | Delete | Remove the selected item |
 | `Tree.Duplicate` | Shift+D | Duplicate the selected item |
 | `Tree.MoveUp` | Alt+Up | Move the selected item up |
@@ -143,7 +143,7 @@ The file maps a command name to a gesture:
 
 The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut.
 
-`Tree.Add`, `Tree.Menu` and `Tree.Expand` work while the pointer is over the tree, whatever has the focus, but not while a text box has the focus. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D.
+`Tree.Add`, `Tree.Menu` and `Tree.Expand` work while the pointer is over the tree, whatever has the focus, but not while a text box has the focus. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D, and a `Tree.Rename` of F2 becomes Ctrl+R.
 
 The Shortcuts section of the Settings tab edits the shortcuts and saves each change to the file at once, and a missing file is created on save. A red dot marks a gesture that two commands of one scope have, and its tooltip names the other command.
 

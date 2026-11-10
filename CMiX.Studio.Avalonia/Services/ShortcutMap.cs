@@ -37,7 +37,7 @@ namespace CMiX.Studio.Avalonia.Services
             ("Tree.Menu", "W"),
             ("Tree.Expand", "E"),
             ("Tree.Search", "Ctrl+F"),
-            ("Tree.Rename", "F2"),
+            ("Tree.Rename", "Ctrl+R"),
             ("Tree.Remove", "Delete"),
             ("Tree.Duplicate", "Shift+D"),
             ("Tree.MoveUp", "Alt+Up"),
@@ -50,6 +50,7 @@ namespace CMiX.Studio.Avalonia.Services
         private static readonly (string Name, string Gesture)[] retiredDefaults =
         {
             ("Tree.Duplicate", "Ctrl+D"),
+            ("Tree.Rename", "F2"),
         };
 
         private readonly Dictionary<string, KeyGesture?> gestures = new();

@@ -101,13 +101,13 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Press_F2_StartsTheRename()
+        public void Press_CtrlR_StartsTheRename()
         {
             var screen = Show();
             var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var box = Part(screen.View, first, "RowBorder").GetVisualDescendants().OfType<TextBoxEditable>().First();
 
-            Press(PhysicalKey.F2);
+            Press(PhysicalKey.R, RawInputModifiers.Control);
 
             Assert.True(box.IsEditing);
         }
@@ -128,7 +128,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Delete_InANameBoxThatIsEdited_RemovesNoItem()
         {
             var screen = Show();
-            Press(PhysicalKey.F2);
+            Press(PhysicalKey.R, RawInputModifiers.Control);
             Press(PhysicalKey.End);
 
             Press(PhysicalKey.Delete);
@@ -141,7 +141,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            Press(PhysicalKey.F2);
+            Press(PhysicalKey.R, RawInputModifiers.Control);
             Assert.Empty(screen.View.KeyBindings);
 
             Press(PhysicalKey.Escape);
@@ -154,13 +154,13 @@ namespace CMiX.Studio.Avalonia.Tests
         public void TreeKeyBinding_AfterAChangeOfTheMap_UsesTheNewGesture()
         {
             var screen = Show();
-            screen.Shortcuts.Set("Tree.Remove", new KeyGesture(Key.R, KeyModifiers.Control));
+            screen.Shortcuts.Set("Tree.Remove", new KeyGesture(Key.K, KeyModifiers.Control));
             Settle();
 
             Press(PhysicalKey.Delete);
             Assert.Equal(3, screen.Composition.LayerManager.ManagerData.Items.Count);
 
-            Press(PhysicalKey.R, RawInputModifiers.Control);
+            Press(PhysicalKey.K, RawInputModifiers.Control);
             Assert.Equal(2, screen.Composition.LayerManager.ManagerData.Items.Count);
         }
 
