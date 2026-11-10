@@ -283,11 +283,23 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         // Escape clears the text, and Escape in an empty box hides the row and gives the focus back to the tree. Enter and F3 select the
-        // next match, and Shift with them the match before. During a drag the keys do nothing here.
+        // next match, and Shift with them the match before. During a drag, Escape ends the drag without a drop, as it does in the tree,
+        // and the other keys do nothing here.
         private void OnSearchKeyDown(object? sender, KeyEventArgs e)
         {
-            if (DataContext is not ProjectTree tree || tree.IsDragging)
+            if (DataContext is not ProjectTree tree)
                 return;
+
+            if (tree.IsDragging)
+            {
+                if (e.Key == Key.Escape && rowDrag.IsDragging)
+                {
+                    rowDrag.Cancel();
+                    e.Handled = true;
+                }
+
+                return;
+            }
 
             switch (e.Key)
             {

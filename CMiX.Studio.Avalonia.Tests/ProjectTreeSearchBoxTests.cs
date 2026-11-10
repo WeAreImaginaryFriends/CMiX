@@ -65,6 +65,31 @@ namespace CMiX.Studio.Avalonia.Tests
             Pump(screen);
         }
 
+        // The box has the focus during a pointer drag of a row: Escape ends the drag without a drop, as it does in the tree.
+        [AvaloniaFact]
+        public void Escape_InTheBoxDuringAPointerDrag_EndsTheDragWithoutADrop()
+        {
+            var (screen, scene) = Show();
+            Search(screen, "Layer");
+            var rows = scene.Tree.CompositionNodes()[0].Children[0].Children;
+            var before = rows.Select(node => node.Item).ToList();
+            Border RowOf(TreeNode node) => TreeTestScreen.RowOf(screen.View, node);
+            Point Middle(Border row) => row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), screen.Window)!.Value;
+
+            TreeDrag.Over(screen.Window, Middle(RowOf(rows[0])), Middle(RowOf(rows[2])));
+            Assert.True(screen.View.RowDrag.IsDragging);
+            screen.View.SearchBox.Focus();
+            Pump(screen);
+
+            screen.View.SearchBox.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape });
+            Pump(screen);
+
+            Assert.False(screen.View.RowDrag.IsDragging);
+            Assert.False(scene.Tree.IsDragging);
+            Assert.Equal(before, rows.Select(node => node.Item).ToList());
+            Assert.Equal("Layer", scene.Tree.SearchText);
+        }
+
         [AvaloniaFact]
         public void Show_TheTree_HidesTheSearchRow()
         {
