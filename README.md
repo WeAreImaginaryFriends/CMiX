@@ -82,6 +82,8 @@ Each row has a kind: composable (a composition and a layer), entity, camera, lig
 
 While you drag a row, the rows that take it inside are lit, with no border: for a modifier, the group Modifiers of its own entity and of the other entities, for a filter the groups Filters, and for a layer the compositions. A row dropped on the group of its own list goes to the end of the list. The row under the pointer is lit more. The rows next to which the row can go keep their look, and the drop line shows the place: it fills the space between the two rows, under the row above the place (the first row of the tree has it at its top). A row drag is a pointer drag of the tree, not a drag of the system: the tree captures the pointer, so the mouse wheel scrolls the tree during the drag, Escape ends the drag without a drop, and the cursor is the move cursor on every row (`TreeRowDrag`). The tree scrolls while the pointer of a drag is near its top or bottom edge, and faster when it is closer to the edge. A file drag from the file manager is a drag of the system; it scrolls the tree by the edge zone. A drop does not move the view: the first row in view stays where it is, and the tree does not scroll to the moved row. A tree that is higher than its view has room under its last row, so its last row can reach the top of the view. A row that has rows under it takes the drop after it on the bottom half of the last of those rows. The other rows are covered. The rows use the rules of the drop itself (`TreeDropService`), so a lit row always takes the drop. A collapsed row with a lit or a neighbor row inside is not covered. A layer row takes an item of one of its groups inside it and passes it to that group, so an entity dropped on a layer goes to its Entities. A row that takes the kind of the dragged row but refuses it by a rule (another layer of the composition also holds the entity, or the owner cannot hold the modifier) is blocked: it keeps its fill, has a thin frame in a muted warning tone, takes no drop, and its tooltip gives the reason.
 
+A collapsed row that leads to a place for the dragged row opens when the pointer rests on it for 0.6 s, so you can reach a place deep in the tree. `Tree.Expand` (E) during a drag opens the row under the pointer at once, and a second E closes it again. A row that was open before the drag stays open. At the end of the drag, the rows that the drag opened close again. After a drop, the row that took the drop and its parents stay open, so you see where the row went. Escape ends the drag without a drop, also when the search box has the focus, and closes every row that the drag opened.
+
 A row can move inside its list. It can also move to a list of the same kind of another owner: an entity to another layer, a modifier to another entity, a filter, a texture or a modulator to another owner of the same kind of list.
 
 ### Adding to the tree
@@ -94,11 +96,19 @@ The panel opens in three ways:
 - The Add button of the toolbar over the tree. The panel opens with the middle of its search field under the pointer and names the selected row. A click from the keyboard opens it under the button. With nothing selected, the panel offers a composition.
 - The shortcut `Tree.Add` (Shift+A) opens the Add panel of the selected row with the middle of its search field under the pointer, with the title Add. With nothing selected, the panel offers a composition. It works while the pointer is over the tree, whatever has the focus, and does nothing when the pointer is elsewhere. The panel shows every category open: a category is a name, with no expander (`GroupedSearchList.Collapsible`).
 
-The search button at the right end of the toolbar, or `Tree.Search` (Ctrl+F) while the pointer is over the tree or the tree has the focus, shows a search row under the toolbar. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". The rows that do not match are dimmed, and the number after the box is the number of matches. Enter or F3 selects the next match and opens its parents, Shift with them the match before. Escape clears the text, and Escape in an empty box hides the row.
-
 The menu of a row opens with its Add row under the pointer. After the user picks another row of a menu, such as Duplicate, the next menu opens with that row under the pointer.
 
 Every panel ends with the group Project, so a composition can be added under any row. The search field has the focus when the panel opens. Down and Up move over the rows, Enter picks a row, and Escape clears the text and then closes the panel.
+
+### Searching the tree
+
+The search button at the right end of the toolbar, or `Tree.Search` (Ctrl+F) while the pointer is over the tree or the tree has the focus, shows a search row under the toolbar. The row is hidden until then. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. The number after the box is the number of matches.
+
+While the search runs, the parents of every match open, so every match is in sight. When the text is empty again, the rows that the search opened close again. A row that you open or close during the search keeps your choice.
+
+Enter or F3 selects the next match, and Shift with them the match before. At the last match, the next one is the first. Escape clears the text, and Escape in an empty box hides the row. The row stays while it holds text.
+
+There is no search during a drag of a row. The box takes no text, Ctrl+F does nothing, and the tree shows only the look of the drag. After the drop, the search look comes back with the same text.
 
 A tooltip is a dark card with a tip that points at the pointer. It shows a title and, for the buttons of the toolbar, the shortcut. A disabled button says why in its tooltip.
 

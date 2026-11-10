@@ -438,6 +438,28 @@ The Add panel adds something under a node of the tree. One `AddPanel` serves eac
 
 A test that opens a menu at the pointer must put the pointer at the left of the window first. A menu opens at the pointer, and the panel opens to its right, so a pointer that moves right with each click takes the panel out of the window. A click on a row of a popup in a headless test needs a pointer move onto the row first.
 
+### Rows that a drag opens
+
+`TreeRowDrag` opens collapsed rows during a drag, so the user can reach a place deep in the tree.
+
+- `OpensOnRest` tells which rows open: a collapsed row with children and a place for the dragged node under it (`HasDropTargetBelow`). A row that takes the node itself, such as a layer for an entity, counts too, because the places between its children show only when it is open.
+- `TrackRest` runs on each move of the drag. A rest starts when the pointer comes onto such a row, and moves inside that row keep it counting. Another row, or the end of the drag, stops it. A `DispatcherTimer` with `RestDelay` (0.6 s, `DefaultRestDelay`) then calls `OpenRested`. A test can set `RestDelay`, or call `OpenRested` at once, because the headless platform does not fire a `DispatcherTimer`.
+- `OpenedByDrag` lists every row that the drag opened, in order. A new drag starts a new list.
+- `Tree.Expand` (E) during a drag runs `ProjectTree.ToggleExpandUnderPointerCommand`, as outside a drag. While `ProjectTree.IsDragging` is true, the command calls `ProjectTree.ToggleDragRow`, which the view sets to `TreeRowDrag.ToggleHovered`. `ToggleHovered` opens the row under the pointer at once, or closes it when this drag opened it. It does not close a row that was open before the drag. A row that E closed does not open again on a rest until the pointer leaves it.
+- `CloseOpenedRows(kept)` closes the rows of `OpenedByDrag`, except `kept` and its parents. After a drop, `StartDrop` calls it with the drop target, so for a drop Before or After a row, the parents of that row stay open. After a cancel, or a release with no drop, `End` closes every row of the list.
+- `CollapsePanel` closes a row over a few frames, so the rows above the view get shorter after the close. `TreeScrollAnchor.HoldWhileClosing` puts the anchor row back after each layout of the tree, until the `PART_Collapse` panel of every closed row reaches `Progress` 0, or after 500 layout passes. The drop and the cancel both use it after `RestoreAnchor`.
+
+### The search of the tree
+
+The model holds the search. The view shows it.
+
+- `ProjectTree.SearchText` holds the text. `RefreshSearch` walks the tree and sets `TreeNode.IsSearchMatch` and `TreeNode.IsSearchDimmed` (`SetSearchState` raises only the properties that change). It runs when the text changes, from `ListChanged` (an add, a remove, a move or a replace of a list), and after a rename (`TreeNode.OnHeaderChanged`). With an empty text and no match before, it returns at once.
+- A row matches when its `Header` or its kind holds the text, with no regard to case. The kind is `AddableTypes.LabelOf` of the type of the item, the label of the Add panel, kept in `kindLabel`. A group row matches on its header only. `SearchMatches` holds the matches in tree order, and `SearchMatchCount` their number.
+- While a search runs, every row that does not match has `IsSearchDimmed`, the parents of the matches too. `Border#DimLayer` in ProjectTree.axaml binds its class `dimmed` to `IsDimmed`, `IsSearchDimmed` and `IsDragActive` through `TreeCoverConverter`: the drag dimming always shows, and the search dimming shows only while no drag runs. A converter is used, not one more property of the node, because `SetDragState` raises a fixed list of changes, which a test pins.
+- `SyncSearchRows` opens the parents of every match, and records in `searchOpened` the rows that it opened from closed. When the matches change, it closes the rows of `searchOpened` that lead to no match any more. An empty text closes all of them. `searchSetsRows` is true only while the search sets `IsExpanded`. Any other change of a row, by the user or by a drag, takes the row out of `searchOpened`, so the search never changes that row back. `SelectMatch` opens the parents of its match through the same path.
+- The view: `ProjectTree.ShowSearch` (the search button of the toolbar, and `ShowSearchCommand` on `Tree.Search`, Ctrl+F) raises `SearchRequested`. The view shows the search row and gives the focus to its box. The window binding runs while the pointer is over the tree or the tree has the focus (`IsTreeFocused`, set by the view). Enter and F3 run `SelectMatch(1)`, and Shift with them `SelectMatch(-1)`. The match is selected with the origin Program, so `RevealRow` brings it into view. Escape clears the text, and Escape in an empty box hides the row and gives the focus to the selected row.
+- No search during a drag: `ProjectTree.SetDragging` raises `IsDragging` and the `CanExecuteChanged` of `ShowSearchCommand`. During a drag, the command cannot run, `ShowSearch` and `SelectMatch` do nothing, the box is read-only and the clear button is disabled. Escape in the box ends the drag, as it does in the tree. `EndDrag` runs `SyncSearchRows` once, because no sync runs during the drag.
+
 ## Sync over Redis
 
 ### The three parts
