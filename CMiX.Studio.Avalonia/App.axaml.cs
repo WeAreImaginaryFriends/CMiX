@@ -50,6 +50,8 @@ namespace CMiX.Studio.Avalonia
             StudioIcons.Register();
             AvaloniaXamlLoader.Load(this);
             InteractionHost.BeginScopeHandler = () => ValueInteraction.BeginScope();
+            // A press outside the open popups only closes them (see OutsideClick).
+            CMiX.UI.Behaviors.OutsideClick.Install();
             // Registered last so explicit templates declared in views win over the reflection locator.
             DataTemplates.Add(new Views.ViewModelToViewTemplate());
         }

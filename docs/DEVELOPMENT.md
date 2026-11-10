@@ -387,6 +387,10 @@ A `Popup` that a `ToggleButton` opens uses the attached property `TogglePopup.To
 
 The popup is open while the toggle is checked. The property sets the placement target, switches the light dismiss off and adds `ClosePopupBehavior`. Do not set these by hand. `PopupButton` is a ready-made toggle with a popup. `PopupWiringGuardTests` fails when a `Popup` outside the Themes folder does not use the property.
 
+### A click outside only closes
+
+`OutsideClick` holds one rule for the whole application: a press outside the open popups (a popup, a dropdown, a menu, a flyout) only ends them. The control under the pointer gets neither the press nor its release, so a click outside does not select a row, and a right click outside opens no menu. A press outside a popup with a value in edit mode only ends the edit, and the next press outside closes the popup. A press in a popup closes the popups that opened after it, such as the Add panel beside a menu. A tooltip does not count. The Studio, the Gallery and the UI tests install it at start (`OutsideClick.Install`). A control whose press only ends what it does takes the press with `OutsideClick.Take`: a right click while a name is renamed cancels the rename and does nothing else.
+
 ### Close when the pointer goes away
 
 A popup, a flyout or a context menu can close when the pointer moves away from it:

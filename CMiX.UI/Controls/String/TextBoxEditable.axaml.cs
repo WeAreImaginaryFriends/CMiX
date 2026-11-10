@@ -7,6 +7,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using CMiX.UI.Behaviors;
 using CMiX.UI.Controls.Parts;
 
 namespace CMiX.UI.Controls.String
@@ -191,14 +192,18 @@ namespace CMiX.UI.Controls.String
             OnSwitchToNormalMode();
         }
 
-        // A right-click ends the edit mode, also over the input, and does not open a menu when the button is released.
+        // A right click cancels the edit, also over the input, and does nothing else: the old name stays, and no menu opens
+        // when the button is released. A left click outside the input ends the edit with the typed name, and the click goes on.
         private void ParentTopLevel_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            var rightButton = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            if (IsPointerOver)
-                _contextMenuGuard.PointerPressed(rightButton);
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                CancelEdit();
+                OutsideClick.Take(e);
+                return;
+            }
 
-            if (rightButton || !InputValue.IsPointerOver)
+            if (!InputValue.IsPointerOver)
                 OnSwitchToNormalMode();
         }
 

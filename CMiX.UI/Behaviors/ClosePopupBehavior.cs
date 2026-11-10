@@ -175,18 +175,19 @@ namespace CMiX.UI.Behaviors
                 global::Avalonia.Threading.Dispatcher.UIThread.Post(ClosePopup);
         }
 
+        // A press outside ended an edit of the popup (see OutsideClick). Only the next press outside closes the popup.
+        internal void EditEndedOutside() => closer.Stop();
+
         // A press outside ends the edit of a value of the popup, and that is all it does. The next press outside
-        // closes the popup.
+        // closes the popup. The control under the pointer gets neither the press nor its release (see OutsideClick).
         private void OnParentPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             if (PointerAwayCloser.EndEdits(AssociatedObject?.Child))
-            {
                 closer.Stop();
-                return;
-            }
+            else
+                ClosePopup();
 
-            ClosePopup();
-            e.Handled = true;
+            OutsideClick.Take(e);
         }
     }
 }
