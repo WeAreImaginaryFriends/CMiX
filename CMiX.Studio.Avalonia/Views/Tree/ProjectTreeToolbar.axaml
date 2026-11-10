@@ -40,6 +40,15 @@
             Tip="Move down"
             TipShortcut="{Binding Shortcuts[Tree.MoveDown], Converter={StaticResource KeyGestureText}}" />
 
+        <!-- The first button that docks right is at the right end: the search, then Remove on its left. -->
+        <ui:ButtonIcon
+            x:Name="SearchButton"
+            Click="OnSearchClick"
+            DockPanel.Dock="Right"
+            IconKey="Search"
+            Tip="Search"
+            TipShortcut="{Binding Shortcuts[Tree.Search], Converter={StaticResource KeyGestureText}}" />
+
         <ui:ButtonIcon
             x:Name="RemoveButton"
             Command="{Binding RemoveItemCommand}"

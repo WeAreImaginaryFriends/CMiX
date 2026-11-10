@@ -27,6 +27,9 @@ namespace CMiX.Studio.Avalonia.Views
             AddHandler(PointerPressedEvent, (_, e) => lastPointer = e.GetPosition(this), RoutingStrategies.Tunnel, handledEventsToo: true);
         }
 
+        // The search button shows the search row of the tree (see ProjectTree.ShowSearch).
+        private void OnSearchClick(object? sender, RoutedEventArgs e) => (DataContext as ProjectTree)?.ShowSearch();
+
         // For the tests: the panel of the Add button.
         internal AddPanel Panel => panel;
 

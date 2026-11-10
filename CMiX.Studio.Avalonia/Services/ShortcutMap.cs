@@ -36,6 +36,7 @@ namespace CMiX.Studio.Avalonia.Services
             ("Tree.Add", "Shift+A"),
             ("Tree.Menu", "W"),
             ("Tree.Expand", "E"),
+            ("Tree.Search", "Ctrl+F"),
             ("Tree.Rename", "F2"),
             ("Tree.Remove", "Delete"),
             ("Tree.Duplicate", "Shift+D"),

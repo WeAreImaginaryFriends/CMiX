@@ -94,6 +94,8 @@ The panel opens in three ways:
 - The Add button of the toolbar over the tree. The panel opens with the middle of its search field under the pointer and names the selected row. A click from the keyboard opens it under the button. With nothing selected, the panel offers a composition.
 - The shortcut `Tree.Add` (Shift+A) opens the Add panel of the selected row with the middle of its search field under the pointer, with the title Add. With nothing selected, the panel offers a composition. It works while the pointer is over the tree, whatever has the focus, and does nothing when the pointer is elsewhere. The panel shows every category open: a category is a name, with no expander (`GroupedSearchList.Collapsible`).
 
+The search button at the right end of the toolbar, or `Tree.Search` (Ctrl+F) while the pointer is over the tree or the tree has the focus, shows a search row under the toolbar. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". The rows that do not match are dimmed, and the number after the box is the number of matches. Enter or F3 selects the next match and opens its parents, Shift with them the match before. Escape clears the text, and Escape in an empty box hides the row.
+
 The menu of a row opens with its Add row under the pointer. After the user picks another row of a menu, such as Duplicate, the next menu opens with that row under the pointer.
 
 Every panel ends with the group Project, so a composition can be added under any row. The search field has the focus when the panel opens. Down and Up move over the rows, Enter picks a row, and Escape clears the text and then closes the panel.
@@ -121,6 +123,7 @@ The file maps a command name to a gesture:
 | `Tree.Add` | Shift+A | Open the Add panel of the selected row at the pointer |
 | `Tree.Menu` | W | Open the menu of the selected row at the pointer |
 | `Tree.Expand` | E | Expand or collapse the row that has the keyboard focus, else the selected row |
+| `Tree.Search` | Ctrl+F | Show the search row of the tree and put the focus in its box |
 | `Tree.Rename` | F2 | Rename the selected row |
 | `Tree.Remove` | Delete | Remove the selected item |
 | `Tree.Duplicate` | Shift+D | Duplicate the selected item |

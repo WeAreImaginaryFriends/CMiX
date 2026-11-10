@@ -347,11 +347,11 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Show_TheToolbar_IsOverTheTreeWithFiveButtons()
+        public void Show_TheToolbar_IsOverTheTreeWithSixButtons()
         {
             var screen = Show();
             var tree = screen.View.GetVisualDescendants().OfType<TreeView>().First();
-            var buttons = new[] { "AddButton", "DuplicateButton", "MoveUpButton", "MoveDownButton", "RemoveButton" }.Select(screen.ButtonOf).ToList();
+            var buttons = new[] { "AddButton", "DuplicateButton", "MoveUpButton", "MoveDownButton", "RemoveButton", "SearchButton" }.Select(screen.ButtonOf).ToList();
             var height = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
 
             Assert.All(buttons, button => Assert.Equal(height, button.Bounds.Height));
@@ -557,7 +557,8 @@ namespace CMiX.Studio.Avalonia.Tests
                 ["DuplicateButton"] = "Duplicate",
                 ["MoveUpButton"] = "Move up",
                 ["MoveDownButton"] = "Move down",
-                ["RemoveButton"] = "Remove"
+                ["RemoveButton"] = "Remove",
+                ["SearchButton"] = "Search"
             };
 
             foreach (var (name, tip) in expected)
@@ -574,7 +575,8 @@ namespace CMiX.Studio.Avalonia.Tests
                 ["DuplicateButton"] = "Shift+D",
                 ["MoveUpButton"] = "Alt+Up",
                 ["MoveDownButton"] = "Alt+Down",
-                ["RemoveButton"] = "Delete"
+                ["RemoveButton"] = "Delete",
+                ["SearchButton"] = "Ctrl+F"
             };
 
             foreach (var (name, shortcut) in expected)
@@ -625,7 +627,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var screen = Show();
 
-            foreach (var name in new[] { "AddButton", "DuplicateButton", "MoveUpButton", "MoveDownButton", "RemoveButton" })
+            foreach (var name in new[] { "AddButton", "DuplicateButton", "MoveUpButton", "MoveDownButton", "RemoveButton", "SearchButton" })
             {
                 var button = screen.ButtonOf(name);
                 var border = button.GetVisualDescendants().OfType<Border>().First();

@@ -35,6 +35,39 @@
         DockPanel.Dock="Top"
         Padding="{DynamicResource TreeToolbarPadding}" />
 
+    <!-- The search row, under the toolbar. It is hidden until the search button or Tree.Search shows it, and it takes no room then.
+         The number after the box is the number of rows that match. Escape in the box clears the text, and Escape in an empty box
+         hides the row. Enter and F3 select the next match, Shift with them the match before (see ProjectTreeView). -->
+    <Border
+        x:Name="searchRow"
+        Background="{DynamicResource Grey300Brush}"
+        DockPanel.Dock="Top"
+        IsVisible="False"
+        Padding="{DynamicResource TreeToolbarPadding}">
+        <DockPanel>
+            <TextBlock
+                x:Name="searchCount"
+                Margin="{DynamicResource TreeHeaderMargin}"
+                VerticalAlignment="Center"
+                DockPanel.Dock="Right"
+                IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Text="{Binding SearchMatchCount}" />
+            <ui:ButtonIcon
+                x:Name="searchClear"
+                Click="OnSearchClearClick"
+                DockPanel.Dock="Right"
+                Focusable="False"
+                IconKey="Close"
+                Tip="Clear" />
+            <TextBox
+                x:Name="searchBox"
+                Height="{DynamicResource ControlHeightMD}"
+                VerticalContentAlignment="Center"
+                Text="{Binding SearchText, Mode=TwoWay}"
+                Watermark="Search" />
+        </DockPanel>
+    </Border>
+
     <!-- The stripes are behind the tree, in the same cell, and follow its rows. A row is one pitch (row height plus space) from the next, so
          the bands stay under the rows whatever is open. The rows have their own fill, so the stripes show between them and beside them. -->
     <Grid>

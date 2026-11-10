@@ -25,6 +25,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ["Tree.Add"] = "Add",
             ["Tree.Menu"] = "Context menu",
             ["Tree.Expand"] = "Expand or collapse",
+            ["Tree.Search"] = "Search",
             ["Tree.Rename"] = "Rename",
             ["Tree.Remove"] = "Remove",
             ["Tree.Duplicate"] = "Duplicate",

@@ -80,6 +80,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             OpenMenuUnderPointerCommand = new RelayCommand(
                 () => MenuRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree() && !IsTextBoxFocused());
+            ShowSearchCommand = new RelayCommand(
+                ShowSearch,
+                () => IsPointerOverTree() || IsTreeFocused());
             RenameSelectedCommand = new RelayCommand(
                 () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => selectedNode?.Item != null);
@@ -124,6 +127,36 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The view handles this request: it opens the menu.
         public event EventHandler? MenuRequested;
+
+        // Shows the search row of the tree and gives its text box the focus (Tree.Search). The command runs while the pointer is over
+        // the tree or the tree has the focus. The search button of the toolbar calls ShowSearch itself, so the button is never disabled.
+        public IRelayCommand ShowSearchCommand { get; }
+
+        public void ShowSearch() => SearchRequested?.Invoke(this, EventArgs.Empty);
+
+        // The view tells if the tree or one of its controls has the focus.
+        public Func<bool> IsTreeFocused { get; set; } = () => false;
+
+        // The view handles this request: it shows the search row.
+        public event EventHandler? SearchRequested;
+
+        // Selects the next match of the search in the order of the tree, or the match before it with a negative step. The selection
+        // goes round at the ends. Nothing selected, or a selected row that does not match: the first match, or the last one going back.
+        // The parents of the match open, so its row shows, and the view brings the row into view (the origin is Program).
+        public void SelectMatch(int step)
+        {
+            var count = searchMatches.Count;
+            if (count == 0 || step == 0)
+                return;
+
+            var index = selectedNode == null ? -1 : IndexOf(searchMatches, selectedNode);
+            var next = index < 0 ? (step > 0 ? 0 : count - 1) : ((index + step) % count + count) % count;
+            var node = searchMatches[next];
+            for (var parent = node.Parent; parent != null; parent = parent.Parent)
+                parent.IsExpanded = true;
+
+            Select(node, SelectionOrigin.Program);
+        }
 
         // Starts the rename of the selected row. The view sets the name box of the row to edit mode (see RenameRequested).
         public IRelayCommand RenameSelectedCommand { get; }
