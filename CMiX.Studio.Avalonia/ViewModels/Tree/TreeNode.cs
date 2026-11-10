@@ -49,6 +49,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             }
 
             Category = item != null ? TreeCategories.Of(item) : group?.Category;
+            kindLabel = item != null ? AddableTypes.LabelOf(item.GetType()) : null;
 
             // A row tells its rows below when it is hidden or shown, so they look greyed (see IsUnderHiddenParent).
             hiddenSource = HiddenSourceOf(group, item);
@@ -228,6 +229,40 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (wasDimmed != IsDimmed)
                 OnPropertyChanged(nameof(IsDimmed));
         }
+
+        // The name of the type of the item, as the Add panel shows it (see AddableTypes.LabelOf), so a renamed item is found by its type.
+        // Null for a group row.
+        private readonly string? kindLabel;
+
+        // The state of the row in the search of the tree (see ProjectTree.SearchText). A row that matches keeps its color. While a search
+        // runs, every other row is dimmed, the parents of the matches too.
+        public bool IsSearchMatch { get; private set; }
+        public bool IsSearchDimmed { get; private set; }
+
+        // True when the name of the row or the kind of its item holds the text, with no regard to case. A group row has only its name.
+        internal bool MatchesSearch(string text) =>
+            Header.Contains(text, StringComparison.OrdinalIgnoreCase)
+            || (kindLabel != null && kindLabel.Contains(text, StringComparison.OrdinalIgnoreCase));
+
+        // Tells only the properties whose value changes.
+        internal void SetSearchState(bool active, bool match)
+        {
+            if (IsSearchMatch != match)
+            {
+                IsSearchMatch = match;
+                OnPropertyChanged(nameof(IsSearchMatch));
+            }
+
+            var dimmed = active && !match;
+            if (IsSearchDimmed != dimmed)
+            {
+                IsSearchDimmed = dimmed;
+                OnPropertyChanged(nameof(IsSearchDimmed));
+            }
+        }
+
+        // A new name can make the row match the search, or stop it.
+        partial void OnHeaderChanged(string value) => tree.RefreshSearch();
 
         public bool IsOrIsUnder(TreeNode node)
         {

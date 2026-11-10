@@ -220,6 +220,58 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public ObservableCollection<TreeNode> Roots => root.Children;
 
+        private string searchText = string.Empty;
+        private IReadOnlyList<TreeNode> searchMatches = Array.Empty<TreeNode>();
+
+        // The text of the search of the tree. A row matches when its name or its kind holds the text (see TreeNode.MatchesSearch).
+        // An empty text matches no row and dims no row.
+        public string SearchText
+        {
+            get => searchText;
+            set
+            {
+                if (SetProperty(ref searchText, value ?? string.Empty))
+                    RefreshSearch();
+            }
+        }
+
+        // The rows that match the search, in the order of the tree from the top.
+        public IReadOnlyList<TreeNode> SearchMatches => searchMatches;
+
+        public int SearchMatchCount => searchMatches.Count;
+
+        // Sets the search state of every row and finds the matches again. It runs when the text changes, when a row gets a new
+        // name, and when a list of the tree changes. With an empty text and no match, there is nothing to change.
+        internal void RefreshSearch()
+        {
+            var text = searchText.Trim();
+            if (text.Length == 0 && searchMatches.Count == 0)
+                return;
+
+            var matches = new List<TreeNode>();
+            void Visit(IEnumerable<TreeNode> nodes)
+            {
+                foreach (var node in nodes)
+                {
+                    var match = text.Length > 0 && node.MatchesSearch(text);
+                    node.SetSearchState(text.Length > 0, match);
+                    if (match)
+                        matches.Add(node);
+                    Visit(node.Children);
+                }
+            }
+
+            Visit(Roots);
+            if (matches.SequenceEqual(searchMatches))
+                return;
+
+            var countChanged = matches.Count != searchMatches.Count;
+            searchMatches = matches;
+            OnPropertyChanged(nameof(SearchMatches));
+            if (countChanged)
+                OnPropertyChanged(nameof(SearchMatchCount));
+        }
+
         // The commands of the toolbar. They act on the selected node, and they are disabled when it has nothing to do.
         // AddItemCommand runs the add that it gets. The toolbar picks the add (see SelectedAdds). With no add, it tells only
         // whether the selected node has something to add.
@@ -455,7 +507,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         }
 
         // A list of the tree changed: a place in a list, and so the commands, may have changed.
-        internal void ListChanged() => RefreshCommands();
+        internal void ListChanged()
+        {
+            RefreshCommands();
+            RefreshSearch();
+        }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
