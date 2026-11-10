@@ -13,6 +13,7 @@
             Height="{DynamicResource ControlHeightMD}"
             Padding="28,0,6,0"
             VerticalContentAlignment="Center"
+            IsReadOnly="{Binding IsReadOnly, ElementName=searchBox}"
             Text="{Binding Text, ElementName=searchBox, Mode=TwoWay}"
             Watermark="{Binding Watermark, ElementName=searchBox}" />
 

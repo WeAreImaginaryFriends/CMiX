@@ -80,8 +80,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             OpenMenuUnderPointerCommand = new RelayCommand(
                 () => MenuRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree() && !IsTextBoxFocused());
-            ShowSearchCommand = new RelayCommand(
-                ShowSearch,
+            FocusSearchCommand = new RelayCommand(
+                FocusSearch,
                 () => !IsDragging && (IsPointerOverTree() || IsTreeFocused()));
             RenameSelectedCommand = new RelayCommand(
                 () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
@@ -128,22 +128,30 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The view handles this request: it opens the menu.
         public event EventHandler? MenuRequested;
 
-        // Shows the search row of the tree and gives its text box the focus (Tree.Search). The command runs while the pointer is over
-        // the tree or the tree has the focus. The search button of the toolbar calls ShowSearch itself, so the button is never disabled.
-        // There is no search during a drag: the command cannot run, ShowSearch and SelectMatch do nothing, and the box takes no text.
-        public IRelayCommand ShowSearchCommand { get; }
+        // Gives the search box of the tree the focus (Tree.Search). The box is always shown, in the bar of the panel (see TreeSearchBox).
+        // The command runs while the pointer is over the tree or the tree has the focus. There is no search during a drag: the command
+        // cannot run, FocusSearch and SelectMatch do nothing, and the box takes no text.
+        public IRelayCommand FocusSearchCommand { get; }
 
-        public void ShowSearch()
+        public void FocusSearch()
         {
             if (!IsDragging)
-                SearchRequested?.Invoke(this, EventArgs.Empty);
+                SearchFocusRequested?.Invoke(this, EventArgs.Empty);
         }
 
         // The view tells if the tree or one of its controls has the focus.
         public Func<bool> IsTreeFocused { get; set; } = () => false;
 
-        // The view handles this request: it shows the search row.
-        public event EventHandler? SearchRequested;
+        // The search box handles this request: it takes the focus and selects its text.
+        public event EventHandler? SearchFocusRequested;
+
+        // Gives the focus back to the rows of the tree, for example after Escape in an empty search box. The tree view handles it.
+        public void FocusTree() => TreeFocusRequested?.Invoke(this, EventArgs.Empty);
+
+        public event EventHandler? TreeFocusRequested;
+
+        // The tree view ends a drag of a row without a drop, for example on Escape in the search box (see TreeRowDrag.Cancel).
+        public Action CancelDrag { get; set; } = () => { };
 
         // Selects the next match of the search in the order of the tree, or the match before it with a negative step. The selection
         // goes round at the ends. Nothing selected, or a selected row that does not match: the first match, or the last one going back.
@@ -643,7 +651,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // A node is being dragged: the rows that take it inside are candidates, the rows next to which it can go are neighbors, a collapsed row
         // with such a row under it gives a hint, a row that refuses the node by a rule is blocked, and the other rows are dimmed
         // (see TreeNode.IsDropCandidate). The rules are the ones of the drop itself.
-        // The search is off while a drag runs (see ShowSearch): the view binds the search box to it.
+        // The search is off while a drag runs (see FocusSearch): the view binds the search box to it.
         public bool IsDragging { get; private set; }
 
         // The rows that BeginDrag marked. EndDrag clears only these.
@@ -676,7 +684,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             IsDragging = dragging;
             OnPropertyChanged(nameof(IsDragging));
-            ShowSearchCommand.NotifyCanExecuteChanged();
+            FocusSearchCommand.NotifyCanExecuteChanged();
         }
 
         // Sets the drag state of a row and of the rows under it. It tells whether a row that takes the node is at or under the row.

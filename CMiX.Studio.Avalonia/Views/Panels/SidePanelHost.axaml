@@ -56,8 +56,21 @@
                     </ui:DropdownFrame>
                 </Popup>
 
-                <!-- The rest of the bar is empty. -->
-                <Panel />
+                <!-- The rest of the bar holds the tools of the choice, at the right: the search of the tree. The other choices have none. -->
+                <ContentControl
+                    Name="barTools"
+                    HorizontalContentAlignment="Right"
+                    VerticalContentAlignment="Center"
+                    Content="{Binding Choice, ElementName=sidePanelHost}">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="{x:Type StudioViewModels:TreePanelChoice}">
+                            <Views:TreeSearchBox DataContext="{Binding Context.ProjectTree, ElementName=sidePanelHost}" />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type StudioViewModels:PanelChoice}">
+                            <Panel />
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
 
             </DockPanel>
         </Border>

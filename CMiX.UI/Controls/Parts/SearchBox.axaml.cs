@@ -35,7 +35,20 @@ namespace CMiX.UI.Controls.Parts
             set => SetValue(WatermarkProperty, value);
         }
 
+        // True: the field keeps its text and takes no typing.
+        public static readonly StyledProperty<bool> IsReadOnlyProperty =
+            AvaloniaProperty.Register<SearchBox, bool>(nameof(IsReadOnly));
+
+        public bool IsReadOnly
+        {
+            get => GetValue(IsReadOnlyProperty);
+            set => SetValue(IsReadOnlyProperty, value);
+        }
+
         // Gives the keyboard focus to the field itself.
         public void FocusInput() => PART_Search.Focus();
+
+        // Selects the whole text of the field, so the next typing replaces it.
+        public void SelectAll() => PART_Search.SelectAll();
     }
 }

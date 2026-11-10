@@ -105,6 +105,8 @@
     <Thickness x:Key="TreeHeaderMargin">4,0</Thickness>
     <!-- The space inside the toolbar of the tree: SpacingSM. -->
     <Thickness x:Key="TreeToolbarPadding">4</Thickness>
+    <!-- The width of the search field of the tree, in the bar of the panel, at the right. -->
+    <x:Double x:Key="TreeSearchWidth">160</x:Double>
 
     <!-- A drag near the edge of a view. -->
     <!-- The height of the zone at the top and the bottom edge that scrolls the view. -->

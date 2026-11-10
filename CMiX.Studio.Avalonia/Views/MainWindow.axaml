@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="CMiX.Studio.Avalonia.Views.MainWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -34,7 +34,7 @@
         <KeyBinding Command="{Binding ProjectTree.AddUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Add]}" />
         <KeyBinding Command="{Binding ProjectTree.OpenMenuUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
         <KeyBinding Command="{Binding ProjectTree.ToggleExpandUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Expand]}" />
-        <KeyBinding Command="{Binding ProjectTree.ShowSearchCommand}" Gesture="{Binding Shortcuts[Tree.Search]}" />
+        <KeyBinding Command="{Binding ProjectTree.FocusSearchCommand}" Gesture="{Binding Shortcuts[Tree.Search]}" />
     </Window.KeyBindings>
 
     <DockPanel Background="{DynamicResource Grey100Brush}" LastChildFill="True">

@@ -4,42 +4,56 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.Tests.Support;
+using CMiX.Studio.Avalonia.ViewModels;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
-using CMiX.UI.Controls.Boolean;
+using CMiX.UI.Panels;
 using Xunit;
 using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 using Composition = CMiX.Core.Compositing.Composition;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // The search row of the tree: hidden until the search button or Tree.Search shows it, a box for the text, the number of matches,
-    // Escape to clear and to hide, Enter and F3 to go from match to match.
+    // The search field of the tree: always shown in the bar of the panel, at the right, as wide as TreeSearchWidth. Tree.Search gives it
+    // the focus. The number of matches and the clear button show while it holds text. Escape clears the text, and Escape in an empty field
+    // gives the focus back to the rows. Enter and F3 go from match to match. There is no search during a drag.
     public class ProjectTreeSearchBoxTests : IDisposable
     {
-        private TreeTestScreen? screen;
+        private sealed record Screen(Window Window, TreeSearchBox Box, ProjectTreeView View)
+        {
+            // The text box inside the search field.
+            public TextBox Input => Box.Field.GetVisualDescendants().OfType<TextBox>().First();
+        }
 
-        public void Dispose() => screen?.Dispose();
+        private Window? window;
 
-        // A composition with three layers.
-        private (TreeTestScreen Screen, Scene Scene) Show()
+        public void Dispose() => window?.Close();
+
+        // A composition with three layers, the search field over the tree, as in the bar of the panel.
+        private (Screen Screen, Scene Scene) Show()
         {
             var scene = CreateScene([3]);
-            screen = TreeTestScreen.Show(scene.Tree, 400, 700);
+            var box = new TreeSearchBox { DataContext = scene.Tree };
+            var view = new ProjectTreeView { DataContext = scene.Tree };
+            DockPanel.SetDock(box, Dock.Top);
+            window = new Window { Content = new DockPanel { Children = { box, view } }, Width = 400, Height = 700 };
+            window.Show();
+            foreach (var panel in view.GetVisualDescendants().OfType<CollapsePanel>())
+                panel.Duration = TimeSpan.Zero;
+            var screen = new Screen(window, box, view);
+            Pump(screen);
             return (screen, scene);
         }
 
-        private static void Pump(TreeTestScreen screen)
+        private static void Pump(Screen screen)
         {
             Dispatcher.UIThread.RunJobs();
-            screen.Settle();
+            TreeTestScreen.Settle(screen.Window);
         }
-
-        private static ButtonIcon SearchButtonOf(ProjectTreeView view) =>
-            view.GetVisualDescendants().OfType<ButtonIcon>().First(button => button.Name == "SearchButton");
 
         private static void Click(Window window, Control control)
         {
@@ -50,65 +64,31 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
         }
 
-        private static void Press(TreeTestScreen screen, PhysicalKey key, RawInputModifiers modifiers = RawInputModifiers.None)
+        private static void Press(Screen screen, PhysicalKey key, RawInputModifiers modifiers = RawInputModifiers.None)
         {
             screen.Window.KeyPressQwerty(key, modifiers);
             Pump(screen);
         }
 
-        // Shows the row with the button and types a text.
-        private static void Search(TreeTestScreen screen, string text)
+        // Focuses the field and types a text.
+        private static void Search(Screen screen, string text)
         {
-            Click(screen.Window, SearchButtonOf(screen.View));
+            screen.Box.Field.FocusInput();
             Pump(screen);
-            screen.View.SearchBox.Text = text;
+            screen.Box.Field.Text = text;
             Pump(screen);
         }
 
-        // The box has the focus during a pointer drag of a row: Escape ends the drag without a drop, as it does in the tree.
         [AvaloniaFact]
-        public void Escape_InTheBoxDuringAPointerDrag_EndsTheDragWithoutADrop()
-        {
-            var (screen, scene) = Show();
-            Search(screen, "Layer");
-            var rows = scene.Tree.CompositionNodes()[0].Children[0].Children;
-            var before = rows.Select(node => node.Item).ToList();
-            Border RowOf(TreeNode node) => TreeTestScreen.RowOf(screen.View, node);
-            Point Middle(Border row) => row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), screen.Window)!.Value;
-
-            TreeDrag.Over(screen.Window, Middle(RowOf(rows[0])), Middle(RowOf(rows[2])));
-            Assert.True(screen.View.RowDrag.IsDragging);
-            screen.View.SearchBox.Focus();
-            Pump(screen);
-
-            screen.View.SearchBox.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape });
-            Pump(screen);
-
-            Assert.False(screen.View.RowDrag.IsDragging);
-            Assert.False(scene.Tree.IsDragging);
-            Assert.Equal(before, rows.Select(node => node.Item).ToList());
-            Assert.Equal("Layer", scene.Tree.SearchText);
-        }
-
-        [AvaloniaFact]
-        public void Show_TheTree_HidesTheSearchRow()
+        public void Show_TheTree_ShowsTheFieldWithItsWidthAndNoCountOrClear()
         {
             var (screen, _) = Show();
+            var width = Convert.ToDouble(Application.Current!.FindResource("TreeSearchWidth"));
 
-            Assert.False(screen.View.SearchRow.IsVisible);
-            Assert.Equal(0, screen.View.SearchRow.Bounds.Height);
-        }
-
-        [AvaloniaFact]
-        public void Click_TheSearchButton_ShowsTheRowAndFocusesTheBox()
-        {
-            var (screen, _) = Show();
-
-            Click(screen.Window, SearchButtonOf(screen.View));
-            Pump(screen);
-
-            Assert.True(screen.View.SearchRow.IsVisible);
-            Assert.True(screen.View.SearchBox.IsFocused);
+            Assert.True(screen.Box.Field.IsEffectivelyVisible);
+            Assert.Equal(width, screen.Box.Field.Bounds.Width, 0.51);
+            Assert.False(screen.Box.Count.IsVisible);
+            Assert.False(screen.Box.Clear.IsVisible);
         }
 
         [AvaloniaFact]
@@ -120,12 +100,28 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal("Layer", scene.Tree.SearchText);
             Assert.True(scene.Tree.SearchMatchCount > 0);
-            Assert.True(screen.View.SearchCount.IsVisible);
-            Assert.Equal(scene.Tree.SearchMatchCount.ToString(), screen.View.SearchCount.Text);
+            Assert.True(screen.Box.Count.IsVisible);
+            Assert.True(screen.Box.Clear.IsVisible);
+            Assert.Equal(scene.Tree.SearchMatchCount.ToString(), screen.Box.Count.Text);
         }
 
         [AvaloniaFact]
-        public void Escape_InTheBox_ClearsTheTextThenHidesTheRowAndGivesTheFocusBackToTheTree()
+        public void FocusSearch_WithAText_GivesTheFieldTheFocusAndSelectsTheText()
+        {
+            var (screen, scene) = Show();
+            scene.Tree.SearchText = "Layer";
+            Pump(screen);
+
+            scene.Tree.FocusSearch();
+            Pump(screen);
+
+            Assert.True(screen.Input.IsFocused);
+            Assert.Equal(0, screen.Input.SelectionStart);
+            Assert.Equal("Layer".Length, screen.Input.SelectionEnd);
+        }
+
+        [AvaloniaFact]
+        public void Escape_InTheField_ClearsTheTextThenGivesTheFocusBackToTheTree()
         {
             var (screen, scene) = Show();
             Search(screen, "Layer");
@@ -133,18 +129,18 @@ namespace CMiX.Studio.Avalonia.Tests
             Press(screen, PhysicalKey.Escape);
 
             Assert.Equal(string.Empty, scene.Tree.SearchText);
-            Assert.True(screen.View.SearchRow.IsVisible);
-            Assert.False(screen.View.SearchCount.IsVisible);
+            Assert.True(screen.Input.IsFocused);
+            Assert.False(screen.Box.Count.IsVisible);
 
             Press(screen, PhysicalKey.Escape);
 
-            Assert.False(screen.View.SearchRow.IsVisible);
-            Assert.False(screen.View.SearchBox.IsFocused);
+            Assert.False(screen.Input.IsFocused);
             Assert.True(screen.View.IsKeyboardFocusWithin);
+            Assert.True(screen.Box.Field.IsEffectivelyVisible);
         }
 
         [AvaloniaFact]
-        public void Enter_InTheBox_SelectsTheMatchesInTheOrderOfTheTreeAndGoesRound()
+        public void Enter_InTheField_SelectsTheMatchesInTheOrderOfTheTreeAndGoesRound()
         {
             var (screen, scene) = Show();
             scene.Tree.SelectedNode = null;
@@ -167,7 +163,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ShiftEnter_InTheBox_SelectsTheMatchBefore()
+        public void ShiftEnter_InTheField_SelectsTheMatchBefore()
         {
             var (screen, scene) = Show();
             scene.Tree.SelectedNode = null;
@@ -200,17 +196,16 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Click_TheClearButton_EmptiesTheTextAndKeepsTheRow()
+        public void Click_TheClearButton_EmptiesTheTextAndKeepsTheFocusInTheField()
         {
             var (screen, scene) = Show();
             Search(screen, "Layer");
 
-            var clear = screen.View.SearchRow.GetVisualDescendants().OfType<ButtonIcon>().First(button => button.Name == "searchClear");
-            Click(screen.Window, clear);
+            Click(screen.Window, screen.Box.Clear);
             Pump(screen);
 
             Assert.Equal(string.Empty, scene.Tree.SearchText);
-            Assert.True(screen.View.SearchRow.IsVisible);
+            Assert.True(screen.Input.IsFocused);
         }
 
         // The clear button ends the search as Escape does: the rows that the search opened close again.
@@ -224,16 +219,15 @@ namespace CMiX.Studio.Avalonia.Tests
             Search(screen, scene.LayerNodeOfA(2).Header);
             Assert.True(layers.IsExpanded);
 
-            var clear = screen.View.SearchRow.GetVisualDescendants().OfType<ButtonIcon>().First(button => button.Name == "searchClear");
-            Click(screen.Window, clear);
+            Click(screen.Window, screen.Box.Clear);
             Pump(screen);
 
             Assert.False(layers.IsExpanded);
         }
 
-        // The row stays while it holds text, also when the focus goes back to the tree.
+        // The text stays when the focus goes back to the tree.
         [AvaloniaFact]
-        public void Focus_TheTreeWithATextInTheBox_KeepsTheRowShown()
+        public void Focus_TheTreeWithATextInTheField_KeepsTheSearch()
         {
             var (screen, scene) = Show();
             Search(screen, "Layer");
@@ -241,28 +235,29 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.View.RowIndex.FindItem(scene.LayerNodeOfA(0))!.Focus();
             Pump(screen);
 
-            Assert.False(screen.View.SearchBox.IsFocused);
-            Assert.True(screen.View.SearchRow.IsVisible);
+            Assert.False(screen.Input.IsFocused);
             Assert.Equal("Layer", scene.Tree.SearchText);
+            Assert.True(screen.Box.Count.IsVisible);
         }
 
         // ---------------------------------------------------------------- no search during a drag
 
         [AvaloniaFact]
-        public void BeginDrag_WithTheSearchShown_TurnsTheCommandOffAndTheBoxTakesNoText()
+        public void BeginDrag_WithASearch_TurnsTheCommandOffAndTheFieldTakesNoText()
         {
             var (screen, scene) = Show();
             Search(screen, "Layer");
             var changes = 0;
-            scene.Tree.ShowSearchCommand.CanExecuteChanged += (_, _) => changes++;
+            scene.Tree.FocusSearchCommand.CanExecuteChanged += (_, _) => changes++;
 
             scene.Tree.BeginDrag(scene.LayerNodeOfA(0));
             Pump(screen);
 
             Assert.True(changes > 0);
-            Assert.False(scene.Tree.ShowSearchCommand.CanExecute(null));
-            Assert.True(screen.View.SearchBox.IsReadOnly);
-            screen.View.SearchBox.Focus();
+            Assert.False(scene.Tree.FocusSearchCommand.CanExecute(null));
+            Assert.True(screen.Input.IsReadOnly);
+            Assert.False(screen.Box.Clear.IsEffectivelyEnabled);
+            screen.Input.Focus();
             screen.Window.KeyTextInput("x");
             Pump(screen);
             Assert.Equal("Layer", scene.Tree.SearchText);
@@ -270,7 +265,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Enter_InTheBoxDuringADrag_DoesNotChangeTheSelection()
+        public void Enter_InTheFieldDuringADrag_DoesNotChangeTheSelection()
         {
             var (screen, scene) = Show();
             scene.Tree.SelectedNode = null;
@@ -286,16 +281,16 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ShowSearch_DuringADrag_DoesNotShowTheRow()
+        public void FocusSearch_DuringADrag_LeavesTheFocusWhereItIs()
         {
             var (screen, scene) = Show();
             scene.Tree.BeginDrag(scene.LayerNodeOfA(0));
             Pump(screen);
 
-            scene.Tree.ShowSearch();
+            scene.Tree.FocusSearch();
             Pump(screen);
 
-            Assert.False(screen.View.SearchRow.IsVisible);
+            Assert.False(screen.Input.IsFocused);
             scene.Tree.EndDrag();
         }
 
@@ -311,16 +306,110 @@ namespace CMiX.Studio.Avalonia.Tests
             Pump(screen);
 
             Assert.Equal("Layer", scene.Tree.SearchText);
-            Assert.False(screen.View.SearchBox.IsReadOnly);
-            screen.View.SearchBox.Focus();
-            screen.View.SearchBox.CaretIndex = screen.View.SearchBox.Text!.Length;
+            Assert.False(screen.Input.IsReadOnly);
+            screen.Input.Focus();
+            screen.Input.CaretIndex = screen.Input.Text!.Length;
             screen.Window.KeyTextInput(" 0");
             Pump(screen);
             Assert.Equal("Layer 0", scene.Tree.SearchText);
         }
 
+        // The field has the focus during a pointer drag of a row: Escape ends the drag without a drop, as it does in the tree.
         [AvaloniaFact]
-        public void Press_CtrlFOverTheTreeDuringADrag_DoesNotShowTheRow()
+        public void Escape_InTheFieldDuringAPointerDrag_EndsTheDragWithoutADrop()
+        {
+            var (screen, scene) = Show();
+            Search(screen, "Layer");
+            var rows = scene.Tree.CompositionNodes()[0].Children[0].Children;
+            var before = rows.Select(node => node.Item).ToList();
+            Border RowOf(TreeNode node) => TreeTestScreen.RowOf(screen.View, node);
+            Point Middle(Border row) => row.TranslatePoint(new Point(row.Bounds.Width / 2, row.Bounds.Height / 2), screen.Window)!.Value;
+
+            TreeDrag.Over(screen.Window, Middle(RowOf(rows[0])), Middle(RowOf(rows[2])));
+            Assert.True(screen.View.RowDrag.IsDragging);
+            screen.Input.Focus();
+            Pump(screen);
+
+            screen.Input.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape });
+            Pump(screen);
+
+            Assert.False(screen.View.RowDrag.IsDragging);
+            Assert.False(scene.Tree.IsDragging);
+            Assert.Equal(before, rows.Select(node => node.Item).ToList());
+            Assert.Equal("Layer", scene.Tree.SearchText);
+        }
+
+        // ---------------------------------------------------------------- the bar of the panel and the shortcut of the main window
+
+        private static (SidePanelHost Host, TreeSearchBox Box) TreeHostOf(Window window) =>
+            window.GetVisualDescendants().OfType<SidePanelHost>()
+                .Select(host => (Host: host, Box: host.GetVisualDescendants().OfType<TreeSearchBox>().FirstOrDefault()))
+                .First(pair => pair.Box != null)!;
+
+        // The field is in the bar of the panel that shows the tree, at the right end, on the same line as the button of the panel choice.
+        [AvaloniaFact]
+        public void Show_TheMainWindow_PutsTheFieldAtTheRightOfTheBarOfTheTreePanel()
+        {
+            var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.Pump();
+            var (host, box) = TreeHostOf(window);
+            var bar = host.GetVisualDescendants().OfType<Border>().First(border => border.Name == "bar");
+            var picker = host.GetVisualDescendants().OfType<Control>().First(control => control.Name == "pickerToggle");
+
+            var barRight = bar.TranslatePoint(new Point(bar.Bounds.Width - bar.Padding.Right, 0), window)!.Value.X;
+            var boxRight = box.TranslatePoint(new Point(box.Bounds.Width, 0), window)!.Value.X;
+            var boxMiddle = box.TranslatePoint(new Point(0, box.Bounds.Height / 2), window)!.Value.Y;
+            var pickerMiddle = picker.TranslatePoint(new Point(0, picker.Bounds.Height / 2), window)!.Value.Y;
+
+            Assert.Equal(barRight, boxRight, 0.51);
+            Assert.Equal(pickerMiddle, boxMiddle, 0.51);
+            Assert.True(box.Bounds.Width < bar.Bounds.Width / 2);
+        }
+
+        [AvaloniaFact]
+        public void Pick_AnotherPanelChoice_TakesTheFieldOutOfTheBar()
+        {
+            var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.Pump();
+            var (host, _) = TreeHostOf(window);
+
+            host.Choice = host.Choices!.Cast<PanelChoice>().First(choice => choice is not TreePanelChoice);
+            TestServiceProviderFactory.Pump();
+
+            Assert.Empty(host.GetVisualDescendants().OfType<TreeSearchBox>());
+        }
+
+        [AvaloniaFact]
+        public void KeyBindings_OfTheWindow_HoldTheSearchCommandOfTheTreeOnCtrlF()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+
+            var binding = window.KeyBindings.Single(candidate => Equals(candidate.Gesture, viewModel.Shortcuts["Tree.Search"]));
+
+            Assert.Equal(new KeyGesture(Key.F, KeyModifiers.Control), viewModel.Shortcuts["Tree.Search"]);
+            Assert.Same(viewModel.ProjectTree.FocusSearchCommand, binding.Command);
+        }
+
+        [AvaloniaFact]
+        public void Press_CtrlFOverTheTree_FocusesTheField()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
+            TestServiceProviderFactory.Pump();
+            window.Focus();
+            var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            window.MouseMove(view.TranslatePoint(new Point(view.Bounds.Width / 2, view.Bounds.Height / 2), window)!.Value);
+            Dispatcher.UIThread.RunJobs();
+
+            window.KeyPressQwerty(PhysicalKey.F, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+
+            var input = TreeHostOf(window).Box.Field.GetVisualDescendants().OfType<TextBox>().First();
+            Assert.True(input.IsFocused);
+        }
+
+        [AvaloniaFact]
+        public void Press_CtrlFOverTheTreeDuringADrag_LeavesTheFieldWithoutTheFocus()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
             viewModel.Project.CompositionManager.AddItem(typeof(Composition));
@@ -334,39 +423,9 @@ namespace CMiX.Studio.Avalonia.Tests
             window.KeyPressQwerty(PhysicalKey.F, RawInputModifiers.Control);
             TestServiceProviderFactory.Pump();
 
-            Assert.False(view.SearchRow.IsVisible);
+            var input = TreeHostOf(window).Box.Field.GetVisualDescendants().OfType<TextBox>().First();
+            Assert.False(input.IsFocused);
             viewModel.ProjectTree.EndDrag();
-        }
-
-        // ---------------------------------------------------------------- the shortcut of the main window
-
-        [AvaloniaFact]
-        public void KeyBindings_OfTheWindow_HoldTheSearchCommandOfTheTreeOnCtrlF()
-        {
-            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
-
-            var binding = window.KeyBindings.Single(candidate => Equals(candidate.Gesture, viewModel.Shortcuts["Tree.Search"]));
-
-            Assert.Equal(new KeyGesture(Key.F, KeyModifiers.Control), viewModel.Shortcuts["Tree.Search"]);
-            Assert.Same(viewModel.ProjectTree.ShowSearchCommand, binding.Command);
-        }
-
-        [AvaloniaFact]
-        public void Press_CtrlFOverTheTree_ShowsTheRowAndFocusesTheBox()
-        {
-            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
-            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
-            TestServiceProviderFactory.Pump();
-            window.Focus();
-            var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
-            window.MouseMove(view.TranslatePoint(new Point(view.Bounds.Width / 2, view.Bounds.Height / 2), window)!.Value);
-            Dispatcher.UIThread.RunJobs();
-
-            window.KeyPressQwerty(PhysicalKey.F, RawInputModifiers.Control);
-            TestServiceProviderFactory.Pump();
-
-            Assert.True(view.SearchRow.IsVisible);
-            Assert.True(view.SearchBox.IsFocused);
         }
     }
 }

@@ -92,7 +92,6 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(KeyDownEvent, OnKeyDownTunnel, RoutingStrategies.Tunnel);
             AddHandler(PointerMovedEvent, OnPointerTracked, RoutingStrategies.Tunnel, handledEventsToo: true);
             KeyBindingTextGuard.Install(this);
-            searchBox.AddHandler(KeyDownEvent, OnSearchKeyDown, RoutingStrategies.Tunnel);
             tooltips = new TreeTooltips(treeView);
         }
 
@@ -245,8 +244,9 @@ namespace CMiX.Studio.Avalonia.Views
             watched.IsPointerOverTree = () => IsPointerOver;
             watched.IsTextBoxFocused = () => IsInTextBox(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement());
             watched.ToggleDragRow = rowDrag.ToggleHovered;
-            watched.SearchRequested += OnSearchRequested;
             watched.IsTreeFocused = () => IsKeyboardFocusWithin;
+            watched.TreeFocusRequested += OnTreeFocusRequested;
+            watched.CancelDrag = rowDrag.Cancel;
         }
 
         private void Unwatch()
@@ -261,85 +261,22 @@ namespace CMiX.Studio.Avalonia.Views
             watched.IsPointerOverTree = () => false;
             watched.IsTextBoxFocused = () => false;
             watched.ToggleDragRow = () => { };
-            watched.SearchRequested -= OnSearchRequested;
             watched.IsTreeFocused = () => false;
+            watched.TreeFocusRequested -= OnTreeFocusRequested;
+            watched.CancelDrag = () => { };
         }
 
-        // The search row (see ProjectTreeView.axaml). A test reads it.
-        internal Border SearchRow => searchRow;
-        internal TextBox SearchBox => searchBox;
-        internal TextBlock SearchCount => searchCount;
-
-        // Shows the search row and gives its text box the focus, also when the row shows already. The focus waits for the layout of
-        // the row, because a hidden control cannot take the focus.
-        private void OnSearchRequested(object? sender, EventArgs e)
+        // The focus goes to a row: the selected row, else the row of the arrow keys, else the first row (see ProjectTree.FocusTree).
+        private void OnTreeFocusRequested(object? sender, EventArgs e)
         {
-            searchRow.IsVisible = true;
-            Dispatcher.UIThread.Post(() =>
-            {
-                searchBox.Focus();
-                searchBox.SelectAll();
-            }, DispatcherPriority.Loaded);
-        }
-
-        // Escape clears the text, and Escape in an empty box hides the row and gives the focus back to the tree. Enter and F3 select the
-        // next match, and Shift with them the match before. During a drag, Escape ends the drag without a drop, as it does in the tree,
-        // and the other keys do nothing here.
-        private void OnSearchKeyDown(object? sender, KeyEventArgs e)
-        {
-            if (DataContext is not ProjectTree tree)
+            if (watched is not { } tree)
                 return;
 
-            if (tree.IsDragging)
-            {
-                if (e.Key == Key.Escape && rowDrag.IsDragging)
-                {
-                    rowDrag.Cancel();
-                    e.Handled = true;
-                }
-
-                return;
-            }
-
-            switch (e.Key)
-            {
-                case Key.Escape when tree.SearchText.Length > 0:
-                    tree.SearchText = string.Empty;
-                    break;
-                case Key.Escape:
-                    HideSearch(tree);
-                    break;
-                case Key.Enter or Key.F3:
-                    tree.SelectMatch(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1);
-                    break;
-                default:
-                    return;
-            }
-
-            e.Handled = true;
-        }
-
-        // The focus goes to a row: the selected row, else the row of the arrow keys, else the first row. A hidden box keeps the focus
-        // when nothing else takes it.
-        private void HideSearch(ProjectTree tree)
-        {
-            searchRow.IsVisible = false;
             var node = tree.SelectedNode ?? tree.SoftSelectedNode ?? tree.VisibleNodes().FirstOrDefault();
             if (node != null && rowIndex.FindItem(node) is { } item && item.Focus(NavigationMethod.Tab))
                 return;
 
             treeView.Focus();
-        }
-
-        // The clear button empties the text. The row stays, and the box keeps the focus.
-        private void OnSearchClearClick(object? sender, RoutedEventArgs e)
-        {
-            if (DataContext is not ProjectTree tree || tree.IsDragging)
-                return;
-
-            tree.SearchText = string.Empty;
-
-            searchBox.Focus();
         }
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)

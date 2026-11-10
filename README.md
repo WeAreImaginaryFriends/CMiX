@@ -102,11 +102,11 @@ Every panel ends with the group Project, so a composition can be added under any
 
 ### Searching the tree
 
-The search button at the right end of the toolbar, or `Tree.Search` (Ctrl+F) while the pointer is over the tree or the tree has the focus, shows a search row under the toolbar. The row is hidden until then. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. The number after the box is the number of matches.
+The search field is always shown while the panel shows the tree: it is in the bar of the panel, at the right, on the line of the button that picks what the panel shows. `Tree.Search` (Ctrl+F), while the pointer is over the tree or the tree has the focus, puts the focus in the field and selects its text. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. The number before the field is the number of matches, and the clear button after it empties the field. Both show only while the field holds text.
 
 While the search runs, the parents of every match open, so every match is in sight. When the text is empty again, the rows that the search opened close again. A row that you open or close during the search keeps your choice.
 
-Enter or F3 selects the next match, and Shift with them the match before. At the last match, the next one is the first. Escape clears the text, and Escape in an empty box hides the row. The row stays while it holds text.
+Enter or F3 selects the next match, and Shift with them the match before. At the last match, the next one is the first. Escape clears the text, and Escape in an empty field gives the focus back to the rows.
 
 There is no search during a drag of a row. The box takes no text, Ctrl+F does nothing, and the tree shows only the look of the drag. After the drop, the search look comes back with the same text.
 
@@ -133,7 +133,7 @@ The file maps a command name to a gesture:
 | `Tree.Add` | Shift+A | Open the Add panel of the selected row at the pointer |
 | `Tree.Menu` | W | Open the menu of the selected row at the pointer |
 | `Tree.Expand` | E | Expand or collapse the row that has the keyboard focus, else the selected row |
-| `Tree.Search` | Ctrl+F | Show the search row of the tree and put the focus in its box |
+| `Tree.Search` | Ctrl+F | Put the focus in the search field of the tree |
 | `Tree.Rename` | Ctrl+R | Rename the selected row |
 | `Tree.Remove` | Delete | Remove the selected item |
 | `Tree.Duplicate` | Shift+D | Duplicate the selected item |
