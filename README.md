@@ -119,8 +119,8 @@ The file maps a command name to a gesture:
 | `Edit.Redo` | Ctrl+Shift+Z | Redo |
 | `Edit.RedoAlt` | Ctrl+Y | Redo |
 | `Tree.Add` | Shift+A | Open the Add panel of the selected row at the pointer |
-| `Tree.Expand` | E | Expand or collapse the row that has the keyboard focus, else the selected row |
 | `Tree.Menu` | W | Open the menu of the selected row at the pointer |
+| `Tree.Expand` | E | Expand or collapse the row that has the keyboard focus, else the selected row |
 | `Tree.Rename` | F2 | Rename the selected row |
 | `Tree.Remove` | Delete | Remove the selected item |
 | `Tree.Duplicate` | Shift+D | Duplicate the selected item |
@@ -130,9 +130,9 @@ The file maps a command name to a gesture:
 
 The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut.
 
-The Shortcuts section of the Settings tab edits the shortcuts and saves each change to the file at once, and a missing file is created on save. A red dot marks a gesture that two commands of one scope have, and its tooltip names the other command.
 `Tree.Add`, `Tree.Menu` and `Tree.Expand` work while the pointer is over the tree, whatever has the focus, but not while a text box has the focus. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D.
 
+The Shortcuts section of the Settings tab edits the shortcuts and saves each change to the file at once, and a missing file is created on save. A red dot marks a gesture that two commands of one scope have, and its tooltip names the other command.
 
 While a text box has the focus, the text box gets the keys first. In the tree, the shortcuts do nothing while a name is edited.
 
