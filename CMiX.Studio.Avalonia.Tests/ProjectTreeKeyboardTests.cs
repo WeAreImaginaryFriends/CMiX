@@ -31,7 +31,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Dispose()
         {
             foreach (var view in window?.GetVisualDescendants().OfType<ProjectTreeView>() ?? Enumerable.Empty<ProjectTreeView>())
-                view.RowAddPanel.Close();
+                view.MenuAddPanel.Close();
 
             window?.Close();
         }

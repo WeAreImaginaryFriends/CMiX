@@ -19,7 +19,7 @@ using CMiX.UI.Popups;
 namespace CMiX.Studio.Avalonia.Views
 {
     // The panel that adds something under a node of the tree: a card with a search field and the groups of what the node can take
-    // (see ProjectTree.GetAddGroups). The row menu, the + of a row, the toolbar and the shortcut all open this one panel.
+    // (see ProjectTree.GetAddGroups). The row menu, the toolbar and the shortcut all open this one panel.
     // The panel does not know where it was opened from. The caller gives an anchor and a side. The panel puts itself on that side,
     // and its tip points at the anchor.
     // On the right or the left of the anchor, the search field lines up with the middle of the anchor, so the pointer moves only

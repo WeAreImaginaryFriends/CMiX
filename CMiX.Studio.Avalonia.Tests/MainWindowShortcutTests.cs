@@ -109,10 +109,9 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Press(window, PhysicalKey.A, RawInputModifiers.Shift);
 
-            // The panel opens at once, with no context menu first, and it is not the panel of the + of the row.
+            // The panel opens at once, with no context menu first.
             var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
             TestServiceProviderFactory.Pump();
-            Assert.False(view.RowAddPanel.IsOpen);
             Assert.True(view.MenuAddPanel.IsOpen);
             var groups = view.MenuAddPanel.List.Groups!.ToList();
             Assert.Equal("Project", groups[^1].Header);

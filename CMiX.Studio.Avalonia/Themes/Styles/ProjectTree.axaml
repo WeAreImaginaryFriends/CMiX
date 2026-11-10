@@ -61,9 +61,8 @@
                 <Panel>
                 <StackPanel>
                     <!-- The chevron is at the left of the colored row, outside it, after the indent of the row. The toggles are inside the colored
-                         row, at its right end, as icons with no fill (see RowToggles). The + is at the right of the colored row, outside it.
-                         Only the chevron expands a row. -->
-                    <Grid Name="RowGrid" ColumnDefinitions="Auto,*,Auto">
+                         row, at its right end, as icons with no fill (see RowToggles). Only the chevron expands a row. -->
+                    <Grid Name="RowGrid" ColumnDefinitions="Auto,*">
                     <ToggleButton
                         Name="PART_ExpandCollapseChevron"
                         Grid.Column="0"
@@ -140,19 +139,6 @@
                                 IsVisible="False" />
                         </Panel>
                     </Border>
-                    <!-- The + of the row, at the far right, after the toggles. The host keeps its room whether the + shows or not, so the
-                         toggles never move. The + opens the Add panel of the row (see ProjectTreeView). It is not focusable, and the tree
-                         ignores a press on it, so it starts no drag and selects nothing. -->
-                    <Panel
-                        Grid.Column="2"
-                        Width="{DynamicResource TreeRowHeight}"
-                        Height="{DynamicResource TreeRowHeight}">
-                        <ui:ButtonIcon
-                            Name="AddRowButton"
-                            Focusable="False"
-                            IconKey="Add"
-                            Tip="Add" />
-                    </Panel>
                     </Grid>
                     <!-- The space under the row (TreeRowGap) is a part of the item of the row, so it follows the row whatever is open: every
                          row is one row height plus one space from the next, and the pitch of the rows never changes. The drop line is a
@@ -245,19 +231,6 @@
         <Style Selector="^ /template/ Border#RowBorder.dropblocked Border#BlockedFrame">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
-        </Style>
-        <!-- The + shows over the row under the pointer (soft) and on the selected row (solid), on every row, a group row too. The pointer is
-             tested on the grid of the row, which holds the + and does not hold the children. -->
-        <Style Selector="^ /template/ ui|ButtonIcon#AddRowButton">
-            <Setter Property="IsVisible" Value="False" />
-            <Setter Property="Opacity" Value="0.6" />
-        </Style>
-        <Style Selector="^ /template/ Grid#RowGrid:pointerover ui|ButtonIcon#AddRowButton">
-            <Setter Property="IsVisible" Value="True" />
-        </Style>
-        <Style Selector="^:selected /template/ ui|ButtonIcon#AddRowButton">
-            <Setter Property="IsVisible" Value="True" />
-            <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
             <!-- The chevron keeps its room: it holds the indent of the row, so an empty row stays aligned with the rows around it. -->

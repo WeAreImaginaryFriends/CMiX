@@ -43,23 +43,14 @@ namespace CMiX.Studio.Avalonia.Views
         // The tooltips of the rows. A test reads it.
         internal TreeTooltips Tooltips => tooltips;
 
-        // The name of the + of a row in the theme of the row (see ProjectTree.axaml).
-        private const string AddRowButtonName = "AddRowButton";
-
         // The panel of the Add row of the menus of the rows. One panel serves every menu.
         private readonly AddPanel menuAddPanel = new();
-
-        // The panel of the + of the rows. One panel serves every row.
-        private readonly AddPanel rowAddPanel = new();
 
         // The node of the row that the left button pressed and that can be dragged. A drag clears it.
         private TreeNode? pressedNode;
 
         // The panel of the Add row of the menus. A test reads it.
         internal AddPanel MenuAddPanel => menuAddPanel;
-
-        // The panel that the + of a row opens. A test reads it.
-        internal AddPanel RowAddPanel => rowAddPanel;
 
         // The item of each node. A test reads it.
         internal TreeRowIndex RowIndex => rowIndex;
@@ -94,7 +85,6 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
             treeView.AddHandler(DragDrop.DropEvent, OnDrop);
             treeView.AddHandler(ContextRequestedEvent, OnContextRequested, RoutingStrategies.Bubble);
-            treeView.AddHandler(Button.ClickEvent, OnRowAddClick);
             treeView.AddHandler(DoubleTappedEvent, OnDoubleTapped, RoutingStrategies.Bubble);
             treeView.AddHandler(ScrollViewer.ScrollChangedEvent, (_, _) => rowMetrics.SetEndRoom());
             treeView.TemplateApplied += (_, e) =>
@@ -382,24 +372,13 @@ namespace CMiX.Studio.Avalonia.Views
                 gestureOf: command => tree.Shortcuts[command]);
         }
 
-        // The + of a row opens the Add panel of that row, on the right of the +. The selection stays as it is: the panel is for the row
-        // of the +, not for the selected row.
-        private void OnRowAddClick(object? sender, RoutedEventArgs e)
-        {
-            if (e.Source is not ButtonIcon { Name: AddRowButtonName } button || button.DataContext is not TreeNode node || DataContext is not ProjectTree tree)
-                return;
-
-            e.Handled = true;
-            rowAddPanel.Open(button, PopupSide.Right, tree.GetAddGroups(node));
-        }
-
         private static bool IsInToggles(object? source) =>
             (source as Visual)?.FindAncestorOfType<RowToggles>(true) != null;
 
         private static bool IsEditor(object? source)
         {
             for (var visual = source as Visual; visual != null; visual = visual.GetVisualParent())
-                if (visual is ToggleButton or TextBox or ButtonIcon { Name: AddRowButtonName })
+                if (visual is ToggleButton or TextBox)
                     return true;
 
             return false;
