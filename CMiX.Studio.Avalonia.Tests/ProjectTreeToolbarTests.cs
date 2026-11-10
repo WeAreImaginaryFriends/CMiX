@@ -455,14 +455,45 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Empty(screen.Scene.LayerOfA(0).ModelEntityManager.ManagerData.Items);
         }
 
+        // A click with the pointer: the middle of the search field is on the pointer, so the user can type at once.
+        [AvaloniaTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Click_Add_OpensThePanelWithItsSearchFieldUnderThePointer(bool group)
+        {
+            var screen = Show(leftRoom: 150);
+            // Room above the toolbar, so the card can reach above the pointer.
+            screen.View.Margin = new Thickness(150, 200, 0, 0);
+            screen.Scene.Tree.SelectedNode = group ? screen.Scene.Group<EntitiesGroup>(0) : screen.Scene.LayerNodeOfA(0);
+            var button = screen.ButtonOf("AddButton");
+            screen.Window.UpdateLayout();
+            var pointer = button.TranslatePoint(new Point(button.Bounds.Width / 2, button.Bounds.Height / 2), screen.Window)!.Value;
+            screen.Window.MouseMove(pointer);
+            Dispatcher.UIThread.RunJobs();
+
+            screen.Click(button);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+
+            var search = screen.Panel.List.GetVisualDescendants().OfType<TextBox>().Single(text => text.Name == "PART_Search");
+            var middle = search.TranslatePoint(new Point(search.Bounds.Width / 2, search.Bounds.Height / 2), screen.Window)!.Value;
+            Assert.True(screen.Panel.IsOpen);
+            Assert.Equal(pointer.X, middle.X, 1.5);
+            Assert.Equal(pointer.Y, middle.Y, 1.5);
+        }
+
+        // A click from the keyboard has no pointer on the button: the panel opens under the button, with its tip on it.
         [AvaloniaFact]
-        public void Click_Add_OpensThePanelEightPixelsUnderTheButtonWithTheTipOnIt()
+        public void Click_AddFromTheKeyboard_OpensThePanelEightPixelsUnderTheButtonWithTheTipOnIt()
         {
             var screen = Show();
             screen.Scene.Tree.SelectedNode = screen.Scene.LayerNodeOfA(0);
             var button = screen.ButtonOf("AddButton");
+            screen.Window.MouseMove(new Point(390, 880));
+            Dispatcher.UIThread.RunJobs();
+            Assert.False(button.IsPointerOver);
 
-            screen.Click(button);
+            button.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();
 
@@ -471,27 +502,6 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(origin.Y + button.Bounds.Height + 8, box.Y, 0.51);
             Assert.Equal(PopupSide.Top, screen.Panel.Card.TipEdge);
             Assert.Equal(origin.X + button.Bounds.Width / 2 - box.X, screen.Panel.Card.TipOffset, 0.51);
-        }
-
-        [AvaloniaFact]
-        public void Click_AddWithAnyNumberOfRows_KeepsThePanelUnderTheButton()
-        {
-            var screen = Show();
-            var button = screen.ButtonOf("AddButton");
-            var buttonBottom = button.TranslatePoint(new Point(0, button.Bounds.Height), screen.Window)!.Value.Y;
-
-            foreach (var node in new[] { screen.Scene.Group<EntitiesGroup>(0), screen.Scene.LayerNodeOfA(0) })
-            {
-                screen.Scene.Tree.SelectedNode = node;
-                screen.Click(button);
-                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-                Dispatcher.UIThread.RunJobs();
-
-                Assert.Equal(buttonBottom + 8, screen.CardBox().Y, 0.51);
-
-                screen.Panel.Close();
-                Dispatcher.UIThread.RunJobs();
-            }
         }
 
         [AvaloniaFact]

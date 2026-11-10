@@ -431,7 +431,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Open_TheMenuOfALayerOrAnEntity_HighlightsAddOrDuplicate()
+        public void Open_TheMenuOfALayerAGroupOrAnEntity_HighlightsAdd()
         {
             var screen = Show();
             screen.A.LayerManager.ManagerData.Items.OfType<Layer>().First().ModelEntityManager.AddItem(typeof(Entity));
@@ -439,7 +439,50 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.LayerNodeOfA(0))!));
             Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.Group<EntitiesGroup>(0))!));
-            Assert.Equal("Duplicate", AnchorOf(screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!));
+            Assert.Equal("Add", AnchorOf(screen.OpenMenu(screen.Group<EntitiesGroup>(0).Children[0])!));
+        }
+
+        // A right click with the pointer: the middle of the Add row is on the pointer, and after a use of Duplicate, the middle of Duplicate.
+        [AvaloniaFact]
+        public void RightClick_ARow_PutsTheAddRowThenTheLastRowUsedUnderThePointer()
+        {
+            var screen = Show();
+            screen.Settle();
+            var row = screen.RowOf(screen.LayerNodeOfA(0));
+            var border = row.GetVisualDescendants().OfType<Border>().First(b => b.Name == "RowBorder");
+            // Far enough from the left edge of the window, so the menu, which is centered on the pointer, is not pushed right.
+            var point = border.TranslatePoint(new Point(border.Bounds.Width - 40, border.Bounds.Height / 2), screen.Window)!.Value;
+
+            Point MiddleOf(ContextMenu menu, string header)
+            {
+                screen.Settle();
+                var item = menu.Items.OfType<MenuItem>().Single(candidate => Equals(candidate.Header, header));
+                return item.TranslatePoint(new Point(item.Bounds.Width / 2, item.Bounds.Height / 2), screen.Window)!.Value;
+            }
+
+            ContextMenu RightClick()
+            {
+                screen.Window.MouseMove(point);
+                screen.Window.MouseDown(point, MouseButton.Right);
+                screen.Window.MouseUp(point, MouseButton.Right);
+                Dispatcher.UIThread.RunJobs();
+                return screen.TreeView.ContextMenu!;
+            }
+
+            var menu = RightClick();
+            var add = MiddleOf(menu, "Add");
+            Assert.Equal(point.X, add.X, 1.5);
+            Assert.Equal(point.Y, add.Y, 1.5);
+
+            Screen.Click(menu, "Duplicate");
+            screen.Panel.Close();
+            menu.Close();
+            Dispatcher.UIThread.RunJobs();
+
+            var again = RightClick();
+            var duplicate = MiddleOf(again, "Duplicate");
+            Assert.Equal(point.X, duplicate.X, 1.5);
+            Assert.Equal(point.Y, duplicate.Y, 1.5);
         }
 
         [AvaloniaFact]

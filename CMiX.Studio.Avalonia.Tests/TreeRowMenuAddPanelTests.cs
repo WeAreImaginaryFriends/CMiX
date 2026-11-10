@@ -240,18 +240,15 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Open_TheMenuOfAnEntity_OpensOnDuplicateAndShowsNoPanelOnItsOwn()
+        public void Open_TheMenuOfAnEntity_OpensOnAddLikeTheOtherRows()
         {
             var screen = Show();
             var entity = Scene.Group<EntitiesGroup>(screen.Scene.LayerNode).Children[0];
 
             screen.OpenMenu(entity);
-            Thread.Sleep(400);
-            Dispatcher.UIThread.RunJobs();
 
-            Assert.False(MenuAnchor.GetIsAnchor(screen.ItemOf("Add")));
-            Assert.True(MenuAnchor.GetIsAnchor(screen.ItemOf("Duplicate")));
-            Assert.False(screen.Panel.IsOpen);
+            Assert.True(MenuAnchor.GetIsAnchor(screen.ItemOf("Add")));
+            Assert.False(MenuAnchor.GetIsAnchor(screen.ItemOf("Duplicate")));
         }
 
         [AvaloniaFact]

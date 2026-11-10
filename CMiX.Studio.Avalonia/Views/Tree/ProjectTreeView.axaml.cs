@@ -371,7 +371,8 @@ namespace CMiX.Studio.Avalonia.Views
                 addRow: new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(null)),
                 gestureOf: command => tree.Shortcuts[command]);
 
-        // The menu of a row. Its Add row opens the Add panel beside the menu, with what the row takes.
+        // The menu of a row. Its Add row opens the Add panel beside the menu, with what the row takes. The menu opens with the Add row
+        // under the pointer, on every row, until the user picks another row of a menu: then that row is under the pointer (see MenuAnchor).
         private ContextMenu? CreateMenu(TreeViewItem row, TreeNode node, ProjectTree tree)
         {
             var kind = node.Item == null ? RowMenuKind.Group
@@ -385,7 +386,7 @@ namespace CMiX.Studio.Avalonia.Views
                 () => node.Owner != null && node.Item != null ? (node.Owner, node.Item) : null,
                 Array.Empty<RowMenuAdd>(),
                 () => node.Header,
-                addRow: new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node), node.Item is null or CompositionModel or LayerModel),
+                addRow: new AddMenuRow(menuAddPanel, () => tree.GetAddGroups(node)),
                 gestureOf: command => tree.Shortcuts[command]);
         }
 

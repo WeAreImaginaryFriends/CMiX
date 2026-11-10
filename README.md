@@ -88,12 +88,13 @@ A row can move inside its list. It can also move to a list of the same kind of a
 
 One panel adds things under a row. It has a search field, then the groups that the row can take, in this order: Layer, Content, Texture, Filter, Modifier, Modulator and Project. An entry that the row cannot take is not in the panel, and a group with no entry is not in it either. A layer takes content (entities, fullscreen quads, text, cameras and lights), filters and modifiers. An entity takes textures and modifiers. A group of rows takes only its own kind. An entry has a small square in the color of its kind, and a group does not show a number. A group with many rows starts closed, and the search opens them. A long list has a scroll bar. The menu of a row shows Add, Duplicate, Rename, the moves and Remove with an icon each. A row that cannot do one of them shows it greyed, and a group row shows all of them greyed.
 
-The panel opens in four ways:
+The panel opens in three ways:
 
-- The + at the right of a row. It shows over the row under the pointer, and on the selected row, on every row. The panel opens to its right.
 - The Add row of the menu of a row. The panel opens to the right of the menu, with its search field on the Add row.
-- The Add button of the toolbar over the tree. The panel opens under the button and names the selected row. With nothing selected, the panel offers a composition.
+- The Add button of the toolbar over the tree. The panel opens with the middle of its search field under the pointer and names the selected row. A click from the keyboard opens it under the button. With nothing selected, the panel offers a composition.
 - The shortcut `Tree.Add` (Shift+A) opens the Add panel of the selected row with the middle of its search field under the pointer, with the title Add. With nothing selected, the panel offers a composition. It works while the pointer is over the tree, whatever has the focus, and does nothing when the pointer is elsewhere. The panel shows every category open: a category is a name, with no expander (`GroupedSearchList.Collapsible`).
+
+The menu of a row opens with its Add row under the pointer. After the user picks another row of a menu, such as Duplicate, the next menu opens with that row under the pointer.
 
 Every panel ends with the group Project, so a composition can be added under any row. The search field has the focus when the panel opens. Down and Up move over the rows, Enter picks a row, and Escape clears the text and then closes the panel.
 
