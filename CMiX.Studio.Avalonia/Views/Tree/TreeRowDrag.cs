@@ -212,7 +212,11 @@ namespace CMiX.Studio.Avalonia.Views
             finally
             {
                 IsDropping = false;
+                // The rows that the drag opened close in the same anchor, so the first row in view stays where it is. The target and
+                // its parents stay open: they show where the node went, also for a drop before or after a child of an opened row.
+                var closed = CloseOpenedRows(target);
                 scrollAnchor.RestoreAnchor(anchor);
+                scrollAnchor.HoldWhileClosing(anchor, closed);
                 Dispatcher.UIThread.Post(() => scrollAnchor.RestoreAnchor(anchor), DispatcherPriority.Loaded);
             }
         }
@@ -222,6 +226,16 @@ namespace CMiX.Studio.Avalonia.Views
         {
             if (source == null)
                 return;
+
+            // No drop closed them (a cancel, or a release where no drop is offered): every row that the drag opened closes, and the
+            // first row in view stays where it is.
+            if (openedByDrag.Count > 0)
+            {
+                var anchor = scrollAnchor.CaptureAnchor(source);
+                var closed = CloseOpenedRows(null);
+                scrollAnchor.RestoreAnchor(anchor);
+                scrollAnchor.HoldWhileClosing(anchor, closed);
+            }
 
             source = null;
             StopRest();
@@ -341,6 +355,19 @@ namespace CMiX.Studio.Avalonia.Views
                 closedByKey = node;
                 node.IsExpanded = false;
             }
+        }
+
+        // Closes the rows that the drag opened, except the kept node and its parents. The rows that were open before the drag are not
+        // in the list, so they never close here.
+        // Returns the rows that closed.
+        private List<TreeNode> CloseOpenedRows(TreeNode? kept)
+        {
+            var closed = openedByDrag.Where(node => kept == null || !kept.IsOrIsUnder(node)).ToList();
+            foreach (var node in closed)
+                node.IsExpanded = false;
+
+            openedByDrag.Clear();
+            return closed;
         }
 
         // Opens the row that the pointer rests on. A test calls it to skip the wait.

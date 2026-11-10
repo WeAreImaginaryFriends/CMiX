@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
+using CMiX.UI.Panels;
 
 namespace CMiX.Studio.Avalonia.Views
 {
@@ -54,6 +58,11 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             treeView.UpdateLayout();
+            Place(kept, view);
+        }
+
+        private void Place((TreeNode Node, double Top) kept, ScrollViewer view)
+        {
             var item = rows.FindItem(kept.Node);
             if (item == null || TreeRows.RowTopIn(item, view) is not { } top)
                 return;
@@ -61,5 +70,33 @@ namespace CMiX.Studio.Avalonia.Views
             var maxOffset = Math.Max(0, view.Extent.Height - view.Viewport.Height);
             view.Offset = view.Offset.WithY(Math.Clamp(view.Offset.Y + top - kept.Top, 0, maxOffset));
         }
+
+        // A row closes over a few frames (CollapsePanel), so the rows above the view get shorter after the close. The anchor row is
+        // put back after each layout, until the list of children of every closed row is shut.
+        public void HoldWhileClosing((TreeNode Node, double Top)? anchor, IReadOnlyList<TreeNode> closed)
+        {
+            if (anchor is not { } kept || closed.Count == 0 || scroller() is not { } view)
+                return;
+
+            var panels = closed.Select(node => rows.FindItem(node)?.GetVisualDescendants().OfType<CollapsePanel>().FirstOrDefault(panel => panel.Name == "PART_Collapse"))
+                               .OfType<CollapsePanel>().ToList();
+            if (panels.Count == 0)
+                return;
+
+            // A safe end, in case a panel never reaches its end.
+            var passes = 0;
+            void Keep(object? sender, EventArgs e)
+            {
+                var moving = panels.Any(panel => panel.Progress > 0) && ++passes < MaxHoldPasses;
+                if (!moving)
+                    treeView.LayoutUpdated -= Keep;
+
+                Place(kept, view);
+            }
+
+            treeView.LayoutUpdated += Keep;
+        }
+
+        private const int MaxHoldPasses = 500;
     }
 }
