@@ -213,6 +213,39 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(screen.View.SearchRow.IsVisible);
         }
 
+        // The clear button ends the search as Escape does: the rows that the search opened close again.
+        [AvaloniaFact]
+        public void Click_TheClearButton_ClosesTheRowsThatTheSearchOpened()
+        {
+            var (screen, scene) = Show();
+            var layers = scene.LayerNodeOfA(0).Parent!;
+            layers.IsExpanded = false;
+            Pump(screen);
+            Search(screen, scene.LayerNodeOfA(2).Header);
+            Assert.True(layers.IsExpanded);
+
+            var clear = screen.View.SearchRow.GetVisualDescendants().OfType<ButtonIcon>().First(button => button.Name == "searchClear");
+            Click(screen.Window, clear);
+            Pump(screen);
+
+            Assert.False(layers.IsExpanded);
+        }
+
+        // The row stays while it holds text, also when the focus goes back to the tree.
+        [AvaloniaFact]
+        public void Focus_TheTreeWithATextInTheBox_KeepsTheRowShown()
+        {
+            var (screen, scene) = Show();
+            Search(screen, "Layer");
+
+            screen.View.RowIndex.FindItem(scene.LayerNodeOfA(0))!.Focus();
+            Pump(screen);
+
+            Assert.False(screen.View.SearchBox.IsFocused);
+            Assert.True(screen.View.SearchRow.IsVisible);
+            Assert.Equal("Layer", scene.Tree.SearchText);
+        }
+
         // ---------------------------------------------------------------- no search during a drag
 
         [AvaloniaFact]
