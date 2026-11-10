@@ -188,6 +188,98 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(screen.View.SearchRow.IsVisible);
         }
 
+        // ---------------------------------------------------------------- no search during a drag
+
+        [AvaloniaFact]
+        public void BeginDrag_WithTheSearchShown_TurnsTheCommandOffAndTheBoxTakesNoText()
+        {
+            var (screen, scene) = Show();
+            Search(screen, "Layer");
+            var changes = 0;
+            scene.Tree.ShowSearchCommand.CanExecuteChanged += (_, _) => changes++;
+
+            scene.Tree.BeginDrag(scene.LayerNodeOfA(0));
+            Pump(screen);
+
+            Assert.True(changes > 0);
+            Assert.False(scene.Tree.ShowSearchCommand.CanExecute(null));
+            Assert.True(screen.View.SearchBox.IsReadOnly);
+            screen.View.SearchBox.Focus();
+            screen.Window.KeyTextInput("x");
+            Pump(screen);
+            Assert.Equal("Layer", scene.Tree.SearchText);
+            scene.Tree.EndDrag();
+        }
+
+        [AvaloniaFact]
+        public void Enter_InTheBoxDuringADrag_DoesNotChangeTheSelection()
+        {
+            var (screen, scene) = Show();
+            scene.Tree.SelectedNode = null;
+            Search(screen, "Layer");
+            scene.Tree.BeginDrag(scene.LayerNodeOfA(0));
+            Pump(screen);
+
+            Press(screen, PhysicalKey.Enter);
+            scene.Tree.SelectMatch(1);
+
+            Assert.Null(scene.Tree.SelectedNode);
+            scene.Tree.EndDrag();
+        }
+
+        [AvaloniaFact]
+        public void ShowSearch_DuringADrag_DoesNotShowTheRow()
+        {
+            var (screen, scene) = Show();
+            scene.Tree.BeginDrag(scene.LayerNodeOfA(0));
+            Pump(screen);
+
+            scene.Tree.ShowSearch();
+            Pump(screen);
+
+            Assert.False(screen.View.SearchRow.IsVisible);
+            scene.Tree.EndDrag();
+        }
+
+        [AvaloniaFact]
+        public void EndDrag_AfterADrag_GivesTheSearchBackWithTheSameText()
+        {
+            var (screen, scene) = Show();
+            Search(screen, "Layer");
+            scene.Tree.BeginDrag(scene.LayerNodeOfA(0));
+            Pump(screen);
+
+            scene.Tree.EndDrag();
+            Pump(screen);
+
+            Assert.Equal("Layer", scene.Tree.SearchText);
+            Assert.False(screen.View.SearchBox.IsReadOnly);
+            screen.View.SearchBox.Focus();
+            screen.View.SearchBox.CaretIndex = screen.View.SearchBox.Text!.Length;
+            screen.Window.KeyTextInput(" 0");
+            Pump(screen);
+            Assert.Equal("Layer 0", scene.Tree.SearchText);
+        }
+
+        [AvaloniaFact]
+        public void Press_CtrlFOverTheTreeDuringADrag_DoesNotShowTheRow()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
+            TestServiceProviderFactory.Pump();
+            window.Focus();
+            var view = window.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+            window.MouseMove(view.TranslatePoint(new Point(view.Bounds.Width / 2, view.Bounds.Height / 2), window)!.Value);
+            Dispatcher.UIThread.RunJobs();
+            viewModel.ProjectTree.BeginDrag(viewModel.ProjectTree.CompositionNodes()[0]);
+
+            window.KeyPressQwerty(PhysicalKey.F, RawInputModifiers.Control);
+            TestServiceProviderFactory.Pump();
+
+            Assert.False(view.SearchRow.IsVisible);
+            viewModel.ProjectTree.EndDrag();
+        }
+
         // ---------------------------------------------------------------- the shortcut of the main window
 
         [AvaloniaFact]

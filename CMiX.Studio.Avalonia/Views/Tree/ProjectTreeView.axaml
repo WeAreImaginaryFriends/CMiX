@@ -52,17 +52,20 @@
                 DockPanel.Dock="Right"
                 IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                 Text="{Binding SearchMatchCount}" />
+            <!-- During a drag the box and the clear button take no input, and the text stays (ProjectTree.IsDragging). -->
             <ui:ButtonIcon
                 x:Name="searchClear"
                 Click="OnSearchClearClick"
                 DockPanel.Dock="Right"
                 Focusable="False"
                 IconKey="Close"
+                IsEnabled="{Binding !IsDragging}"
                 Tip="Clear" />
             <TextBox
                 x:Name="searchBox"
                 Height="{DynamicResource ControlHeightMD}"
                 VerticalContentAlignment="Center"
+                IsReadOnly="{Binding IsDragging}"
                 Text="{Binding SearchText, Mode=TwoWay}"
                 Watermark="Search" />
         </DockPanel>

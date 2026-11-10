@@ -82,7 +82,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 () => IsPointerOverTree() && !IsTextBoxFocused());
             ShowSearchCommand = new RelayCommand(
                 ShowSearch,
-                () => IsPointerOverTree() || IsTreeFocused());
+                () => !IsDragging && (IsPointerOverTree() || IsTreeFocused()));
             RenameSelectedCommand = new RelayCommand(
                 () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => selectedNode?.Item != null);
@@ -130,9 +130,14 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // Shows the search row of the tree and gives its text box the focus (Tree.Search). The command runs while the pointer is over
         // the tree or the tree has the focus. The search button of the toolbar calls ShowSearch itself, so the button is never disabled.
+        // There is no search during a drag: the command cannot run, ShowSearch and SelectMatch do nothing, and the box takes no text.
         public IRelayCommand ShowSearchCommand { get; }
 
-        public void ShowSearch() => SearchRequested?.Invoke(this, EventArgs.Empty);
+        public void ShowSearch()
+        {
+            if (!IsDragging)
+                SearchRequested?.Invoke(this, EventArgs.Empty);
+        }
 
         // The view tells if the tree or one of its controls has the focus.
         public Func<bool> IsTreeFocused { get; set; } = () => false;
@@ -146,7 +151,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public void SelectMatch(int step)
         {
             var count = searchMatches.Count;
-            if (count == 0 || step == 0)
+            if (count == 0 || step == 0 || IsDragging)
                 return;
 
             var index = selectedNode == null ? -1 : IndexOf(searchMatches, selectedNode);
@@ -573,6 +578,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // A node is being dragged: the rows that take it inside are candidates, the rows next to which it can go are neighbors, a collapsed row
         // with such a row under it gives a hint, a row that refuses the node by a rule is blocked, and the other rows are dimmed
         // (see TreeNode.IsDropCandidate). The rules are the ones of the drop itself.
+        // The search is off while a drag runs (see ShowSearch): the view binds the search box to it.
         public bool IsDragging { get; private set; }
 
         // The rows that BeginDrag marked. EndDrag clears only these.
@@ -580,18 +586,28 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public void BeginDrag(TreeNode source)
         {
-            IsDragging = true;
+            SetDragging(true);
             dragMarked.Clear();
             MarkDrag(root, source);
         }
 
         public void EndDrag()
         {
-            IsDragging = false;
+            SetDragging(false);
             foreach (var node in dragMarked)
                 node.SetDragState(false, false, false, false, false);
 
             dragMarked.Clear();
+        }
+
+        private void SetDragging(bool dragging)
+        {
+            if (IsDragging == dragging)
+                return;
+
+            IsDragging = dragging;
+            OnPropertyChanged(nameof(IsDragging));
+            ShowSearchCommand.NotifyCanExecuteChanged();
         }
 
         // Sets the drag state of a row and of the rows under it. It tells whether a row that takes the node is at or under the row.
