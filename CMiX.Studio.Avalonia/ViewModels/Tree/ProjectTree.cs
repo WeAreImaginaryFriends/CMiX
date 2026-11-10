@@ -157,8 +157,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             var index = selectedNode == null ? -1 : IndexOf(searchMatches, selectedNode);
             var next = index < 0 ? (step > 0 ? 0 : count - 1) : ((index + step) % count + count) % count;
             var node = searchMatches[next];
-            for (var parent = node.Parent; parent != null; parent = parent.Parent)
-                parent.IsExpanded = true;
+            for (var parent = node.Parent; parent != null && !ReferenceEquals(parent, root); parent = parent.Parent)
+                OpenForSearch(parent);
 
             Select(node, SelectionOrigin.Program);
         }
@@ -283,7 +283,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         internal void RefreshSearch()
         {
             var text = searchText.Trim();
-            if (text.Length == 0 && searchMatches.Count == 0)
+            if (text.Length == 0 && searchMatches.Count == 0 && searchOpened.Count == 0)
                 return;
 
             var matches = new List<TreeNode>();
@@ -300,14 +300,79 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             }
 
             Visit(Roots);
-            if (matches.SequenceEqual(searchMatches))
+            var changed = !matches.SequenceEqual(searchMatches);
+            if (changed)
+            {
+                var countChanged = matches.Count != searchMatches.Count;
+                searchMatches = matches;
+                OnPropertyChanged(nameof(SearchMatches));
+                if (countChanged)
+                    OnPropertyChanged(nameof(SearchMatchCount));
+            }
+
+            // The rows change only when the matches change, or when the search ends: a row that the user closes during the search
+            // stays closed until the matches change.
+            if (changed || text.Length == 0)
+                SyncSearchRows();
+        }
+
+        // The rows that the search opened from closed, and that the user did not open or close since. The search closes them again
+        // when they lead to no match any more, and at its end. A row that the user opens or closes leaves the list and keeps the
+        // state of the user. A row that the search never touched, a row added during the search too, keeps its state.
+        private readonly HashSet<TreeNode> searchOpened = new();
+
+        // True while the search opens or closes a row, so the change does not count as a change of the user.
+        private bool searchSetsRows;
+
+        // Opens the parents of every match, so every match is in sight, and closes the rows that the search opened and that lead to no
+        // match any more. There is no search during a drag: EndDrag does it once the drag is over.
+        private void SyncSearchRows()
+        {
+            if (IsDragging)
                 return;
 
-            var countChanged = matches.Count != searchMatches.Count;
-            searchMatches = matches;
-            OnPropertyChanged(nameof(SearchMatches));
-            if (countChanged)
-                OnPropertyChanged(nameof(SearchMatchCount));
+            var needed = new HashSet<TreeNode>();
+            foreach (var match in searchMatches)
+                for (var parent = match.Parent; parent != null && !ReferenceEquals(parent, root); parent = parent.Parent)
+                    needed.Add(parent);
+
+            foreach (var node in searchOpened.Where(node => !needed.Contains(node)).ToList())
+                SetExpandedForSearch(node, false);
+
+            foreach (var node in needed)
+                OpenForSearch(node);
+        }
+
+        private void OpenForSearch(TreeNode node)
+        {
+            if (!node.IsExpanded)
+                SetExpandedForSearch(node, true);
+        }
+
+        private void SetExpandedForSearch(TreeNode node, bool expanded)
+        {
+            searchSetsRows = true;
+            try
+            {
+                node.IsExpanded = expanded;
+            }
+            finally
+            {
+                searchSetsRows = false;
+            }
+
+            if (expanded)
+                searchOpened.Add(node);
+            else
+                searchOpened.Remove(node);
+        }
+
+        // A row opens or closes. A change that the search did not make is a change of the user (or of the drag), so the search does
+        // not change that row back.
+        internal void OnRowExpandedChanged(TreeNode node)
+        {
+            if (!searchSetsRows)
+                searchOpened.Remove(node);
         }
 
         // The commands of the toolbar. They act on the selected node, and they are disabled when it has nothing to do.
@@ -598,6 +663,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 node.SetDragState(false, false, false, false, false);
 
             dragMarked.Clear();
+
+            // A drop can bring a match to a new place: its parents open now that the drag is over.
+            if (searchMatches.Count > 0)
+                SyncSearchRows();
         }
 
         private void SetDragging(bool dragging)
