@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,6 +42,23 @@ namespace CMiX.Studio.Avalonia.Views
         private Cursor? cursorBefore;
         private Control? blockTip;
         private readonly TreeDragGhost ghost = new();
+
+        // A collapsed row with a place for the node under it opens when the pointer rests on it this long (see OpensOnRest).
+        // A test can change it.
+        public static readonly TimeSpan DefaultRestDelay = TimeSpan.FromSeconds(0.6);
+        internal TimeSpan RestDelay { get; set; } = DefaultRestDelay;
+
+        // The row that the pointer rests on, and the timer that opens it.
+        private TreeNode? resting;
+        private DispatcherTimer? restTimer;
+
+        // The rows that this drag opened, in the order that they opened. A new drag starts a new list.
+        private readonly List<TreeNode> openedByDrag = new();
+        internal IReadOnlyList<TreeNode> OpenedByDrag => openedByDrag;
+
+        // The row that waits to open, or null, and the time that the timer waits. A test reads them.
+        internal TreeNode? RestingNode => resting;
+        internal TimeSpan? RestTimerInterval => restTimer is { IsEnabled: true } timer ? timer.Interval : null;
 
         // tree gives the view model of the tree. autoScroller gives the scroller of the drag. scroller gives the scroll viewer of the tree.
         internal TreeRowDrag(TreeView treeView, Func<ProjectTree?> tree, TreeDropMarker marker, Func<DragAutoScroller> autoScroller,
@@ -116,6 +134,7 @@ namespace CMiX.Studio.Avalonia.Views
             pressed = null;
             source = node;
             this.pointer = pointer;
+            openedByDrag.Clear();
 
             // The picture is taken before the rows change their look for the drag, so it is the row as the user pressed it.
             ShowGhost(node, pressPoint, position);
@@ -141,6 +160,7 @@ namespace CMiX.Studio.Avalonia.Views
             ghost.Move(treeView, position);
             var (hovered, item, target, place) = Read(position);
             ShowBlockReason(hovered);
+            TrackRest(hovered);
             if (item != null && target != null && place != null && CanDrop(target, place.Value))
                 marker.Mark(item, place);
             else
@@ -204,6 +224,7 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             source = null;
+            StopRest();
             ShowBlockReason(null);
             tree()?.EndDrag();
             autoScroller().StopNow();
@@ -255,6 +276,52 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.ItemsPanelRoot is { } panel
             && treeView.TranslatePoint(position, panel) is { } point
             && new Rect(panel.Bounds.Size).Contains(point);
+
+        // The rest starts when the pointer comes on a row that opens on a rest, and goes on while the pointer moves inside that row.
+        // Another row, or the end of the drag, stops it.
+        private void TrackRest(TreeViewItem? hovered)
+        {
+            var node = hovered?.DataContext is TreeNode candidate && OpensOnRest(candidate) ? candidate : null;
+            if (ReferenceEquals(node, resting))
+                return;
+
+            StopRest();
+            resting = node;
+            if (node == null)
+                return;
+
+            if (restTimer == null)
+            {
+                restTimer = new DispatcherTimer();
+                restTimer.Tick += (_, _) => OpenRested();
+            }
+
+            restTimer.Interval = RestDelay;
+            restTimer.Start();
+        }
+
+        // A collapsed row with a place for the node under it. The row can take the node itself too, such as a layer for an entity:
+        // open, it shows the places between its children.
+        private static bool OpensOnRest(TreeNode node) =>
+            node is { IsDragActive: true, HasDropTargetBelow: true, IsExpanded: false, Children.Count: > 0 };
+
+        private void StopRest()
+        {
+            restTimer?.Stop();
+            resting = null;
+        }
+
+        // Opens the row that the pointer rests on. A test calls it to skip the wait.
+        internal void OpenRested()
+        {
+            var node = resting;
+            StopRest();
+            if (source == null || node == null || !OpensOnRest(node))
+                return;
+
+            node.IsExpanded = true;
+            openedByDrag.Add(node);
+        }
 
         // The drag sends no pointer events to the rows, so the tooltip of a blocked row under the pointer opens from here. Null closes it.
         private void ShowBlockReason(TreeViewItem? hovered)
