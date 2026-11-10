@@ -243,6 +243,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.MenuRequested += OnMenuRequested;
             watched.IsPointerOverTree = () => IsPointerOver;
             watched.IsTextBoxFocused = () => IsInTextBox(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement());
+            watched.ToggleDragRow = rowDrag.ToggleHovered;
         }
 
         private void Unwatch()
@@ -256,6 +257,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.MenuRequested -= OnMenuRequested;
             watched.IsPointerOverTree = () => false;
             watched.IsTextBoxFocused = () => false;
+            watched.ToggleDragRow = () => { };
         }
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)

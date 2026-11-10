@@ -69,8 +69,14 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 () => AddRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree() && !IsTextBoxFocused());
             ToggleExpandUnderPointerCommand = new RelayCommand(
-                () => { if (ExpandTarget() is { } node) node.IsExpanded = !node.IsExpanded; },
-                () => IsPointerOverTree() && !IsTextBoxFocused() && ExpandTarget() != null);
+                () =>
+                {
+                    if (IsDragging)
+                        ToggleDragRow();
+                    else if (ExpandTarget() is { } node)
+                        node.IsExpanded = !node.IsExpanded;
+                },
+                () => !IsTextBoxFocused() && (IsDragging || IsPointerOverTree() && ExpandTarget() != null));
             OpenMenuUnderPointerCommand = new RelayCommand(
                 () => MenuRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree() && !IsTextBoxFocused());
@@ -105,7 +111,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // Expands or collapses the row that the arrow keys are on, else the selected row (Tree.Expand). A row with no children does not
         // change. The command runs only while the pointer is over the tree, and not while a text box has the focus: the key is a plain letter.
+        // During a drag of a row, it acts on the row under the pointer instead (see ToggleDragRow).
         public IRelayCommand ToggleExpandUnderPointerCommand { get; }
+
+        // The view opens or closes the row under the pointer during a drag (see TreeRowDrag.ToggleHovered).
+        public Action ToggleDragRow { get; set; } = () => { };
 
         private TreeNode? ExpandTarget() => (softSelectedNode ?? selectedNode) is { Children.Count: > 0 } node ? node : null;
 

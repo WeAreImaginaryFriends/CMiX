@@ -225,6 +225,8 @@ namespace CMiX.Studio.Avalonia.Views
 
             source = null;
             StopRest();
+            hoveredNode = null;
+            closedByKey = null;
             ShowBlockReason(null);
             tree()?.EndDrag();
             autoScroller().StopNow();
@@ -278,10 +280,14 @@ namespace CMiX.Studio.Avalonia.Views
             && new Rect(panel.Bounds.Size).Contains(point);
 
         // The rest starts when the pointer comes on a row that opens on a rest, and goes on while the pointer moves inside that row.
-        // Another row, or the end of the drag, stops it.
+        // Another row, or the end of the drag, stops it. A row that the key closed does not open on a rest until the pointer leaves it.
         private void TrackRest(TreeViewItem? hovered)
         {
-            var node = hovered?.DataContext is TreeNode candidate && OpensOnRest(candidate) ? candidate : null;
+            hoveredNode = hovered?.DataContext as TreeNode;
+            if (!ReferenceEquals(hoveredNode, closedByKey))
+                closedByKey = null;
+
+            var node = hoveredNode != null && OpensOnRest(hoveredNode) && !ReferenceEquals(hoveredNode, closedByKey) ? hoveredNode : null;
             if (ReferenceEquals(node, resting))
                 return;
 
@@ -309,6 +315,32 @@ namespace CMiX.Studio.Avalonia.Views
         {
             restTimer?.Stop();
             resting = null;
+        }
+
+        // The row under the pointer during the drag, and the row that the key closed last.
+        private TreeNode? hoveredNode;
+        private TreeNode? closedByKey;
+
+        // The key of Tree.Expand during the drag (see ProjectTree.ToggleDragRow). A collapsed row that opens on a rest opens at once.
+        // An open row that this drag opened closes again. A row that the user opened before the drag stays open.
+        internal void ToggleHovered()
+        {
+            if (source == null || hoveredNode is not { } node)
+                return;
+
+            if (OpensOnRest(node))
+            {
+                StopRest();
+                closedByKey = null;
+                node.IsExpanded = true;
+                openedByDrag.Add(node);
+            }
+            else if (node.IsExpanded && openedByDrag.Remove(node))
+            {
+                StopRest();
+                closedByKey = node;
+                node.IsExpanded = false;
+            }
         }
 
         // Opens the row that the pointer rests on. A test calls it to skip the wait.
