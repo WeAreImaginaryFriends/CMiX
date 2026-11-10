@@ -21,6 +21,9 @@
     <!-- The tones of a row: the fill behind it and the colors of its count squares, by the kind of the row (see CategoryPalette). -->
     <StudioConverters:TreeToneConverter x:Key="TreeTone" />
 
+    <!-- The cover of a row: the dim of a drag, or the dim of the search while no drag runs (see TreeCoverConverter). -->
+    <StudioConverters:TreeCoverConverter x:Key="TreeCover" />
+
     <!-- How much of the cover stays over a row that can not take a dragged node. -->
     <x:Double x:Key="TreeDimOpacity">0.6</x:Double>
 
@@ -99,14 +102,21 @@
                             </Grid>
                             <!-- The marks of a drag over the rows, drawn over the row: they take no room and no click. A row that can not take
                                  the node is covered with the background of the tree, so it recedes. A row that can take it has a
-                                 brighter fill (the class candidate, see the styles below), and no border. -->
+                                 brighter fill (the class candidate, see the styles below), and no border. While no drag runs, a row that
+                                 does not match the search is covered in the same way, so only the matches keep their color. -->
                             <Border
                                 Name="DimLayer"
                                 Background="{DynamicResource TreeBackgroundBrush}"
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
-                                Classes.dimmed="{Binding IsDimmed}"
                                 IsHitTestVisible="False"
                                 Opacity="0">
+                                <Classes.dimmed>
+                                    <MultiBinding Converter="{StaticResource TreeCover}">
+                                        <Binding Path="IsDimmed" />
+                                        <Binding Path="IsSearchDimmed" />
+                                        <Binding Path="IsDragActive" />
+                                    </MultiBinding>
+                                </Classes.dimmed>
                                 <!-- The cover fades in and out (Motion.FadeDuration), so a row does not jump when a drag starts or ends. -->
                                 <Border.Transitions>
                                     <Transitions>
