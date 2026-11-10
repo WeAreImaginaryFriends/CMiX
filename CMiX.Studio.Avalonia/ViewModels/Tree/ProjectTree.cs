@@ -68,6 +68,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             AddUnderPointerCommand = new RelayCommand(
                 () => AddRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree());
+            ToggleExpandUnderPointerCommand = new RelayCommand(
+                () => { if (ExpandTarget() is { } node) node.IsExpanded = !node.IsExpanded; },
+                () => IsPointerOverTree() && !IsTextBoxFocused() && ExpandTarget() != null);
             OpenMenuUnderPointerCommand = new RelayCommand(
                 () => MenuRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree() && !IsTextBoxFocused());
@@ -99,6 +102,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // Opens the menu of the selected row at the pointer (Tree.Menu), or the menu of the project with nothing selected. The command
         // runs only while the pointer is over the tree, and not while a text box has the focus: the key is a plain letter.
         public IRelayCommand OpenMenuUnderPointerCommand { get; }
+
+        // Expands or collapses the row that the arrow keys are on, else the selected row (Tree.Expand). A row with no children does not
+        // change. The command runs only while the pointer is over the tree, and not while a text box has the focus: the key is a plain letter.
+        public IRelayCommand ToggleExpandUnderPointerCommand { get; }
+
+        private TreeNode? ExpandTarget() => (softSelectedNode ?? selectedNode) is { Children.Count: > 0 } node ? node : null;
 
         // The view tells if a text box has the focus.
         public Func<bool> IsTextBoxFocused { get; set; } = () => false;

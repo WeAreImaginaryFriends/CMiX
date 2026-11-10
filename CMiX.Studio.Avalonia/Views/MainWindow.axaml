@@ -33,6 +33,7 @@
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.RedoAlt]}" />
         <KeyBinding Command="{Binding ProjectTree.AddUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Add]}" />
         <KeyBinding Command="{Binding ProjectTree.OpenMenuUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
+        <KeyBinding Command="{Binding ProjectTree.ToggleExpandUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Expand]}" />
     </Window.KeyBindings>
 
     <DockPanel Background="{DynamicResource Grey100Brush}" LastChildFill="True">

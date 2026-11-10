@@ -24,6 +24,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ["Edit.RedoAlt"] = "Redo (alternative)",
             ["Tree.Add"] = "Add",
             ["Tree.Menu"] = "Context menu",
+            ["Tree.Expand"] = "Expand or collapse",
             ["Tree.Rename"] = "Rename",
             ["Tree.Remove"] = "Remove",
             ["Tree.Duplicate"] = "Duplicate",

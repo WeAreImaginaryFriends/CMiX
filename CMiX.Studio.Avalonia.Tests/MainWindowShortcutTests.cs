@@ -258,6 +258,45 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
+        public void Press_EOverTheTree_CollapsesAndExpandsTheSelectedRow()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
+            TestServiceProviderFactory.Pump();
+            TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
+            var node = viewModel.ProjectTree.CompositionNodes()[0];
+            viewModel.ProjectTree.SelectedNode = node;
+            TestServiceProviderFactory.Pump();
+            window.Focus();
+            PointOnTree(window);
+            Assert.True(node.IsExpanded);
+
+            Press(window, PhysicalKey.E, RawInputModifiers.None);
+            Assert.False(node.IsExpanded);
+
+            Press(window, PhysicalKey.E, RawInputModifiers.None);
+            Assert.True(node.IsExpanded);
+        }
+
+        [AvaloniaFact]
+        public void Press_EBesideTheTree_ChangesNothing()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
+            TestServiceProviderFactory.Pump();
+            TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
+            var node = viewModel.ProjectTree.CompositionNodes()[0];
+            viewModel.ProjectTree.SelectedNode = node;
+            TestServiceProviderFactory.Pump();
+            window.Focus();
+            PointBesideTree(window);
+
+            Press(window, PhysicalKey.E, RawInputModifiers.None);
+
+            Assert.True(node.IsExpanded);
+        }
+
+        [AvaloniaFact]
         public void Set_AnotherGestureForTreeAdd_ReplacesShiftA()
         {
             var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();

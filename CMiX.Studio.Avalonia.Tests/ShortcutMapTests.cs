@@ -30,7 +30,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var map = new ShortcutMap(FilePath);
 
             Assert.Equal(
-                new[] { "Edit.Undo", "Edit.Redo", "Edit.RedoAlt", "Tree.Add", "Tree.Menu", "Tree.Rename", "Tree.Remove", "Tree.Duplicate", "Tree.MoveUp", "Tree.MoveDown", "Tree.Open" },
+                new[] { "Edit.Undo", "Edit.Redo", "Edit.RedoAlt", "Tree.Add", "Tree.Menu", "Tree.Expand", "Tree.Rename", "Tree.Remove", "Tree.Duplicate", "Tree.MoveUp", "Tree.MoveDown", "Tree.Open" },
                 map.Names);
             foreach (var name in map.Names)
                 Assert.NotNull(map[name]);
@@ -39,6 +39,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(new KeyGesture(Key.Up, KeyModifiers.Alt), map["Tree.MoveUp"]);
             Assert.Equal(new KeyGesture(Key.A, KeyModifiers.Shift), map["Tree.Add"]);
             Assert.Equal(new KeyGesture(Key.W), map["Tree.Menu"]);
+            Assert.Equal(new KeyGesture(Key.E), map["Tree.Expand"]);
         }
 
         [Fact]
