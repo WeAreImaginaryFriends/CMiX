@@ -131,8 +131,8 @@ namespace CMiX.Studio.Avalonia.Views
         private void ShowGhost(TreeNode node, Point grabbed, Point position)
         {
             var item = treeView.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(row => ReferenceEquals(row.DataContext, node));
-            if (item != null && TreeRows.RowBorderOf(item) is { } row)
-                ghost.Show(row, treeView, grabbed, position);
+            if (item != null && TreeRows.RowBorderOf(item) is Border row)
+                ghost.Show(row, node.IconKey, node.Header, treeView, grabbed, position);
         }
 
         // Marks the place of the drop under the pointer and keeps the scroll of the drag going.

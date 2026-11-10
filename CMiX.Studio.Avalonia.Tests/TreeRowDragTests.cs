@@ -292,7 +292,9 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(ghost.IsShown);
             Assert.False(ghost.Ghost.IsHitTestVisible);
             Assert.Equal(screen.RowOf(layer).Bounds.Width > 0, ghost.Ghost.Width > 0);
-            Assert.True(ghost.Ghost.Child is global::Avalonia.Controls.Image || ghost.Ghost.Background is VisualBrush);
+            Assert.Contains(ghost.Ghost.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>(), icon => icon.IconKey == layer.IconKey);
+            Assert.Contains(ghost.Ghost.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == layer.Header);
+            Assert.Same(screen.HeaderOf(layer).Background, ghost.Ghost.Background);
 
             var pointer = screen.PointIn(target, 0.5);
             TreeDrag.Cancel(screen.Window, pointer);
@@ -326,14 +328,36 @@ namespace CMiX.Studio.Avalonia.Tests
             TreeDrag.Cancel(screen.Window, pointer);
         }
 
-        [AvaloniaFact]
-        public void Drag_OfARow_TheCopyThatTheWindowShowsHasTheFillTheIconAndTheNameOfTheRow()
+        // A deeper row starts further right in the tree. The copy must have its icon and its name at every depth, selected or not.
+        [AvaloniaTheory]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void Drag_OfARow_TheCopyThatTheWindowShowsHasTheFillTheIconAndTheNameOfTheRow(bool deep, bool selected)
         {
             var screen = Show();
             var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var dragged = layer;
+            if (deep)
+            {
+                ((Layer)layer.Item!).ModelEntityManager.AddItem(typeof(Entity));
+                layer.IsExpanded = true;
+                screen.Settle();
+                dragged = AllNodes(layer.Children).First(node => node.Item is Entity);
+                for (var parent = dragged; parent != null; parent = AllNodes(screen.Tree.Roots).FirstOrDefault(node => node.Children.Contains(parent)))
+                    parent.IsExpanded = true;
+                foreach (var panel in screen.View.GetVisualDescendants().OfType<CollapsePanel>())
+                    panel.Duration = TimeSpan.Zero;
+                screen.Settle();
+            }
+            if (selected)
+            {
+                screen.Tree.SelectedNode = dragged;
+                screen.Settle();
+            }
             var target = screen.Tree.CompositionNodes()[1];
 
-            TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
+            TreeDrag.Over(screen.Window, screen.PointIn(dragged, 0.5), screen.PointIn(target, 0.5));
 
             // The window is drawn as the user sees it, and the pixels of the copy are read back. The copy is made opaque for the test, so
             // the rows behind it do not mix in.
