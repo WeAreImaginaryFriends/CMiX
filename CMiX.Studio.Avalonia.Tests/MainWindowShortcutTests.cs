@@ -159,6 +159,104 @@ namespace CMiX.Studio.Avalonia.Tests
             view.MenuAddPanel.Close();
         }
 
+        // The menu of the tree, and the texts that it shows.
+        private static (ContextMenu? Menu, IReadOnlyList<string> Texts) MenuOf(Window window)
+        {
+            var treeView = window.GetVisualDescendants().OfType<ProjectTreeView>().Single().GetVisualDescendants().OfType<TreeView>().First();
+            var menu = treeView.ContextMenu;
+            var texts = menu?.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text ?? "").ToList() ?? new List<string>();
+            return (menu, texts);
+        }
+
+        [AvaloniaFact]
+        public void KeyBindings_OfTheWindow_HoldTheMenuCommandOfTheTreeOnW()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+
+            var menu = window.KeyBindings.Single(binding => Equals(binding.Gesture, viewModel.Shortcuts["Tree.Menu"]));
+
+            Assert.Equal(new KeyGesture(Key.W), viewModel.Shortcuts["Tree.Menu"]);
+            Assert.Same(viewModel.ProjectTree.OpenMenuUnderPointerCommand, menu.Command);
+        }
+
+        [AvaloniaFact]
+        public void Press_WOverTheTree_OpensTheMenuOfTheSelectedRow()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
+            var composition = (Composition)viewModel.Project.CompositionManager.ManagerData.Items[0];
+            composition.LayerManager.AddItem(typeof(Layer));
+            TestServiceProviderFactory.Pump();
+            TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
+            TestServiceProviderFactory.Pump();
+            var layer = viewModel.ProjectTree.CompositionNodes()[0].Children[0].Children[0];
+            viewModel.ProjectTree.SelectedNode = layer;
+            TestServiceProviderFactory.Pump();
+            window.Focus();
+            PointOnTree(window);
+
+            Press(window, PhysicalKey.W, RawInputModifiers.None);
+            TestServiceProviderFactory.Pump();
+
+            var (menu, texts) = MenuOf(window);
+            Assert.True(menu?.IsOpen);
+            Assert.Contains(layer.Header, texts);
+            menu!.Close();
+        }
+
+        [AvaloniaFact]
+        public void Press_WOverTheTreeWithNothingSelected_OpensTheMenuOfTheProject()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.Pump();
+            viewModel.ProjectTree.SelectedNode = null;
+            window.Focus();
+            PointOnTree(window);
+
+            Press(window, PhysicalKey.W, RawInputModifiers.None);
+            TestServiceProviderFactory.Pump();
+
+            var (menu, texts) = MenuOf(window);
+            Assert.True(menu?.IsOpen);
+            Assert.Contains("Project", texts);
+            menu!.Close();
+        }
+
+        [AvaloniaFact]
+        public void Press_WBesideTheTree_OpensNoMenu()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.Pump();
+            window.Focus();
+            PointBesideTree(window);
+
+            Press(window, PhysicalKey.W, RawInputModifiers.None);
+            TestServiceProviderFactory.Pump();
+
+            Assert.NotEqual(true, MenuOf(window).Menu?.IsOpen);
+        }
+
+        // The key is a plain letter: in a name box it types the letter and opens no menu.
+        [AvaloniaFact]
+        public void Press_WInANameBoxOverTheTree_OpensNoMenu()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
+            TestServiceProviderFactory.Pump();
+            var node = viewModel.ProjectTree.CompositionNodes()[0];
+            viewModel.ProjectTree.SelectedNode = node;
+            TestServiceProviderFactory.Pump();
+            PointOnTree(window);
+            viewModel.ProjectTree.RenameSelectedCommand.Execute(null);
+            TestServiceProviderFactory.Pump();
+            Assert.IsAssignableFrom<TextBox>(window.FocusManager!.GetFocusedElement());
+
+            Press(window, PhysicalKey.W, RawInputModifiers.None);
+            TestServiceProviderFactory.Pump();
+
+            Assert.NotEqual(true, MenuOf(window).Menu?.IsOpen);
+        }
+
         [AvaloniaFact]
         public void Set_AnotherGestureForTreeAdd_ReplacesShiftA()
         {

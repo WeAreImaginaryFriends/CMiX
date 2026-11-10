@@ -185,6 +185,19 @@ namespace CMiX.Studio.Avalonia.Views
             menuAddPanel.OpenAtPoint(treeView, lastPointer, tree.GetAddGroups(tree.SelectedNode), AddTitle);
         }
 
+        // Tree.Menu: the menu of the selected row opens at the pointer, as a right click opens it. With nothing selected, it is the menu
+        // of the project. A selected row that is not shown (its parent is collapsed) opens no menu.
+        private void OnMenuRequested(object? sender, EventArgs e)
+        {
+            if (DataContext is not ProjectTree tree)
+                return;
+
+            if (tree.SelectedNode is not { } node)
+                OpenMenu(null);
+            else if (rowIndex.FindItem(node) is { } item)
+                OpenMenu(item);
+        }
+
         // The title of the Add panel when no row opens it.
         private const string AddTitle = "Add";
 
@@ -227,7 +240,9 @@ namespace CMiX.Studio.Avalonia.Views
             watched.PropertyChanged += OnWatchedPropertyChanged;
             watched.RenameRequested += OnRenameRequested;
             watched.AddRequested += OnAddRequested;
+            watched.MenuRequested += OnMenuRequested;
             watched.IsPointerOverTree = () => IsPointerOver;
+            watched.IsTextBoxFocused = () => IsInTextBox(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement());
         }
 
         private void Unwatch()
@@ -238,7 +253,9 @@ namespace CMiX.Studio.Avalonia.Views
             watched.PropertyChanged -= OnWatchedPropertyChanged;
             watched.RenameRequested -= OnRenameRequested;
             watched.AddRequested -= OnAddRequested;
+            watched.MenuRequested -= OnMenuRequested;
             watched.IsPointerOverTree = () => false;
+            watched.IsTextBoxFocused = () => false;
         }
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -68,6 +68,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             AddUnderPointerCommand = new RelayCommand(
                 () => AddRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree());
+            OpenMenuUnderPointerCommand = new RelayCommand(
+                () => MenuRequested?.Invoke(this, EventArgs.Empty),
+                () => IsPointerOverTree() && !IsTextBoxFocused());
             RenameSelectedCommand = new RelayCommand(
                 () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => selectedNode?.Item != null);
@@ -92,6 +95,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The view handles this request: it opens the Add panel.
         public event EventHandler? AddRequested;
+
+        // Opens the menu of the selected row at the pointer (Tree.Menu), or the menu of the project with nothing selected. The command
+        // runs only while the pointer is over the tree, and not while a text box has the focus: the key is a plain letter.
+        public IRelayCommand OpenMenuUnderPointerCommand { get; }
+
+        // The view tells if a text box has the focus.
+        public Func<bool> IsTextBoxFocused { get; set; } = () => false;
+
+        // The view handles this request: it opens the menu.
+        public event EventHandler? MenuRequested;
 
         // Starts the rename of the selected row. The view sets the name box of the row to edit mode (see RenameRequested).
         public IRelayCommand RenameSelectedCommand { get; }

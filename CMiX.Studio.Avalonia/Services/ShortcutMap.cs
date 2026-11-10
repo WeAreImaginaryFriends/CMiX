@@ -34,6 +34,7 @@ namespace CMiX.Studio.Avalonia.Services
             ("Edit.Redo", "Ctrl+Shift+Z"),
             ("Edit.RedoAlt", "Ctrl+Y"),
             ("Tree.Add", "Shift+A"),
+            ("Tree.Menu", "W"),
             ("Tree.Rename", "F2"),
             ("Tree.Remove", "Delete"),
             ("Tree.Duplicate", "Ctrl+D"),

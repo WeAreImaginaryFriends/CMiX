@@ -24,13 +24,15 @@
     Focusable="True"
     WindowStartupLocation="Manual">
 
-    <!-- The gestures come from the shortcut map (see ShortcutMap). A change of the map changes the binding. Tree.Add is here, not in the tree,
-         so it works whatever has the focus, but only while the pointer is over the tree: it opens the Add panel of the selected row. -->
+    <!-- The gestures come from the shortcut map (see ShortcutMap). A change of the map changes the binding. Tree.Add and Tree.Menu are here,
+         not in the tree, so they work whatever has the focus, but only while the pointer is over the tree: they open the Add panel and the
+         menu of the selected row. -->
     <Window.KeyBindings>
         <KeyBinding Command="{Binding UndoCommand}" Gesture="{Binding Shortcuts[Edit.Undo]}" />
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.Redo]}" />
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.RedoAlt]}" />
         <KeyBinding Command="{Binding ProjectTree.AddUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Add]}" />
+        <KeyBinding Command="{Binding ProjectTree.OpenMenuUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
     </Window.KeyBindings>
 
     <DockPanel Background="{DynamicResource Grey100Brush}" LastChildFill="True">
