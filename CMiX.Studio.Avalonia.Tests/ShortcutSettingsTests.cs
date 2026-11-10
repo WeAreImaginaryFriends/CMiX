@@ -113,7 +113,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             row.ResetCommand.Execute(null);
 
-            Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Control), map["Tree.Duplicate"]);
+            Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Shift), map["Tree.Duplicate"]);
         }
 
         [WindowsFact("Only Windows refuses to write a file that another stream holds with FileShare.None.")]

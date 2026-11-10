@@ -561,7 +561,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var expected = new Dictionary<string, string>
             {
                 ["AddButton"] = "Shift+A",
-                ["DuplicateButton"] = "Ctrl+D",
+                ["DuplicateButton"] = "Shift+D",
                 ["MoveUpButton"] = "Alt+Up",
                 ["MoveDownButton"] = "Alt+Down",
                 ["RemoveButton"] = "Delete"

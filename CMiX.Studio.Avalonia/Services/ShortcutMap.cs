@@ -38,10 +38,17 @@ namespace CMiX.Studio.Avalonia.Services
             ("Tree.Expand", "E"),
             ("Tree.Rename", "F2"),
             ("Tree.Remove", "Delete"),
-            ("Tree.Duplicate", "Ctrl+D"),
+            ("Tree.Duplicate", "Shift+D"),
             ("Tree.MoveUp", "Alt+Up"),
             ("Tree.MoveDown", "Alt+Down"),
             ("Tree.Open", "Enter"),
+        };
+
+        // The defaults of earlier versions. A file that still holds one of them gets the default of now, because the file holds every
+        // default since its first save, not only the gestures that the user chose.
+        private static readonly (string Name, string Gesture)[] retiredDefaults =
+        {
+            ("Tree.Duplicate", "Ctrl+D"),
         };
 
         private readonly Dictionary<string, KeyGesture?> gestures = new();
@@ -128,7 +135,7 @@ namespace CMiX.Studio.Avalonia.Services
                 gestures[name] = DefaultOf(name);
 
             foreach (var (name, text) in settings.Shortcuts ?? new Dictionary<string, string>())
-                if (gestures.ContainsKey(name) && TryParse(text, out var gesture))
+                if (gestures.ContainsKey(name) && !IsRetiredDefault(name, text) && TryParse(text, out var gesture))
                     gestures[name] = gesture;
 
             RaiseChanged();
@@ -151,6 +158,10 @@ namespace CMiX.Studio.Avalonia.Services
 
             return null;
         }
+
+        private static bool IsRetiredDefault(string name, string? text) =>
+            text != null && TryParse(text, out var gesture) && gesture != null
+            && retiredDefaults.Any(retired => retired.Name == name && KeyGesture.Parse(retired.Gesture).Equals(gesture));
 
         private static bool TryParse(string? text, out KeyGesture? gesture)
         {

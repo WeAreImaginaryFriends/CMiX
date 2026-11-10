@@ -296,6 +296,29 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(node.IsExpanded);
         }
 
+        // E and Shift+A are letters: in a name box they type the letter and do nothing else.
+        [AvaloniaFact]
+        public void Press_EOrShiftAInANameBoxOverTheTree_DoesNothingElse()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            viewModel.Project.CompositionManager.AddItem(typeof(Composition));
+            TestServiceProviderFactory.Pump();
+            TestServiceProviderFactory.ExpandAll(viewModel.ProjectTree);
+            var node = viewModel.ProjectTree.CompositionNodes()[0];
+            viewModel.ProjectTree.SelectedNode = node;
+            TestServiceProviderFactory.Pump();
+            PointOnTree(window);
+            viewModel.ProjectTree.RenameSelectedCommand.Execute(null);
+            TestServiceProviderFactory.Pump();
+            Assert.IsAssignableFrom<TextBox>(window.FocusManager!.GetFocusedElement());
+
+            Press(window, PhysicalKey.E, RawInputModifiers.None);
+            Press(window, PhysicalKey.A, RawInputModifiers.Shift);
+
+            Assert.True(node.IsExpanded);
+            Assert.False(window.GetVisualDescendants().OfType<ProjectTreeView>().Single().MenuAddPanel.IsOpen);
+        }
+
         [AvaloniaFact]
         public void Set_AnotherGestureForTreeAdd_ReplacesShiftA()
         {

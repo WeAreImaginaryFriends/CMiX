@@ -40,6 +40,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(new KeyGesture(Key.A, KeyModifiers.Shift), map["Tree.Add"]);
             Assert.Equal(new KeyGesture(Key.W), map["Tree.Menu"]);
             Assert.Equal(new KeyGesture(Key.E), map["Tree.Expand"]);
+            Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Shift), map["Tree.Duplicate"]);
         }
 
         [Fact]
@@ -58,6 +59,19 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control), map["Tree.Rename"]);
             Assert.Equal(new KeyGesture(Key.Z, KeyModifiers.Control), map["Edit.Undo"]);
+        }
+
+        // A file from an earlier version holds every default of that version. An old default gives the default of now.
+        [Fact]
+        public void Load_ARetiredDefault_GivesTheDefaultOfNow()
+        {
+            WriteFile("{ \"Shortcuts\": { \"Tree.Duplicate\": \"Ctrl+D\", \"Tree.Rename\": \"Ctrl+R\" } }");
+            var map = new ShortcutMap(FilePath);
+
+            map.Load();
+
+            Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Shift), map["Tree.Duplicate"]);
+            Assert.Equal(new KeyGesture(Key.R, KeyModifiers.Control), map["Tree.Rename"]);
         }
 
         [Fact]

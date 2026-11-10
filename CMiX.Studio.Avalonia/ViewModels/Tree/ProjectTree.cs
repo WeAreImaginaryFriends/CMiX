@@ -67,7 +67,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 () => SelectedPlace() != null);
             AddUnderPointerCommand = new RelayCommand(
                 () => AddRequested?.Invoke(this, EventArgs.Empty),
-                () => IsPointerOverTree());
+                () => IsPointerOverTree() && !IsTextBoxFocused());
             ToggleExpandUnderPointerCommand = new RelayCommand(
                 () => { if (ExpandTarget() is { } node) node.IsExpanded = !node.IsExpanded; },
                 () => IsPointerOverTree() && !IsTextBoxFocused() && ExpandTarget() != null);
