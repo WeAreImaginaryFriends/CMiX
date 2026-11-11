@@ -278,8 +278,24 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(new IControl[] { screen.B, screen.A }, screen.Project.CompositionManager.ManagerData.Items);
         }
 
+        // The box of the label of the drag in the window, and the middle of its icon.
+        private static Rect LabelBox(Screen screen)
+        {
+            var ghost = screen.View.RowDrag.Ghost.Ghost;
+            return new Rect(ghost.TranslatePoint(default, screen.Window)!.Value, ghost.Bounds.Size);
+        }
+
+        private static Point IconMiddle(Screen screen)
+        {
+            var icon = screen.View.RowDrag.Ghost.Ghost.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>().First();
+            return icon.TranslatePoint(new Point(icon.Bounds.Width / 2, icon.Bounds.Height / 2), screen.Window)!.Value;
+        }
+
+        // The space between the pointer and the label: the token SpacingSM.
+        private static double LabelGap => Convert.ToDouble(Application.Current!.FindResource("SpacingSM"));
+
         [AvaloniaFact]
-        public void Drag_OfARow_ShowsACopyOfTheRowUnderThePointerUntilTheEnd()
+        public void Drag_OfARow_ShowsALabelOfTheRowAtThePointerUntilTheEnd()
         {
             var screen = Show();
             var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
@@ -288,13 +304,16 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(ghost.IsShown);
 
             TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), screen.PointIn(target, 0.5));
+            screen.Settle();
 
             Assert.True(ghost.IsShown);
             Assert.False(ghost.Ghost.IsHitTestVisible);
-            Assert.Equal(screen.RowOf(layer).Bounds.Width > 0, ghost.Ghost.Width > 0);
             Assert.Contains(ghost.Ghost.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>(), icon => icon.IconKey == layer.IconKey);
             Assert.Contains(ghost.Ghost.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == layer.Header);
             Assert.Same(screen.HeaderOf(layer).Background, ghost.Ghost.Background);
+            // The label is only as wide as its icon and its name, not as wide as the row.
+            Assert.True(LabelBox(screen).Width < screen.HeaderOf(layer).Bounds.Width, "The label is as wide as the row.");
+            Assert.Equal(screen.HeaderOf(layer).Bounds.Height, LabelBox(screen).Height, 0.51);
 
             var pointer = screen.PointIn(target, 0.5);
             TreeDrag.Cancel(screen.Window, pointer);
@@ -302,11 +321,12 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(ghost.IsShown);
         }
 
+        // Wherever the row was pressed, the label is above the pointer, with the middle of its icon right over the pointer.
         [AvaloniaTheory]
         [InlineData(0.15)]
         [InlineData(0.5)]
         [InlineData(0.7)]
-        public void Drag_OfARow_KeepsTheGrabbedPointOfTheRowUnderThePointer(double along)
+        public void Drag_OfARow_PutsTheIconOfTheLabelRightOverThePointer(double along)
         {
             var screen = Show();
             var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
@@ -317,23 +337,62 @@ namespace CMiX.Studio.Avalonia.Tests
             var pointer = screen.PointIn(target, 0.5);
 
             TreeDrag.Over(screen.Window, press, pointer);
+            screen.Settle();
 
-            // The copy has the size of the row, and the point that was pressed is where the pointer is.
-            var ghost = screen.View.RowDrag.Ghost.Ghost;
-            var copy = new Rect(ghost.TranslatePoint(default, screen.Window)!.Value, ghost.Bounds.Size);
-            Assert.Equal(row.Width, copy.Width, 1);
-            Assert.Equal(row.Height, copy.Height, 1);
-            Assert.Equal(pointer.X - (press.X - row.X), copy.X, 1.5);
-            Assert.Equal(pointer.Y - (press.Y - row.Y), copy.Y, 1.5);
+            var box = LabelBox(screen);
+            Assert.Equal(pointer.X, IconMiddle(screen).X, 1.5);
+            Assert.Equal(pointer.Y - LabelGap, box.Bottom, 0.51);
             TreeDrag.Cancel(screen.Window, pointer);
         }
 
-        // A deeper row starts further right in the tree. The copy must have its icon and its name at every depth, selected or not.
+        // At the top of the window there is no room above the pointer: the label is under it.
+        [AvaloniaFact]
+        public void Drag_NearTheTopOfTheWindow_PutsTheLabelUnderThePointer()
+        {
+            var screen = Show();
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var start = screen.PointIn(layer, 0.5);
+            TreeDrag.Over(screen.Window, start, screen.PointIn(screen.Tree.CompositionNodes()[1], 0.5));
+
+            var pointer = new Point(start.X, 6);
+            TreeDrag.MoveTo(screen.Window, pointer);
+            screen.Settle();
+
+            var box = LabelBox(screen);
+            Assert.True(box.Top >= 0, "The label is out of the window.");
+            Assert.Equal(pointer.Y + LabelGap, box.Top, 0.51);
+            Assert.Equal(pointer.X, IconMiddle(screen).X, 1.5);
+            TreeDrag.Cancel(screen.Window, pointer);
+        }
+
+        // A drop before the row under the pointer has its line just above the pointer. The label stays above the line, so the line is in sight.
+        [AvaloniaFact]
+        public void Drag_ToTheTopOfARow_KeepsTheLabelAboveTheLineOfTheDrop()
+        {
+            var screen = Show();
+            // The second layer of A goes before the first one.
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
+            var target = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var pointer = screen.PointIn(target, 0.1);
+
+            TreeDrag.Over(screen.Window, screen.PointIn(layer, 0.5), pointer);
+            screen.Settle();
+
+            Assert.Equal(DropPosition.Before, screen.View.Marker.MarkedPosition);
+            var line = screen.View.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "DropLine" && border.IsEffectivelyVisible);
+            var lineBox = new Rect(line.TranslatePoint(default, screen.Window)!.Value, line.Bounds.Size);
+            var box = LabelBox(screen);
+            Assert.True(box.Bottom <= lineBox.Top + 0.51, $"The label ({box}) covers the line of the drop ({lineBox}).");
+            Assert.False(box.Intersects(lineBox.Deflate(0.5)), $"The label ({box}) covers the line of the drop ({lineBox}).");
+            TreeDrag.Cancel(screen.Window, pointer);
+        }
+
+        // A deeper row starts further right in the tree. The label must have its fill, its icon and its name at every depth, selected or not.
         [AvaloniaTheory]
         [InlineData(false, false)]
         [InlineData(true, false)]
         [InlineData(true, true)]
-        public void Drag_OfARow_TheCopyThatTheWindowShowsHasTheFillTheIconAndTheNameOfTheRow(bool deep, bool selected)
+        public void Drag_OfARow_TheLabelThatTheWindowShowsHasTheFillTheIconAndTheNameOfTheRow(bool deep, bool selected)
         {
             var screen = Show();
             var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
@@ -359,8 +418,8 @@ namespace CMiX.Studio.Avalonia.Tests
 
             TreeDrag.Over(screen.Window, screen.PointIn(dragged, 0.5), screen.PointIn(target, 0.5));
 
-            // The window is drawn as the user sees it, and the pixels of the copy are read back. The copy is made opaque for the test, so
-            // the rows behind it do not mix in.
+            // The window is drawn as the user sees it, and the pixels of the label are read back. The label is made opaque for the test,
+            // so the rows behind it do not mix in.
             var ghost = screen.View.RowDrag.Ghost.Ghost;
             ghost.Opacity = 1;
             screen.Window.UpdateLayout();
@@ -382,7 +441,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var middle = top + height / 2;
             var fill = Pixel(left + 2, middle);
 
-            // From edge to edge the copy has the fill, so nothing is cut at the right.
+            // The label has the fill at both ends, so nothing is cut at the right.
             Assert.Equal(fill, Pixel(left + width - 3, middle));
 
             int Different(int from, int to)
@@ -395,12 +454,13 @@ namespace CMiX.Studio.Avalonia.Tests
                 return count;
             }
 
-            // The icon is at the left of the row, and the name is after it.
-            Assert.True(Different(4, 24) > 10, "The icon is not in the copy.");
-            Assert.True(Different(26, 120) > 20, "The name is not in the copy.");
+            // The icon is at the left of the label, and the name is after it.
+            Assert.True(Different(4, 22) > 10, "The icon is not in the label.");
+            Assert.True(Different(22, width - 3) > 20, "The name is not in the label.");
 
             TreeDrag.Cancel(screen.Window, screen.PointIn(target, 0.5));
         }
+
         [AvaloniaFact]
         public void Drag_OfARow_FadesTheRowThatIsDraggedAndRestoresItAtTheEnd()
         {

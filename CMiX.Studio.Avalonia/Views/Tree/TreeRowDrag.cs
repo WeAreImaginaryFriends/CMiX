@@ -137,27 +137,27 @@ namespace CMiX.Studio.Avalonia.Views
             openedByDrag.Clear();
 
             // The picture is taken before the rows change their look for the drag, so it is the row as the user pressed it.
-            ShowGhost(node, pressPoint, position);
+            ShowGhost(node, position);
             tree()?.BeginDrag(node);
             pointer.Capture(treeView);
             cursorBefore = treeView.Cursor;
             treeView.Cursor = MoveCursor;
         }
 
-        // The copy of the dragged row that follows the pointer. A test reads it.
+        // The label of the dragged row that follows the pointer. A test reads it.
         internal TreeDragGhost Ghost => ghost;
 
-        private void ShowGhost(TreeNode node, Point grabbed, Point position)
+        private void ShowGhost(TreeNode node, Point position)
         {
             var item = treeView.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(row => ReferenceEquals(row.DataContext, node));
             if (item != null && TreeRows.RowBorderOf(item) is Border row)
-                ghost.Show(row, node.IconKey, node.Header, treeView, grabbed, position);
+                ghost.Show(row, node.IconKey, node.Header, treeView, position);
         }
 
         // Marks the place of the drop under the pointer and keeps the scroll of the drag going.
+        // The label of the drag moves after the mark, so it can keep clear of the line of the drop.
         private void Track(Point position)
         {
-            ghost.Move(treeView, position);
             var (hovered, item, target, place) = Read(position);
             ShowBlockReason(hovered);
             TrackRest(hovered);
@@ -166,7 +166,21 @@ namespace CMiX.Studio.Avalonia.Views
             else
                 marker.Mark(null, null);
 
+            ghost.Move(treeView, position, DropLineTop());
             autoScroller().Track(scroller() is { } view ? treeView.TranslatePoint(position, view)?.Y : null);
+        }
+
+        // The top of the line of the drop between two rows, in the coordinates of the tree view, or null when no line shows. A line in the
+        // space under a row starts at the bottom of the row. A line at the top of a row starts at the top of its item.
+        private double? DropLineTop()
+        {
+            if (marker.Line is not { } line)
+                return null;
+
+            if (!line.Below)
+                return line.Item.TranslatePoint(default, treeView)?.Y;
+
+            return TreeRows.RowBorderOf(line.Item) is { } row ? row.TranslatePoint(new Point(0, row.Bounds.Height), treeView)?.Y : null;
         }
 
         private bool CanDrop(TreeNode target, DropPosition position) =>
