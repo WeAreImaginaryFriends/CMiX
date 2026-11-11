@@ -89,7 +89,28 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             OpenSelectedCommand = new RelayCommand(
                 () => Select(softSelectedNode, SelectionOrigin.Keyboard),
                 () => softSelectedNode != null);
+            RenameSelectedByKeyCommand = ByKey(RenameSelectedCommand);
+            RemoveItemByKeyCommand = ByKey(RemoveItemCommand);
+            DuplicateItemByKeyCommand = ByKey(DuplicateItemCommand);
+            MoveItemUpByKeyCommand = ByKey(MoveItemUpCommand);
+            MoveItemDownByKeyCommand = ByKey(MoveItemDownCommand);
         }
+
+        // The keys of the main window for the selected row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown). A key
+        // runs its command while the pointer is over the tree or the tree has the focus, so a click on another control does not stop it.
+        // It does not run while a text box has the focus: Ctrl+R and the key down of Shift+D do not change the text, so the text box does
+        // not take them. It does not run during a drag of a row. The buttons of the toolbar use the commands without these conditions.
+        public IRelayCommand RenameSelectedByKeyCommand { get; }
+        public IRelayCommand RemoveItemByKeyCommand { get; }
+        public IRelayCommand DuplicateItemByKeyCommand { get; }
+        public IRelayCommand MoveItemUpByKeyCommand { get; }
+        public IRelayCommand MoveItemDownByKeyCommand { get; }
+
+        // A key binding checks the command when the key is pressed, so the conditions need no change event.
+        private bool CanRunTreeKey() => !IsDragging && !IsTextBoxFocused() && (IsPointerOverTree() || IsTreeFocused());
+
+        private IRelayCommand ByKey(IRelayCommand command) =>
+            new RelayCommand(() => command.Execute(null), () => CanRunTreeKey() && command.CanExecute(null));
 
         // True while the project loads. A row made then starts collapsed. A row made by the user, or by a peer later, starts expanded.
         internal bool IsLoading => project.IsLoading;

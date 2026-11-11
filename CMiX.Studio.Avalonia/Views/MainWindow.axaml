@@ -24,9 +24,11 @@
     Focusable="True"
     WindowStartupLocation="Manual">
 
-    <!-- The gestures come from the shortcut map (see ShortcutMap). A change of the map changes the binding. Tree.Add and Tree.Menu are here,
-         not in the tree, so they work whatever has the focus, but only while the pointer is over the tree: they open the Add panel and the
-         menu of the selected row. -->
+    <!-- The gestures come from the shortcut map (see ShortcutMap). A change of the map changes the binding. The keys of the tree are here,
+         not in the tree, so a click on another control does not stop them. Tree.Add, Tree.Menu and Tree.Expand run while the pointer is over
+         the tree. Tree.Search and the keys of the selected row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown) run
+         while the pointer is over the tree or the tree has the focus. Only Tree.Search also runs while a text box has the focus, because
+         Ctrl+F types nothing (see ProjectTree). -->
     <Window.KeyBindings>
         <KeyBinding Command="{Binding UndoCommand}" Gesture="{Binding Shortcuts[Edit.Undo]}" />
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.Redo]}" />
@@ -35,6 +37,11 @@
         <KeyBinding Command="{Binding ProjectTree.OpenMenuUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
         <KeyBinding Command="{Binding ProjectTree.ToggleExpandUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Expand]}" />
         <KeyBinding Command="{Binding ProjectTree.FocusSearchCommand}" Gesture="{Binding Shortcuts[Tree.Search]}" />
+        <KeyBinding Command="{Binding ProjectTree.RenameSelectedByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Rename]}" />
+        <KeyBinding Command="{Binding ProjectTree.RemoveItemByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Remove]}" />
+        <KeyBinding Command="{Binding ProjectTree.DuplicateItemByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Duplicate]}" />
+        <KeyBinding Command="{Binding ProjectTree.MoveItemUpByKeyCommand}" Gesture="{Binding Shortcuts[Tree.MoveUp]}" />
+        <KeyBinding Command="{Binding ProjectTree.MoveItemDownByKeyCommand}" Gesture="{Binding Shortcuts[Tree.MoveDown]}" />
     </Window.KeyBindings>
 
     <DockPanel Background="{DynamicResource Grey100Brush}" LastChildFill="True">
