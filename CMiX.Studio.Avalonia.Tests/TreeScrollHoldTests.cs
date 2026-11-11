@@ -63,7 +63,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [InlineData(1.0)]
         [InlineData(1.25)]
         [InlineData(1.5)]
-        public void Search_InASavedProject_TypeSelectAndClear_RunsTheLayoutToItsEnd(double scale)
+        public void SearchAndClear_InASavedProject_RunsTheLayoutToItsEnd(double scale)
         {
             var folder = Environment.GetEnvironmentVariable("CMIX_SAMPLE_PROJECTS");
             if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
