@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
 namespace CMiX.UI.Behaviors
@@ -82,10 +83,26 @@ namespace CMiX.UI.Behaviors
             if (editing.Count == 0)
             {
                 for (var i = outside.Count - 1; i >= 0; i--)
-                    outside[i].IsOpen = false;
+                    Close(outside[i]);
             }
 
             Take(e);
+        }
+
+        // The popup of a menu item, a drop-down or a context menu takes IsOpen from its owner with a binding of its template. A value set
+        // with IsOpen = false is stronger than that binding and stays: the owner opens again, but the popup does not. SetCurrentValue
+        // keeps the binding, so the owner closes with the popup and can open it again. A popup of the menu bar of the window closes the
+        // whole menu, so the bar leaves its open mode.
+        private static void Close(Popup popup)
+        {
+            if (popup.TemplatedParent is MenuItem item && item.FindLogicalAncestorOfType<Menu>() is { } bar)
+            {
+                bar.Close();
+                if (!popup.IsOpen)
+                    return;
+            }
+
+            popup.SetCurrentValue(Popup.IsOpenProperty, false);
         }
 
         private static void OnReleased(TopLevel root, PointerReleasedEventArgs e)

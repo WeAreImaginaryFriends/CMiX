@@ -128,6 +128,29 @@ namespace CMiX.UI.Tests
             Assert.Equal(0, screen.BelowClicks);
         }
 
+        // The drop-down of a combo box takes IsOpen from the combo box with a binding of its template. A close by a click outside must
+        // keep that binding, so the combo box opens its drop-down again.
+        [AvaloniaFact]
+        public void Click_AComboBoxAfterAClickOutside_OpensItsDropDownAgain()
+        {
+            var combo = new ComboBox { ItemsSource = new[] { "One", "Two", "Three" }, Width = 150, HorizontalAlignment = HorizontalAlignment.Left };
+            var window = new Window { Content = new StackPanel { Children = { combo } }, Width = 800, Height = 600 };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            Popup DropDown() => combo.GetVisualDescendants().OfType<Popup>().First(popup => popup.Name == "PART_Popup");
+            var outside = new Point(600, 500);
+
+            for (var round = 1; round <= 3; round++)
+            {
+                Click(window, Middle(window, combo));
+                Assert.True(DropDown().IsOpen, "open, round " + round);
+
+                Click(window, outside);
+                Assert.False(DropDown().IsOpen, "closed, round " + round);
+                Assert.False(combo.IsDropDownOpen, "combo closed, round " + round);
+            }
+        }
+
         [AvaloniaFact]
         public void Click_WhileATooltipIsOpen_ReachesTheButton()
         {

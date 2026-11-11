@@ -1,0 +1,73 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Xunit;
+
+namespace CMiX.Studio.Avalonia.Tests
+{
+    // A top item of the main menu opens its menu on every click: also after a click outside the menu closed it (see OutsideClick).
+    public class MainMenuClickTests
+    {
+        private static void ClickAt(Window window, Point point)
+        {
+            window.MouseMove(point);
+            window.MouseDown(point, MouseButton.Left);
+            window.MouseUp(point, MouseButton.Left);
+            TestServiceProviderFactory.Pump();
+        }
+
+        private static void Click(Window window, Control control) =>
+            ClickAt(window, control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window)!.Value);
+
+        private static Popup PopupOf(MenuItem item) =>
+            item.GetVisualDescendants().OfType<Popup>().First(popup => popup.Name == "PART_Popup");
+
+        private static (Window Window, MenuItem File) Show()
+        {
+            var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.Pump();
+            return (window, window.GetVisualDescendants().OfType<Menu>().First().Items.OfType<MenuItem>().First());
+        }
+
+        [AvaloniaFact]
+        public void Click_TheFileItemThreeTimes_OpensClosesAndOpensItsMenu()
+        {
+            var (window, file) = Show();
+
+            Click(window, file);
+            Assert.True(PopupOf(file).IsOpen, "first click");
+
+            Click(window, file);
+            Assert.False(PopupOf(file).IsOpen, "second click");
+
+            Click(window, file);
+            Assert.True(PopupOf(file).IsOpen, "third click");
+
+            file.Close();
+        }
+
+        // A click outside the menu closes it (OutsideClick). The next click on the item must open it again, every time.
+        [AvaloniaFact]
+        public void Click_TheFileItemAfterAClickOutside_OpensItsMenuAgain()
+        {
+            var (window, file) = Show();
+            var outside = new Point(window.Bounds.Width / 2, window.Bounds.Height - 20);
+
+            for (var round = 1; round <= 3; round++)
+            {
+                Click(window, file);
+                Assert.True(file.IsSubMenuOpen, "open, round " + round);
+                Assert.True(PopupOf(file).IsOpen, "popup open, round " + round);
+
+                ClickAt(window, outside);
+                Assert.False(PopupOf(file).IsOpen, "closed, round " + round);
+                Assert.False(file.IsSubMenuOpen, "item closed, round " + round);
+            }
+        }
+    }
+}
