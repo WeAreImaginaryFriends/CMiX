@@ -319,6 +319,25 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(window.GetVisualDescendants().OfType<ProjectTreeView>().Single().MenuAddPanel.IsOpen);
         }
 
+        // Alt is a part of the tree keys. Alone, it must not give the keyboard to the main menu.
+        [AvaloniaFact]
+        public void Press_AltAlone_LeavesTheMainMenuAsItWas()
+        {
+            var (_, window, _) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.Pump();
+            window.Focus();
+            var menu = window.GetVisualDescendants().OfType<Menu>().First();
+            var file = menu.Items.OfType<MenuItem>().First();
+
+            Press(window, PhysicalKey.AltLeft, RawInputModifiers.None);
+
+            // Avalonia shows the access keys at the press of Alt, and opens the menu at its release when they show.
+            Assert.False(window.GetValue(global::Avalonia.Controls.Primitives.AccessText.ShowAccessKeyProperty));
+            Assert.False(file.IsSelected);
+            Assert.False(file.IsSubMenuOpen);
+            Assert.False(menu.IsKeyboardFocusWithin);
+        }
+
         [AvaloniaFact]
         public void Set_AnotherGestureForTreeAdd_ReplacesShiftA()
         {

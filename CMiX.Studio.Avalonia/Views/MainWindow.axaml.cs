@@ -18,6 +18,23 @@ namespace CMiX.Studio.Avalonia.Views
     public partial class MainWindow : Window
     {
         private readonly UndoManager? _undoManager;
+
+        // Avalonia opens the main menu when Alt goes up alone, as Windows does (AccessKeyHandler). The menu has no access keys, and
+        // Alt is a part of the tree keys (Alt+E, Alt+Up, Alt+Down), so the window takes the press and the release of Alt itself, and
+        // the menu does not take the keyboard. A key binding with Alt still runs: it reads the Alt of the other key. A class handler
+        // runs before the handler of Avalonia on the window.
+        static MainWindow()
+        {
+            static void TakeAlt(MainWindow _, KeyEventArgs e)
+            {
+                if (e.Key is Key.LeftAlt or Key.RightAlt)
+                    e.Handled = true;
+            }
+
+            KeyDownEvent.AddClassHandler<MainWindow>(TakeAlt, RoutingStrategies.Tunnel);
+            KeyUpEvent.AddClassHandler<MainWindow>(TakeAlt, RoutingStrategies.Tunnel);
+        }
+
         public MainWindow(UndoManager undoManager) : this()
         {
             _undoManager = undoManager;
