@@ -118,9 +118,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (IsDragging || CollapseTarget() is not { } target)
                 return closed;
 
-            var path = new HashSet<TreeNode>();
-            for (var parent = target.Parent; parent != null && !ReferenceEquals(parent, root); parent = parent.Parent)
-                path.Add(parent);
+            var path = new HashSet<TreeNode>(ParentsOf(target));
 
             void Visit(IEnumerable<TreeNode> nodes)
             {
@@ -146,6 +144,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             Visit(Roots);
             return closed;
         }
+
+        // The parents of a row, from the row up to a root of the tree. The hidden root is not one of them.
+        private IEnumerable<TreeNode> ParentsOf(TreeNode node)
+        {
+            for (var parent = node.Parent; parent != null && !ReferenceEquals(parent, root); parent = parent.Parent)
+                yield return parent;
+        }
+
+        // The view keeps the rows still on the screen while rows close: the row of the node when it is in view, else the first row in
+        // view. The view runs the close and returns the rows that it closed. Without a view, the close only runs.
+        public Action<TreeNode?, Func<IReadOnlyList<TreeNode>>> CloseRowsInView { get; set; } = (_, close) => close();
 
         // The keys of the main window for the selected row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown). A key
         // runs its command while the pointer is over the tree or the tree has the focus, so a click on another control does not stop it.
@@ -406,18 +415,27 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // Opens the parents of every match, so every match is in sight, and closes the rows that the search opened and that lead to no
         // match any more. There is no search during a drag: EndDrag does it once the drag is over.
+        // At the end of the search, the parents of the selected row stay open, so the user can go on with it: they leave the list.
+        // The selected row keeps its state. The other rows that the search opened close, and the view keeps the rows still.
         private void SyncSearchRows()
         {
             if (IsDragging)
                 return;
 
-            var needed = new HashSet<TreeNode>();
-            foreach (var match in searchMatches)
-                for (var parent = match.Parent; parent != null && !ReferenceEquals(parent, root); parent = parent.Parent)
-                    needed.Add(parent);
+            if (searchText.Trim().Length == 0 && selectedNode != null)
+                foreach (var row in ParentsOf(selectedNode).Append(selectedNode))
+                    searchOpened.Remove(row);
 
-            foreach (var node in searchOpened.Where(node => !needed.Contains(node)).ToList())
-                SetExpandedForSearch(node, false);
+            var needed = new HashSet<TreeNode>(searchMatches.SelectMany(ParentsOf));
+
+            var closing = searchOpened.Where(node => !needed.Contains(node)).ToList();
+            if (closing.Count > 0)
+                CloseRowsInView(selectedNode, () =>
+                {
+                    foreach (var node in closing)
+                        SetExpandedForSearch(node, false);
+                    return closing;
+                });
 
             foreach (var node in needed)
                 OpenForSearch(node);

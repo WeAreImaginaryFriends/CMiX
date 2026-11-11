@@ -267,6 +267,16 @@ namespace CMiX.Studio.Avalonia.Views
             Dispatcher.UIThread.Post(() => RevealRow(target), DispatcherPriority.Loaded);
         }
 
+        // Rows of the search close (see ProjectTree.CloseRowsInView). The row of the node stays at its place on the screen when it is in
+        // view, else the first row in view does, also while the rows close.
+        private void OnCloseRowsInView(TreeNode? node, Func<IReadOnlyList<TreeNode>> close)
+        {
+            var anchor = (node != null ? scrollAnchor.CaptureRow(node) : null) ?? scrollAnchor.CaptureAnchor(null);
+            var closed = close();
+            scrollAnchor.RestoreAnchor(anchor);
+            scrollAnchor.HoldWhileClosing(anchor, closed);
+        }
+
         // The title of the Add panel when no row opens it.
         private const string AddTitle = "Add";
 
@@ -317,6 +327,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.IsTreeFocused = () => IsKeyboardFocusWithin;
             watched.TreeFocusRequested += OnTreeFocusRequested;
             watched.CancelDrag = rowDrag.Cancel;
+            watched.CloseRowsInView = OnCloseRowsInView;
         }
 
         private void Unwatch()
@@ -335,6 +346,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.IsTreeFocused = () => false;
             watched.TreeFocusRequested -= OnTreeFocusRequested;
             watched.CancelDrag = () => { };
+            watched.CloseRowsInView = (_, close) => close();
         }
 
         // The focus goes to a row: the selected row, else the row of the arrow keys, else the first row (see ProjectTree.FocusTree).

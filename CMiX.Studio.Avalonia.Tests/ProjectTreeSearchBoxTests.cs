@@ -218,6 +218,7 @@ namespace CMiX.Studio.Avalonia.Tests
         public void Click_TheClearButton_ClosesTheRowsThatTheSearchOpened()
         {
             var (screen, scene) = Show();
+            scene.Tree.SelectedNode = null;
             var layers = scene.LayerNodeOfA(0).Parent!;
             layers.IsExpanded = false;
             Pump(screen);
@@ -228,6 +229,37 @@ namespace CMiX.Studio.Avalonia.Tests
             Pump(screen);
 
             Assert.False(layers.IsExpanded);
+        }
+
+        // With a selected match, the clear button and Escape end the search, the parents of the match stay open, and its row is in view.
+        [AvaloniaTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Clear_WithASelectedMatch_KeepsItsParentsOpenAndItsRowInView(bool byButton)
+        {
+            var (screen, scene) = Show();
+            var layers = scene.LayerNodeOfA(0).Parent!;
+            var layer = scene.LayerNodeOfA(2);
+            layers.IsExpanded = false;
+            Pump(screen);
+            Search(screen, layer.Header);
+            scene.Tree.SelectedNode = layer;
+            Pump(screen);
+            screen.Box.Field.FocusInput();
+            Pump(screen);
+
+            if (byButton)
+                Click(screen.Window, screen.Box.Clear);
+            else
+                Press(screen, PhysicalKey.Escape);
+            Pump(screen);
+
+            Assert.Equal(string.Empty, scene.Tree.SearchText);
+            Assert.True(layers.IsExpanded);
+            var row = TreeTestScreen.RowOf(screen.View, layer);
+            var scroller = screen.View.GetVisualDescendants().OfType<ScrollViewer>().First();
+            var top = row.TranslatePoint(new Point(0, 0), scroller)!.Value.Y;
+            Assert.InRange(top, 0, scroller.Viewport.Height - row.Bounds.Height);
         }
 
         // The text stays when the focus goes back to the tree.

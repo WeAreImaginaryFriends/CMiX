@@ -27,20 +27,21 @@ namespace CMiX.Studio.Avalonia.Views
             this.scroller = scroller;
         }
 
-        // The first row that is fully in view and is not the dragged node or under it, and its place in the view.
-        public (TreeNode Node, double Top)? CaptureAnchor(TreeNode dragged)
+        // The first row that is fully in view and is not the dragged node or under it, and its place in the view. With no dragged node,
+        // the first row that is fully in view.
+        public (TreeNode Node, double Top)? CaptureAnchor(TreeNode? dragged)
         {
             if (scroller() is not { } view)
                 return null;
 
             // A block that ends above the view has no row in view, so the rows under it are skipped too.
             bool Skip(TreeViewItem item) =>
-                (item.DataContext is TreeNode node && ReferenceEquals(node, dragged))
+                (dragged != null && item.DataContext is TreeNode node && ReferenceEquals(node, dragged))
                 || (item.TranslatePoint(new Point(0, item.Bounds.Height), view) is { } bottom && bottom.Y < 0);
 
             foreach (var item in rows.InRowOrder(Skip))
             {
-                if (item.DataContext is not TreeNode node || node.IsOrIsUnder(dragged))
+                if (item.DataContext is not TreeNode node || (dragged != null && node.IsOrIsUnder(dragged)))
                     continue;
 
                 var top = TreeRows.RowTopIn(item, view);
