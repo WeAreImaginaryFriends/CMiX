@@ -75,7 +75,7 @@ Each row has a kind: composable (a composition and a layer), entity, camera, lig
 - The title bar of the inspector has the color of the kind of the selected row. It shows the icon of the row, then its name. The name of an item can be edited there. At the right end are, for a composition or a layer, the mask toggle, then the visibility toggle. A group shows its name only.
 - The tabs beside the tree behave as normal tabs: a click on a row of the tree does not change the selected tab. Every icon has the one size `IconSizeXS`, also in the menus.
 - The tooltips of the rows of the tree (the eye, the mask, the hide button of a group, the numbers of a collapsed row) are opened by the tree itself (`TreeTooltips`), not by the tooltip service of Avalonia, which did not open them in the running app. The tooltips of the toolbar still use the service.
-- While a row is dragged, a picture of the whole row (fill, icon and name) follows the pointer (`TreeDragGhost`, on the overlay layer of the window). It keeps the point that was pressed under the pointer, and it is taken before the row changes its look. The row that is dragged stays in its place at 40% opacity.
+- While a row is dragged, a small label with the icon and the name of the row follows the pointer (`TreeDragGhost`, on the overlay layer of the window). The label is above the pointer, with the icon right over the pointer tip, so you see the row under the pointer. Near the top of the window the label is under the pointer. When the drop line is above the pointer, the label stays above that line. The row that is dragged stays in its place at 40% opacity.
 - Two bands alternate behind the rows of the tree (`RowStripes`, one pitch per row: the row height plus `TreeRowGap`). They follow the rows when the tree scrolls or a row opens.
 - Every search field is a `SearchBox`. A drop-down gets one with `ComboBoxSearch.IsSearchable`, or `IsSearchable` on a `ComboBoxCaptioned` (the blend modes use it). The field filters the rows, and Enter picks the first one left.
 - Every panel (the tree, the lists, the inspector and the tabs) shows its scroll bar over the content (`ScrollViewerOverlay`). The content keeps a gutter for the bar, so it does not move when the bar appears. A tab view in the inspector does not scroll on its own: the inspector scrolls it.
@@ -104,7 +104,7 @@ Every panel ends with the group Project, so a composition can be added under any
 
 The search field is always shown while the panel shows the tree: it is in the bar of the panel, at the right, on the line of the button that picks what the panel shows. `Tree.Search` (Ctrl+F), while the pointer is over the tree or the tree has the focus, puts the focus in the field and selects its text. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. While the field holds text, a cross inside the field at its right empties it.
 
-While the search runs, the parents of every match open, so every match is in sight. When the text is empty again, the rows that the search opened close again. A row that you open or close during the search keeps your choice.
+While the search runs, the parents of every match open, so every match is in sight. When the text is empty again, the rows that the search opened close again. If a row is selected then, its parents stay open and the row keeps its state, so you can go on with it. A row that you open or close during the search keeps your choice.
 
 Enter or F3 selects the next match, and Shift with them the match before. At the last match, the next one is the first. Escape clears the text, and Escape in an empty field gives the focus back to the rows.
 
@@ -133,6 +133,7 @@ The file maps a command name to a gesture:
 | `Tree.Add` | Shift+A | Open the Add panel of the selected row at the pointer |
 | `Tree.Menu` | W | Open the menu of the selected row at the pointer |
 | `Tree.Expand` | E | Expand or collapse the row that has the keyboard focus, else the selected row |
+| `Tree.CollapseOthers` | Alt+E | Collapse others: open the parents of the row that has the keyboard focus, else of the selected row, and close every other row |
 | `Tree.Search` | Ctrl+F | Put the focus in the search field of the tree |
 | `Tree.Rename` | Ctrl+R | Rename the selected row |
 | `Tree.Remove` | Delete | Remove the selected item |
@@ -143,13 +144,17 @@ The file maps a command name to a gesture:
 
 The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut.
 
-`Tree.Add`, `Tree.Menu` and `Tree.Expand` work while the pointer is over the tree, whatever has the focus, but not while a text box has the focus. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D, and a `Tree.Rename` of F2 becomes Ctrl+R.
+`Tree.Add`, `Tree.Menu`, `Tree.Expand` and `Tree.CollapseOthers` work while the pointer is over the tree, whatever has the focus, but not while a text box has the focus. `Tree.Rename`, `Tree.Remove`, `Tree.Duplicate`, `Tree.MoveUp` and `Tree.MoveDown` work while the pointer is over the tree or the tree has the focus. They never work while a text box has the focus or while a row is dragged. `Tree.Open`, Enter and the arrow keys need the focus in the tree. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D, and a `Tree.Rename` of F2 becomes Ctrl+R.
 
 The Shortcuts section of the Settings tab edits the shortcuts and saves each change to the file at once, and a missing file is created on save. A red dot marks a gesture that two commands of one scope have, and its tooltip names the other command.
 
 While a text box has the focus, the text box gets the keys first. In the tree, the shortcuts do nothing while a name is edited.
 
 In the tree, the arrow keys, Page Up, Page Down, Home and End move the keyboard focus from row to row. Left collapses a row or goes to its parent. Right expands a row or goes to its first child. The row with the focus has a thin border in the bright color of its kind. The keyboard focus does not select the row: it writes no undo step and sends nothing to the peers. Enter or a click selects the row.
+
+`Tree.CollapseOthers` (Alt+E) keeps the path to one row open. The row is the row that has the keyboard focus, else the selected row. Its parents open and every other row closes. The row keeps its own state. The row stays at its place on the screen, or the tree scrolls to it when it was out of view.
+
+After a rename or a move by key, the keyboard focus goes back to the row. A click on another control keeps the focus where you clicked.
 
 ## Redis addresses
 
