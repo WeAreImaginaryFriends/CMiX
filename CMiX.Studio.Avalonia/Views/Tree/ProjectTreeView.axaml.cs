@@ -92,7 +92,56 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.AddHandler(KeyDownEvent, OnKeyDownTunnel, RoutingStrategies.Tunnel);
             AddHandler(PointerMovedEvent, OnPointerTracked, RoutingStrategies.Tunnel, handledEventsToo: true);
             KeyBindingTextGuard.Install(this);
+            AddHandler(GotFocusEvent, (_, _) => focusIsInTree = true, RoutingStrategies.Bubble, handledEventsToo: true);
+            AddHandler(LostFocusEvent, OnLostFocusInTree, RoutingStrategies.Bubble, handledEventsToo: true);
+            // A move makes the item of the row again, and the old item takes the focus away with it, with no event that reaches the
+            // tree. The layout that follows shows that no control has the focus.
+            treeView.LayoutUpdated += (_, _) => CheckTheLostFocus();
             tooltips = new TreeTooltips(treeView);
+        }
+
+        // True while a check of the focus waits to run.
+        private bool focusCheckPosted;
+
+        private void CheckTheLostFocus()
+        {
+            if (!focusIsInTree || focusCheckPosted || TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() != null)
+                return;
+
+            focusCheckPosted = true;
+            Dispatcher.UIThread.Post(() =>
+            {
+                focusCheckPosted = false;
+                GiveTheFocusBack(null);
+            }, DispatcherPriority.Input);
+        }
+
+        // True while the keyboard focus is in the tree, and also when it went from the tree to no control: a name box that hides at the
+        // end of a rename, or a row that a move makes again. The focus then goes back to the row (see GiveTheFocusBack).
+        private bool focusIsInTree;
+
+        // A name box loses the focus when a rename ends. The next focus is known only after the event.
+        private void OnLostFocusInTree(object? sender, RoutedEventArgs e)
+        {
+            var node = TreeRows.ItemOf(e.Source)?.DataContext as TreeNode;
+            Dispatcher.UIThread.Post(() => GiveTheFocusBack(node), DispatcherPriority.Input);
+        }
+
+        // When no control has the focus and the focus was in the tree, the row of the node gets it, else the selected row. A control
+        // that the user clicked keeps the focus.
+        private void GiveTheFocusBack(TreeNode? node)
+        {
+            var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
+            if (focused != null)
+            {
+                focusIsInTree = focused is Visual visual && (ReferenceEquals(visual, this) || this.IsVisualAncestorOf(visual));
+                return;
+            }
+
+            if (!focusIsInTree || (node ?? watched?.SelectedNode) is not { } target || rowIndex.FindItem(target) is not { } item)
+                return;
+
+            item.Focus(NavigationMethod.Tab);
         }
 
         // The tree does not scroll by itself when the user clicks a row: a click on a row that is at the edge of the view would scroll to
