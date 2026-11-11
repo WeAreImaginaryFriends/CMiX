@@ -45,6 +45,24 @@ namespace CMiX.UI.Tests
             Assert.Equal(field.Center.Y, clear.Center.Y, 0.51);
         }
 
+        // The button shows when the text comes. It must not make the field higher, or what is under the field moves down.
+        [AvaloniaFact]
+        public void Type_WithShowsClear_KeepsTheHeightOfTheField()
+        {
+            var (window, box) = Show(true);
+            var height = Convert.ToDouble(Application.Current!.FindResource("ControlHeightMD"));
+            Assert.Equal(height, box.Bounds.Height, 0.01);
+
+            box.Text = "Echo";
+            window.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
+            var clear = box.GetVisualDescendants().OfType<Button>().First(button => button.Name == SearchBox.ClearPartName);
+            Assert.True(clear.IsVisible);
+            Assert.Equal(height, box.Bounds.Height, 0.01);
+            Assert.True(clear.Bounds.Height <= height + 0.01, "clear: " + clear.Bounds.Height);
+        }
+
         [AvaloniaFact]
         public void Show_WithShowsClear_GivesTheButtonNoBackground()
         {

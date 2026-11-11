@@ -9,12 +9,14 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Width" Value="{DynamicResource ControlHeightMD}" />
+        <!-- The space around the icon. A button that must be as high as a field of ControlHeightMD sets 4 (see SearchBox). -->
+        <Setter Property="Padding" Value="6" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Border
                     Name="border"
                     Background="Transparent"
-                    Padding="6">
+                    Padding="{TemplateBinding Padding}">
                     <ui:AppIcon
                         Name="image"
                         IconKey="Close"
