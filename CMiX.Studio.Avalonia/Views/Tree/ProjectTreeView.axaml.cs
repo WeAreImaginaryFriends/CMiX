@@ -247,6 +247,26 @@ namespace CMiX.Studio.Avalonia.Views
                 OpenMenu(item);
         }
 
+        // Tree.CollapseOthers: every row closes but the path to the target row. A target row in view stays at its place on the screen,
+        // also while the rows close (CollapsePanel closes over a few frames). The first row in view can not be the anchor: it can close
+        // away under a parent. A target row out of view is brought into view after the close.
+        private void OnCollapseOthersRequested(object? sender, EventArgs e)
+        {
+            if (DataContext is not ProjectTree tree || tree.CollapseTarget() is not { } target)
+                return;
+
+            var anchor = scrollAnchor.CaptureRow(target);
+            var closed = tree.CollapseOthers();
+            if (anchor != null)
+            {
+                scrollAnchor.RestoreAnchor(anchor);
+                scrollAnchor.HoldWhileClosing(anchor, closed);
+                return;
+            }
+
+            Dispatcher.UIThread.Post(() => RevealRow(target), DispatcherPriority.Loaded);
+        }
+
         // The title of the Add panel when no row opens it.
         private const string AddTitle = "Add";
 
@@ -290,6 +310,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.RenameRequested += OnRenameRequested;
             watched.AddRequested += OnAddRequested;
             watched.MenuRequested += OnMenuRequested;
+            watched.CollapseOthersRequested += OnCollapseOthersRequested;
             watched.IsPointerOverTree = () => IsPointerOver;
             watched.IsTextBoxFocused = () => IsInTextBox(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement());
             watched.ToggleDragRow = rowDrag.ToggleHovered;
@@ -307,6 +328,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.RenameRequested -= OnRenameRequested;
             watched.AddRequested -= OnAddRequested;
             watched.MenuRequested -= OnMenuRequested;
+            watched.CollapseOthersRequested -= OnCollapseOthersRequested;
             watched.IsPointerOverTree = () => false;
             watched.IsTextBoxFocused = () => false;
             watched.ToggleDragRow = () => { };

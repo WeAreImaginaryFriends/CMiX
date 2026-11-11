@@ -51,6 +51,17 @@ namespace CMiX.Studio.Avalonia.Views
             return null;
         }
 
+        // The row of the node and its place in the view, when the row is fully in view. Null otherwise.
+        public (TreeNode Node, double Top)? CaptureRow(TreeNode node)
+        {
+            if (scroller() is not { } view || rows.FindItem(node) is not { } item || TreeRows.RowTopIn(item, view) is not { } top)
+                return null;
+
+            // The item holds the rows of its children too, so the height is the one of the row itself.
+            var height = TreeRows.RowBorderOf(item)?.Bounds.Height ?? 0;
+            return top >= 0 && top + height <= view.Viewport.Height ? (node, top) : null;
+        }
+
         // Scrolls so that the anchor row is where it was.
         public void RestoreAnchor((TreeNode Node, double Top)? anchor)
         {

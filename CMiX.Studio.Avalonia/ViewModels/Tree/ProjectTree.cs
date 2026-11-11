@@ -94,6 +94,57 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             DuplicateItemByKeyCommand = ByKey(DuplicateItemCommand);
             MoveItemUpByKeyCommand = ByKey(MoveItemUpCommand);
             MoveItemDownByKeyCommand = ByKey(MoveItemDownCommand);
+            CollapseOthersCommand = new RelayCommand(
+                () => CollapseOthersRequested?.Invoke(this, EventArgs.Empty),
+                () => CanRunTreeKey() && CollapseTarget() != null);
+        }
+
+        // Closes every row of the tree but the path to the row that the arrow keys are on, else the selected row (Tree.CollapseOthers).
+        // The parents of that row open, and the row keeps its own state. The command has the conditions of the other tree keys. The view
+        // runs CollapseOthers itself (see CollapseOthersRequested), so it can keep the row still on the screen while the rows close.
+        public IRelayCommand CollapseOthersCommand { get; }
+
+        // The view handles this request: it runs CollapseOthers and keeps the target row in view.
+        public event EventHandler? CollapseOthersRequested;
+
+        // The row that CollapseOthers keeps: the row of the arrow keys, else the selected row. Null when there is none.
+        public TreeNode? CollapseTarget() => softSelectedNode ?? selectedNode;
+
+        // Opens the parents of the target row and closes every other row. The target keeps its state. Nothing changes with no target
+        // or during a drag. Returns the rows that it closed.
+        public IReadOnlyList<TreeNode> CollapseOthers()
+        {
+            var closed = new List<TreeNode>();
+            if (IsDragging || CollapseTarget() is not { } target)
+                return closed;
+
+            var path = new HashSet<TreeNode>();
+            for (var parent = target.Parent; parent != null && !ReferenceEquals(parent, root); parent = parent.Parent)
+                path.Add(parent);
+
+            void Visit(IEnumerable<TreeNode> nodes)
+            {
+                foreach (var node in nodes)
+                {
+                    // A parent that the search opened is already open, so no change tells the search. It leaves the search here, so
+                    // the end of the search does not close it.
+                    if (path.Contains(node))
+                    {
+                        node.IsExpanded = true;
+                        searchOpened.Remove(node);
+                    }
+                    else if (!ReferenceEquals(node, target) && node.IsExpanded && node.Children.Count > 0)
+                    {
+                        node.IsExpanded = false;
+                        closed.Add(node);
+                    }
+
+                    Visit(node.Children);
+                }
+            }
+
+            Visit(Roots);
+            return closed;
         }
 
         // The keys of the main window for the selected row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown). A key

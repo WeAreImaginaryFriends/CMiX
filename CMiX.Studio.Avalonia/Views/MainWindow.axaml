@@ -36,6 +36,7 @@
         <KeyBinding Command="{Binding ProjectTree.AddUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Add]}" />
         <KeyBinding Command="{Binding ProjectTree.OpenMenuUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
         <KeyBinding Command="{Binding ProjectTree.ToggleExpandUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Expand]}" />
+        <KeyBinding Command="{Binding ProjectTree.CollapseOthersCommand}" Gesture="{Binding Shortcuts[Tree.CollapseOthers]}" />
         <KeyBinding Command="{Binding ProjectTree.FocusSearchCommand}" Gesture="{Binding Shortcuts[Tree.Search]}" />
         <KeyBinding Command="{Binding ProjectTree.RenameSelectedByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Rename]}" />
         <KeyBinding Command="{Binding ProjectTree.RemoveItemByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Remove]}" />

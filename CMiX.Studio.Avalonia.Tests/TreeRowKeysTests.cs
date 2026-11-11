@@ -300,6 +300,50 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Same(tree.MoveItemDownByKeyCommand, For("Tree.MoveDown").Command);
         }
 
+        // ---------------------------------------------------------------- Tree.CollapseOthers
+
+        [AvaloniaFact]
+        public void Press_AltEWithThePointerOverTheTree_CollapsesEveryRowButThePathToTheSelection()
+        {
+            var screen = Show();
+            var composition = screen.Tree.CompositionNodes()[0];
+            var layers = composition.Children[0];
+            screen.Tree.SelectedNode = screen.LayerNode(1);
+            Settle(screen.Window);
+            PointOnTree(screen);
+
+            Press(screen, PhysicalKey.E, RawInputModifiers.Alt);
+
+            Assert.True(composition.IsExpanded);
+            Assert.True(layers.IsExpanded);
+            Assert.All(new[] { screen.LayerNode(0), screen.LayerNode(2) }.Where(node => node.Children.Count > 0), node => Assert.False(node.IsExpanded));
+        }
+
+        [AvaloniaFact]
+        public void Press_AltEInATextBoxOutsideTheTree_ChangesNoRow()
+        {
+            var screen = Show();
+            screen.Tree.SelectedNode = screen.LayerNode(1);
+            Settle(screen.Window);
+            var open = screen.LayerNode(0).IsExpanded;
+            PointOnTree(screen);
+            FocusATextBoxOutsideTheTree(screen);
+
+            Press(screen, PhysicalKey.E, RawInputModifiers.Alt);
+
+            Assert.Equal(open, screen.LayerNode(0).IsExpanded);
+        }
+
+        [AvaloniaFact]
+        public void KeyBindings_OfTheWindow_HoldTheCollapseOthersCommandOnAltE()
+        {
+            var screen = Show();
+
+            var binding = screen.Window.KeyBindings.Single(candidate => Equals(candidate.Gesture, screen.ViewModel.Shortcuts["Tree.CollapseOthers"]));
+
+            Assert.Equal(new KeyGesture(Key.E, KeyModifiers.Alt), screen.ViewModel.Shortcuts["Tree.CollapseOthers"]);
+            Assert.Same(screen.Tree.CollapseOthersCommand, binding.Command);
+        }
         [AvaloniaFact]
         public void KeyBindings_OfTheTree_HoldOnlyTheOpenCommand()
         {
