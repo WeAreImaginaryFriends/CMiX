@@ -40,6 +40,21 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.All(scene.All(), node => Assert.False(node.IsSearchMatch || node.IsSearchDimmed));
         }
 
+        // A search that finds nothing dims every row. Its end must take the dim away again.
+        [Fact]
+        public void Clear_ASearchWithNoMatch_DimsNoRowAnyMore()
+        {
+            var (scene, _) = WithARenamedEcho();
+
+            scene.Tree.SearchText = "NoSuchName";
+            Assert.Empty(scene.Tree.SearchMatches);
+            Assert.All(scene.All(), node => Assert.True(node.IsSearchDimmed));
+
+            scene.Tree.SearchText = "";
+
+            Assert.All(scene.All(), node => Assert.False(node.IsSearchMatch || node.IsSearchDimmed));
+        }
+
         [Fact]
         public void Search_AName_MatchesTheRowWithThatName()
         {

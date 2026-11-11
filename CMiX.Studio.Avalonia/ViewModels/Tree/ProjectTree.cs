@@ -362,17 +362,23 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             }
         }
 
+        // True while the text of the search is not empty, as at the last refresh of the search.
+        private bool searchActive;
+
         // The rows that match the search, in the order of the tree from the top.
         public IReadOnlyList<TreeNode> SearchMatches => searchMatches;
 
         public int SearchMatchCount => searchMatches.Count;
 
         // Sets the search state of every row and finds the matches again. It runs when the text changes, when a row gets a new
-        // name, and when a list of the tree changes. With an empty text and no match, there is nothing to change.
+        // name, and when a list of the tree changes. With an empty text before and now, there is nothing to change. A search that found
+        // nothing still dimmed every row, so its end must run to take the dim away.
         internal void RefreshSearch()
         {
             var text = searchText.Trim();
-            if (text.Length == 0 && searchMatches.Count == 0 && searchOpened.Count == 0)
+            var wasActive = searchActive;
+            searchActive = text.Length > 0;
+            if (!searchActive && !wasActive && searchMatches.Count == 0 && searchOpened.Count == 0)
                 return;
 
             var matches = new List<TreeNode>();
