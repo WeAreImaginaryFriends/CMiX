@@ -79,15 +79,27 @@ namespace CMiX.Studio.Avalonia.Views
             if (item == null || TreeRows.RowTopIn(item, view) is not { } top)
                 return;
 
+            // A change of less than half a pixel is not done: at a screen scale of 125% or 150% the scroll is rounded to pixels of the
+            // screen, and a row that never lands exactly would make the scroll change again at each frame.
             var maxOffset = Math.Max(0, view.Extent.Height - view.Viewport.Height);
-            view.Offset = view.Offset.WithY(Math.Clamp(view.Offset.Y + top - kept.Top, 0, maxOffset));
+            var offset = Math.Clamp(view.Offset.Y + top - kept.Top, 0, maxOffset);
+            if (Math.Abs(offset - view.Offset.Y) >= MinMove)
+                view.Offset = view.Offset.WithY(offset);
         }
 
+        private const double MinMove = 0.5;
+
+        // The hold that runs now. A new hold ends it, so two holds never set the scroll to two different places.
+        private int holdId;
+
         // A row closes over a few frames (CollapsePanel), so the rows above the view get shorter after the close. The anchor row is
-        // put back after each layout, until the list of children of every closed row is shut.
+        // put back once in each frame, until the list of children of every closed row is shut. The hold runs from the frames of the
+        // window, not from the layouts: a change of the scroll in a layout asks for one more layout in the same frame, and a chain of
+        // them stops the window (Avalonia: "Infinite layout loop detected").
         public void HoldWhileClosing((TreeNode Node, double Top)? anchor, IReadOnlyList<TreeNode> closed)
         {
-            if (anchor is not { } kept || closed.Count == 0 || scroller() is not { } view)
+            var id = ++holdId;
+            if (anchor is not { } kept || closed.Count == 0 || scroller() is not { } view || TopLevel.GetTopLevel(treeView) is not { } top)
                 return;
 
             var panels = closed.Select(node => rows.FindItem(node)?.GetVisualDescendants().OfType<CollapsePanel>().FirstOrDefault(panel => panel.Name == "PART_Collapse"))
@@ -96,19 +108,20 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             // A safe end, in case a panel never reaches its end.
-            var passes = 0;
-            void Keep(object? sender, EventArgs e)
+            var frames = 0;
+            void Keep(TimeSpan _)
             {
-                var moving = panels.Any(panel => panel.Progress > 0) && ++passes < MaxHoldPasses;
-                if (!moving)
-                    treeView.LayoutUpdated -= Keep;
+                if (id != holdId)
+                    return;
 
                 Place(kept, view);
+                if (panels.Any(panel => panel.Progress > 0) && ++frames < MaxHoldFrames)
+                    top.RequestAnimationFrame(Keep);
             }
 
-            treeView.LayoutUpdated += Keep;
+            top.RequestAnimationFrame(Keep);
         }
 
-        private const int MaxHoldPasses = 500;
+        private const int MaxHoldFrames = 120;
     }
 }
