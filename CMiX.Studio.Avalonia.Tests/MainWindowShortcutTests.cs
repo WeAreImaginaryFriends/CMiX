@@ -319,6 +319,21 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(window.GetVisualDescendants().OfType<ProjectTreeView>().Single().MenuAddPanel.IsOpen);
         }
 
+        [AvaloniaFact]
+        public void KeyBindings_OfTheWindow_HoldTheOpenCommandOfTheMenuOnCtrlO()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            TestServiceProviderFactory.Pump();
+
+            var open = window.KeyBindings.Single(binding => Equals(binding.Gesture, viewModel.Shortcuts["File.Open"]));
+            var row = window.GetVisualDescendants().OfType<Menu>().First().Items.OfType<MenuItem>().First()
+                .Items.OfType<MenuItem>().Single(item => Equals(item.Header, "Open"));
+
+            Assert.Equal(new KeyGesture(Key.O, KeyModifiers.Control), viewModel.Shortcuts["File.Open"]);
+            Assert.Same(viewModel.MainMenu.OpenProjectCommand, open.Command);
+            Assert.Equal(new KeyGesture(Key.O, KeyModifiers.Control), row.InputGesture);
+        }
+
         // Alt is a part of the tree keys. Alone, it must not give the keyboard to the main menu.
         [AvaloniaFact]
         public void Press_AltAlone_LeavesTheMainMenuAsItWas()

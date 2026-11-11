@@ -130,6 +130,7 @@ The file maps a command name to a gesture:
 | `Edit.Undo` | Ctrl+Z | Undo |
 | `Edit.Redo` | Ctrl+Shift+Z | Redo |
 | `Edit.RedoAlt` | Ctrl+Y | Redo |
+| `File.Open` | Ctrl+O | Open a project file |
 | `Tree.Add` | Shift+A | Open the Add panel of the selected row at the pointer |
 | `Tree.Menu` | W | Open the menu of the selected row at the pointer |
 | `Tree.Expand` | E | Expand or collapse the row that has the keyboard focus, else the selected row |
