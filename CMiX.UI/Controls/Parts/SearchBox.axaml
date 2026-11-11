@@ -5,8 +5,10 @@
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     x:Name="searchBox">
 
-    <!-- The search field of every list and drop-down that filters its rows. The magnifier is inside the field, at its left. The text starts after it. -->
-    <Panel>
+    <!-- The search field of every list and drop-down that filters its rows. The magnifier is inside the field, at its left. The text starts after it.
+         With ShowsClear, a clear button with no background is inside the field, at its right, while the field holds text. The text always
+         stops before the place of that button, so the text does not move when the button shows (see SearchBox.axaml.cs). -->
+    <Panel x:Name="PART_Panel">
 
         <TextBox
             x:Name="PART_Search"

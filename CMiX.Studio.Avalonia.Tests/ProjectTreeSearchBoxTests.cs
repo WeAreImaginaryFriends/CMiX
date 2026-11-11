@@ -80,19 +80,20 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Show_TheTree_ShowsTheFieldWithItsWidthAndNoCountOrClear()
+        public void Show_TheTree_ShowsTheFieldWithItsWidthAndNoClear()
         {
             var (screen, _) = Show();
             var width = Convert.ToDouble(Application.Current!.FindResource("TreeSearchWidth"));
 
             Assert.True(screen.Box.Field.IsEffectivelyVisible);
             Assert.Equal(width, screen.Box.Field.Bounds.Width, 0.51);
-            Assert.False(screen.Box.Count.IsVisible);
+            Assert.Equal(width, screen.Box.Bounds.Width, 0.51);
             Assert.False(screen.Box.Clear.IsVisible);
         }
 
+        // The field is all there is: no number of matches beside it, and the clear button inside it.
         [AvaloniaFact]
-        public void Type_AText_SetsTheSearchAndShowsTheNumberOfMatches()
+        public void Type_AText_SetsTheSearchAndShowsTheClearInsideTheField()
         {
             var (screen, scene) = Show();
 
@@ -100,9 +101,13 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal("Layer", scene.Tree.SearchText);
             Assert.True(scene.Tree.SearchMatchCount > 0);
-            Assert.True(screen.Box.Count.IsVisible);
             Assert.True(screen.Box.Clear.IsVisible);
-            Assert.Equal(scene.Tree.SearchMatchCount.ToString(), screen.Box.Count.Text);
+            Assert.Empty(screen.Box.GetVisualDescendants().OfType<TextBlock>().Where(text => text.Text == scene.Tree.SearchMatchCount.ToString()));
+            var field = new Rect(screen.Box.Field.TranslatePoint(default, screen.Window)!.Value, screen.Box.Field.Bounds.Size);
+            var clear = new Rect(screen.Box.Clear.TranslatePoint(default, screen.Window)!.Value, screen.Box.Clear.Bounds.Size);
+            Assert.InRange(clear.Left, field.Left, field.Right);
+            Assert.InRange(clear.Right, field.Left, field.Right + 0.5);
+            Assert.Equal(field.Center.Y, clear.Center.Y, 0.51);
         }
 
         [AvaloniaFact]
@@ -130,7 +135,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(string.Empty, scene.Tree.SearchText);
             Assert.True(screen.Input.IsFocused);
-            Assert.False(screen.Box.Count.IsVisible);
+            Assert.False(screen.Box.Clear.IsVisible);
 
             Press(screen, PhysicalKey.Escape);
 
@@ -237,7 +242,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.False(screen.Input.IsFocused);
             Assert.Equal("Layer", scene.Tree.SearchText);
-            Assert.True(screen.Box.Count.IsVisible);
+            Assert.True(screen.Box.Clear.IsVisible);
         }
 
         // ---------------------------------------------------------------- no search during a drag

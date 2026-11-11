@@ -6,33 +6,15 @@
     HorizontalAlignment="Right">
 
     <!-- The search of the project tree, in the bar of the panel at the right. It is always shown while the panel shows the tree. The data
-         context is the ProjectTree. The number on the left of the field is the number of rows that match, and the clear button is on its
-         right. Both show only while the field holds text. During a drag the field and the clear button take no input, and the text stays
-         (ProjectTree.IsDragging). The keys are in TreeSearchBox.axaml.cs. -->
-    <StackPanel Orientation="Horizontal" Spacing="{DynamicResource SpacingXS}">
-
-        <TextBlock
-            x:Name="searchCount"
-            VerticalAlignment="Center"
-            IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-            Text="{Binding SearchMatchCount}" />
-
-        <ui:SearchBox
-            x:Name="searchField"
-            Width="{DynamicResource TreeSearchWidth}"
-            IsReadOnly="{Binding IsDragging}"
-            Text="{Binding SearchText, Mode=TwoWay}"
-            Watermark="Search" />
-
-        <ui:ButtonIcon
-            x:Name="searchClear"
-            Click="OnClearClick"
-            Focusable="False"
-            IconKey="Close"
-            IsEnabled="{Binding !IsDragging}"
-            IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-            Tip="Clear" />
-
-    </StackPanel>
+         context is the ProjectTree. The clear button is inside the field, at its right, while the field holds text (SearchBox.ShowsClear).
+         During a drag the field and the clear button take no input, and the text stays (ProjectTree.IsDragging). The keys are in
+         TreeSearchBox.axaml.cs. -->
+    <ui:SearchBox
+        x:Name="searchField"
+        Width="{DynamicResource TreeSearchWidth}"
+        IsReadOnly="{Binding IsDragging}"
+        ShowsClear="True"
+        Text="{Binding SearchText, Mode=TwoWay}"
+        Watermark="Search" />
 
 </UserControl>

@@ -102,7 +102,7 @@ Every panel ends with the group Project, so a composition can be added under any
 
 ### Searching the tree
 
-The search field is always shown while the panel shows the tree: it is in the bar of the panel, at the right, on the line of the button that picks what the panel shows. `Tree.Search` (Ctrl+F), while the pointer is over the tree or the tree has the focus, puts the focus in the field and selects its text. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. The number before the field is the number of matches, and the clear button after it empties the field. Both show only while the field holds text.
+The search field is always shown while the panel shows the tree: it is in the bar of the panel, at the right, on the line of the button that picks what the panel shows. `Tree.Search` (Ctrl+F), while the pointer is over the tree or the tree has the focus, puts the focus in the field and selects its text. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. While the field holds text, a cross inside the field at its right empties it.
 
 While the search runs, the parents of every match open, so every match is in sight. When the text is empty again, the rows that the search opened close again. A row that you open or close during the search keeps your choice.
 

@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -14,7 +16,7 @@ namespace CMiX.Studio.Avalonia.Views
     // The search field of the project tree (see TreeSearchBox.axaml). Tree.Search gives it the focus (ProjectTree.FocusSearch).
     // Escape clears the text, and Escape in an empty field gives the focus back to the rows. Enter and F3 select the next match, and
     // Shift with them the match before. During a drag, Escape ends the drag without a drop, as it does in the tree, and the other keys
-    // do nothing.
+    // do nothing. The clear button of the field empties the text, as Escape does, and the field keeps the focus.
     public partial class TreeSearchBox : UserControl
     {
         private ProjectTree? watched;
@@ -25,10 +27,9 @@ namespace CMiX.Studio.Avalonia.Views
             searchField.AddHandler(KeyDownEvent, OnFieldKeyDown, RoutingStrategies.Tunnel);
         }
 
-        // For the tests: the parts of the box.
+        // For the tests: the field, and its clear button.
         internal SearchBox Field => searchField;
-        internal TextBlock Count => searchCount;
-        internal Control Clear => searchClear;
+        internal Button Clear => searchField.GetVisualDescendants().OfType<Button>().First(button => button.Name == SearchBox.ClearPartName);
 
         protected override void OnDataContextChanged(EventArgs e)
         {
@@ -82,16 +83,6 @@ namespace CMiX.Studio.Avalonia.Views
             }
 
             e.Handled = true;
-        }
-
-        // The clear button empties the text, and the field keeps the focus.
-        private void OnClearClick(object? sender, RoutedEventArgs e)
-        {
-            if (DataContext is not ProjectTree tree || tree.IsDragging)
-                return;
-
-            tree.SearchText = string.Empty;
-            searchField.FocusInput();
         }
     }
 }
