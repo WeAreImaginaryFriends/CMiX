@@ -49,6 +49,7 @@
         Padding="0"
         Background="Transparent"
         BorderThickness="0"
+        FocusAdorner="{x:Null}"
         ItemsSource="{Binding Roots}"
         SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
 

@@ -51,6 +51,8 @@
     </ControlTheme>
 
     <ControlTheme x:Key="TreeViewItemCMiX" TargetType="TreeViewItem">
+        <!-- The row with the keyboard focus shows the FocusFrame of the template. The dotted frame of Avalonia is not wanted. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="ItemsPanel">
