@@ -98,7 +98,8 @@
             </Setter>
         </Style>
 
-        <Style Selector="^:pointerover /template/ Border#root">
+        <!-- In a menu, the hover and the row of the arrow keys are one thing, so they have the same fill. -->
+        <Style Selector="^:pointerover /template/ Border#root, ^:selected /template/ Border#root">
             <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
         </Style>
 
