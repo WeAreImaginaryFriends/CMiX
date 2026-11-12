@@ -150,6 +150,7 @@ The file maps a command name to a gesture:
 | `Tree.MoveUp` | Alt+Up | Move the target item up |
 | `Tree.MoveDown` | Alt+Down | Move the target item down |
 | `Tree.Open` | Enter | Select the row that has the keyboard focus |
+| `Tree.Reveal` | F | Reveal the selected row: open its parents, put the cursor on it and scroll it to the middle of the tree |
 
 The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. The `Edit`, `File` and `Window` keys work in every scope, so their gestures must not be the gesture of any other name. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut. In the file, a digit key is `D1` to `D9` and `D0`, for example `"Ctrl+D1"`.
 

@@ -55,6 +55,7 @@
         <KeyBinding Command="{Binding ProjectTree.DuplicateItemByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Duplicate]}" />
         <KeyBinding Command="{Binding ProjectTree.MoveItemUpByKeyCommand}" Gesture="{Binding Shortcuts[Tree.MoveUp]}" />
         <KeyBinding Command="{Binding ProjectTree.MoveItemDownByKeyCommand}" Gesture="{Binding Shortcuts[Tree.MoveDown]}" />
+        <KeyBinding Command="{Binding ProjectTree.RevealSelectedCommand}" Gesture="{Binding Shortcuts[Tree.Reveal]}" />
     </Window.KeyBindings>
 
     <DockPanel Background="{DynamicResource Grey100Brush}" LastChildFill="True">

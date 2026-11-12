@@ -274,6 +274,36 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 yield return parent;
         }
 
+        private IRelayCommand? revealSelectedCommand;
+
+        // Reveals the selected row, the row of the Inspector (Tree.Reveal, see RevealSelected). The command has the condition of every
+        // tree key (see CanRunTreeKey). With no selection it cannot run.
+        public IRelayCommand RevealSelectedCommand => revealSelectedCommand ??= new RelayCommand(
+            () => RevealSelected(),
+            () => CanRunTreeKey() && selectedNode != null);
+
+        // The active view handles this request (see IsActiveView): it scrolls the row of the node to the middle of the view.
+        public event EventHandler<TreeNode>? RevealRequested;
+
+        // Opens every closed parent of the selected row and moves the cursor to it. The view then scrolls the row to the middle. The
+        // selection does not change: no undo step and no wire message. The opened parents leave the search, so the end of the search
+        // does not close them. Nothing changes with no selection or during a drag. Returns false then.
+        public bool RevealSelected()
+        {
+            if (IsDragging || selectedNode is not { } node)
+                return false;
+
+            foreach (var parent in ParentsOf(node))
+            {
+                parent.IsExpanded = true;
+                searchOpened.Remove(parent);
+            }
+
+            CursorNode = node;
+            RevealRequested?.Invoke(this, node);
+            return true;
+        }
+
         // The hooks of the views that show the tree. The two side panels can show the same tree.
         private readonly List<TreeViewHooks> views = new();
 
@@ -294,7 +324,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             ?? views.Find(view => view.IsPointerOverTree()) ?? (views.Count > 0 ? views[0] : null);
 
         // True when the view of these hooks is the active view (see ActiveView). A view answers a request (RenameRequested,
-        // AddRequested, MenuRequested, CollapseOthersRequested, TreeFocusRequested, SearchFocusRequested) only when this is true,
+        // AddRequested, MenuRequested, CollapseOthersRequested, RevealRequested, TreeFocusRequested, SearchFocusRequested) only when this is true,
         // so with two views one request opens one menu.
         public bool IsActiveView(TreeViewHooks view) => ReferenceEquals(ActiveView(), view);
 

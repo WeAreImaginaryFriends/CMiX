@@ -45,6 +45,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ["Tree.MoveUp"] = "Move up",
             ["Tree.MoveDown"] = "Move down",
             ["Tree.Open"] = "Open",
+            ["Tree.Reveal"] = "Reveal the selected row",
         };
 
         private readonly ShortcutMap map;

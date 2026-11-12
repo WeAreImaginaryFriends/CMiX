@@ -58,6 +58,7 @@ namespace CMiX.Studio.Avalonia.Services
             ("Tree.MoveUp", "Alt+Up"),
             ("Tree.MoveDown", "Alt+Down"),
             ("Tree.Open", "Enter"),
+            ("Tree.Reveal", "F"),
         };
 
         // The defaults of earlier versions. A file that still holds one of them gets the default of now, because the file holds every

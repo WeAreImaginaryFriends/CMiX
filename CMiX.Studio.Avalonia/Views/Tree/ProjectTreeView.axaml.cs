@@ -20,6 +20,7 @@ using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.Controls.Boolean;
 using CMiX.UI.Controls.Parts;
 using CMiX.UI.Controls.String;
+using CMiX.UI.Panels;
 using CMiX.UI.Popups;
 using CMiX.UI.Behaviors;
 using CompositionModel = CMiX.Core.Compositing.Composition;
@@ -309,6 +310,53 @@ namespace CMiX.Studio.Avalonia.Views
             Dispatcher.UIThread.Post(() => RevealRow(target), DispatcherPriority.Loaded);
         }
 
+        // Tree.Reveal: the selected row goes to the middle of the view (see ProjectTree.RevealSelected). The parents of the row open over a
+        // few frames (CollapsePanel), so the tree is not yet high enough at the first frame. The row is put back in the middle once in each
+        // frame until every parent is fully open. A new reveal ends the one before. While the tree has the focus, the row takes it, as
+        // with the arrow keys.
+        private int revealId;
+
+        private void OnRevealRequested(object? sender, TreeNode node)
+        {
+            if (!IsActiveView)
+                return;
+
+            var id = ++revealId;
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (id != revealId || rowIndex.FindItem(node) is not { } item)
+                    return;
+
+                if (IsKeyboardFocusWithin)
+                    item.Focus(NavigationMethod.Tab);
+
+                RevealRow(node, toMiddle: true);
+                if (TopLevel.GetTopLevel(this) is not { } top)
+                    return;
+
+                var frames = 0;
+                void Keep(TimeSpan _)
+                {
+                    if (id != revealId)
+                        return;
+
+                    RevealRow(node, toMiddle: true);
+                    if (IsOpening(item) && ++frames < MaxRevealFrames)
+                        top.RequestAnimationFrame(Keep);
+                }
+
+                if (IsOpening(item))
+                    top.RequestAnimationFrame(Keep);
+            }, DispatcherPriority.Loaded);
+        }
+
+        // True while a parent of the row still opens.
+        private static bool IsOpening(TreeViewItem item) =>
+            item.GetVisualAncestors().OfType<CollapsePanel>().Any(panel => panel.IsExpanded && panel.Progress < 1);
+
+        // A safe end, in case a panel never reaches its end.
+        private const int MaxRevealFrames = 120;
+
         // Rows of the search close (see ProjectTree.CloseRowsInView). The row of the node stays at its place on the screen when it is in
         // view, else the first row in view does, also while the rows close.
         private void OnCloseRowsInView(TreeNode? node, Func<IReadOnlyList<TreeNode>> close)
@@ -384,6 +432,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.AddRequested += OnAddRequested;
             watched.MenuRequested += OnMenuRequested;
             watched.CollapseOthersRequested += OnCollapseOthersRequested;
+            watched.RevealRequested += OnRevealRequested;
             watched.TreeFocusRequested += OnTreeFocusRequested;
             watched.AttachView(hooks);
         }
@@ -398,6 +447,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.AddRequested -= OnAddRequested;
             watched.MenuRequested -= OnMenuRequested;
             watched.CollapseOthersRequested -= OnCollapseOthersRequested;
+            watched.RevealRequested -= OnRevealRequested;
             watched.TreeFocusRequested -= OnTreeFocusRequested;
             watched.DetachView(hooks);
         }
@@ -424,7 +474,9 @@ namespace CMiX.Studio.Avalonia.Views
             Dispatcher.UIThread.Post(() => RevealRow(node), DispatcherPriority.Loaded);
         }
 
-        private void RevealRow(TreeNode node)
+        // Brings the row of the node into view. With toMiddle, the row goes to the middle of the view: the request asks for a block as
+        // high as the view, with the row at its middle. The scroller stops at the ends of the tree.
+        private void RevealRow(TreeNode node, bool toMiddle = false)
         {
             if (rowIndex.FindItem(node) is not { } item || TreeRows.RowBorderOf(item) is not { } border)
                 return;
@@ -432,7 +484,15 @@ namespace CMiX.Studio.Avalonia.Views
             revealTarget = border;
             try
             {
-                border.BringIntoView();
+                if (toMiddle && ScrollerOfTree is { Viewport.Height: > 0 } scroller)
+                {
+                    var height = scroller.Viewport.Height;
+                    border.BringIntoView(new Rect(0, (border.Bounds.Height - height) / 2, border.Bounds.Width, height));
+                }
+                else
+                {
+                    border.BringIntoView();
+                }
             }
             finally
             {
