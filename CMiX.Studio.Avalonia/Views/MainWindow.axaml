@@ -33,9 +33,9 @@
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.Redo]}" />
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.RedoAlt]}" />
         <KeyBinding Command="{Binding MainMenu.OpenProjectCommand}" Gesture="{Binding Shortcuts[File.Open]}" />
-        <KeyBinding Command="{Binding ProjectTree.AddUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Add]}" />
-        <KeyBinding Command="{Binding ProjectTree.OpenMenuUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
-        <KeyBinding Command="{Binding ProjectTree.ToggleExpandUnderPointerCommand}" Gesture="{Binding Shortcuts[Tree.Expand]}" />
+        <KeyBinding Command="{Binding ProjectTree.AddAtTargetCommand}" Gesture="{Binding Shortcuts[Tree.Add]}" />
+        <KeyBinding Command="{Binding ProjectTree.OpenMenuAtTargetCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
+        <KeyBinding Command="{Binding ProjectTree.ToggleExpandTargetCommand}" Gesture="{Binding Shortcuts[Tree.Expand]}" />
         <KeyBinding Command="{Binding ProjectTree.CollapseOthersCommand}" Gesture="{Binding Shortcuts[Tree.CollapseOthers]}" />
         <KeyBinding Command="{Binding ProjectTree.FocusSearchCommand}" Gesture="{Binding Shortcuts[Tree.Search]}" />
         <KeyBinding Command="{Binding ProjectTree.RenameSelectedByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Rename]}" />

@@ -72,38 +72,38 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void AddUnderPointerCommand_PointerOverTheTree_AsksTheViewForTheMenu()
+        public void AddAtTargetCommand_PointerOverTheTree_AsksTheViewForTheMenu()
         {
             var scene = CreateScene();
             scene.Tree.IsPointerOverTree = () => true;
             var asked = 0;
             scene.Tree.AddRequested += (_, _) => asked++;
 
-            Assert.True(scene.Tree.AddUnderPointerCommand.CanExecute(null));
-            scene.Tree.AddUnderPointerCommand.Execute(null);
+            Assert.True(scene.Tree.AddAtTargetCommand.CanExecute(null));
+            scene.Tree.AddAtTargetCommand.Execute(null);
 
             Assert.Equal(1, asked);
             Assert.Equal(2, scene.Project.CompositionManager.ManagerData.Items.Count);
         }
 
         [Fact]
-        public void AddUnderPointerCommand_NothingSelected_AddsNothingAtOnce()
+        public void AddAtTargetCommand_NothingSelected_AddsNothingAtOnce()
         {
             var scene = CreateScene();
             scene.Tree.SelectedNode = null;
             scene.Tree.IsPointerOverTree = () => true;
 
-            scene.Tree.AddUnderPointerCommand.Execute(null);
+            scene.Tree.AddAtTargetCommand.Execute(null);
 
             Assert.Equal(2, scene.Project.CompositionManager.ManagerData.Items.Count);
         }
 
         [Fact]
-        public void AddUnderPointerCommand_PointerAwayFromTheTree_CannotRun()
+        public void AddAtTargetCommand_PointerAwayFromTheTree_CannotRun()
         {
             var scene = CreateScene();
 
-            Assert.False(scene.Tree.AddUnderPointerCommand.CanExecute(null));
+            Assert.False(scene.Tree.AddAtTargetCommand.CanExecute(null));
         }
 
         [Fact]

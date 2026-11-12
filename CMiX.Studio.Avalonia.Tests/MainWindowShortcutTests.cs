@@ -88,7 +88,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var add = window.KeyBindings.Single(binding => Equals(binding.Gesture, viewModel.Shortcuts["Tree.Add"]));
 
-            Assert.Same(viewModel.ProjectTree.AddUnderPointerCommand, add.Command);
+            Assert.Same(viewModel.ProjectTree.AddAtTargetCommand, add.Command);
         }
 
         [AvaloniaFact]
@@ -176,7 +176,17 @@ namespace CMiX.Studio.Avalonia.Tests
             var menu = window.KeyBindings.Single(binding => Equals(binding.Gesture, viewModel.Shortcuts["Tree.Menu"]));
 
             Assert.Equal(new KeyGesture(Key.W), viewModel.Shortcuts["Tree.Menu"]);
-            Assert.Same(viewModel.ProjectTree.OpenMenuUnderPointerCommand, menu.Command);
+            Assert.Same(viewModel.ProjectTree.OpenMenuAtTargetCommand, menu.Command);
+        }
+
+        [AvaloniaFact]
+        public void KeyBindings_OfTheWindow_HoldTheExpandCommandOfTheTree()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+
+            var expand = window.KeyBindings.Single(binding => Equals(binding.Gesture, viewModel.Shortcuts["Tree.Expand"]));
+
+            Assert.Same(viewModel.ProjectTree.ToggleExpandTargetCommand, expand.Command);
         }
 
         [AvaloniaFact]

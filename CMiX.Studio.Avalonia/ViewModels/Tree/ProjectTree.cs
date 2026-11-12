@@ -78,10 +78,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             RemoveItemCommand = new RelayCommand(
                 () => { if (TargetPlace() is var (list, item, _)) list.RemoveItem(item); },
                 () => TargetPlace() != null);
-            AddUnderPointerCommand = new RelayCommand(
+            AddAtTargetCommand = new RelayCommand(
                 () => AddRequested?.Invoke(this, EventArgs.Empty),
                 CanRunTreeKey);
-            ToggleExpandUnderPointerCommand = new RelayCommand(
+            ToggleExpandTargetCommand = new RelayCommand(
                 () =>
                 {
                     if (IsDragging)
@@ -90,7 +90,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                         node.IsExpanded = !node.IsExpanded;
                 },
                 () => IsDragging ? !IsTextBoxFocused() : CanRunTreeKey() && TargetNode is { Children.Count: > 0 });
-            OpenMenuUnderPointerCommand = new RelayCommand(
+            OpenMenuAtTargetCommand = new RelayCommand(
                 () => MenuRequested?.Invoke(this, EventArgs.Empty),
                 CanRunTreeKey);
             FocusSearchCommand = new RelayCommand(
@@ -224,9 +224,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The gestures of the key bindings of the tree view (the names Tree.*).
         public ShortcutMap Shortcuts { get; }
 
-        // Opens the Add panel of the target row at the pointer (Tree.Add). With no target, the panel offers a composition. The panel
+        // Opens the Add panel of the target row on that row (Tree.Add). With no target, the panel offers a composition. The panel
         // adds nothing at once. The command has the condition of every tree key (see CanRunTreeKey).
-        public IRelayCommand AddUnderPointerCommand { get; }
+        public IRelayCommand AddAtTargetCommand { get; }
 
         // True when the pointer is over a view of the tree.
         public Func<bool> IsPointerOverTree { get; set; }
@@ -234,14 +234,14 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The active view handles this request (see IsActiveView): it opens the Add panel.
         public event EventHandler? AddRequested;
 
-        // Opens the menu of the target row at the pointer (Tree.Menu), or the menu of the project with no target. The command
+        // Opens the menu of the target row under that row (Tree.Menu), or the menu of the project with no target. The command
         // has the condition of every tree key (see CanRunTreeKey).
-        public IRelayCommand OpenMenuUnderPointerCommand { get; }
+        public IRelayCommand OpenMenuAtTargetCommand { get; }
 
         // Expands or collapses the target row (Tree.Expand). A row with no children does not
         // change. The command has the condition of every tree key (see CanRunTreeKey). During a drag of a row, it acts on the row under
         // the pointer instead (see ToggleDragRow), with the focus anywhere but in a text box.
-        public IRelayCommand ToggleExpandUnderPointerCommand { get; }
+        public IRelayCommand ToggleExpandTargetCommand { get; }
 
         // The view of the drag opens or closes the row under the pointer (see TreeRowDrag.ToggleHovered).
         public Action ToggleDragRow { get; set; }

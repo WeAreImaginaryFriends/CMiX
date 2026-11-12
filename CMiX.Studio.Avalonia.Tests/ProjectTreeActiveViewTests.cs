@@ -81,7 +81,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var (first, second) = Show(scene);
             FocusView(Pick(first, second, active), scene.NodeA);
 
-            scene.Tree.AddUnderPointerCommand.Execute(null);
+            scene.Tree.AddAtTargetCommand.Execute(null);
             TreeTestScreen.Settle(window!);
 
             Assert.True(Pick(first, second, active).MenuAddPanel.IsOpen);
@@ -100,7 +100,7 @@ namespace CMiX.Studio.Avalonia.Tests
             TreeTestScreen.Settle(window!);
             FocusView(Pick(first, second, active), scene.NodeA);
 
-            scene.Tree.OpenMenuUnderPointerCommand.Execute(null);
+            scene.Tree.OpenMenuAtTargetCommand.Execute(null);
             TreeTestScreen.Settle(window!);
 
             var menu = TreeViewOf(Pick(first, second, active)).ContextMenu;
