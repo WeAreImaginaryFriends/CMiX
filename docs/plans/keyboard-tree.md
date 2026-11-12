@@ -122,6 +122,7 @@ The consistency lead asks that the new looks go into CMiX.UI so the Inspector, t
 | 3.6 | Measure the contrast of Grey800 and Grey700 on the popup card. Make one shortcut text look in tooltips, menus and `MainMenu.axaml:55`. Add `TextBlockKeyCap` with the same text look. | `CMiX.UI` `ToolTip.axaml`, `ContextMenu.axaml`, `MainMenu.axaml`, new key cap theme | Measure the text brush in the three places | 2 |
 | 3.7 | Gallery: add the states Cursor, Cursor and selected, Cursor with panel unfocused and Disabled for list, menu and tree rows; a focused and an unfocused panel; key caps beside tooltip and menu shortcut text. Move the panel focus line style (`PanelFocus.axaml`) into CMiX.UI so the gallery can show it. | `CMiX.UI.Gallery/MainWindow.axaml(.cs)`, `PanelFocus.axaml` | Gallery builds | 2 |
 | 3.8 | The main menu dropdown gets the popup card background, as the context menu (owner choice: the shortcut grey reaches only 3.33:1 on Grey400). | `CMiX.UI` `Menu.axaml` | Measure the dropdown background and the shortcut contrast (4.5:1 or more) | 2 |
+| 3.9 | The rows of the main menu dropdown use `RowHoverBrush` for hover and the keyboard row, as the context menu (rule: hover = hover fill). Today they use the full accent fill, where the shortcut text has about 1.3:1. The top bar items keep their accent. Found in step 3.8. | `CMiX.UI` `Menu.axaml` | Measure the hover and keyboard row fill; shortcut contrast on it | 2 |
 
 ### Phase 4: Into and out of the tree
 
@@ -166,7 +167,7 @@ Isolate one branch (Shift+F, header badge "Isolated, Esc back"), M "Move to...",
 |---|---|---|---|---|
 | 1 | 1.2, 1.5, 1.6, 1.7 | 1.3, 1.4, 1.8 | 1.9, 1.10 | 1.1 (the rename goes last, so no branch keeps the old names) |
 | 2 | 2.1, 2.2 | 2.3 | | |
-| 3 | 3.1, 3.5, 3.6 | 3.2, 3.3 | 3.4, 3.8 | 3.7 |
+| 3 | 3.1, 3.5, 3.6 | 3.2, 3.3 | 3.4, 3.8, 3.9 | 3.7 |
 | 4 | 4.1, 4.2 | 4.3 | | |
 | 5 | 5.1, 5.2, 5.5 | 5.3, 5.4, 5.6 | | |
 | 6 | 6.1, 6.2, 6.4 | 6.3 | | |
