@@ -125,7 +125,61 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             CloseLevelCommand = new RelayCommand(CloseLevel, CanRunTreeKey);
             OpenLevelCommand = new RelayCommand(OpenLevel, CanRunTreeKey);
             CollapseAllCommand = new RelayCommand(CollapseAll, CanRunTreeKey);
+            ToggleHideTargetCommand = new RelayCommand(() => ToggleHideTarget(), () => CanRunTreeKey() && TargetNode?.HiddenValue != null);
+            ShowAllCommand = new RelayCommand(() => ShowAll(), CanRunTreeKey);
         }
+
+        // ---------------------------------------------------------------- hide and show
+        // These keys write the value of the eye toggle of a row (TreeNode.HiddenValue), as a click on the eye does. So the key and the
+        // click write the same undo step (ValueChangedCommand) and send the same wire message (MessageValueChanged).
+
+        // Hides or shows the target row (Tree.Hide). For a group row it is the hide toggle of the whole list.
+        public IRelayCommand ToggleHideTargetCommand { get; }
+
+        // Shows every hidden row of the tree as one undo step (Tree.ShowAll).
+        public IRelayCommand ShowAllCommand { get; }
+
+        // Toggles the hide value of the target row and shows a toast with the undo key. Nothing changes during a drag, with no
+        // target, or on a row that has no visibility. Returns false then.
+        public bool ToggleHideTarget()
+        {
+            if (IsDragging || TargetNode is not { HiddenValue: { } value } node)
+                return false;
+
+            value.Value = !value.Value;
+            toasts?.ShowWithUndo(value.Value ? $"Hidden: {node.Header}" : $"Shown: {node.Header}");
+            return true;
+        }
+
+        // Shows every hidden row of the tree, also the rows under a closed row, as one undo step, and shows a toast with the undo
+        // key. With no hidden row, or during a drag, nothing changes: no undo step and no toast. Returns false then.
+        public bool ShowAll()
+        {
+            if (IsDragging)
+                return false;
+
+            var hidden = AllRows(Roots).Select(node => node.HiddenValue).Where(value => value is { Value: true }).Distinct().ToList();
+            if (hidden.Count == 0)
+                return false;
+
+            undoManager.BeginCapture();
+            try
+            {
+                foreach (var value in hidden)
+                    value!.Value = false;
+            }
+            finally
+            {
+                undoManager.EndCapture();
+            }
+
+            toasts?.ShowWithUndo("All rows shown");
+            return true;
+        }
+
+        // Every row under these rows, at every depth, in tree order.
+        private static IEnumerable<TreeNode> AllRows(IEnumerable<TreeNode> nodes) =>
+            nodes.SelectMany(node => new[] { node }.Concat(AllRows(node.Children)));
 
         // ---------------------------------------------------------------- open and close by branch and by level
         // These keys change only the open state of the rows: no undo step and no wire message, as Tree.Expand. A row that closes over

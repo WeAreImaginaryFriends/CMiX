@@ -407,6 +407,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             _ => false
         };
 
+        // The value that the eye toggle of the row writes: true hides the row. Null for a row that has no visibility.
+        public GenericValue<bool>? HiddenValue => hiddenSource as GenericValue<bool>;
+
         // True when any row above this one is hidden: a hidden list, or a hidden item such as a layer or a composition. The visibility toggles of the
         // row look greyed then, as if they were disabled, but they work: the row keeps its own visibility, and it shows again with its parents.
         public bool IsUnderHiddenParent
