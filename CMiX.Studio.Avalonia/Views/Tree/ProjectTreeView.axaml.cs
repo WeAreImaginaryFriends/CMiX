@@ -40,6 +40,9 @@ namespace CMiX.Studio.Avalonia.Views
         private readonly TreeRowDrag rowDrag;
         private readonly TreeTooltips tooltips;
 
+        // What this view tells the tree and does for it (see ProjectTree.AttachView).
+        private readonly TreeViewHooks hooks;
+
         // The tooltips of the rows. A test reads it.
         internal TreeTooltips Tooltips => tooltips;
 
@@ -73,6 +76,15 @@ namespace CMiX.Studio.Avalonia.Views
             marker = new TreeDropMarker(rowIndex);
             scrollAnchor = new TreeScrollAnchor(treeView, rowIndex, () => ScrollerOfTree);
             rowDrag = new TreeRowDrag(treeView, () => DataContext as ProjectTree, marker, () => AutoScroller, scrollAnchor, () => ScrollerOfTree);
+            hooks = new TreeViewHooks
+            {
+                IsPointerOverTree = () => IsPointerOver,
+                IsTreeFocused = () => IsKeyboardFocusWithin,
+                IsTextBoxFocused = () => IsInTextBox(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement()),
+                ToggleDragRow = rowDrag.ToggleHovered,
+                CancelDrag = rowDrag.Cancel,
+                CloseRowsInView = OnCloseRowsInView
+            };
 
             DragDrop.SetAllowDrop(treeView, true);
             treeView.AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
@@ -321,13 +333,8 @@ namespace CMiX.Studio.Avalonia.Views
             watched.AddRequested += OnAddRequested;
             watched.MenuRequested += OnMenuRequested;
             watched.CollapseOthersRequested += OnCollapseOthersRequested;
-            watched.IsPointerOverTree = () => IsPointerOver;
-            watched.IsTextBoxFocused = () => IsInTextBox(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement());
-            watched.ToggleDragRow = rowDrag.ToggleHovered;
-            watched.IsTreeFocused = () => IsKeyboardFocusWithin;
             watched.TreeFocusRequested += OnTreeFocusRequested;
-            watched.CancelDrag = rowDrag.Cancel;
-            watched.CloseRowsInView = OnCloseRowsInView;
+            watched.AttachView(hooks);
         }
 
         private void Unwatch()
@@ -340,13 +347,8 @@ namespace CMiX.Studio.Avalonia.Views
             watched.AddRequested -= OnAddRequested;
             watched.MenuRequested -= OnMenuRequested;
             watched.CollapseOthersRequested -= OnCollapseOthersRequested;
-            watched.IsPointerOverTree = () => false;
-            watched.IsTextBoxFocused = () => false;
-            watched.ToggleDragRow = () => { };
-            watched.IsTreeFocused = () => false;
             watched.TreeFocusRequested -= OnTreeFocusRequested;
-            watched.CancelDrag = () => { };
-            watched.CloseRowsInView = (_, close) => close();
+            watched.DetachView(hooks);
         }
 
         // The focus goes to a row: the selected row, else the row of the arrow keys, else the first row (see ProjectTree.FocusTree).

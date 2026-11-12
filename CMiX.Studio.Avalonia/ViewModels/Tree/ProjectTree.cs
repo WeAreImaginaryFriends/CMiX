@@ -52,6 +52,18 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             root.AddGroups(project);
 
             selectedAdds = GetAddChoices(null);
+            IsPointerOverTree = () => views.Exists(view => view.IsPointerOverTree());
+            IsTreeFocused = () => views.Exists(view => view.IsTreeFocused());
+            IsTextBoxFocused = () => views.Exists(view => view.IsTextBoxFocused());
+            ToggleDragRow = () => { foreach (var view in views.ToArray()) view.ToggleDragRow(); };
+            CancelDrag = () => { foreach (var view in views.ToArray()) view.CancelDrag(); };
+            CloseRowsInView = (node, close) =>
+            {
+                if (ActiveView() is { } view)
+                    view.CloseRowsInView(node, close);
+                else
+                    close();
+            };
             AddItemCommand = new RelayCommand<TreeAdd?>(add => add?.Execute?.Invoke(), add => add == null ? HasAdds : add.Execute != null);
             DuplicateItemCommand = new RelayCommand(
                 () => { if (SelectedPlace() is var (list, item, _)) list.DuplicateItem(item); },
@@ -152,9 +164,26 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 yield return parent;
         }
 
-        // The view keeps the rows still on the screen while rows close: the row of the node when it is in view, else the first row in
-        // view. The view runs the close and returns the rows that it closed. Without a view, the close only runs.
-        public Action<TreeNode?, Func<IReadOnlyList<TreeNode>>> CloseRowsInView { get; set; } = (_, close) => close();
+        // The hooks of the views that show the tree. The two side panels can show the same tree.
+        private readonly List<TreeViewHooks> views = new();
+
+        // A view gives its hooks when it shows the tree, and takes them back when it goes. A view that goes takes back only its own
+        // hooks, so the other view keeps working. The hooks of the tree (IsPointerOverTree, IsTreeFocused and the others) ask every view.
+        public void AttachView(TreeViewHooks view)
+        {
+            if (!views.Contains(view))
+                views.Add(view);
+        }
+
+        public void DetachView(TreeViewHooks view) => views.Remove(view);
+
+        // The view that does a job for one view only: the view with the focus, else the view under the pointer, else the first view.
+        private TreeViewHooks? ActiveView() =>
+            views.Find(view => view.IsTreeFocused()) ?? views.Find(view => view.IsPointerOverTree()) ?? (views.Count > 0 ? views[0] : null);
+
+        // The active view keeps the rows still on the screen while rows close: the row of the node when it is in view, else the first
+        // row in view. The view runs the close and returns the rows that it closed. Without a view, the close only runs.
+        public Action<TreeNode?, Func<IReadOnlyList<TreeNode>>> CloseRowsInView { get; set; }
 
         // The keys of the main window for the selected row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown). A key
         // runs its command while the pointer is over the tree or the tree has the focus, so a click on another control does not stop it.
@@ -183,8 +212,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // tree, so the key works from anywhere over the tree and does nothing over the rest of the window.
         public IRelayCommand AddUnderPointerCommand { get; }
 
-        // The view tells if the pointer is over the tree.
-        public Func<bool> IsPointerOverTree { get; set; } = () => false;
+        // True when the pointer is over a view of the tree.
+        public Func<bool> IsPointerOverTree { get; set; }
 
         // The view handles this request: it opens the Add panel.
         public event EventHandler? AddRequested;
@@ -198,13 +227,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // During a drag of a row, it acts on the row under the pointer instead (see ToggleDragRow).
         public IRelayCommand ToggleExpandUnderPointerCommand { get; }
 
-        // The view opens or closes the row under the pointer during a drag (see TreeRowDrag.ToggleHovered).
-        public Action ToggleDragRow { get; set; } = () => { };
+        // The view of the drag opens or closes the row under the pointer (see TreeRowDrag.ToggleHovered).
+        public Action ToggleDragRow { get; set; }
 
         private TreeNode? ExpandTarget() => (softSelectedNode ?? selectedNode) is { Children.Count: > 0 } node ? node : null;
 
-        // The view tells if a text box has the focus.
-        public Func<bool> IsTextBoxFocused { get; set; } = () => false;
+        // True when a text box has the focus.
+        public Func<bool> IsTextBoxFocused { get; set; }
 
         // The view handles this request: it opens the menu.
         public event EventHandler? MenuRequested;
@@ -220,8 +249,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 SearchFocusRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        // The view tells if the tree or one of its controls has the focus.
-        public Func<bool> IsTreeFocused { get; set; } = () => false;
+        // True when a view of the tree or one of its controls has the focus.
+        public Func<bool> IsTreeFocused { get; set; }
 
         // The search box handles this request: it takes the focus and selects its text.
         public event EventHandler? SearchFocusRequested;
@@ -231,8 +260,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public event EventHandler? TreeFocusRequested;
 
-        // The tree view ends a drag of a row without a drop, for example on Escape in the search box (see TreeRowDrag.Cancel).
-        public Action CancelDrag { get; set; } = () => { };
+        // The view of the drag ends a drag of a row without a drop, for example on Escape in the search box (see TreeRowDrag.Cancel).
+        public Action CancelDrag { get; set; }
 
         // Selects the next match of the search in the order of the tree, or the match before it with a negative step. The selection
         // goes round at the ends. Nothing selected, or a selected row that does not match: the first match, or the last one going back.
