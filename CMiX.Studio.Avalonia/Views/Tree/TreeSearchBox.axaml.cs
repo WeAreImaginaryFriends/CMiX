@@ -43,13 +43,23 @@ namespace CMiX.Studio.Avalonia.Views
                 watched.SearchFocusRequested += OnSearchFocusRequested;
         }
 
-        // The focus waits for the layout, in case the panel shows the tree only now.
-        private void OnSearchFocusRequested(object? sender, EventArgs e) =>
+        // The focus waits for the layout, in case the panel shows the tree only now. With two panels that show the tree, only the box of
+        // the panel of the active view answers (see ProjectTreeView.IsActiveView). A box with no tree view in its panel answers.
+        private void OnSearchFocusRequested(object? sender, EventArgs e)
+        {
+            if (TreeViewOfPanel() is { IsActiveView: false })
+                return;
+
             Dispatcher.UIThread.Post(() =>
             {
                 searchField.FocusInput();
                 searchField.SelectAll();
             }, DispatcherPriority.Loaded);
+        }
+
+        // The tree view in the same side panel as this box.
+        private ProjectTreeView? TreeViewOfPanel() =>
+            this.FindAncestorOfType<SidePanelHost>()?.GetVisualDescendants().OfType<ProjectTreeView>().FirstOrDefault();
 
         private void OnFieldKeyDown(object? sender, KeyEventArgs e)
         {

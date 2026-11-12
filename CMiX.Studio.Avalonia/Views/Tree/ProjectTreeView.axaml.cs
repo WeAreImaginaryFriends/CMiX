@@ -253,7 +253,7 @@ namespace CMiX.Studio.Avalonia.Views
         // With no target it holds what the project takes, a composition. Nothing is added until the user picks an entry of the panel.
         private void OnAddRequested(object? sender, EventArgs e)
         {
-            if (DataContext is not ProjectTree tree)
+            if (!IsActiveView || DataContext is not ProjectTree tree)
                 return;
 
             // The panel opens with the middle of its search field under the pointer.
@@ -264,7 +264,7 @@ namespace CMiX.Studio.Avalonia.Views
         // of the project. A target row that is not shown (its parent is collapsed) opens no menu.
         private void OnMenuRequested(object? sender, EventArgs e)
         {
-            if (DataContext is not ProjectTree tree)
+            if (!IsActiveView || DataContext is not ProjectTree tree)
                 return;
 
             if (tree.TargetNode is not { } node)
@@ -278,7 +278,7 @@ namespace CMiX.Studio.Avalonia.Views
         // away under a parent. A target row out of view is brought into view after the close.
         private void OnCollapseOthersRequested(object? sender, EventArgs e)
         {
-            if (DataContext is not ProjectTree tree || tree.TargetNode is not { } target)
+            if (!IsActiveView || DataContext is not ProjectTree tree || tree.TargetNode is not { } target)
                 return;
 
             var anchor = scrollAnchor.CaptureRow(target);
@@ -309,7 +309,7 @@ namespace CMiX.Studio.Avalonia.Views
         // Starts the rename of the row of the node: the name box of the row goes to edit mode.
         private void OnRenameRequested(object? sender, TreeNode node)
         {
-            if (rowIndex.FindItem(node) is not { } item || TreeRows.RowBorderOf(item) is not { } row)
+            if (!IsActiveView || rowIndex.FindItem(node) is not { } item || TreeRows.RowBorderOf(item) is not { } row)
                 return;
 
             if (row.GetVisualDescendants().OfType<TextBoxEditable>().FirstOrDefault() is { } box)
@@ -336,6 +336,10 @@ namespace CMiX.Studio.Avalonia.Views
             if (attached)
                 Watch();
         }
+
+        // True when this view answers the requests of the tree (see ProjectTree.IsActiveView). Both side panels can show the tree, and
+        // one request must have one answer. The search box of the panel asks it too.
+        internal bool IsActiveView => watched?.IsActiveView(hooks) == true;
 
         private void Watch()
         {
@@ -368,7 +372,7 @@ namespace CMiX.Studio.Avalonia.Views
         // The focus goes to a row: the target row, else the first row (see ProjectTree.FocusTree).
         private void OnTreeFocusRequested(object? sender, EventArgs e)
         {
-            if (watched is not { } tree)
+            if (!IsActiveView || watched is not { } tree)
                 return;
 
             var node = tree.TargetNode ?? tree.VisibleNodes().FirstOrDefault();

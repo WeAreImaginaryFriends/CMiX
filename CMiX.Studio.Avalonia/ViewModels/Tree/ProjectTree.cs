@@ -116,7 +116,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // runs CollapseOthers itself (see CollapseOthersRequested), so it can keep the row still on the screen while the rows close.
         public IRelayCommand CollapseOthersCommand { get; }
 
-        // The view handles this request: it runs CollapseOthers and keeps the target row in view.
+        // The active view handles this request (see IsActiveView): it runs CollapseOthers and keeps the target row in view.
         public event EventHandler? CollapseOthersRequested;
 
         // The row that the commands of the tree act on: the row of the arrow keys, else the selected row. Null when there is none.
@@ -182,6 +182,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private TreeViewHooks? ActiveView() =>
             views.Find(view => view.IsTreeFocused()) ?? views.Find(view => view.IsPointerOverTree()) ?? (views.Count > 0 ? views[0] : null);
 
+        // True when the view of these hooks is the active view (see ActiveView). A view answers a request (RenameRequested,
+        // AddRequested, MenuRequested, CollapseOthersRequested, TreeFocusRequested, SearchFocusRequested) only when this is true,
+        // so with two views one request opens one menu.
+        public bool IsActiveView(TreeViewHooks view) => ReferenceEquals(ActiveView(), view);
+
         // The active view keeps the rows still on the screen while rows close: the row of the node when it is in view, else the first
         // row in view. The view runs the close and returns the rows that it closed. Without a view, the close only runs.
         public Action<TreeNode?, Func<IReadOnlyList<TreeNode>>> CloseRowsInView { get; set; }
@@ -216,7 +221,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // True when the pointer is over a view of the tree.
         public Func<bool> IsPointerOverTree { get; set; }
 
-        // The view handles this request: it opens the Add panel.
+        // The active view handles this request (see IsActiveView): it opens the Add panel.
         public event EventHandler? AddRequested;
 
         // Opens the menu of the target row at the pointer (Tree.Menu), or the menu of the project with no target. The command
@@ -234,7 +239,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // True when a text box has the focus.
         public Func<bool> IsTextBoxFocused { get; set; }
 
-        // The view handles this request: it opens the menu.
+        // The active view handles this request (see IsActiveView): it opens the menu.
         public event EventHandler? MenuRequested;
 
         // Gives the search box of the tree the focus (Tree.Search). The box is always shown, in the bar of the panel (see TreeSearchBox).
@@ -251,10 +256,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // True when a view of the tree or one of its controls has the focus.
         public Func<bool> IsTreeFocused { get; set; }
 
-        // The search box handles this request: it takes the focus and selects its text.
+        // The search box of the panel of the active view handles this request: it takes the focus and selects its text.
         public event EventHandler? SearchFocusRequested;
 
-        // Gives the focus back to the rows of the tree, for example after Escape in an empty search box. The tree view handles it.
+        // Gives the focus back to the rows of the tree, for example after Escape in an empty search box. The active view handles it.
         public void FocusTree() => TreeFocusRequested?.Invoke(this, EventArgs.Empty);
 
         public event EventHandler? TreeFocusRequested;
@@ -286,7 +291,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // Selects the soft selected node and its chain in the lists.
         public IRelayCommand OpenSelectedCommand { get; }
 
-        // The view handles this request: it starts the rename of the row of the node.
+        // The active view handles this request (see IsActiveView): it starts the rename of the row of the node.
         public event EventHandler<TreeNode>? RenameRequested;
 
         private TreeNode? softSelectedNode;
