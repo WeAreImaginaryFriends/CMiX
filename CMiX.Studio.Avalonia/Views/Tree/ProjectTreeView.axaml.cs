@@ -81,6 +81,7 @@ namespace CMiX.Studio.Avalonia.Views
                 IsPointerOverTree = () => IsPointerOver,
                 IsTreeFocused = () => IsKeyboardFocusWithin,
                 IsTextBoxFocused = () => IsInTextBox(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement()),
+                IsFocusInOtherPanel = IsFocusInOtherPanel,
                 ToggleDragRow = rowDrag.ToggleHovered,
                 CancelDrag = rowDrag.Cancel,
                 CloseRowsInView = OnCloseRowsInView
@@ -323,6 +324,18 @@ namespace CMiX.Studio.Avalonia.Views
                     return true;
 
             return false;
+        }
+
+        // True when a control outside the panel of this view has the focus (see ProjectTree.IsFocusInOtherPanel). The panel is the
+        // side panel that shows the view, with its bar. The focus on the window itself, or on no control, is in no panel.
+        private bool IsFocusInOtherPanel()
+        {
+            var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
+            if (focused is null or TopLevel)
+                return false;
+
+            Visual panel = this.FindAncestorOfType<SidePanelHost>() is { } host ? host : this;
+            return focused is not Visual visual || !ReferenceEquals(visual, panel) && !panel.IsVisualAncestorOf(visual);
         }
 
         protected override void OnDataContextChanged(EventArgs e)

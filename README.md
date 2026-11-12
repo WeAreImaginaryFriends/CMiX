@@ -94,7 +94,7 @@ The panel opens in three ways:
 
 - The Add row of the menu of a row. The panel opens to the right of the menu, with its search field on the Add row.
 - The Add button of the toolbar over the tree. The panel opens with the middle of its search field under the pointer and names the target row. A click from the keyboard opens it under the button. With nothing selected, the panel offers a composition.
-- The shortcut `Tree.Add` (Shift+A) opens the Add panel of the target row with the middle of its search field under the pointer, with the title Add. With nothing selected, the panel offers a composition. It works while the pointer is over the tree, whatever has the focus, and does nothing when the pointer is elsewhere. The panel shows every category open: a category is a name, with no expander (`GroupedSearchList.Collapsible`).
+- The shortcut `Tree.Add` (Shift+A) opens the Add panel of the target row with the middle of its search field under the pointer, with the title Add. With nothing selected, the panel offers a composition. It works on the condition of every tree shortcut (see Keyboard shortcuts). The panel shows every category open: a category is a name, with no expander (`GroupedSearchList.Collapsible`).
 
 The menu of a row opens with its Add row under the pointer. After the user picks another row of a menu, such as Duplicate, the next menu opens with that row under the pointer.
 
@@ -102,7 +102,7 @@ Every panel ends with the group Project, so a composition can be added under any
 
 ### Searching the tree
 
-The search field is always shown while the panel shows the tree: it is in the bar of the panel, at the right, on the line of the button that picks what the panel shows. `Tree.Search` (Ctrl+F), while the pointer is over the tree or the tree has the focus, puts the focus in the field and selects its text. A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. While the field holds text, a cross inside the field at its right empties it.
+The search field is always shown while the panel shows the tree: it is in the bar of the panel, at the right, on the line of the button that picks what the panel shows. `Tree.Search` (Ctrl+F) puts the focus in the field and selects its text. It works on the condition of every tree shortcut (see Keyboard shortcuts). A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. While the field holds text, a cross inside the field at its right empties it.
 
 While the search runs, the parents of every match open, so every match is in sight. When the text is empty again, the rows that the search opened close again. If a row is selected then, its parents stay open and the row keeps its state, so you can go on with it. A row that you open or close during the search keeps your choice.
 
@@ -145,7 +145,7 @@ The file maps a command name to a gesture:
 
 The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut.
 
-`Tree.Add`, `Tree.Menu`, `Tree.Expand` and `Tree.CollapseOthers` work while the pointer is over the tree, whatever has the focus, but not while a text box has the focus. `Tree.Rename`, `Tree.Remove`, `Tree.Duplicate`, `Tree.MoveUp` and `Tree.MoveDown` work while the pointer is over the tree or the tree has the focus. They never work while a text box has the focus or while a row is dragged. `Tree.Open`, Enter and the arrow keys need the focus in the tree. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D, and a `Tree.Rename` of F2 becomes Ctrl+R.
+Every tree shortcut but `Tree.Open` has one condition. The keyboard focus comes first: the shortcut works while the tree has the focus, with the pointer anywhere. It also works while the pointer is over the tree and no other panel has the focus, for example after a click on an empty part of the window. While a control of another panel has the focus, the pointer over the tree is not enough: click the tree first. No tree shortcut works while a text box has the focus. No tree shortcut works while a row is dragged, but `Tree.Expand`, which then opens or closes the row under the pointer. `Tree.Open`, Enter and the arrow keys need the focus in the tree. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D, and a `Tree.Rename` of F2 becomes Ctrl+R.
 
 The Shortcuts section of the Settings tab edits the shortcuts and saves each change to the file at once, and a missing file is created on save. A red dot marks a gesture that two commands of one scope have, and its tooltip names the other command.
 

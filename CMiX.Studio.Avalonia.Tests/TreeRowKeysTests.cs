@@ -18,8 +18,8 @@ using Layer = CMiX.Core.Compositing.Layer;
 namespace CMiX.Studio.Avalonia.Tests
 {
     // The keys of the selected row of the tree (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown) are key bindings of
-    // the main window. They run while the pointer is over the tree or the tree has the focus, so a click on another control does not stop
-    // them. They do not run while a text box has the focus, and not during a drag of a row.
+    // the main window. Every tree key has one condition (ProjectTree.CanRunTreeKey): the tree has the focus, or the pointer is over the
+    // tree and no other panel has the focus. No key runs while a text box has the focus, and not during a drag of a row.
     public class TreeRowKeysTests : IDisposable
     {
         private sealed record Screen(Views.MainWindow Window, MainViewModel ViewModel, ProjectTreeView View)
@@ -355,6 +355,123 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Same(screen.LayerNode(0).Item, screen.Layers[0]);
             Assert.False(IsRenaming(screen, screen.LayerNode(0)));
             screen.Tree.EndDrag();
+        }
+
+        // ---------------------------------------------------------------- the one condition of every tree key
+
+        public enum TreeKey { Expand, Menu, Add, Remove, Rename, Search }
+
+        public enum Place { FocusInTree, PointerOverWithFocusNowhere, PointerOverWithFocusInOtherPanel, TextBoxFocused, Drag, PointerBesideWithFocusNowhere }
+
+        // A button of the other side panel. A button takes no letter key.
+        private static void FocusAButtonOfTheOtherPanel(Screen screen)
+        {
+            var panel = screen.View.FindAncestorOfType<SidePanelHost>()!;
+            var button = screen.Window.GetVisualDescendants().OfType<Button>().First(candidate =>
+                candidate.Focusable && candidate.IsEffectivelyVisible && candidate.IsEffectivelyEnabled
+                && candidate.FindAncestorOfType<SidePanelHost>() is { } host && !ReferenceEquals(host, panel));
+            button.Focus();
+            Settle(screen.Window);
+            Assert.True(button.IsFocused);
+            Assert.True(screen.Tree.IsFocusInOtherPanel());
+        }
+
+        // Counts the runs of each tree key. The target row is the first layer. It has children, so Tree.Expand changes it.
+        private sealed class KeyRuns
+        {
+            private readonly Screen screen;
+            private readonly bool expanded;
+            private readonly int layers;
+            private int menus, adds, renames, searches;
+
+            public KeyRuns(Screen screen)
+            {
+                this.screen = screen;
+                expanded = screen.LayerNode(0).IsExpanded;
+                layers = screen.Layers.Count;
+                screen.Tree.MenuRequested += (_, _) => menus++;
+                screen.Tree.AddRequested += (_, _) => adds++;
+                screen.Tree.RenameRequested += (_, _) => renames++;
+                screen.Tree.SearchFocusRequested += (_, _) => searches++;
+            }
+
+            public bool Ran(TreeKey key) => key switch
+            {
+                TreeKey.Expand => screen.LayerNode(0).IsExpanded != expanded,
+                TreeKey.Menu => menus == 1,
+                TreeKey.Add => adds == 1,
+                TreeKey.Remove => screen.Layers.Count == layers - 1,
+                TreeKey.Rename => renames == 1,
+                _ => searches == 1
+            };
+        }
+
+        private static void Press(Screen screen, TreeKey key)
+        {
+            var (physical, modifiers) = key switch
+            {
+                TreeKey.Expand => (PhysicalKey.E, RawInputModifiers.None),
+                TreeKey.Menu => (PhysicalKey.W, RawInputModifiers.None),
+                TreeKey.Add => (PhysicalKey.A, RawInputModifiers.Shift),
+                TreeKey.Remove => (PhysicalKey.Delete, RawInputModifiers.None),
+                TreeKey.Rename => (PhysicalKey.R, RawInputModifiers.Control),
+                _ => (PhysicalKey.F, RawInputModifiers.Control)
+            };
+            Press(screen, physical, modifiers);
+        }
+
+        public static IEnumerable<object[]> KeysAndPlaces() =>
+            from key in Enum.GetValues<TreeKey>()
+            from place in Enum.GetValues<Place>()
+            select new object[] { key, place };
+
+        // The focus comes first: a key runs with the focus in the tree and the pointer anywhere. The pointer over the tree is enough
+        // only while no other panel has the focus. During a drag, only Tree.Expand runs, and it goes to the row under the pointer.
+        [AvaloniaTheory]
+        [MemberData(nameof(KeysAndPlaces))]
+        public void Press_ATreeKey_RunsOnTheOneConditionOfTheTreeKeys(TreeKey key, Place place)
+        {
+            var screen = Show();
+            var dragToggles = 0;
+            switch (place)
+            {
+                case Place.FocusInTree:
+                    PointBesideTree(screen);
+                    FocusTheTree(screen);
+                    break;
+                case Place.PointerOverWithFocusNowhere:
+                    PointOnTree(screen);
+                    Assert.False(screen.Tree.IsFocusInOtherPanel());
+                    break;
+                case Place.PointerOverWithFocusInOtherPanel:
+                    PointOnTree(screen);
+                    FocusAButtonOfTheOtherPanel(screen);
+                    break;
+                case Place.TextBoxFocused:
+                    PointOnTree(screen);
+                    FocusATextBoxOutsideTheTree(screen);
+                    break;
+                case Place.Drag:
+                    PointOnTree(screen);
+                    screen.Tree.AttachView(new TreeViewHooks { ToggleDragRow = () => dragToggles++ });
+                    screen.Tree.BeginDrag(screen.LayerNode(1));
+                    break;
+                default:
+                    PointBesideTree(screen);
+                    break;
+            }
+
+            var runs = new KeyRuns(screen);
+
+            Press(screen, key);
+
+            var expected = place is Place.FocusInTree or Place.PointerOverWithFocusNowhere;
+            Assert.Equal(expected, runs.Ran(key));
+            if (place == Place.Drag)
+            {
+                Assert.Equal(key == TreeKey.Expand ? 1 : 0, dragToggles);
+                screen.Tree.EndDrag();
+            }
         }
 
         // ---------------------------------------------------------------- the bindings

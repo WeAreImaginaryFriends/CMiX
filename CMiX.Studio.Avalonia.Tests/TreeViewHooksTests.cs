@@ -53,6 +53,22 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(tree.IsPointerOverTree());
         }
 
+        // The focus in the panel of one view is not in another panel, so every view must say that the focus is elsewhere.
+        [Fact]
+        public void IsFocusInOtherPanel_TwoViews_IsTrueOnlyWhenEveryViewSaysSo()
+        {
+            var tree = CreateScene().Tree;
+            var focusInSecond = true;
+            Assert.False(tree.IsFocusInOtherPanel());
+            tree.AttachView(new TreeViewHooks { IsFocusInOtherPanel = () => true });
+            tree.AttachView(new TreeViewHooks { IsFocusInOtherPanel = () => !focusInSecond });
+
+            Assert.False(tree.IsFocusInOtherPanel());
+
+            focusInSecond = false;
+            Assert.True(tree.IsFocusInOtherPanel());
+        }
+
         [Fact]
         public void DetachView_LastView_TheHooksAnswerNo()
         {

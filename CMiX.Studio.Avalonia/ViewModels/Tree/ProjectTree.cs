@@ -55,6 +55,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             IsPointerOverTree = () => views.Exists(view => view.IsPointerOverTree());
             IsTreeFocused = () => views.Exists(view => view.IsTreeFocused());
             IsTextBoxFocused = () => views.Exists(view => view.IsTextBoxFocused());
+            IsFocusInOtherPanel = () => views.Count > 0 && views.TrueForAll(view => view.IsFocusInOtherPanel());
             ToggleDragRow = () => { foreach (var view in views.ToArray()) view.ToggleDragRow(); };
             CancelDrag = () => { foreach (var view in views.ToArray()) view.CancelDrag(); };
             CloseRowsInView = (node, close) =>
@@ -79,7 +80,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 () => TargetPlace() != null);
             AddUnderPointerCommand = new RelayCommand(
                 () => AddRequested?.Invoke(this, EventArgs.Empty),
-                () => IsPointerOverTree() && !IsTextBoxFocused());
+                CanRunTreeKey);
             ToggleExpandUnderPointerCommand = new RelayCommand(
                 () =>
                 {
@@ -88,13 +89,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                     else if (TargetNode is { Children.Count: > 0 } node)
                         node.IsExpanded = !node.IsExpanded;
                 },
-                () => !IsTextBoxFocused() && (IsDragging || IsPointerOverTree() && TargetNode is { Children.Count: > 0 }));
+                () => IsDragging ? !IsTextBoxFocused() : CanRunTreeKey() && TargetNode is { Children.Count: > 0 });
             OpenMenuUnderPointerCommand = new RelayCommand(
                 () => MenuRequested?.Invoke(this, EventArgs.Empty),
-                () => IsPointerOverTree() && !IsTextBoxFocused());
+                CanRunTreeKey);
             FocusSearchCommand = new RelayCommand(
                 FocusSearch,
-                () => !IsDragging && (IsPointerOverTree() || IsTreeFocused()));
+                CanRunTreeKey);
             RenameSelectedCommand = new RelayCommand(
                 () => { if (TargetNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => TargetNode?.Item != null);
@@ -192,17 +193,25 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public Action<TreeNode?, Func<IReadOnlyList<TreeNode>>> CloseRowsInView { get; set; }
 
         // The keys of the main window for the target row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown). A key
-        // runs its command while the pointer is over the tree or the tree has the focus, so a click on another control does not stop it.
-        // It does not run while a text box has the focus: Ctrl+R and the key down of Shift+D do not change the text, so the text box does
-        // not take them. It does not run during a drag of a row. The buttons of the toolbar use the commands without these conditions.
+        // runs its command on the condition of every tree key (see CanRunTreeKey). The buttons of the toolbar use the commands without
+        // this condition.
         public IRelayCommand RenameSelectedByKeyCommand { get; }
         public IRelayCommand RemoveItemByKeyCommand { get; }
         public IRelayCommand DuplicateItemByKeyCommand { get; }
         public IRelayCommand MoveItemUpByKeyCommand { get; }
         public IRelayCommand MoveItemDownByKeyCommand { get; }
 
-        // A key binding checks the command when the key is pressed, so the conditions need no change event.
-        private bool CanRunTreeKey() => !IsDragging && !IsTextBoxFocused() && (IsPointerOverTree() || IsTreeFocused());
+        // The one condition of every tree key of the main window. The focus comes first: a key runs while the tree has the focus, with
+        // the pointer anywhere. It also runs while the pointer is over the tree and no other panel has the focus. It does not run while
+        // a text box has the focus: Ctrl+R and the key down of Shift+D do not change the text, so the text box does not take them. It
+        // does not run during a drag of a row. A key binding checks the command when the key is pressed, so the condition needs no
+        // change event.
+        private bool CanRunTreeKey() =>
+            !IsDragging && !IsTextBoxFocused() && (IsTreeFocused() || IsPointerOverTree() && !IsFocusInOtherPanel());
+
+        // True when a control outside the panel of the tree has the focus. The focus on the window itself, or on no control, is not
+        // the focus in another panel. With two views of the tree, the focus in the panel of one view is not in another panel.
+        public Func<bool> IsFocusInOtherPanel { get; set; }
 
         private IRelayCommand ByKey(IRelayCommand command) =>
             new RelayCommand(() => command.Execute(null), () => CanRunTreeKey() && command.CanExecute(null));
@@ -214,8 +223,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public ShortcutMap Shortcuts { get; }
 
         // Opens the Add panel of the target row at the pointer (Tree.Add). With no target, the panel offers a composition. The panel
-        // adds nothing at once. The command runs only while the pointer is over the
-        // tree, so the key works from anywhere over the tree and does nothing over the rest of the window.
+        // adds nothing at once. The command has the condition of every tree key (see CanRunTreeKey).
         public IRelayCommand AddUnderPointerCommand { get; }
 
         // True when the pointer is over a view of the tree.
@@ -225,12 +233,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public event EventHandler? AddRequested;
 
         // Opens the menu of the target row at the pointer (Tree.Menu), or the menu of the project with no target. The command
-        // runs only while the pointer is over the tree, and not while a text box has the focus: the key is a plain letter.
+        // has the condition of every tree key (see CanRunTreeKey).
         public IRelayCommand OpenMenuUnderPointerCommand { get; }
 
         // Expands or collapses the target row (Tree.Expand). A row with no children does not
-        // change. The command runs only while the pointer is over the tree, and not while a text box has the focus: the key is a plain letter.
-        // During a drag of a row, it acts on the row under the pointer instead (see ToggleDragRow).
+        // change. The command has the condition of every tree key (see CanRunTreeKey). During a drag of a row, it acts on the row under
+        // the pointer instead (see ToggleDragRow), with the focus anywhere but in a text box.
         public IRelayCommand ToggleExpandUnderPointerCommand { get; }
 
         // The view of the drag opens or closes the row under the pointer (see TreeRowDrag.ToggleHovered).
@@ -243,7 +251,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public event EventHandler? MenuRequested;
 
         // Gives the search box of the tree the focus (Tree.Search). The box is always shown, in the bar of the panel (see TreeSearchBox).
-        // The command runs while the pointer is over the tree or the tree has the focus. There is no search during a drag: the command
+        // The command has the condition of every tree key (see CanRunTreeKey). There is no search during a drag: the command
         // cannot run, FocusSearch and SelectMatch do nothing, and the box takes no text.
         public IRelayCommand FocusSearchCommand { get; }
 

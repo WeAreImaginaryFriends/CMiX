@@ -25,10 +25,9 @@
     WindowStartupLocation="Manual">
 
     <!-- The gestures come from the shortcut map (see ShortcutMap). A change of the map changes the binding. The keys of the tree are here,
-         not in the tree, so a click on another control does not stop them. Tree.Add, Tree.Menu and Tree.Expand run while the pointer is over
-         the tree. Tree.Search and the keys of the selected row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown) run
-         while the pointer is over the tree or the tree has the focus. Only Tree.Search also runs while a text box has the focus, because
-         Ctrl+F types nothing (see ProjectTree). -->
+         not in the tree, so they also run with the focus on the window. Every key of the tree has one condition: the tree has the focus,
+         or the pointer is over the tree and no other panel has the focus. No key runs while a text box has the focus. No key runs during
+         a drag of a row, but Tree.Expand, which then acts on the row under the pointer (see ProjectTree.CanRunTreeKey). -->
     <Window.KeyBindings>
         <KeyBinding Command="{Binding UndoCommand}" Gesture="{Binding Shortcuts[Edit.Undo]}" />
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.Redo]}" />

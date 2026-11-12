@@ -16,6 +16,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public Func<bool> IsTextBoxFocused { get; init; } = () => false;
 
+        public Func<bool> IsFocusInOtherPanel { get; init; } = () => false;
+
         public Action ToggleDragRow { get; init; } = () => { };
 
         public Action CancelDrag { get; init; } = () => { };
