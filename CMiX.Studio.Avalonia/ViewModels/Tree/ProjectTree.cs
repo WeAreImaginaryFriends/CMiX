@@ -110,6 +110,114 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             CollapseOthersCommand = new RelayCommand(
                 () => CollapseOthersRequested?.Invoke(this, EventArgs.Empty),
                 () => CanRunTreeKey() && TargetNode != null);
+            ExpandBranchCommand = new RelayCommand(ExpandBranch, () => CanRunTreeKey() && TargetNode is { Children.Count: > 0 });
+            CloseLevelCommand = new RelayCommand(CloseLevel, CanRunTreeKey);
+            OpenLevelCommand = new RelayCommand(OpenLevel, CanRunTreeKey);
+            CollapseAllCommand = new RelayCommand(CollapseAll, CanRunTreeKey);
+        }
+
+        // ---------------------------------------------------------------- open and close by branch and by level
+        // These keys change only the open state of the rows: no undo step and no wire message, as Tree.Expand. A row that closes over
+        // the cursor takes the cursor (see OnRowExpandedChanged). Nothing changes during a drag.
+
+        // Opens the target row and every row under it (Tree.ExpandBranch).
+        public IRelayCommand ExpandBranchCommand { get; }
+
+        // Closes the deepest open level of the rows that show (Tree.CloseLevel).
+        public IRelayCommand CloseLevelCommand { get; }
+
+        // Opens the shallowest closed level of the rows that show (Tree.OpenLevel).
+        public IRelayCommand OpenLevelCommand { get; }
+
+        // Closes every row of the tree (Tree.CollapseAll).
+        public IRelayCommand CollapseAllCommand { get; }
+
+        public void ExpandBranch()
+        {
+            if (IsDragging || TargetNode is not { Children.Count: > 0 } target)
+                return;
+
+            void Open(TreeNode node)
+            {
+                if (node.Children.Count == 0)
+                    return;
+
+                // A row that the search opened is already open. It leaves the search, so the end of the search does not close it.
+                node.IsExpanded = true;
+                searchOpened.Remove(node);
+                foreach (var child in node.Children)
+                    Open(child);
+            }
+
+            Open(target);
+        }
+
+        // Every open row with children at the greatest depth among the rows that show closes.
+        public void CloseLevel()
+        {
+            if (IsDragging)
+                return;
+
+            var open = VisibleNodes().Where(node => node.IsExpanded && node.Children.Count > 0).ToList();
+            if (open.Count == 0)
+                return;
+
+            var depth = open.Max(DepthOf);
+            CloseRows(open.Where(node => DepthOf(node) == depth).ToList());
+        }
+
+        // Every closed row with children at the smallest depth among the rows that show opens.
+        public void OpenLevel()
+        {
+            if (IsDragging)
+                return;
+
+            var closed = VisibleNodes().Where(node => !node.IsExpanded && node.Children.Count > 0).ToList();
+            if (closed.Count == 0)
+                return;
+
+            var depth = closed.Min(DepthOf);
+            foreach (var node in closed.Where(node => DepthOf(node) == depth))
+                node.IsExpanded = true;
+        }
+
+        // Every open row with children closes, also a row under a closed row, so a row opens later with its children closed.
+        public void CollapseAll()
+        {
+            if (IsDragging)
+                return;
+
+            var open = new List<TreeNode>();
+            void Visit(IEnumerable<TreeNode> nodes)
+            {
+                foreach (var node in nodes)
+                {
+                    if (node.IsExpanded && node.Children.Count > 0)
+                        open.Add(node);
+                    Visit(node.Children);
+                }
+            }
+
+            Visit(Roots);
+            if (open.Count > 0)
+                CloseRows(open);
+        }
+
+        // The number of parents of a row. A root row has the depth 0.
+        private int DepthOf(TreeNode node) => ParentsOf(node).Count();
+
+        // Closes the rows in tree order through the active view (see CloseRowsInView). The view keeps still the row that shows the
+        // target after the close: the highest of its parents that closes, else the target itself.
+        private void CloseRows(IReadOnlyList<TreeNode> rows)
+        {
+            var closing = new HashSet<TreeNode>(rows);
+            var anchor = TargetNode is { } target ? ParentsOf(target).LastOrDefault(closing.Contains) ?? target : null;
+            CloseRowsInView(anchor, () =>
+            {
+                foreach (var node in rows)
+                    node.IsExpanded = false;
+                return rows;
+            });
         }
 
         // Closes every row of the tree but the path to the target row (Tree.CollapseOthers, see TargetNode).

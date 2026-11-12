@@ -139,6 +139,10 @@ The file maps a command name to a gesture:
 | `Tree.Menu` | W | Open the menu of the target row under the row |
 | `Tree.Expand` | E | Expand or collapse the target row |
 | `Tree.CollapseOthers` | Alt+E | Collapse others: open the parents of the target row and close every other row |
+| `Tree.ExpandBranch` | Shift+E | Open the target row and every row under it |
+| `Tree.CloseLevel` | Q | Close the deepest open level of the rows that show |
+| `Tree.OpenLevel` | Shift+Q | Open the shallowest closed level of the rows that show |
+| `Tree.CollapseAll` | Shift+Alt+E | Close every row of the tree |
 | `Tree.Search` | Ctrl+F | Put the focus in the search field of the tree |
 | `Tree.Rename` | Ctrl+R | Rename the target row |
 | `Tree.Remove` | Delete | Remove the target item |
@@ -160,6 +164,8 @@ While a text box has the focus, the text box gets the keys first. In the tree, t
 In the tree, the arrow keys, Page Up, Page Down, Home and End move the keyboard focus from row to row. Left collapses a row or goes to its parent. Right expands a row or goes to its first child. The row with the focus has a thin border in the bright color of its kind. The keyboard focus does not select the row: it writes no undo step and sends nothing to the peers. Enter or a click selects the row. The target row is the row of the arrow keys, else the selected row. The tree shortcuts and the toolbar buttons act on the target row.
 
 `Tree.CollapseOthers` (Alt+E) keeps the path to the target row open. Its parents open and every other row closes. The row keeps its own state. The row stays at its place on the screen, or the tree scrolls to it when it was out of view.
+
+`Tree.CloseLevel` (Q) and `Tree.OpenLevel` (Shift+Q) act on the whole tree, one level at a time. Q closes every open row at the greatest depth among the rows that show. Shift+Q opens every closed row at the smallest depth among the rows that show. `Tree.ExpandBranch` (Shift+E) opens the target row and every row under it. `Tree.CollapseAll` (Shift+Alt+E) closes every row. A row that closes over the cursor row takes the cursor. These keys write no undo step and send nothing to the peers.
 
 After a rename or a move by key, the keyboard focus goes back to the row. A click on another control keeps the focus where you clicked.
 

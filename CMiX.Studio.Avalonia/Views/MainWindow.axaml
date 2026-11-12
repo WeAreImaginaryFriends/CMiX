@@ -45,6 +45,10 @@
         <KeyBinding Command="{Binding ProjectTree.OpenMenuAtTargetCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
         <KeyBinding Command="{Binding ProjectTree.ToggleExpandTargetCommand}" Gesture="{Binding Shortcuts[Tree.Expand]}" />
         <KeyBinding Command="{Binding ProjectTree.CollapseOthersCommand}" Gesture="{Binding Shortcuts[Tree.CollapseOthers]}" />
+        <KeyBinding Command="{Binding ProjectTree.ExpandBranchCommand}" Gesture="{Binding Shortcuts[Tree.ExpandBranch]}" />
+        <KeyBinding Command="{Binding ProjectTree.CloseLevelCommand}" Gesture="{Binding Shortcuts[Tree.CloseLevel]}" />
+        <KeyBinding Command="{Binding ProjectTree.OpenLevelCommand}" Gesture="{Binding Shortcuts[Tree.OpenLevel]}" />
+        <KeyBinding Command="{Binding ProjectTree.CollapseAllCommand}" Gesture="{Binding Shortcuts[Tree.CollapseAll]}" />
         <KeyBinding Command="{Binding ProjectTree.FocusSearchCommand}" Gesture="{Binding Shortcuts[Tree.Search]}" />
         <KeyBinding Command="{Binding ProjectTree.RenameSelectedByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Rename]}" />
         <KeyBinding Command="{Binding ProjectTree.RemoveItemByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Remove]}" />
