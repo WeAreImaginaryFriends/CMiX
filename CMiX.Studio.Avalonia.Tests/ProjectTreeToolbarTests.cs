@@ -65,7 +65,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(new[] { true, false, false, false, false }, Enabled(scene.Tree));
 
-            scene.Tree.AddItemCommand.Execute(scene.Tree.SelectedAdds.Single());
+            scene.Tree.AddItemCommand.Execute(scene.Tree.TargetAdds.Single());
 
             Assert.Equal(3, scene.Project.CompositionManager.ManagerData.Items.Count);
             Assert.IsType<Composition>(scene.Project.CompositionManager.ManagerData.Items[2]);
@@ -279,6 +279,33 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.False(scene.Tree.MoveItemDownCommand.CanExecute(null));
             Assert.True(raised > 0);
+        }
+
+        [Fact]
+        public void CanExecute_TheCursorOnAnotherRow_FollowsTheCursorRow()
+        {
+            var scene = CreateScene();
+            scene.Tree.SelectedNode = scene.LayerNodeOfA(0);
+            var raised = 0;
+            scene.Tree.MoveItemUpCommand.CanExecuteChanged += (_, _) => raised++;
+
+            scene.Tree.SoftSelectedNode = scene.LayerNodeOfA(1);
+
+            Assert.True(raised > 0);
+            Assert.Same(scene.LayerNodeOfA(1), scene.Tree.TargetNode);
+            Assert.Equal(new[] { true, true, true, false, true }, Enabled(scene.Tree));
+        }
+
+        [Fact]
+        public void TargetAdds_TheCursorOnAGroup_FollowTheCursorRow()
+        {
+            var scene = CreateScene();
+            scene.Tree.SelectedNode = scene.LayerNodeOfA(0);
+
+            scene.Tree.SoftSelectedNode = scene.Group<CamerasGroup>(0);
+
+            Assert.Equal(new[] { "Add Camera", "Add Composition" }, scene.Tree.TargetAdds.Select(add => add.Header));
+            Assert.Equal(new[] { true, false, false, false, false }, Enabled(scene.Tree));
         }
 
         // The toolbar on screen.
@@ -545,6 +572,20 @@ namespace CMiX.Studio.Avalonia.Tests
 
             screen.Click(screen.ButtonOf("RemoveButton"));
             Assert.Equal(2, screen.Scene.A.LayerManager.ManagerData.Items.Count);
+        }
+
+        // The buttons act on the row of the arrow keys, not on the selected row (ProjectTree.TargetNode).
+        [AvaloniaFact]
+        public void Click_RemoveWithTheCursorOnAnotherRow_RemovesTheCursorRow()
+        {
+            var screen = Show();
+            var first = screen.Scene.LayerOfA(0);
+            screen.Scene.Tree.SelectedNode = screen.Scene.LayerNodeOfA(0);
+            screen.Scene.Tree.SoftSelectedNode = screen.Scene.LayerNodeOfA(1);
+
+            screen.Click(screen.ButtonOf("RemoveButton"));
+
+            Assert.Equal(new IControl[] { first }, screen.Scene.A.LayerManager.ManagerData.Items);
         }
 
         [AvaloniaFact]

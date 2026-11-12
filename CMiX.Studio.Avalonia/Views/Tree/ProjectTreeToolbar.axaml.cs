@@ -30,19 +30,19 @@ namespace CMiX.Studio.Avalonia.Views
         // For the tests: the panel of the Add button.
         internal AddPanel Panel => panel;
 
-        // The panel shows what the selected node takes (ProjectTree.GetAddGroups), then the Project group, as a composition can be added
-        // whatever is selected. Its header names the node, because the button is not on a row.
+        // The panel shows what the target node takes (ProjectTree.TargetNode, GetAddGroups), then the Project group, as a composition can be
+        // added whatever the target is. Its header names the node, because the button is not on a row.
         private void OnAddClick(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not ProjectTree tree)
                 return;
 
-            // The button always opens the panel, also with nothing selected, when the panel has only the composition to offer:
+            // The button always opens the panel, also with no target, when the panel has only the composition to offer:
             // a click on the button must not add a composition by surprise.
-            if (tree.SelectedAdds.Count == 0)
+            if (tree.TargetAdds.Count == 0)
                 return;
 
-            var node = tree.SelectedNode;
+            var node = tree.TargetNode;
             var header = node == null ? null : "Add to " + node.Header;
             if (AddButton.IsPointerOver)
                 panel.OpenAtPoint(this, lastPointer, tree.GetAddGroups(node), header);

@@ -249,25 +249,25 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void OnPointerTracked(object? sender, PointerEventArgs e) => lastPointer = e.GetPosition(treeView);
 
-        // Tree.Add: the Add panel of the selected row opens with its search field under the pointer, and the title Add. With nothing selected it holds what the
-        // project takes, a composition. Nothing is added until the user picks an entry of the panel.
+        // Tree.Add: the Add panel of the target row (ProjectTree.TargetNode) opens with its search field under the pointer, and the title Add.
+        // With no target it holds what the project takes, a composition. Nothing is added until the user picks an entry of the panel.
         private void OnAddRequested(object? sender, EventArgs e)
         {
             if (DataContext is not ProjectTree tree)
                 return;
 
             // The panel opens with the middle of its search field under the pointer.
-            menuAddPanel.OpenAtPoint(treeView, lastPointer, tree.GetAddGroups(tree.SelectedNode), AddTitle);
+            menuAddPanel.OpenAtPoint(treeView, lastPointer, tree.GetAddGroups(tree.TargetNode), AddTitle);
         }
 
-        // Tree.Menu: the menu of the selected row opens at the pointer, as a right click opens it. With nothing selected, it is the menu
-        // of the project. A selected row that is not shown (its parent is collapsed) opens no menu.
+        // Tree.Menu: the menu of the target row opens at the pointer, as a right click opens it. With no target, it is the menu
+        // of the project. A target row that is not shown (its parent is collapsed) opens no menu.
         private void OnMenuRequested(object? sender, EventArgs e)
         {
             if (DataContext is not ProjectTree tree)
                 return;
 
-            if (tree.SelectedNode is not { } node)
+            if (tree.TargetNode is not { } node)
                 OpenMenu(null);
             else if (rowIndex.FindItem(node) is { } item)
                 OpenMenu(item);
@@ -278,7 +278,7 @@ namespace CMiX.Studio.Avalonia.Views
         // away under a parent. A target row out of view is brought into view after the close.
         private void OnCollapseOthersRequested(object? sender, EventArgs e)
         {
-            if (DataContext is not ProjectTree tree || tree.CollapseTarget() is not { } target)
+            if (DataContext is not ProjectTree tree || tree.TargetNode is not { } target)
                 return;
 
             var anchor = scrollAnchor.CaptureRow(target);
@@ -365,13 +365,13 @@ namespace CMiX.Studio.Avalonia.Views
             watched.DetachView(hooks);
         }
 
-        // The focus goes to a row: the selected row, else the row of the arrow keys, else the first row (see ProjectTree.FocusTree).
+        // The focus goes to a row: the target row, else the first row (see ProjectTree.FocusTree).
         private void OnTreeFocusRequested(object? sender, EventArgs e)
         {
             if (watched is not { } tree)
                 return;
 
-            var node = tree.SelectedNode ?? tree.SoftSelectedNode ?? tree.VisibleNodes().FirstOrDefault();
+            var node = tree.TargetNode ?? tree.VisibleNodes().FirstOrDefault();
             if (node != null && rowIndex.FindItem(node) is { } item && item.Focus(NavigationMethod.Tab))
                 return;
 

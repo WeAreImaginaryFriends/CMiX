@@ -93,8 +93,8 @@ One panel adds things under a row. It has a search field, then the groups that t
 The panel opens in three ways:
 
 - The Add row of the menu of a row. The panel opens to the right of the menu, with its search field on the Add row.
-- The Add button of the toolbar over the tree. The panel opens with the middle of its search field under the pointer and names the selected row. A click from the keyboard opens it under the button. With nothing selected, the panel offers a composition.
-- The shortcut `Tree.Add` (Shift+A) opens the Add panel of the selected row with the middle of its search field under the pointer, with the title Add. With nothing selected, the panel offers a composition. It works while the pointer is over the tree, whatever has the focus, and does nothing when the pointer is elsewhere. The panel shows every category open: a category is a name, with no expander (`GroupedSearchList.Collapsible`).
+- The Add button of the toolbar over the tree. The panel opens with the middle of its search field under the pointer and names the target row. A click from the keyboard opens it under the button. With nothing selected, the panel offers a composition.
+- The shortcut `Tree.Add` (Shift+A) opens the Add panel of the target row with the middle of its search field under the pointer, with the title Add. With nothing selected, the panel offers a composition. It works while the pointer is over the tree, whatever has the focus, and does nothing when the pointer is elsewhere. The panel shows every category open: a category is a name, with no expander (`GroupedSearchList.Collapsible`).
 
 The menu of a row opens with its Add row under the pointer. After the user picks another row of a menu, such as Duplicate, the next menu opens with that row under the pointer.
 
@@ -131,16 +131,16 @@ The file maps a command name to a gesture:
 | `Edit.Redo` | Ctrl+Shift+Z | Redo |
 | `Edit.RedoAlt` | Ctrl+Y | Redo |
 | `File.Open` | Ctrl+O | Open a project file |
-| `Tree.Add` | Shift+A | Open the Add panel of the selected row at the pointer |
-| `Tree.Menu` | W | Open the menu of the selected row at the pointer |
-| `Tree.Expand` | E | Expand or collapse the row that has the keyboard focus, else the selected row |
-| `Tree.CollapseOthers` | Alt+E | Collapse others: open the parents of the row that has the keyboard focus, else of the selected row, and close every other row |
+| `Tree.Add` | Shift+A | Open the Add panel of the target row at the pointer |
+| `Tree.Menu` | W | Open the menu of the target row at the pointer |
+| `Tree.Expand` | E | Expand or collapse the target row |
+| `Tree.CollapseOthers` | Alt+E | Collapse others: open the parents of the target row and close every other row |
 | `Tree.Search` | Ctrl+F | Put the focus in the search field of the tree |
-| `Tree.Rename` | Ctrl+R | Rename the selected row |
-| `Tree.Remove` | Delete | Remove the selected item |
-| `Tree.Duplicate` | Shift+D | Duplicate the selected item |
-| `Tree.MoveUp` | Alt+Up | Move the selected item up |
-| `Tree.MoveDown` | Alt+Down | Move the selected item down |
+| `Tree.Rename` | Ctrl+R | Rename the target row |
+| `Tree.Remove` | Delete | Remove the target item |
+| `Tree.Duplicate` | Shift+D | Duplicate the target item |
+| `Tree.MoveUp` | Alt+Up | Move the target item up |
+| `Tree.MoveDown` | Alt+Down | Move the target item down |
 | `Tree.Open` | Enter | Select the row that has the keyboard focus |
 
 The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut.
@@ -151,9 +151,9 @@ The Shortcuts section of the Settings tab edits the shortcuts and saves each cha
 
 While a text box has the focus, the text box gets the keys first. In the tree, the shortcuts do nothing while a name is edited.
 
-In the tree, the arrow keys, Page Up, Page Down, Home and End move the keyboard focus from row to row. Left collapses a row or goes to its parent. Right expands a row or goes to its first child. The row with the focus has a thin border in the bright color of its kind. The keyboard focus does not select the row: it writes no undo step and sends nothing to the peers. Enter or a click selects the row.
+In the tree, the arrow keys, Page Up, Page Down, Home and End move the keyboard focus from row to row. Left collapses a row or goes to its parent. Right expands a row or goes to its first child. The row with the focus has a thin border in the bright color of its kind. The keyboard focus does not select the row: it writes no undo step and sends nothing to the peers. Enter or a click selects the row. The target row is the row of the arrow keys, else the selected row. The tree shortcuts and the toolbar buttons act on the target row.
 
-`Tree.CollapseOthers` (Alt+E) keeps the path to one row open. The row is the row that has the keyboard focus, else the selected row. Its parents open and every other row closes. The row keeps its own state. The row stays at its place on the screen, or the tree scrolls to it when it was out of view.
+`Tree.CollapseOthers` (Alt+E) keeps the path to the target row open. Its parents open and every other row closes. The row keeps its own state. The row stays at its place on the screen, or the tree scrolls to it when it was out of view.
 
 After a rename or a move by key, the keyboard focus goes back to the row. A click on another control keeps the focus where you clicked.
 

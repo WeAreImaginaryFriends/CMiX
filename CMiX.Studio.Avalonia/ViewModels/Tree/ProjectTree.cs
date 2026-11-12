@@ -35,7 +35,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private readonly Project project;
         private readonly TreeNode root;
         private TreeNode? selectedNode;
-        private IReadOnlyList<TreeAdd> selectedAdds;
+        private IReadOnlyList<TreeAdd> targetAdds;
         private bool selecting;
 
         public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null,
@@ -51,7 +51,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             root = new TreeNode(this, null, null, null, "Project", null);
             root.AddGroups(project);
 
-            selectedAdds = GetAddChoices(null);
+            targetAdds = GetAddChoices(null);
             IsPointerOverTree = () => views.Exists(view => view.IsPointerOverTree());
             IsTreeFocused = () => views.Exists(view => view.IsTreeFocused());
             IsTextBoxFocused = () => views.Exists(view => view.IsTextBoxFocused());
@@ -66,17 +66,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             };
             AddItemCommand = new RelayCommand<TreeAdd?>(add => add?.Execute?.Invoke(), add => add == null ? HasAdds : add.Execute != null);
             DuplicateItemCommand = new RelayCommand(
-                () => { if (SelectedPlace() is var (list, item, _)) list.DuplicateItem(item); },
-                () => SelectedPlace() != null);
+                () => { if (TargetPlace() is var (list, item, _)) list.DuplicateItem(item); },
+                () => TargetPlace() != null);
             MoveItemUpCommand = new RelayCommand(
-                () => { if (SelectedPlace() is var (list, item, index)) list.MoveItemTo(item, index - 1); },
-                () => SelectedPlace() is var (_, _, index) && index > 0);
+                () => { if (TargetPlace() is var (list, item, index)) list.MoveItemTo(item, index - 1); },
+                () => TargetPlace() is var (_, _, index) && index > 0);
             MoveItemDownCommand = new RelayCommand(
-                () => { if (SelectedPlace() is var (list, item, index)) list.MoveItemTo(item, index + 1); },
-                () => SelectedPlace() is var (list, _, index) && index < list.ManagerData.Items.Count - 1);
+                () => { if (TargetPlace() is var (list, item, index)) list.MoveItemTo(item, index + 1); },
+                () => TargetPlace() is var (list, _, index) && index < list.ManagerData.Items.Count - 1);
             RemoveItemCommand = new RelayCommand(
-                () => { if (SelectedPlace() is var (list, item, _)) list.RemoveItem(item); },
-                () => SelectedPlace() != null);
+                () => { if (TargetPlace() is var (list, item, _)) list.RemoveItem(item); },
+                () => TargetPlace() != null);
             AddUnderPointerCommand = new RelayCommand(
                 () => AddRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree() && !IsTextBoxFocused());
@@ -85,10 +85,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 {
                     if (IsDragging)
                         ToggleDragRow();
-                    else if (ExpandTarget() is { } node)
+                    else if (TargetNode is { Children.Count: > 0 } node)
                         node.IsExpanded = !node.IsExpanded;
                 },
-                () => !IsTextBoxFocused() && (IsDragging || IsPointerOverTree() && ExpandTarget() != null));
+                () => !IsTextBoxFocused() && (IsDragging || IsPointerOverTree() && TargetNode is { Children.Count: > 0 }));
             OpenMenuUnderPointerCommand = new RelayCommand(
                 () => MenuRequested?.Invoke(this, EventArgs.Empty),
                 () => IsPointerOverTree() && !IsTextBoxFocused());
@@ -96,8 +96,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 FocusSearch,
                 () => !IsDragging && (IsPointerOverTree() || IsTreeFocused()));
             RenameSelectedCommand = new RelayCommand(
-                () => { if (selectedNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
-                () => selectedNode?.Item != null);
+                () => { if (TargetNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
+                () => TargetNode?.Item != null);
             OpenSelectedCommand = new RelayCommand(
                 () => Select(softSelectedNode, SelectionOrigin.Keyboard),
                 () => softSelectedNode != null);
@@ -108,10 +108,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             MoveItemDownByKeyCommand = ByKey(MoveItemDownCommand);
             CollapseOthersCommand = new RelayCommand(
                 () => CollapseOthersRequested?.Invoke(this, EventArgs.Empty),
-                () => CanRunTreeKey() && CollapseTarget() != null);
+                () => CanRunTreeKey() && TargetNode != null);
         }
 
-        // Closes every row of the tree but the path to the row that the arrow keys are on, else the selected row (Tree.CollapseOthers).
+        // Closes every row of the tree but the path to the target row (Tree.CollapseOthers, see TargetNode).
         // The parents of that row open, and the row keeps its own state. The command has the conditions of the other tree keys. The view
         // runs CollapseOthers itself (see CollapseOthersRequested), so it can keep the row still on the screen while the rows close.
         public IRelayCommand CollapseOthersCommand { get; }
@@ -119,15 +119,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The view handles this request: it runs CollapseOthers and keeps the target row in view.
         public event EventHandler? CollapseOthersRequested;
 
-        // The row that CollapseOthers keeps: the row of the arrow keys, else the selected row. Null when there is none.
-        public TreeNode? CollapseTarget() => softSelectedNode ?? selectedNode;
+        // The row that the commands of the tree act on: the row of the arrow keys, else the selected row. Null when there is none.
+        // Rename, Remove, Duplicate, Move, Expand, CollapseOthers, the menu, the Add panel and the toolbar use it.
+        public TreeNode? TargetNode => softSelectedNode ?? selectedNode;
 
         // Opens the parents of the target row and closes every other row. The target keeps its state. Nothing changes with no target
         // or during a drag. Returns the rows that it closed.
         public IReadOnlyList<TreeNode> CollapseOthers()
         {
             var closed = new List<TreeNode>();
-            if (IsDragging || CollapseTarget() is not { } target)
+            if (IsDragging || TargetNode is not { } target)
                 return closed;
 
             var path = new HashSet<TreeNode>(ParentsOf(target));
@@ -185,7 +186,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // row in view. The view runs the close and returns the rows that it closed. Without a view, the close only runs.
         public Action<TreeNode?, Func<IReadOnlyList<TreeNode>>> CloseRowsInView { get; set; }
 
-        // The keys of the main window for the selected row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown). A key
+        // The keys of the main window for the target row (Tree.Rename, Tree.Remove, Tree.Duplicate, Tree.MoveUp, Tree.MoveDown). A key
         // runs its command while the pointer is over the tree or the tree has the focus, so a click on another control does not stop it.
         // It does not run while a text box has the focus: Ctrl+R and the key down of Shift+D do not change the text, so the text box does
         // not take them. It does not run during a drag of a row. The buttons of the toolbar use the commands without these conditions.
@@ -207,7 +208,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The gestures of the key bindings of the tree view (the names Tree.*).
         public ShortcutMap Shortcuts { get; }
 
-        // Opens the Add panel of the selected row at the pointer (Tree.Add). With nothing selected, the panel offers a composition. The panel
+        // Opens the Add panel of the target row at the pointer (Tree.Add). With no target, the panel offers a composition. The panel
         // adds nothing at once. The command runs only while the pointer is over the
         // tree, so the key works from anywhere over the tree and does nothing over the rest of the window.
         public IRelayCommand AddUnderPointerCommand { get; }
@@ -218,19 +219,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The view handles this request: it opens the Add panel.
         public event EventHandler? AddRequested;
 
-        // Opens the menu of the selected row at the pointer (Tree.Menu), or the menu of the project with nothing selected. The command
+        // Opens the menu of the target row at the pointer (Tree.Menu), or the menu of the project with no target. The command
         // runs only while the pointer is over the tree, and not while a text box has the focus: the key is a plain letter.
         public IRelayCommand OpenMenuUnderPointerCommand { get; }
 
-        // Expands or collapses the row that the arrow keys are on, else the selected row (Tree.Expand). A row with no children does not
+        // Expands or collapses the target row (Tree.Expand). A row with no children does not
         // change. The command runs only while the pointer is over the tree, and not while a text box has the focus: the key is a plain letter.
         // During a drag of a row, it acts on the row under the pointer instead (see ToggleDragRow).
         public IRelayCommand ToggleExpandUnderPointerCommand { get; }
 
         // The view of the drag opens or closes the row under the pointer (see TreeRowDrag.ToggleHovered).
         public Action ToggleDragRow { get; set; }
-
-        private TreeNode? ExpandTarget() => (softSelectedNode ?? selectedNode) is { Children.Count: > 0 } node ? node : null;
 
         // True when a text box has the focus.
         public Func<bool> IsTextBoxFocused { get; set; }
@@ -281,7 +280,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             Select(node, SelectionOrigin.Program);
         }
 
-        // Starts the rename of the selected row. The view sets the name box of the row to edit mode (see RenameRequested).
+        // Starts the rename of the target row. The view sets the name box of the row to edit mode (see RenameRequested).
         public IRelayCommand RenameSelectedCommand { get; }
 
         // Selects the soft selected node and its chain in the lists.
@@ -299,8 +298,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             get => softSelectedNode;
             set
             {
-                if (SetProperty(ref softSelectedNode, value))
-                    OpenSelectedCommand?.NotifyCanExecuteChanged();
+                if (!SetProperty(ref softSelectedNode, value))
+                    return;
+
+                OpenSelectedCommand?.NotifyCanExecuteChanged();
+                OnTargetChanged();
             }
         }
 
@@ -508,9 +510,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 searchOpened.Remove(node);
         }
 
-        // The commands of the toolbar. They act on the selected node, and they are disabled when it has nothing to do.
-        // AddItemCommand runs the add that it gets. The toolbar picks the add (see SelectedAdds). With no add, it tells only
-        // whether the selected node has something to add.
+        // The commands of the toolbar. They act on the target node, and they are disabled when it has nothing to do.
+        // AddItemCommand runs the add that it gets. The toolbar picks the add (see TargetAdds). With no add, it tells only
+        // whether the target node has something to add.
         public IRelayCommand<TreeAdd?> AddItemCommand { get; }
         public IRelayCommand DuplicateItemCommand { get; }
         public IRelayCommand MoveItemUpCommand { get; }
@@ -688,11 +690,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 : type == typeof(LightEntity) ? ("row.add-light", "Light")
                 : ("row.add-entity", "Entity");
 
-        // The add choices of the selected node. The tree makes them again when the selection changes.
-        public IReadOnlyList<TreeAdd> SelectedAdds => selectedAdds;
+        // The add choices of the target node. The tree makes them again when the target changes.
+        public IReadOnlyList<TreeAdd> TargetAdds => targetAdds;
 
-        // True when the selected node has something to add. It enables the Add button.
-        public bool HasAdds => selectedAdds.Count > 0;
+        // True when the target node has something to add. It enables the Add button.
+        public bool HasAdds => targetAdds.Count > 0;
 
         // The submenus of an item for what it can hold: textures, filters, modifiers and modulators. A submenu is there only when the item
         // can hold the kind.
@@ -721,11 +723,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private static TreeAdd AddOf(string id, string header, PrefabManager list, Type type) =>
             new(id, header, () => list.AddItem(type));
 
-        // The selected node as an item of a list: the list, the item and its place in the list.
+        // The target node as an item of a list: the list, the item and its place in the list.
         // A group, or no node, is not an item.
-        private (PrefabManager List, IControl Item, int Index)? SelectedPlace()
+        private (PrefabManager List, IControl Item, int Index)? TargetPlace()
         {
-            if (selectedNode is not { Owner: { } list, Item: { } item })
+            if (TargetNode is not { Owner: { } list, Item: { } item })
                 return null;
 
             var index = list.ManagerData.Items.IndexOf(item);
@@ -755,15 +757,26 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             if (e.PropertyName == nameof(SelectedNode))
             {
-                var hadAdds = HasAdds;
-                selectedAdds = GetAddChoices(selectedNode);
-                OnPropertyChanged(nameof(SelectedAdds));
-                if (hadAdds != HasAdds)
-                    OnPropertyChanged(nameof(HasAdds));
-
+                // The row of the arrow keys goes to the selected row. When it does not change, the target can still change: the
+                // selection goes away while no row of the arrow keys is set.
+                var before = softSelectedNode;
                 SoftSelectedNode = selectedNode;
-                RefreshCommands();
+                if (ReferenceEquals(before, softSelectedNode))
+                    OnTargetChanged();
             }
+        }
+
+        // The target node changed: its add choices and the commands follow.
+        private void OnTargetChanged()
+        {
+            var hadAdds = HasAdds;
+            targetAdds = GetAddChoices(TargetNode);
+            OnPropertyChanged(nameof(TargetAdds));
+            if (hadAdds != HasAdds)
+                OnPropertyChanged(nameof(HasAdds));
+
+            OnPropertyChanged(nameof(TargetNode));
+            RefreshCommands();
         }
 
         // A group (Entities, Cameras, Lights) has a fixed place in its layer. Only an item can be dragged.

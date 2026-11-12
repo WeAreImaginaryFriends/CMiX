@@ -172,12 +172,12 @@ namespace CMiX.Studio.Avalonia.Tests
             project.CompositionManager.AddItem(typeof(Composition));
             var tree = new ProjectTree(project, provider.GetRequiredService<UndoManager>());
 
-            Assert.Equal(new[] { "Add Composition" }, tree.SelectedAdds.Select(add => add.Header));
+            Assert.Equal(new[] { "Add Composition" }, tree.TargetAdds.Select(add => add.Header));
             Assert.True(tree.HasAdds);
 
             tree.SelectedNode = tree.CompositionNodes()[0];
 
-            Assert.Equal(tree.GetAddChoices(tree.CompositionNodes()[0]).Select(add => add.Header), tree.SelectedAdds.Select(add => add.Header));
+            Assert.Equal(tree.GetAddChoices(tree.CompositionNodes()[0]).Select(add => add.Header), tree.TargetAdds.Select(add => add.Header));
             Assert.True(tree.AddItemCommand.CanExecute(null));
         }
     }

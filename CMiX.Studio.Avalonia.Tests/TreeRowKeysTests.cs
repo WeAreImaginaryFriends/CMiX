@@ -231,6 +231,80 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Same(screen.LayerNode(0).Item, screen.Layers[0]);
         }
 
+        // ---------------------------------------------------------------- the row of the arrow keys
+
+        // The row keys act on the row of the arrow keys, not on the selected row (ProjectTree.TargetNode). The layers are closed, so
+        // Down goes from layer to layer.
+        private static void FocusTheTreeAndPressDown(Screen screen, int times)
+        {
+            for (var i = 0; i < 3; i++)
+                screen.LayerNode(i).IsExpanded = false;
+            Settle(screen.Window);
+            PointBesideTree(screen);
+            FocusTheTree(screen);
+            for (var i = 0; i < times; i++)
+                Press(screen, PhysicalKey.ArrowDown);
+
+            Assert.Same(screen.LayerNode(times), screen.Tree.SoftSelectedNode);
+            Assert.Same(screen.LayerNode(0), screen.Tree.SelectedNode);
+        }
+
+        [AvaloniaFact]
+        public void RemoveByKey_AfterDownTwice_RemovesTheCursorRow()
+        {
+            var screen = Show();
+            var (first, second, third) = (screen.Layers[0], screen.Layers[1], screen.Layers[2]);
+            FocusTheTreeAndPressDown(screen, 2);
+
+            Press(screen, PhysicalKey.Delete);
+
+            Assert.Equal(new[] { first, second }, screen.Layers);
+            Assert.DoesNotContain(third, screen.Layers);
+        }
+
+        [AvaloniaFact]
+        public void RenameByKey_AfterDown_RenamesTheCursorRow()
+        {
+            var screen = Show();
+            FocusTheTreeAndPressDown(screen, 1);
+
+            Press(screen, PhysicalKey.R, RawInputModifiers.Control);
+
+            Assert.True(IsRenaming(screen, screen.LayerNode(1)));
+            Assert.False(IsRenaming(screen, screen.LayerNode(0)));
+        }
+
+        [AvaloniaFact]
+        public void DuplicateByKey_AfterDown_DuplicatesTheCursorRow()
+        {
+            var screen = Show();
+            var (first, second, third) = (screen.Layers[0], screen.Layers[1], screen.Layers[2]);
+            FocusTheTreeAndPressDown(screen, 1);
+
+            Press(screen, PhysicalKey.D, RawInputModifiers.Shift);
+
+            Assert.Equal(4, screen.Layers.Count);
+            Assert.Same(first, screen.Layers[0]);
+            Assert.Same(second, screen.Layers[1]);
+            Assert.DoesNotContain(screen.Layers[2], new[] { first, second, third });
+            Assert.Same(third, screen.Layers[3]);
+        }
+
+        [AvaloniaFact]
+        public void MoveByKey_AfterDown_MovesTheCursorRow()
+        {
+            var screen = Show();
+            var (first, second) = (screen.Layers[0], screen.Layers[1]);
+            FocusTheTreeAndPressDown(screen, 1);
+
+            Press(screen, PhysicalKey.ArrowDown, RawInputModifiers.Alt);
+            Assert.Same(first, screen.Layers[0]);
+            Assert.Same(second, screen.Layers[2]);
+
+            Press(screen, PhysicalKey.ArrowUp, RawInputModifiers.Alt);
+            Assert.Same(second, screen.Layers[1]);
+        }
+
         // ---------------------------------------------------------------- a text box has the focus
 
         // Ctrl+R and the key down of Shift+D change no text, so the text box does not take them, and the paused key binding of the window
