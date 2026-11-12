@@ -58,7 +58,7 @@ The plan uses the team majority. Each line names the steps that change if the ow
 | D14 | Arrow keys in a menu | Hover fill | White cursor frame | 2.2 |
 | D15 | Flash | Decided: no flash | | 3.1, 5.1, 5.4 |
 | D16 | Disabled opacity | 0.5 | 0.56 | 3.1, 3.2 |
-| D17 | Shortcut text grey | Grey800, after a contrast measure | Grey700 | 3.6 |
+| D17 | Shortcut text grey | Decided: `ShortcutTextBrush` #85858C (Grey800 gave 4.43:1); on a hovered or keyboard row `ShortcutTextHoverBrush` (Grey900); the main menu dropdown is on the popup card | | 3.6, 3.8, 3.9 |
 | D18 | Panel accent line while a popup of the panel is open | Stays on | Goes off | 3.5 |
 | D19 | Badge during grab | No badge, panel frame and hint strip only | Accent badge | 6.3 |
 | D20 | The code word for soft selection | Cursor, as a planned rename | Keep soft selection | 1.1 |
