@@ -534,6 +534,10 @@ namespace CMiX.Studio.Avalonia.Views
             rowDrag.Cancel();
             autoScroller?.Dispose();
             autoScroller = null;
+
+            // Ends the reveal and the scroll hold. Their next step and their next frame then do nothing, so no frame request outlives the view.
+            revealId++;
+            scrollAnchor.EndHold();
             base.OnDetachedFromVisualTree(e);
         }
 

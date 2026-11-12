@@ -58,11 +58,22 @@ namespace CMiX.UI.Popups
             toast.UndoGesture = undoGesture;
             toast.IsVisible = true;
 
+            // The timer posts the hide to the dispatcher of the host. It never posts to a dispatcher that comes later (a new test).
             var number = ++shown;
+            var dispatcher = Dispatcher.UIThread;
             timer?.Dispose();
             timer = TimeProvider.CreateTimer(
-                _ => Dispatcher.UIThread.Post(() => { if (number == shown) Hide(); }),
+                _ => dispatcher.Post(() => { if (number == shown) Hide(); }),
                 null, Duration, Timeout.InfiniteTimeSpan);
+        }
+
+        // Stops the hide timer when the host leaves the window. A hide that the timer posted before then does nothing.
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            shown++;
+            timer?.Dispose();
+            timer = null;
+            base.OnDetachedFromVisualTree(e);
         }
 
         public void Hide()

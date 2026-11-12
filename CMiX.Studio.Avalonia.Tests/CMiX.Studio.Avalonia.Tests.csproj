@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <Compile Include="..\CMiX.UI.Tests\Support\PointerInput.cs" Link="Support\PointerInput.cs" />
+    <Compile Include="..\CMiX.UI.Tests\Support\ManualTimeProvider.cs" Link="Support\ManualTimeProvider.cs" />
   </ItemGroup>
 
 </Project>

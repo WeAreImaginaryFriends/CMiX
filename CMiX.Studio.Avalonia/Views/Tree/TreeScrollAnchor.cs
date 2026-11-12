@@ -123,5 +123,8 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         private const int MaxHoldFrames = 120;
+
+        // Ends the hold that runs. Its next frame then does nothing and asks for no frame. The view calls it when it leaves the window.
+        public void EndHold() => holdId++;
     }
 }

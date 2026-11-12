@@ -55,6 +55,9 @@ namespace CMiX.Studio.Avalonia.Tests
         public static Views.MainWindow CreateMainWindow(IServiceProvider provider)
         {
             var mainWindow = provider.GetRequiredService<Views.MainWindow>();
+
+            // The toast hides on a clock that moves only by hand. A real timer would hide the toast during a later test.
+            mainWindow.FindControl<CMiX.UI.Popups.ToastHost>("toastHost")!.TimeProvider = new CMiX.UI.Tests.ManualTimeProvider();
             mainWindow.DataContext = provider.GetRequiredService<MainViewModel>();
             provider.GetRequiredService<CMiX.Core.ControlActivationService>().ActivateAll();
             provider.GetRequiredService<UnsavedChanges>().MarkSaved();
