@@ -570,6 +570,10 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
             }
 
+            // The chevron and the toggles are ToggleButtons. IsEditor stops a click on them above, so it does not move the cursor.
+            if (node != null && DataContext is ProjectTree clicked)
+                clicked.SelectByClick(node);
+
             // The toggles at the right of a row never start a drag, not even the space around them.
             pressedNode = node != null && !IsInToggles(e.Source) && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
             chosenNode = node;

@@ -306,6 +306,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The row that the arrow keys move to. It does not select the chain: no undo step and no wire message.
         // Enter (OpenSelectedCommand) or a click selects the chain. A change of SelectedNode moves it to the selected node.
+        // A click on a row always moves it to that row (see SelectByClick).
         public TreeNode? SoftSelectedNode
         {
             get => softSelectedNode;
@@ -979,6 +980,14 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 return;
 
             SelectChain(node);
+        }
+
+        // A key acts on the cursor. A click acts on the row under the pointer and moves the cursor there, also when the row is
+        // already selected. A click on the chevron or on a toggle of a row does not come here.
+        public void SelectByClick(TreeNode node)
+        {
+            Select(node, SelectionOrigin.Pointer);
+            SoftSelectedNode = node;
         }
 
         // The node of an item, wherever it is in the tree. A moved item has a new node in its new list.
