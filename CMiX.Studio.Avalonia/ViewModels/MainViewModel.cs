@@ -36,8 +36,10 @@ namespace CMiX.Studio.Avalonia.ViewModels
                              UndoManager undoManager,
                              ShortcutMap shortcuts,
                              PathDropService pathDropService,
-                             ProjectTree projectTree)
+                             ProjectTree projectTree,
+                             PanelFocusCycle panelFocus)
         {
+            PanelFocus = panelFocus;
             _undoManager = undoManager;
             TextureManager = SetupManager(textureManager, ManagerIDs.TextureManager);
             EntityManager = SetupManager(entityManager, ManagerIDs.EntityManager);
@@ -120,6 +122,9 @@ namespace CMiX.Studio.Avalonia.ViewModels
 
         // The keyboard shortcuts. The key bindings of the window and of the tree read their gestures here.
         public ShortcutMap Shortcuts { get; }
+
+        // The panel keys of the window (Window.*, Tree.Focus) run its commands.
+        public PanelFocusCycle PanelFocus { get; }
 
         // The settings tab edits the shortcuts with this.
         public ShortcutSettings ShortcutSettings { get; }

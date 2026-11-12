@@ -33,6 +33,14 @@
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.Redo]}" />
         <KeyBinding Command="{Binding RedoCommand}" Gesture="{Binding Shortcuts[Edit.RedoAlt]}" />
         <KeyBinding Command="{Binding MainMenu.OpenProjectCommand}" Gesture="{Binding Shortcuts[File.Open]}" />
+        <!-- The panel keys move the focus between the side panels (see PanelFocusCycle). They also run with the focus in a text box. -->
+        <KeyBinding Command="{Binding PanelFocus.NextPanelCommand}" Gesture="{Binding Shortcuts[Window.NextPanel]}" />
+        <KeyBinding Command="{Binding PanelFocus.PreviousPanelCommand}" Gesture="{Binding Shortcuts[Window.PreviousPanel]}" />
+        <KeyBinding Command="{Binding PanelFocus.FocusPanel1Command}" Gesture="{Binding Shortcuts[Window.FocusPanel1]}" />
+        <KeyBinding Command="{Binding PanelFocus.FocusPanel2Command}" Gesture="{Binding Shortcuts[Window.FocusPanel2]}" />
+        <KeyBinding Command="{Binding PanelFocus.FocusPanel3Command}" Gesture="{Binding Shortcuts[Window.FocusPanel3]}" />
+        <KeyBinding Command="{Binding PanelFocus.FocusPanel4Command}" Gesture="{Binding Shortcuts[Window.FocusPanel4]}" />
+        <KeyBinding Command="{Binding PanelFocus.FocusTreeCommand}" Gesture="{Binding Shortcuts[Tree.Focus]}" />
         <KeyBinding Command="{Binding ProjectTree.AddAtTargetCommand}" Gesture="{Binding Shortcuts[Tree.Add]}" />
         <KeyBinding Command="{Binding ProjectTree.OpenMenuAtTargetCommand}" Gesture="{Binding Shortcuts[Tree.Menu]}" />
         <KeyBinding Command="{Binding ProjectTree.ToggleExpandTargetCommand}" Gesture="{Binding Shortcuts[Tree.Expand]}" />

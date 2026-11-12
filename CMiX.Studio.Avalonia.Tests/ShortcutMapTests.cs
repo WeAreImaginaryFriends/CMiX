@@ -30,10 +30,17 @@ namespace CMiX.Studio.Avalonia.Tests
             var map = new ShortcutMap(FilePath);
 
             Assert.Equal(
-                new[] { "Edit.Undo", "Edit.Redo", "Edit.RedoAlt", "File.Open", "Tree.Add", "Tree.Menu", "Tree.Expand", "Tree.CollapseOthers", "Tree.Search", "Tree.Rename", "Tree.Remove", "Tree.Duplicate", "Tree.MoveUp", "Tree.MoveDown", "Tree.Open" },
+                new[] { "Edit.Undo", "Edit.Redo", "Edit.RedoAlt", "File.Open", "Window.NextPanel", "Window.PreviousPanel", "Window.FocusPanel1",
+                    "Window.FocusPanel2", "Window.FocusPanel3", "Window.FocusPanel4", "Tree.Focus", "Tree.Add", "Tree.Menu", "Tree.Expand", "Tree.CollapseOthers", "Tree.Search", "Tree.Rename", "Tree.Remove", "Tree.Duplicate", "Tree.MoveUp", "Tree.MoveDown", "Tree.Open" },
                 map.Names);
-            foreach (var name in map.Names)
+            // Tree.Focus has no default: Ctrl+1 to Ctrl+4 go to the panels.
+            foreach (var name in map.Names.Where(name => name != "Tree.Focus"))
                 Assert.NotNull(map[name]);
+            Assert.Null(map["Tree.Focus"]);
+            Assert.Equal(new KeyGesture(Key.Tab, KeyModifiers.Control), map["Window.NextPanel"]);
+            Assert.Equal(new KeyGesture(Key.Tab, KeyModifiers.Control | KeyModifiers.Shift), map["Window.PreviousPanel"]);
+            Assert.Equal(new KeyGesture(Key.D1, KeyModifiers.Control), map["Window.FocusPanel1"]);
+            Assert.Equal(new KeyGesture(Key.D4, KeyModifiers.Control), map["Window.FocusPanel4"]);
 
             Assert.Equal(new KeyGesture(Key.Z, KeyModifiers.Control | KeyModifiers.Shift), map["Edit.Redo"]);
             Assert.Equal(new KeyGesture(Key.Up, KeyModifiers.Alt), map["Tree.MoveUp"]);
@@ -197,6 +204,17 @@ namespace CMiX.Studio.Avalonia.Tests
             map.Set("Tree.Rename", new KeyGesture(Key.Z, KeyModifiers.Control));
 
             Assert.Equal(new[] { "Edit.Undo", "Tree.Rename" }, map.Conflicts);
+        }
+
+        [Fact]
+        public void Conflicts_TreeGestureOnNextPanel_ReportsTheConflict()
+        {
+            var map = new ShortcutMap(FilePath);
+
+            map.Set("Tree.Rename", new KeyGesture(Key.Tab, KeyModifiers.Control));
+
+            Assert.True(ShortcutMap.IsGlobalScope("Window"));
+            Assert.Equal(new[] { "Tree.Rename", "Window.NextPanel" }, map.Conflicts);
         }
 
         [Fact]

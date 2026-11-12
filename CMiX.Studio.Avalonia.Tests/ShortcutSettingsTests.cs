@@ -33,11 +33,13 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var (map, settings) = Create();
 
-            Assert.Equal(new[] { "Edit", "File", "Tree" }, settings.Scopes.Select(scope => scope.Name));
+            Assert.Equal(new[] { "Edit", "File", "Window", "Tree" }, settings.Scopes.Select(scope => scope.Name));
             Assert.Equal(map.Names, settings.Scopes.SelectMany(scope => scope.Rows).Select(row => row.Name));
             Assert.Equal("Redo (alternative)", Row(settings, "Edit.RedoAlt").Label);
             Assert.Equal("Open project", Row(settings, "File.Open").Label);
             Assert.Equal("Move down", Row(settings, "Tree.MoveDown").Label);
+            Assert.Equal("Next panel", Row(settings, "Window.NextPanel").Label);
+            Assert.Equal("Focus the tree", Row(settings, "Tree.Focus").Label);
         }
 
         [Fact]

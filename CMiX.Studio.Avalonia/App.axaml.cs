@@ -74,6 +74,7 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<IMessageNotice, Services.MessageNotice>();
                 serviceCollection.AddSingleton<PathDropService>();
                 serviceCollection.AddSingleton<ProjectTree>();
+                serviceCollection.AddSingleton<PanelFocusCycle>();
                 serviceCollection.AddSingleton(_ =>
                 {
                     var shortcuts = new ShortcutMap();

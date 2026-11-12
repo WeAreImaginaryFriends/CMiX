@@ -14,25 +14,27 @@ namespace CMiX.Studio.Avalonia.Views
     // Avalonia runs the key bindings of the focused element and its parents before the text box sees the key. So a text box under the
     // owner would lose Delete, Enter or Ctrl+Z to a key binding. While a text box under the owner has the focus, the owner has no key
     // bindings. They come back when the focus leaves the text box.
-    // With afterTextBox, a key that the text box does not handle runs the paused bindings when it comes up to the owner.
+    // An owner can call RunPausedBinding for a key that the text box does not handle, when the key comes up to the owner.
     internal sealed class KeyBindingTextGuard
     {
         private readonly InputElement owner;
         private readonly List<KeyBinding> paused = new();
 
-        private KeyBindingTextGuard(InputElement owner, bool afterTextBox)
+        private KeyBindingTextGuard(InputElement owner)
         {
             this.owner = owner;
             owner.AddHandler(InputElement.GotFocusEvent, OnGotFocus, RoutingStrategies.Bubble, true);
             owner.AddHandler(InputElement.LostFocusEvent, OnLostFocus, RoutingStrategies.Bubble, true);
-            if (afterTextBox)
-                owner.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Bubble);
         }
 
-        public static KeyBindingTextGuard Install(InputElement owner, bool afterTextBox = false) => new(owner, afterTextBox);
+        public static KeyBindingTextGuard Install(InputElement owner) => new(owner);
 
-        private void OnKeyDown(object? sender, KeyEventArgs e)
+        // Runs the first paused binding that matches the key, and handles the key.
+        public void RunPausedBinding(KeyEventArgs e)
         {
+            if (e.Handled)
+                return;
+
             foreach (var binding in paused)
             {
                 if (binding.Gesture?.Matches(e) != true || binding.Command is not { } command || !command.CanExecute(binding.CommandParameter))

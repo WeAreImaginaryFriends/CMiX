@@ -131,6 +131,10 @@ The file maps a command name to a gesture:
 | `Edit.Redo` | Ctrl+Shift+Z | Redo |
 | `Edit.RedoAlt` | Ctrl+Y | Redo |
 | `File.Open` | Ctrl+O | Open a project file |
+| `Window.NextPanel` | Ctrl+Tab | Put the focus in the next panel |
+| `Window.PreviousPanel` | Ctrl+Shift+Tab | Put the focus in the previous panel |
+| `Window.FocusPanel1` to `Window.FocusPanel4` | Ctrl+1 to Ctrl+4 | Put the focus in panel 1 to 4. A panel that is not there does nothing |
+| `Tree.Focus` | none | Put the focus on the cursor row of the tree |
 | `Tree.Add` | Shift+A | Open the Add panel on the target row |
 | `Tree.Menu` | W | Open the menu of the target row under the row |
 | `Tree.Expand` | E | Expand or collapse the target row |
@@ -143,7 +147,9 @@ The file maps a command name to a gesture:
 | `Tree.MoveDown` | Alt+Down | Move the target item down |
 | `Tree.Open` | Enter | Select the row that has the keyboard focus |
 
-The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut.
+The part of a name before the dot is its scope. Two names of one scope must not have the same gesture. The `Edit`, `File` and `Window` keys work in every scope, so their gestures must not be the gesture of any other name. An entry with an unknown name, or with a gesture that does not parse, is ignored and the default stays. An empty gesture removes the shortcut. In the file, a digit key is `D1` to `D9` and `D0`, for example `"Ctrl+D1"`.
+
+The panels are the side panels of the window, from left to right: panel 1 is the left panel. Each panel keeps the control that had the focus last, and the focus goes back to that control. When no control of the panel had the focus, the focus goes to the cursor row of the tree, or to the first control of the panel. The panel keys also work while a text box has the focus. The accent line under the bar of the panel shows the panel with the focus. `Tree.Focus` has no default gesture, because Ctrl+1 to Ctrl+4 go to the panels. Set one in the Shortcuts section of the Settings tab.
 
 Every tree shortcut but `Tree.Open` has one condition. The keyboard focus comes first: the shortcut works while the tree has the focus, with the pointer anywhere. It also works while the pointer is over the tree and no other panel has the focus, for example after a click on an empty part of the window. While a control of another panel has the focus, the pointer over the tree is not enough: click the tree first. No tree shortcut works while a text box has the focus. No tree shortcut works while a row is dragged, but `Tree.Expand`, which then opens or closes the row under the pointer. `Tree.Open`, Enter and the arrow keys need the focus in the tree. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D, and a `Tree.Rename` of F2 becomes Ctrl+R.
 

@@ -64,6 +64,28 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Same(viewModel.RedoCommand, For("Edit.RedoAlt").Command);
         }
 
+        [AvaloniaFact]
+        public void KeyBindings_OfTheWindow_HoldThePanelCommands()
+        {
+            var (_, window, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            var panelFocus = viewModel.PanelFocus;
+
+            KeyBinding For(string name) => window.KeyBindings.Single(binding => Equals(binding.Gesture, viewModel.Shortcuts[name]));
+
+            Assert.Same(panelFocus.NextPanelCommand, For("Window.NextPanel").Command);
+            Assert.Same(panelFocus.PreviousPanelCommand, For("Window.PreviousPanel").Command);
+            Assert.Same(panelFocus.FocusPanel1Command, For("Window.FocusPanel1").Command);
+            Assert.Same(panelFocus.FocusPanel2Command, For("Window.FocusPanel2").Command);
+            Assert.Same(panelFocus.FocusPanel3Command, For("Window.FocusPanel3").Command);
+            Assert.Same(panelFocus.FocusPanel4Command, For("Window.FocusPanel4").Command);
+
+            // Tree.Focus has no default gesture. Its binding takes the gesture that the user sets.
+            var gesture = new KeyGesture(Key.T, KeyModifiers.Control);
+            viewModel.Shortcuts.Set("Tree.Focus", gesture);
+            TestServiceProviderFactory.Pump();
+            Assert.Same(panelFocus.FocusTreeCommand, For("Tree.Focus").Command);
+        }
+
         // The pointer on the middle of the tree view, or beside it.
         private static void PointOnTree(Window window)
         {

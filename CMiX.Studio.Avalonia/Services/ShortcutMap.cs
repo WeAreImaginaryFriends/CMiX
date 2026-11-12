@@ -28,12 +28,20 @@ namespace CMiX.Studio.Avalonia.Services
         public static string DefaultPath =>
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CMiX", FileName);
 
+        // An empty gesture: the name has no default gesture. A digit key is D1, not 1: KeyGesture.Parse reads "1" as the key value 1.
         private readonly (string Name, string Gesture)[] defaults =
         {
             ("Edit.Undo", "Ctrl+Z"),
             ("Edit.Redo", "Ctrl+Shift+Z"),
             ("Edit.RedoAlt", "Ctrl+Y"),
             ("File.Open", "Ctrl+O"),
+            ("Window.NextPanel", "Ctrl+Tab"),
+            ("Window.PreviousPanel", "Ctrl+Shift+Tab"),
+            ("Window.FocusPanel1", "Ctrl+D1"),
+            ("Window.FocusPanel2", "Ctrl+D2"),
+            ("Window.FocusPanel3", "Ctrl+D3"),
+            ("Window.FocusPanel4", "Ctrl+D4"),
+            ("Tree.Focus", ""),
             ("Tree.Add", "Shift+A"),
             ("Tree.Menu", "W"),
             ("Tree.Expand", "E"),
@@ -80,7 +88,7 @@ namespace CMiX.Studio.Avalonia.Services
         public KeyGesture? this[string name] => gestures.TryGetValue(name, out var gesture) ? gesture : null;
 
         // The keys of these scopes work in every scope.
-        private static readonly string[] globalScopes = { "Edit", "File" };
+        private static readonly string[] globalScopes = { "Edit", "File", "Window" };
 
         // The names whose gesture another name also has, in the same scope or in a global scope.
         public IReadOnlyCollection<string> Conflicts => ConflictsOf(gestures);
@@ -175,7 +183,7 @@ namespace CMiX.Studio.Avalonia.Services
         {
             foreach (var (entry, gesture) in defaults)
                 if (entry == name)
-                    return KeyGesture.Parse(gesture);
+                    return gesture.Length == 0 ? null : KeyGesture.Parse(gesture);
 
             return null;
         }

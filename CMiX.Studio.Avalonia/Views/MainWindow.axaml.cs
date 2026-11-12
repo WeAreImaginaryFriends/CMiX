@@ -11,6 +11,7 @@ using Avalonia.Xaml.Interactivity;
 using CMiX.UI.Behaviors;
 using Avalonia.LogicalTree;
 using CMiX.Core.Undo;
+using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.ViewModels;
 
 namespace CMiX.Studio.Avalonia.Views
@@ -33,11 +34,17 @@ namespace CMiX.Studio.Avalonia.Views
 
             KeyDownEvent.AddClassHandler<MainWindow>(TakeAlt, RoutingStrategies.Tunnel);
             KeyUpEvent.AddClassHandler<MainWindow>(TakeAlt, RoutingStrategies.Tunnel);
+            KeyDownEvent.AddClassHandler<MainWindow>((window, e) => window.OnKeyDownAfterTextBox(e), RoutingStrategies.Bubble);
         }
 
-        public MainWindow(UndoManager undoManager) : this()
+        // A key that the focused text box does not handle runs the paused key binding of the window. A class handler runs before the
+        // Tab navigation of the window, so Ctrl+Tab in a text box moves the focus to the next panel, not to the next control.
+        private void OnKeyDownAfterTextBox(KeyEventArgs e) => textGuard.RunPausedBinding(e);
+
+        public MainWindow(UndoManager undoManager, PanelFocusCycle panelFocus) : this()
         {
             _undoManager = undoManager;
+            panelFocus.Attach(this);
         }
 
         public MainWindow()
@@ -47,9 +54,11 @@ namespace CMiX.Studio.Avalonia.Views
             Closing += OnClosing;
             Opened += (_, _) => { if (DockOnOpen) WindowDock.DockRight(this); };
             InstallToggleDrag();
-            // A text box gets Ctrl+Z first. A key that it does not handle still undoes or redoes the project.
-            KeyBindingTextGuard.Install(this, afterTextBox: true);
+            // A text box gets Ctrl+Z first. A key that it does not handle still undoes or redoes the project (see OnKeyDownAfterTextBox).
+            textGuard = KeyBindingTextGuard.Install(this);
         }
+
+        private readonly KeyBindingTextGuard textGuard;
 
         // The window opens on the right edge of the screen, as high as the working area. A program can turn this off.
         public bool DockOnOpen { get; set; } = true;
