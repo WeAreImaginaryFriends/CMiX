@@ -32,7 +32,7 @@
         </Setter>
 
         <Style Selector="^[TabStripPlacement=Top]:disabled /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Opacity" Value="0.56" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top]:not(:selected)">
@@ -122,7 +122,7 @@
 
         <!-- A tab of icons is a row of icon toggles: the icon is dim at rest, and lit under the pointer and while selected. -->
         <Style Selector="^:not(:selected) /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityIconIdle}" />
         </Style>
 
         <Style Selector="^:not(:selected):pointerover /template/ ContentPresenter#PART_ContentPresenter">

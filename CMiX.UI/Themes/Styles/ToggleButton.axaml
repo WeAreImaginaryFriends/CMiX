@@ -74,7 +74,7 @@
         </Style>
 
         <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
 
         <Style Selector="^:checked:not(:pointerover) /template/ Border#border">
@@ -148,7 +148,7 @@
         </Setter>
 
         <Style Selector="^ /template/ Border#border">
-            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityIconIdle}" />
         </Style>
 
         <Style Selector="^:pointerover /template/ Border#border">
@@ -210,7 +210,7 @@
 
         <!-- A style, not a value on the template. A value there would beat every style. -->
         <Style Selector="^ /template/ Border#border">
-            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityIconIdle}" />
         </Style>
 
         <Style Selector="^:checked /template/ ui|AppIcon#image">
@@ -289,7 +289,7 @@
         </Style>
 
         <Style Selector="^:disabled /template/ Border#box">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
 
         <Style Selector="^:checked /template/ Border#box:not(:pointerover)">
@@ -352,7 +352,7 @@
         </Style>
 
         <Style Selector="^:disabled /template/ Border#box">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
 
         <Style Selector="^:checked /template/ Border#box:not(:pointerover)">

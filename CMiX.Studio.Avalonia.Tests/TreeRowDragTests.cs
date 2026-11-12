@@ -311,6 +311,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Contains(ghost.Ghost.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>(), icon => icon.IconKey == layer.IconKey);
             Assert.Contains(ghost.Ghost.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == layer.Header);
             Assert.Same(screen.HeaderOf(layer).Background, ghost.Ghost.Background);
+            // The label has the opacity of the token OpacityDragGhost.
+            Assert.Equal(0.8, ghost.Ghost.Opacity);
             // The label is only as wide as its icon and its name, not as wide as the row.
             Assert.True(LabelBox(screen).Width < screen.HeaderOf(layer).Bounds.Width, "The label is as wide as the row.");
             Assert.Equal(screen.HeaderOf(layer).Bounds.Height, LabelBox(screen).Height, 0.51);

@@ -122,7 +122,7 @@
                                 <!-- The cover fades in and out (Motion.FadeDuration), so a row does not jump when a drag starts or ends. -->
                                 <Border.Transitions>
                                     <Transitions>
-                                        <DoubleTransition Property="Opacity" Duration="0:0:0.12" Easing="CubicEaseOut" />
+                                        <DoubleTransition Property="Opacity" Duration="{x:Static ui:Motion.FadeDuration}" Easing="CubicEaseOut" />
                                     </Transitions>
                                 </Border.Transitions>
                             </Border>
@@ -192,7 +192,7 @@
         </Style>
         <!-- The row that is dragged stays in its place, faded: the copy of it follows the pointer (see TreeDragGhost). -->
         <Style Selector="^ /template/ Border#RowBorder.dragsource">
-            <Setter Property="Opacity" Value="0.4" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDragSource}" />
         </Style>
         <!-- A row that can take the node that is dragged has the fill of a row under the pointer, so it stands out from the rows that can not. -->
         <Style Selector="^ /template/ Border#RowBorder.candidate">

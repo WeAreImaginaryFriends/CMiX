@@ -26,7 +26,7 @@
         </Setter>
         <!-- The base opacity lives in a style so the state styles can override it -->
         <Style Selector="^ /template/ ui|AppIcon#image">
-            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityIconIdle}" />
         </Style>
         <Style Selector="^:pointerover /template/ ui|AppIcon#image">
             <Setter Property="Opacity" Value="1.0" />

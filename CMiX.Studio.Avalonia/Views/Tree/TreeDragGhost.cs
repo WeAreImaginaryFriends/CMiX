@@ -19,10 +19,7 @@ namespace CMiX.Studio.Avalonia.Views
     // Near the top of the window there is no room above the pointer, so the label goes under it. The label takes no pointer events.
     internal sealed class TreeDragGhost
     {
-        // The label is a little transparent, so the rows under it stay readable.
-        public const double GhostOpacity = 0.8;
-
-        private readonly Border ghost = new() { IsHitTestVisible = false, Opacity = GhostOpacity, ClipToBounds = true };
+        private readonly Border ghost = new() { IsHitTestVisible = false, ClipToBounds = true };
         private OverlayLayer? layer;
 
         // The distance from the left edge of the label to the middle of its icon.
@@ -46,6 +43,8 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             gap = Resource(row, "SpacingSM", 4.0);
+            // The label is a little transparent (the token OpacityDragGhost), so the rows under it stay readable.
+            ghost.Opacity = Resource(row, "OpacityDragGhost", 1.0);
             Build(row, iconKey, name);
             ghost.Height = row.Bounds.Height;
             ghost.Measure(Size.Infinity);

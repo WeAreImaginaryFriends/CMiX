@@ -92,7 +92,7 @@
         </Setter>
 
         <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="0.56" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
         <Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="BorderBrush" Value="{DynamicResource Grey400Brush}" />
@@ -187,7 +187,7 @@
         </Setter>
 
         <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="0.56" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
         <Style Selector="^:focus /template/ Border#border">
             <Setter Property="BorderBrush" Value="{DynamicResource Grey600Brush}" />

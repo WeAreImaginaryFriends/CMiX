@@ -122,7 +122,7 @@
         </Style>
 
         <Style Selector="^ /template/ Border#mainBorder:disabled">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
 
         <Style Selector="^:pressed /template/ RepeatButton#PART_IncreaseButton">

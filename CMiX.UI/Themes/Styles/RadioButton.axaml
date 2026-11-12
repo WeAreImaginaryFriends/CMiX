@@ -31,7 +31,7 @@
         </Setter>
 
         <Style Selector="^:disabled">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
 
         <Style Selector="^:unchecked:pointerover /template/ Border#radioButtonBorder">

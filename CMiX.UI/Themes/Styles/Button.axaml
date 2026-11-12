@@ -46,7 +46,7 @@
         </Style>
 
         <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
     </ControlTheme>
 
@@ -162,10 +162,10 @@
         </Setter>
 
         <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
         <Style Selector="^:disabled /template/ Border#borderAlpha">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
     </ControlTheme>
 
@@ -208,7 +208,7 @@
         </Style>
 
         <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
     </ControlTheme>
 
@@ -251,7 +251,7 @@
         </Style>
 
         <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
     </ControlTheme>
 

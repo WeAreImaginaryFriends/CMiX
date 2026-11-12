@@ -164,6 +164,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("TreeBackgroundBrush")!).Color, ((ISolidColorBrush)cover.Background!).Color);
             Assert.Contains("dimmed", cover.Classes);
             Assert.Contains(cover.Transitions!, transition => transition is global::Avalonia.Animation.DoubleTransition { Property: var property } && property == Visual.OpacityProperty);
+            Assert.Contains(cover.Transitions!, transition => transition is global::Avalonia.Animation.DoubleTransition { Duration: var duration } && duration == CMiX.UI.Themes.Motion.FadeDuration);
             Assert.False(cover.IsHitTestVisible);
         }
 

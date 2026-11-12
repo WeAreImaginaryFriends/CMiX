@@ -74,7 +74,7 @@
         </Setter>
 
         <Style Selector="^:disabled /template/ ToggleButton#PART_toggle">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>    </ControlTheme>
 
     <ControlTheme x:Key="ExpanderItemHeader" TargetType="ToggleButton">
@@ -160,7 +160,7 @@
 
 
         <Style Selector="^:disabled /template/ ToggleButton#PART_toggle">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>    </ControlTheme>
 
       <ControlTheme x:Key="ExpanderIndentedHeader" TargetType="ToggleButton">

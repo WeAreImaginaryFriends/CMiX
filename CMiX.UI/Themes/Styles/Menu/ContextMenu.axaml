@@ -108,7 +108,7 @@
         </Style>
 
         <Style Selector="^:disabled /template/ Border#root">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
 
         <!-- The arrow shows on a row that has a submenu, and on a row with the class opens (a row that opens a panel beside the menu). -->

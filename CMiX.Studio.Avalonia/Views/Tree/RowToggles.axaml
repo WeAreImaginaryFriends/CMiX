@@ -10,7 +10,7 @@
     <!-- A row under a hidden parent, a list or an item (see TreeNode.IsUnderHiddenParent): its visibility toggles look as if they were disabled. They still work. -->
     <UserControl.Styles>
         <Style Selector="StackPanel.hiddenabove ToggleButton#visibilityToggle, StackPanel.hiddenabove ToggleButton#groupHideToggle">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
     </UserControl.Styles>
 
