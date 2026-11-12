@@ -79,16 +79,15 @@ namespace CMiX.Studio.Avalonia.ViewModels
 
         internal bool IsConflict(string name) => map.Conflicts.Contains(name);
 
-        // The labels of the other names in the scope with the same gesture. Null when there is no conflict.
+        // The labels of the other names with the same gesture that can conflict with this name. Null when there is no conflict.
         internal string? ConflictTextOf(string name)
         {
             var gesture = map[name];
             if (gesture == null)
                 return null;
 
-            var scope = ShortcutMap.ScopeOf(name);
             var others = map.Names
-                .Where(other => other != name && ShortcutMap.ScopeOf(other) == scope && Equals(map[other]?.ToString(), gesture.ToString()))
+                .Where(other => other != name && ShortcutMap.CanConflict(name, other) && Equals(map[other]?.ToString(), gesture.ToString()))
                 .Select(LabelOf)
                 .ToList();
 

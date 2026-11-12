@@ -181,16 +181,38 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void Conflicts_TwoNamesWithOneGesture_ListsThemInOneScopeOnly()
+        public void Conflicts_TwoNamesWithOneGesture_ListsThem()
         {
             var map = new ShortcutMap(FilePath);
 
             map.Set("Tree.Rename", new KeyGesture(Key.Delete));
             Assert.Equal(new[] { "Tree.Remove", "Tree.Rename" }, map.Conflicts);
+        }
 
-            map.ResetAll();
+        [Fact]
+        public void Conflicts_TreeGestureOnUndo_ReportsTheConflict()
+        {
+            var map = new ShortcutMap(FilePath);
+
             map.Set("Tree.Rename", new KeyGesture(Key.Z, KeyModifiers.Control));
-            Assert.Empty(map.Conflicts);
+
+            Assert.Equal(new[] { "Edit.Undo", "Tree.Rename" }, map.Conflicts);
+        }
+
+        [Fact]
+        public void ConflictsOf_TwoScopesThatAreNotGlobal_MayShareAGesture()
+        {
+            var gesture = new KeyGesture(Key.R);
+            var entries = new Dictionary<string, KeyGesture?>
+            {
+                ["Tree.Rename"] = gesture,
+                ["Timeline.Record"] = gesture,
+            };
+
+            Assert.Empty(ShortcutMap.ConflictsOf(entries));
+
+            entries["File.Recent"] = gesture;
+            Assert.Equal(new[] { "File.Recent", "Timeline.Record", "Tree.Rename" }, ShortcutMap.ConflictsOf(entries));
         }
     }
 }

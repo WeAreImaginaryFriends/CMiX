@@ -79,15 +79,32 @@ namespace CMiX.Studio.Avalonia.Services
         // An unknown name gives null.
         public KeyGesture? this[string name] => gestures.TryGetValue(name, out var gesture) ? gesture : null;
 
-        // The names whose gesture another name of the same scope also has.
-        public IReadOnlyCollection<string> Conflicts =>
-            gestures
-                .Where(entry => entry.Value != null)
-                .GroupBy(entry => (Scope: ScopeOf(entry.Key), Gesture: entry.Value!.ToString()))
-                .Where(group => group.Count() > 1)
-                .SelectMany(group => group.Select(entry => entry.Key))
+        // The keys of these scopes work in every scope.
+        private static readonly string[] globalScopes = { "Edit", "File" };
+
+        // The names whose gesture another name also has, in the same scope or in a global scope.
+        public IReadOnlyCollection<string> Conflicts => ConflictsOf(gestures);
+
+        public static bool IsGlobalScope(string scope) => globalScopes.Contains(scope, StringComparer.Ordinal);
+
+        internal static IReadOnlyCollection<string> ConflictsOf(IEnumerable<KeyValuePair<string, KeyGesture?>> entries)
+        {
+            var used = entries.Where(entry => entry.Value != null).ToList();
+            return used
+                .Where(entry => used.Any(other =>
+                    other.Key != entry.Key && other.Value!.Equals(entry.Value) && CanConflict(entry.Key, other.Key)))
+                .Select(entry => entry.Key)
                 .OrderBy(name => name, StringComparer.Ordinal)
                 .ToList();
+        }
+
+        // True when the two names are in one scope or one of them is in a global scope.
+        public static bool CanConflict(string name, string other)
+        {
+            var scope = ScopeOf(name);
+            var otherScope = ScopeOf(other);
+            return scope == otherScope || IsGlobalScope(scope) || IsGlobalScope(otherScope);
+        }
 
         public static string ScopeOf(string name)
         {

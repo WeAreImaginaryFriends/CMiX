@@ -90,6 +90,21 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public void ConflictText_TreeGestureOnUndo_NamesTheGlobalRow()
+        {
+            var (_, settings) = Create();
+            var rename = Row(settings, "Tree.Rename");
+            var undo = Row(settings, "Edit.Undo");
+
+            rename.Gesture = new KeyGesture(Key.Z, KeyModifiers.Control);
+
+            Assert.True(rename.IsConflict);
+            Assert.True(undo.IsConflict);
+            Assert.Contains(ShortcutSettings.LabelOf("Edit.Undo"), rename.ConflictText);
+            Assert.Contains(ShortcutSettings.LabelOf("Tree.Rename"), undo.ConflictText);
+        }
+
+        [Fact]
         public void ResetAll_AfterChanges_RestoresTheDefaults()
         {
             var (map, settings) = Create();
