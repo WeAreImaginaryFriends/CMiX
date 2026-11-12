@@ -209,5 +209,181 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Same(screen.LayerItem, screen.Focused);
         }
+
+        [AvaloniaFact]
+        public void Press_EscapeInOtherPanel_FocusesTheCursorRow()
+        {
+            var screen = Show();
+            screen.RightPicker.Focus();
+            Settle(screen.Window);
+
+            Press(screen, PhysicalKey.Escape);
+
+            Assert.Same(screen.LayerItem, screen.Focused);
+        }
+
+        // The text box takes the first Escape. The second Escape goes back to the tree.
+        [AvaloniaFact]
+        public void Press_EscapeInATextBox_LeavesTheTextBoxOnly()
+        {
+            var screen = Show();
+            var editable = new CMiX.UI.Controls.String.TextBoxEditable { Text = "name" };
+            AddControl(screen.Right, editable);
+            editable.IsEditing = true;
+            Settle(screen.Window);
+            Assert.IsType<TextBox>(screen.Focused);
+
+            Press(screen, PhysicalKey.Escape);
+
+            Assert.False(editable.IsEditing);
+            Assert.False(IsIn(screen.Left, screen.Focused));
+
+            Press(screen, PhysicalKey.Escape);
+
+            Assert.Same(screen.LayerItem, screen.Focused);
+        }
+
+        // A plain text box keeps the Escape.
+        [AvaloniaFact]
+        public void Press_EscapeInAPlainTextBox_KeepsTheFocusInTheTextBox()
+        {
+            var screen = Show();
+            var box = AddTextBox(screen.Right);
+            box.Focus();
+            Settle(screen.Window);
+
+            Press(screen, PhysicalKey.Escape);
+
+            Assert.Same(box, screen.Focused);
+        }
+
+        // An editor that cancels on Escape and does not mark the key as handled keeps the Escape too.
+        [AvaloniaFact]
+        public void Press_EscapeInATextBoxThatLeavesTheFocus_DoesNotFocusTheTree()
+        {
+            var screen = Show();
+            var box = AddTextBox(screen.Right);
+            box.KeyDown += (_, e) =>
+            {
+                if (e.Key == Key.Escape)
+                    screen.RightPicker.Focus();
+            };
+            box.Focus();
+            Settle(screen.Window);
+
+            Press(screen, PhysicalKey.Escape);
+
+            Assert.Same(screen.RightPicker, screen.Focused);
+        }
+
+        [AvaloniaFact]
+        public void Press_EscapeHandledInOtherPanel_KeepsTheFocus()
+        {
+            var screen = Show();
+            screen.RightPicker.KeyDown += (_, e) => e.Handled = e.Key == Key.Escape;
+            screen.RightPicker.Focus();
+            Settle(screen.Window);
+
+            Press(screen, PhysicalKey.Escape);
+
+            Assert.Same(screen.RightPicker, screen.Focused);
+        }
+
+        [AvaloniaFact]
+        public void Press_EscapeInTheTree_KeepsTheCursorRow()
+        {
+            var screen = Show();
+            var cursor = screen.Tree.CursorNode;
+
+            Press(screen, PhysicalKey.Escape);
+
+            Assert.Same(screen.LayerItem, screen.Focused);
+            Assert.Same(cursor, screen.Tree.CursorNode);
+        }
+
+        // A text box at the end of the content of the panel, for the tests that need one.
+        private static TextBox AddTextBox(SidePanelHost panel) => AddControl(panel, new TextBox { Text = "text" });
+
+        // Adds the control to the first visible panel of the side panel.
+        private static T AddControl<T>(SidePanelHost panel, T control) where T : Control
+        {
+            var host = panel.GetVisualDescendants().OfType<Panel>().First(found => found.IsEffectivelyVisible && found.Children.Count > 0 && found is StackPanel or DockPanel or Grid);
+            host.Children.Add(control);
+            Settle((Window)TopLevel.GetTopLevel(panel)!);
+            return control;
+        }
+
+        [AvaloniaFact]
+        public void Wheel_OverOtherPanel_KeepsTheFocus()
+        {
+            var screen = Show();
+            var point = screen.Right.TranslatePoint(new Point(screen.Right.Bounds.Width / 2, screen.Right.Bounds.Height / 2), screen.Window)!.Value;
+
+            screen.Window.MouseMove(point);
+            screen.Window.MouseWheel(point, new Vector(0, -1));
+            Settle(screen.Window);
+
+            Assert.Same(screen.LayerItem, screen.Focused);
+        }
+
+        // A click on a part of the other panel that cannot take the focus moves the focus to that panel.
+        [AvaloniaFact]
+        public void Click_PlainPartOfOtherPanel_MovesTheFocusToThatPanel()
+        {
+            var screen = Show();
+            var bar = screen.Right.GetVisualDescendants().OfType<Border>()
+                .First(border => border.IsEffectivelyVisible && border.Bounds.Width > 20 && border.Bounds.Height > 10 && !border.GetVisualDescendants().OfType<InputElement>().Any(e => e.Focusable));
+            var point = bar.TranslatePoint(new Point(2, 2), screen.Window)!.Value;
+
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            Settle(screen.Window);
+
+            Assert.True(IsIn(screen.Right, screen.Focused));
+        }
+
+        // A toggle acts on its row only. The focus, the cursor and the selection stay on the layer row.
+        [AvaloniaFact]
+        public void Click_TheToggleOfARowWithoutTheFocus_KeepsTheCursorAndTheSelection()
+        {
+            var screen = Show();
+            screen.Tree.CursorNode = screen.LayerNode;
+            Settle(screen.Window);
+            var other = screen.Tree.CompositionNodes()[0];
+            var toggle = ItemOf(screen.View, other).GetVisualDescendants().OfType<ToggleButton>()
+                .First(button => button.Name == "visibilityToggle" && button.IsEffectivelyVisible && button.FindAncestorOfType<TreeViewItem>() == ItemOf(screen.View, other));
+            var before = toggle.IsChecked;
+            var point = toggle.TranslatePoint(new Point(toggle.Bounds.Width / 2, toggle.Bounds.Height / 2), screen.Window)!.Value;
+
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            Settle(screen.Window);
+
+            Assert.NotEqual(before, toggle.IsChecked);
+            Assert.Same(screen.LayerNode, screen.Tree.CursorNode);
+            Assert.Same(screen.LayerNode, screen.Tree.SelectedNode);
+            Assert.Same(screen.LayerItem, screen.Focused);
+        }
+
+        // A click on a toggle of the tree, with the focus in the other panel, keeps the cursor and the selection.
+        [AvaloniaFact]
+        public void Click_TheToggleOfARowFromOtherPanel_KeepsTheCursorAndTheSelection()
+        {
+            var screen = Show();
+            screen.Tree.CursorNode = screen.LayerNode;
+            screen.RightPicker.Focus();
+            Settle(screen.Window);
+            var other = screen.Tree.CompositionNodes()[0];
+            var toggle = ItemOf(screen.View, other).GetVisualDescendants().OfType<ToggleButton>()
+                .First(button => button.Name == "visibilityToggle" && button.IsEffectivelyVisible && button.FindAncestorOfType<TreeViewItem>() == ItemOf(screen.View, other));
+            var point = toggle.TranslatePoint(new Point(toggle.Bounds.Width / 2, toggle.Bounds.Height / 2), screen.Window)!.Value;
+
+            screen.Window.MouseDown(point, MouseButton.Left);
+            screen.Window.MouseUp(point, MouseButton.Left);
+            Settle(screen.Window);
+
+            Assert.Same(screen.LayerNode, screen.Tree.CursorNode);
+            Assert.Same(screen.LayerNode, screen.Tree.SelectedNode);
+        }
     }
 }

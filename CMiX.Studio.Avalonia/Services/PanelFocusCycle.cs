@@ -47,11 +47,50 @@ namespace CMiX.Studio.Avalonia.Services
         // The focus goes to the cursor row of the tree, in the panel that shows the tree (see ProjectTree.FocusTree).
         public IRelayCommand FocusTreeCommand { get; }
 
-        // The main window calls this once. The cycle then records the focused control of each panel.
+        // The main window calls this once. The cycle then records the focused control of each panel, and Escape goes back to the tree.
         public void Attach(TopLevel mainWindow)
         {
             window = mainWindow;
             mainWindow.AddHandler(InputElement.GotFocusEvent, OnGotFocus, RoutingStrategies.Bubble, handledEventsToo: true);
+            mainWindow.AddHandler(InputElement.PointerPressedEvent, (_, e) => lastPointer = e.Pointer, RoutingStrategies.Tunnel, handledEventsToo: true);
+            mainWindow.AddHandler(InputElement.KeyDownEvent, OnKeyDownTunnel, RoutingStrategies.Tunnel, handledEventsToo: true);
+            mainWindow.AddHandler(InputElement.KeyDownEvent, OnKeyDownBubble, RoutingStrategies.Bubble);
+        }
+
+        // The pointer of the last press. While it has a capture, a drag runs.
+        private IPointer? lastPointer;
+
+        // True when the Escape that goes down now started where no editor takes it. The state is read before the controls see the key:
+        // an editor can end its edit on Escape and not mark the key as handled.
+        private bool escapeToTree;
+
+        private void OnKeyDownTunnel(object? sender, KeyEventArgs e) =>
+            escapeToTree = e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None && !e.Handled && CanGoBackToTree();
+
+        // Escape that no control handled puts the focus on the cursor row of the tree. Escape backs out one level only: a text box,
+        // a popup, a drag and the tree itself keep their Escape.
+        private void OnKeyDownBubble(object? sender, KeyEventArgs e)
+        {
+            var goBack = escapeToTree;
+            escapeToTree = false;
+            if (!goBack || e.Key != Key.Escape)
+                return;
+
+            tree.FocusTree();
+            e.Handled = true;
+        }
+
+        private bool CanGoBackToTree()
+        {
+            if (lastPointer?.Captured != null)
+                return false;
+
+            if (window?.FocusManager?.GetFocusedElement() is not Visual focused || ReferenceEquals(focused, window))
+                return true;
+
+            return ReferenceEquals(focused.GetVisualRoot(), window)
+                && focused is not TextBox && focused.FindAncestorOfType<TextBox>() == null
+                && focused is not ProjectTreeView && focused.FindAncestorOfType<ProjectTreeView>() == null;
         }
 
         // The visible side panels, from left to right.

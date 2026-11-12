@@ -91,6 +91,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             DragDrop.SetAllowDrop(treeView, true);
             treeView.AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
+            treeView.AddHandler(PointerPressedEvent, OnPointerPressedDone, RoutingStrategies.Bubble, handledEventsToo: true);
             treeView.AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Tunnel);
             treeView.AddHandler(PointerReleasedEvent, OnPointerReleased, RoutingStrategies.Tunnel);
             treeView.AddHandler(PointerCaptureLostEvent, OnPointerCaptureLost);
@@ -572,6 +573,33 @@ namespace CMiX.Studio.Avalonia.Views
                 gestureOf: command => tree.Shortcuts[command]);
         }
 
+        // The focused control before a press on a button of a row. Null when the press was not on such a button.
+        private sealed record FocusBefore(IInputElement? Control);
+
+        private FocusBefore? focusBeforeRowButton;
+
+        // A toggle or the chevron of a row cannot take the focus, so a click on it focuses its row. The click acts on that row only:
+        // a focused control of the panel of the tree keeps the focus. Else the focus goes to the cursor row. The cursor and the
+        // selection do not move.
+        private void OnPointerPressedDone(object? sender, PointerPressedEventArgs e)
+        {
+            if (focusBeforeRowButton is not { } before)
+                return;
+
+            focusBeforeRowButton = null;
+            if (ReferenceEquals(FocusedControl(), before.Control))
+                return;
+
+            if (before.Control is InputElement { IsEffectivelyVisible: true } control && IsInPanel(control) && control.GetVisualRoot() != null)
+                control.Focus(control is TreeViewItem ? NavigationMethod.Tab : NavigationMethod.Unspecified);
+            else if (watched?.CursorNode is { } cursor && rowIndex.FindItem(cursor) is { } item)
+                item.Focus(NavigationMethod.Tab);
+        }
+
+        // A ToggleButton of a row that cannot take the focus: a toggle or the chevron.
+        private static bool IsRowButton(object? source) =>
+            (source as Visual)?.FindAncestorOfType<ToggleButton>(true) is { Focusable: false } button && TreeRows.ItemOf(button) != null;
+
         private static bool IsInToggles(object? source) =>
             (source as Visual)?.FindAncestorOfType<RowToggles>(true) != null;
 
@@ -604,8 +632,16 @@ namespace CMiX.Studio.Avalonia.Views
         {
             pressedNode = null;
             chosenNode = null;
-            if (rowDrag.IsDragging || !e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed || IsEditor(e.Source))
+            focusBeforeRowButton = null;
+            if (rowDrag.IsDragging || !e.GetCurrentPoint(treeView).Properties.IsLeftButtonPressed)
                 return;
+
+            if (IsEditor(e.Source))
+            {
+                if (IsRowButton(e.Source))
+                    focusBeforeRowButton = new FocusBefore(FocusedControl());
+                return;
+            }
 
             var node = TreeRows.ItemOf(e.Source)?.DataContext as TreeNode;
             // The tree view toggles the selection on a Ctrl click. The tree has one selection, so a Ctrl click on a row does nothing.
