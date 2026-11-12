@@ -457,7 +457,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // Gives the search box of the tree the focus (Tree.Search). The box is always shown, in the bar of the panel (see TreeSearchBox).
         // The command has the condition of every tree key (see CanRunTreeKey). There is no search during a drag: the command
-        // cannot run, FocusSearch and SelectMatch do nothing, and the box takes no text.
+        // cannot run, FocusSearch and MoveCursorToMatch do nothing, and the box takes no text.
         public IRelayCommand FocusSearchCommand { get; }
 
         public void FocusSearch()
@@ -480,23 +480,29 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // The view of the drag ends a drag of a row without a drop, for example on Escape in the search box (see TreeRowDrag.Cancel).
         public Action CancelDrag { get; set; }
 
-        // Selects the next match of the search in the order of the tree, or the match before it with a negative step. The selection
-        // goes round at the ends. Nothing selected, or a selected row that does not match: the first match, or the last one going back.
-        // The parents of the match open, so its row shows, and the view brings the row into view (the origin is Program).
-        public void SelectMatch(int step)
+        // Moves the cursor to the next match of the search in the order of the tree, or to the match before it with a negative step.
+        // The cursor goes round at the ends. No cursor, or a cursor on a row that does not match: the first match, or the last one going
+        // back. The parents of the match open, so its row shows, and the view brings the row into view (RevealRequested). The selection
+        // does not change: no undo step and no wire message.
+        public void MoveCursorToMatch(int step)
         {
             var count = searchMatches.Count;
             if (count == 0 || step == 0 || IsDragging)
                 return;
 
-            var index = selectedNode == null ? -1 : IndexOf(searchMatches, selectedNode);
+            var index = cursorNode == null ? -1 : IndexOf(searchMatches, cursorNode);
             var next = index < 0 ? (step > 0 ? 0 : count - 1) : ((index + step) % count + count) % count;
             var node = searchMatches[next];
             for (var parent = node.Parent; parent != null && !ReferenceEquals(parent, root); parent = parent.Parent)
                 OpenForSearch(parent);
 
-            Select(node, SelectionOrigin.Program);
+            CursorNode = node;
+            searchCursor = node;
+            RevealRequested?.Invoke(this, node);
         }
+
+        // The match that MoveCursorToMatch last moved the cursor to. See SyncSearchRows.
+        private TreeNode? searchCursor;
 
         // Starts the rename of the target row. The view sets the name box of the row to edit mode (see RenameRequested).
         public IRelayCommand RenameSelectedCommand { get; }
@@ -680,15 +686,22 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // Opens the parents of every match, so every match is in sight, and closes the rows that the search opened and that lead to no
         // match any more. There is no search during a drag: EndDrag does it once the drag is over.
         // At the end of the search, the parents of the selected row stay open, so the user can go on with it: they leave the list.
-        // The selected row keeps its state. The other rows that the search opened close, and the view keeps the rows still.
+        // The same applies to the cursor row while MoveCursorToMatch put the cursor there. These rows keep their state. The other rows
+        // that the search opened close, and the view keeps the rows still.
         private void SyncSearchRows()
         {
             if (IsDragging)
                 return;
 
-            if (searchText.Trim().Length == 0 && selectedNode != null)
-                foreach (var row in ParentsOf(selectedNode).Append(selectedNode))
-                    searchOpened.Remove(row);
+            if (searchText.Trim().Length == 0)
+            {
+                var matchCursor = ReferenceEquals(cursorNode, searchCursor) ? cursorNode : null;
+                searchCursor = null;
+                foreach (var kept in new[] { selectedNode, matchCursor })
+                    if (kept != null)
+                        foreach (var row in ParentsOf(kept).Append(kept))
+                            searchOpened.Remove(row);
+            }
 
             var needed = new HashSet<TreeNode>(searchMatches.SelectMany(ParentsOf));
 

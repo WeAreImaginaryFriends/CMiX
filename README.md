@@ -104,9 +104,9 @@ Every panel ends with the group Project, so a composition can be added under any
 
 The search field is always shown while the panel shows the tree: it is in the bar of the panel, at the right, on the line of the button that picks what the panel shows. `Tree.Search` (Ctrl+F) puts the focus in the field and selects its text. It works on the condition of every tree shortcut (see Keyboard shortcuts). A row matches when its name or its kind holds the text, with no regard to case, so a renamed Echo filter is found by "Echo". Only the matches keep their color. Every other row is dimmed, the parents of the matches too. While the field holds text, a cross inside the field at its right empties it.
 
-While the search runs, the parents of every match open, so every match is in sight. When the text is empty again, the rows that the search opened close again. If a row is selected then, its parents stay open and the row keeps its state, so you can go on with it. A row that you open or close during the search keeps your choice.
+While the search runs, the parents of every match open, so every match is in sight. When the text is empty again, the rows that the search opened close again. The parents of the selected row stay open then, and so do the parents of the match that Enter found, and these rows keep their state, so you can go on with them. A row that you open or close during the search keeps your choice.
 
-Enter or F3 selects the next match, and Shift with them the match before. At the last match, the next one is the first. Escape clears the text, and Escape in an empty field gives the focus back to the rows.
+Enter in the field moves the cursor row of the tree to the next match, and Shift+Enter to the match before. At the last match, the next one is the first. The selection does not change, and the focus stays in the field. Down puts the focus in the tree on the cursor row, and Enter there selects the row. Escape clears the text, and Escape in an empty field gives the focus back to the rows.
 
 There is no search during a drag of a row. The box takes no text, Ctrl+F does nothing, and the tree shows only the look of the drag. After the drop, the search look comes back with the same text.
 
