@@ -130,7 +130,8 @@ The consistency lead asks that the new looks go into CMiX.UI so the Inspector, t
 |---|---|---|---|---|
 | 4.1 | Row toggles get `Focusable=False`. The TreeView gets `KeyboardNavigation.TabNavigation="Once"`. | `RowToggles.axaml`, `ComposableToggles.axaml`, `ProjectTreeView.axaml` | Tab leaves the tree in one step; a toggle click still toggles | 1 |
 | 4.2 | Add `PanelFocusCycle`: `Window.NextPanel` (Ctrl+Tab), `Window.PreviousPanel` (Ctrl+Shift+Tab), `Tree.Focus` and `Window.FocusPanel1..4` (Ctrl+1 to 4). It remembers the last focused control of each panel. | new `Services/PanelFocusCycle.cs`, `ShortcutMap.cs`, `MainWindow.axaml(.cs)`, README | Focus moves and comes back to the last control | 3 |
-| 4.3 | Escape in another panel, when no editor takes it, goes back to the tree. A click moves the focus; the wheel never does. | `MainWindow.axaml.cs` | Escape and wheel tests | 2 |
+| 4.3 | Escape in another panel, when no editor takes it, goes back to the tree. A click moves the focus; the wheel never does. A click on a toggle of a row without the focus keeps the cursor and the selection (found in step 4.1). | `MainWindow.axaml.cs`, `ProjectTreeView.axaml.cs` | Escape, wheel and toggle click tests | 2 |
+| 4.4 | A gesture written by hand as `Ctrl+1` in the settings file works as `Ctrl+D1` (KeyGesture.Parse reads a bare digit as a key value). Found in step 4.2. | `ShortcutMap.cs` | Load `Ctrl+1` and `Ctrl+3`, get `Ctrl+D1` and `Ctrl+D3` | 2 |
 
 ### Phase 5: Row actions and the big tree
 
@@ -168,7 +169,7 @@ Isolate one branch (Shift+F, header badge "Isolated, Esc back"), M "Move to...",
 | 1 | 1.2, 1.5, 1.6, 1.7 | 1.3, 1.4, 1.8 | 1.9, 1.10 | 1.1 (the rename goes last, so no branch keeps the old names) |
 | 2 | 2.1, 2.2 | 2.3 | | |
 | 3 | 3.1, 3.5, 3.6 | 3.2, 3.3 | 3.4, 3.8, 3.9 | 3.7 |
-| 4 | 4.1, 4.2 | 4.3 | | |
+| 4 | 4.1, 4.2 | 4.3, 4.4 | | |
 | 5 | 5.1, 5.2, 5.5 | 5.3, 5.4, 5.6 | | |
 | 6 | 6.1, 6.2, 6.4 | 6.3 | | |
 
