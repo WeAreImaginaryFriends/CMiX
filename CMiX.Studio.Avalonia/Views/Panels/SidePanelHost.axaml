@@ -78,7 +78,7 @@
                 </DockPanel>
             </Border>
 
-            <!-- The accent line of the panel with the keyboard focus, over the bottom of the bar (see Themes/Styles/PanelFocus.axaml). -->
+            <!-- The accent line of the panel with the keyboard focus, over the bottom of the bar (see PanelFocus.axaml in CMiX.UI). -->
             <Border Name="focusLine" Classes="focusline" />
 
         </Panel>

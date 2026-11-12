@@ -4,18 +4,22 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CMiX.UI.AttachedProperties;
 using CMiX.UI.Controls;
 using CMiX.UI.Controls.Number;
 using CMiX.UI.Panels;
+using CMiX.UI.Popups;
 
 namespace CMiX.UI.Gallery
 {
     // Shows every kind of control in its states: idle, hover, pressed, on and on with the pointer over it.
+    // The keyboard states (cursor, disabled, panel focus line, key caps) have their own sections.
     // The states are forced with pseudo classes, so they can be compared side by side.
     public partial class MainWindow : Window
     {
@@ -68,7 +72,9 @@ namespace CMiX.UI.Gallery
             Sections.Children.Add(Section("Rows", "row", RowSamples()));
             Sections.Children.Add(Tabs());
             Sections.Children.Add(Section("Icon only (the rule is already this one)", "icon", IconSamples()));
-
+            Sections.Children.Add(KeyboardStates());
+            Sections.Children.Add(PanelFocus());
+            Sections.Children.Add(KeyCaps());
         }
 
         private void BindScale()
@@ -270,6 +276,182 @@ namespace CMiX.UI.Gallery
             Grid.SetRow(control, row);
             Grid.SetColumn(control, column);
             return control;
+        }
+
+        // ------------------------------------------------------------------ keyboard states
+
+        private enum KeyState { Idle, Hover, Cursor, CursorSelected, CursorUnfocused, Disabled }
+
+        private static readonly (KeyState State, string Header)[] KeyStates =
+        {
+            (KeyState.Idle, "Idle"),
+            (KeyState.Hover, "Hover"),
+            (KeyState.Cursor, "Cursor"),
+            (KeyState.CursorSelected, "Cursor + selected"),
+            (KeyState.CursorUnfocused, "Cursor, list unfocused"),
+            (KeyState.Disabled, "Disabled"),
+        };
+
+        // The states of the arrow keys on a list row and a menu row. In a menu, the cursor is the row of the arrow keys.
+        private Control KeyboardStates()
+        {
+            var grid = new Grid { Margin = new Thickness(8) };
+            grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(100)));
+            foreach (var _ in KeyStates)
+                grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(150)));
+
+            grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            for (var column = 0; column < KeyStates.Length; column++)
+                grid.Children.Add(At(Header(KeyStates[column].Header), 0, column + 1));
+
+            var kinds = new (string Name, Func<KeyState, Control?> Make)[] { ("List row", ListRow), ("Menu row", MenuRow) };
+            for (var row = 0; row < kinds.Length; row++)
+            {
+                grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                grid.Children.Add(At(Header(kinds[row].Name), row + 1, 0));
+                for (var column = 0; column < KeyStates.Length; column++)
+                    if (kinds[row].Make(KeyStates[column].State) is { } control)
+                        grid.Children.Add(At(control, row + 1, column + 1));
+            }
+
+            var holder = new StackPanel { Spacing = 4 };
+            holder.Children.Add(grid);
+            holder.Children.Add(new TextBlock
+            {
+                Text = "The tree row is in the Studio. This section shows the list row and the menu row only.",
+                Opacity = 0.7,
+                Margin = new Thickness(8, 0, 8, 8),
+            });
+            return Frame("Keyboard states", "keyboard", holder);
+        }
+
+        // A list row (ListBoxItemBasic, through the theme of the list). The cursor frame is bright only while the list has the focus.
+        private static Control ListRow(KeyState state)
+        {
+            var item = new ListBoxItem { Content = "Row" };
+            var list = new ListBox { Width = 140, Height = 34, HorizontalAlignment = HorizontalAlignment.Left };
+            list.Items.Add(item);
+
+            switch (state)
+            {
+                case KeyState.Hover:
+                    Force(item, ":pointerover");
+                    break;
+                case KeyState.Cursor:
+                    CursorRow.SetIsCursor(item, true);
+                    Force(list, ":focus-within");
+                    break;
+                case KeyState.CursorSelected:
+                    CursorRow.SetIsCursor(item, true);
+                    list.SelectedIndex = 0;
+                    Force(list, ":focus-within");
+                    break;
+                case KeyState.CursorUnfocused:
+                    CursorRow.SetIsCursor(item, true);
+                    break;
+                case KeyState.Disabled:
+                    item.IsEnabled = false;
+                    break;
+            }
+
+            return list;
+        }
+
+        // A context menu row with a shortcut. A menu has no selection and no unfocused cursor.
+        private static Control? MenuRow(KeyState state)
+        {
+            if (state is KeyState.CursorSelected or KeyState.CursorUnfocused)
+                return null;
+
+            var row = MenuRowSample();
+            switch (state)
+            {
+                case KeyState.Hover:
+                    Force(row, ":pointerover");
+                    break;
+                case KeyState.Cursor:
+                    row.IsSelected = true;
+                    break;
+                case KeyState.Disabled:
+                    row.IsEnabled = false;
+                    break;
+            }
+
+            return OnCard(row);
+        }
+
+        private static MenuItem MenuRowSample() => new()
+        {
+            Theme = Theme("MenuItemContext"),
+            Header = "Duplicate",
+            InputGesture = new KeyGesture(Key.D, KeyModifiers.Control),
+            Width = 140,
+        };
+
+        // Menus and tooltips lie on the popup card.
+        private static Control OnCard(Control content) => new Border
+        {
+            Background = Brush("PopupBackgroundBrush"),
+            CornerRadius = new CornerRadius(4),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Child = content,
+        };
+
+        // A panel with the focus line (classes focuspanel and focusline). Click in the text box to move the focus.
+        private Control PanelFocus()
+        {
+            Control FocusPanel(string title, bool focused)
+            {
+                var header = new Panel();
+                header.Children.Add(new Border
+                {
+                    Background = Brush("Grey100Brush"),
+                    Padding = new Thickness(8),
+                    Child = new TextBlock { Text = title },
+                });
+                header.Children.Add(new Border { Classes = { "focusline" } });
+
+                var panel = new DockPanel { Width = 220, Classes = { "focuspanel" } };
+                PopupOwner.SetIsEnabled(panel, true);
+                DockPanel.SetDock(header, Dock.Top);
+                panel.Children.Add(header);
+                panel.Children.Add(new TextBox { Text = "Click to focus", Margin = new Thickness(8) });
+
+                if (focused)
+                    Force(panel, ":focus-within");
+                return panel;
+            }
+
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Margin = new Thickness(8) };
+            row.Children.Add(FocusPanel("Focused panel", true));
+            row.Children.Add(FocusPanel("Unfocused panel", false));
+            return Frame("Panel focus line", "panelfocus", row);
+        }
+
+        // Key caps (TextBlockKeyCap) next to the shortcut text of a tooltip and of a menu row, resting and hovered.
+        private Control KeyCaps()
+        {
+            Control Cap(string key) => new ContentControl { Theme = Theme("TextBlockKeyCap"), Content = key };
+
+            Control Pair(string name, Control sample, string key)
+            {
+                var pair = new StackPanel { Spacing = 4 };
+                pair.Children.Add(Header(name));
+                var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+                line.Children.Add(sample);
+                line.Children.Add(Cap(key));
+                pair.Children.Add(line);
+                return pair;
+            }
+
+            var hovered = MenuRowSample();
+            Force(hovered, ":pointerover");
+
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 24, Margin = new Thickness(8) };
+            row.Children.Add(Pair("Tooltip", new ToolTip { Content = new TipContent("Add", "Shift+A") }, "Shift+A"));
+            row.Children.Add(Pair("Menu row, resting", OnCard(MenuRowSample()), "Ctrl+D"));
+            row.Children.Add(Pair("Menu row, hovered", OnCard(hovered), "Ctrl+D"));
+            return Frame("Key caps and shortcut text", "keycaps", row);
         }
 
         // ------------------------------------------------------------------ states
