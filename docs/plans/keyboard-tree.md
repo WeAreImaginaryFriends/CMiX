@@ -104,7 +104,7 @@ No visual change. This phase removes the live hazard of finding 1.
 
 | Step | Work | Files | Tests | Cx |
 |---|---|---|---|---|
-| 2.1 | Add `TreeRowAnchor.CenterOf(TreeViewItem, Visual)`. W and Shift+A from a key open at the cursor row. A right-click opens at the pointer. Shift+F10 and the Menu key open the menu of the focused row. | `TreeRows.cs` (or new `TreeRowAnchor.cs`), `AddPanel.cs`, `ProjectTreeView.axaml.cs` | Panel position equals row position; Menu key test | 3 |
+| 2.1 | Add `TreeRowAnchor.CenterOf(TreeViewItem, Visual)`. W and Shift+A from a key open at the cursor row. A right-click opens at the pointer and puts the cursor on the clicked row, also on the selected row (left clicks do this since step 1.9). Shift+F10 and the Menu key open the menu of the focused row. | `TreeRows.cs` (or new `TreeRowAnchor.cs`), `AddPanel.cs`, `ProjectTreeView.axaml.cs` | Panel position equals row position; Menu key test | 3 |
 | 2.2 | Give `MenuItemContext` a `:selected` look with the hover fill (D14). | `CMiX.UI` `ContextMenu.axaml` | Measure the fill of a selected menu row | 2 |
 
 ### Phase 3: Shared tokens and the cursor look
