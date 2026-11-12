@@ -8,7 +8,8 @@
 
     var MIN = 0.05, MAX = 16, PAD = 56;
     var STEPS = [0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16];
-    var EASE = 'transform 280ms cubic-bezier(0.215, 0.61, 0.355, 1)';
+    var CURVE = '280ms cubic-bezier(0.215, 0.61, 0.355, 1)';
+    var EASE = 'transform ' + CURVE + ', --inv ' + CURVE;
 
     function clamp(s) { return Math.min(MAX, Math.max(MIN, s)); }
 
@@ -22,6 +23,7 @@
         var view = { x: 0, y: 0, s: 1 };
         var spaceDown = false;
         var drag = null;
+        var listeners = [];
 
         var hud = document.createElement('div');
         hud.className = 'cv-hud';
@@ -38,30 +40,32 @@
         var label = hudButton('100%', 'Zoom to 100% (Ctrl+0)', function () { zoomCenter(1, true); });
         label.className = 'cv-zoom';
         hudButton('+', 'Zoom in (+)', function () { step(1); });
-        hudButton('Fit', 'Show all (Shift+1)', function () { fitAll(true); });
+        hudButton('Overview', 'Show all (Shift+1). Wheel: scroll. Ctrl + wheel: zoom. Space + drag or the middle button: move.', function () { fitAll(true, true); });
         viewport.appendChild(hud);
 
         function save() {
             try { localStorage.setItem(storageKey, JSON.stringify(view)); } catch (e) { /* no storage */ }
         }
 
-        function apply(animate) {
+        function apply(animate, byUser) {
             world.style.transition = animate ? EASE : 'none';
             world.style.transform = 'translate(' + Math.round(view.x) + 'px,' + Math.round(view.y) + 'px) scale(' + view.s + ')';
             world.style.setProperty('--inv', String(1 / view.s));
             label.textContent = Math.round(view.s * 100) + '%';
             save();
+            listeners.forEach(function (listener) { listener(view, !!byUser); });
         }
 
         function size() { return { w: viewport.clientWidth, h: viewport.clientHeight }; }
 
         function zoomAt(cx, cy, s, animate) {
+            /* A zoom comes from the user: the wheel, a key or a button. */
             s = clamp(s);
             var k = s / view.s;
             view.x = cx - (cx - view.x) * k;
             view.y = cy - (cy - view.y) * k;
             view.s = s;
-            apply(animate);
+            apply(animate, true);
         }
 
         function zoomCenter(s, animate) { var v = size(); zoomAt(v.w / 2, v.h / 2, s, animate); }
@@ -80,20 +84,23 @@
             return { x: x, y: y, w: element.offsetWidth, h: element.offsetHeight };
         }
 
-        function fitAll(animate) {
+        function fitAll(animate, byUser) {
             var v = size();
             var w = world.scrollWidth, h = world.scrollHeight;
             if (!w || !h) return;
             view.s = clamp(Math.min((v.w - 2 * PAD) / w, (v.h - 2 * PAD) / h, 1));
             view.x = (v.w - w * view.s) / 2;
             view.y = (v.h - h * view.s) / 2;
-            apply(animate);
+            apply(animate, byUser);
         }
 
         /* Shows an element at the largest zoom that shows its whole width, and not more than maxZoom.
            An element that is higher than the view starts at the top. */
-        function flyTo(element, maxZoom, animate) {
-            var v = size(), r = rectOf(element);
+        function flyTo(element, maxZoom, animate) { flyToRect(rectOf(element), maxZoom, animate); }
+
+        /* The same for a place of the world: x, y, w and h. */
+        function flyToRect(r, maxZoom, animate) {
+            var v = size();
             if (!r.w) return;
             view.s = clamp(Math.min((v.w - 2 * PAD) / r.w, maxZoom || 1));
             view.x = (v.w - r.w * view.s) / 2 - r.x * view.s;
@@ -114,7 +121,7 @@
                 if (e.shiftKey && !dx) { dx = dy; dy = 0; }
                 view.x -= dx;
                 view.y -= dy;
-                apply(false);
+                apply(false, true);
             }
         }, { passive: false });
 
@@ -134,7 +141,7 @@
             view.y += e.clientY - drag.y;
             drag.x = e.clientX;
             drag.y = e.clientY;
-            apply(false);
+            apply(false, true);
         });
         function endDrag(e) {
             if (!drag || e.pointerId !== drag.id) return;
@@ -149,7 +156,7 @@
             if (isTyping(e.target)) return;
             if (e.code === 'Space') { spaceDown = true; viewport.classList.add('cv-space'); e.preventDefault(); }
             else if ((e.ctrlKey || e.metaKey) && (e.key === '0')) { e.preventDefault(); zoomCenter(1, true); }
-            else if (e.shiftKey && e.code === 'Digit1') { e.preventDefault(); fitAll(true); }
+            else if (e.shiftKey && e.code === 'Digit1') { e.preventDefault(); fitAll(true, true); }
             else if (!e.ctrlKey && !e.metaKey && (e.key === '+' || e.key === '=')) { step(1); }
             else if (!e.ctrlKey && !e.metaKey && e.key === '-') { step(-1); }
         });
@@ -169,7 +176,12 @@
             return false;
         }
 
-        return { flyTo: flyTo, fitAll: fitAll, restore: restore, zoom: function () { return view.s; } };
+        return {
+            flyTo: flyTo, flyToRect: flyToRect, rectOf: rectOf, fitAll: fitAll, restore: restore,
+            zoom: function () { return view.s; },
+            /* The listener gets the view and true when the user moved it. */
+            onChange: function (listener) { listeners.push(listener); listener(view, false); }
+        };
     }
 
     window.CMiXCanvas = { attach: attach };

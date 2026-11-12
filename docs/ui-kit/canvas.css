@@ -1,5 +1,8 @@
 /* The canvas of canvas.js: the view, the world and the zoom buttons. */
 
+/* 1 / zoom, for a label that keeps its size on the screen. It is a number, so it moves with the zoom during a flight. */
+@property --inv { syntax: "<number>"; inherits: true; initial-value: 1; }
+
 [data-canvas] {
     position: fixed;
     inset: 0;
@@ -28,23 +31,24 @@
     right: 16px;
     bottom: 16px;
     display: flex;
-    gap: 1px;
+    gap: 2px;
     padding: 4px;
-    border-radius: 6px;
-    background: #2b2b2e;
+    border: 1px solid #4A463C;
+    border-radius: 8px;
+    background: #2E2B26;
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
 }
 .cv-hud button {
-    min-width: 28px;
-    height: 28px;
+    min-width: 32px;
+    height: 32px;
     padding: 0 8px;
     border: 0;
     border-radius: 4px;
     background: transparent;
-    color: #e0e0e0;
-    font: 12px "Segoe UI", system-ui, sans-serif;
+    color: #F2EDE4;
+    font: 600 13px "Segoe UI", system-ui, sans-serif;
     font-variant-numeric: tabular-nums;
     cursor: pointer;
 }
-.cv-hud button:hover { background: #404044; }
-.cv-hud .cv-zoom { min-width: 52px; }
+.cv-hud button:hover { background: #3A3528; }
+.cv-hud .cv-zoom { min-width: 60px; }
