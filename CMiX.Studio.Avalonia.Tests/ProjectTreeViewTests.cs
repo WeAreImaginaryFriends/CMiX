@@ -824,6 +824,59 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(new[] { layerNode }, chosen);
         }
 
+        // A click on the row of the node, with or without Ctrl.
+        private static void Click(Screen screen, TreeNode node, RawInputModifiers modifiers = RawInputModifiers.None)
+        {
+            screen.Window.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+            var point = screen.PointIn(node, 0.5);
+            screen.Window.MouseMove(point, modifiers);
+            screen.Window.MouseDown(point, MouseButton.Left, modifiers);
+            screen.Window.MouseUp(point, MouseButton.Left, modifiers);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        [AvaloniaFact]
+        public void CtrlClick_AnotherRow_KeepsTheSelection()
+        {
+            var screen = Show();
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
+            Click(screen, first);
+            Assert.Same(first, screen.Tree.SelectedNode);
+
+            Click(screen, second, RawInputModifiers.Control);
+
+            Assert.Same(first, screen.Tree.SelectedNode);
+        }
+
+        [AvaloniaFact]
+        public void CtrlClick_TheSelectedRow_KeepsItSelected()
+        {
+            var screen = Show();
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            Click(screen, first);
+
+            Click(screen, first, RawInputModifiers.Control);
+
+            Assert.Same(first, screen.Tree.SelectedNode);
+        }
+
+        [AvaloniaFact]
+        public void Click_AnotherRowAfterACtrlClick_SelectsThatRow()
+        {
+            var screen = Show();
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
+            Click(screen, first);
+            Click(screen, second, RawInputModifiers.Control);
+
+            Click(screen, second);
+
+            Assert.Same(second, screen.Tree.SelectedNode);
+        }
+
         [AvaloniaFact]
         public void Drop_OnATargetThatIsNotAllowed_ChangesNothing()
         {

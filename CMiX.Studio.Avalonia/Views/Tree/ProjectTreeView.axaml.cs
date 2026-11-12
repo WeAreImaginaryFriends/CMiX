@@ -176,7 +176,7 @@ namespace CMiX.Studio.Avalonia.Views
         // Escape ends a drag of a row without a drop.
         // Avalonia runs the key bindings of the view (the gestures of the map) before this handler. The navigation keys move the soft
         // selection only (see ProjectTree.SoftSelectedNode). The tree view does not see them, so they select nothing. A navigation key
-        // with a modifier does nothing. A key in a name box stays in the name box.
+        // with a modifier does nothing. A key in a name box stays in the name box. The keys of IsTreeViewKey do nothing.
         private void OnKeyDownTunnel(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape && rowDrag.IsDragging)
@@ -186,7 +186,17 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
             }
 
-            if (watched is not { } tree || IsInTextBox(e.Source) || !IsNavigationKey(e.Key))
+            if (watched is not { } tree || IsInTextBox(e.Source))
+                return;
+
+            // The tree view opens and closes rows on these keys by itself. The design does not use them.
+            if (IsTreeViewKey(e.Key))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            if (!IsNavigationKey(e.Key))
                 return;
 
             e.Handled = true;
@@ -200,6 +210,10 @@ namespace CMiX.Studio.Avalonia.Views
 
         private static bool IsNavigationKey(Key key) =>
             key is Key.Up or Key.Down or Key.PageUp or Key.PageDown or Key.Home or Key.End or Key.Left or Key.Right;
+
+        // The numpad keys that TreeViewItem uses to open and close rows. Enter and the navigation keys are not in this list.
+        internal static bool IsTreeViewKey(Key key) =>
+            key is Key.Add or Key.Subtract or Key.Multiply or Key.Divide;
 
         private void MoveSoftSelection(ProjectTree tree, Key key)
         {
@@ -532,6 +546,13 @@ namespace CMiX.Studio.Avalonia.Views
                 return;
 
             var node = TreeRows.ItemOf(e.Source)?.DataContext as TreeNode;
+            // The tree view toggles the selection on a Ctrl click. The tree has one selection, so a Ctrl click on a row does nothing.
+            if (node != null && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            {
+                e.Handled = true;
+                return;
+            }
+
             // The toggles at the right of a row never start a drag, not even the space around them.
             pressedNode = node != null && !IsInToggles(e.Source) && DataContext is ProjectTree tree && tree.CanDrag(node) ? node : null;
             chosenNode = node;

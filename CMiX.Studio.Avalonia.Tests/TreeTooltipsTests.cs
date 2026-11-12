@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.Tests.Support;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
@@ -84,6 +87,74 @@ namespace CMiX.Studio.Avalonia.Tests
             view.Tooltips.Hover(null);
             Assert.False(ToolTip.GetIsOpen(second));
             Assert.Null(view.Tooltips.Open);
+        }
+
+        // The middle of the control in the coordinates of the window, after a render so that the hit test finds it.
+        private Point MiddleOf(Control control)
+        {
+            window!.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+            return control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window)!.Value;
+        }
+
+        private void MoveTo(Point point)
+        {
+            window!.MouseMove(point);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        [AvaloniaFact]
+        public void KeyPress_WithAnOpenTooltip_ClosesIt()
+        {
+            var (view, tree) = Show();
+            var mask = MaskOf(view, tree.CompositionNodes()[0]);
+            ToolTip.SetShowDelay(mask, 0);
+            MoveTo(MiddleOf(mask));
+            Assert.True(ToolTip.GetIsOpen(mask));
+
+            window!.KeyPressQwerty(PhysicalKey.A, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(ToolTip.GetIsOpen(mask));
+            Assert.Null(view.Tooltips.Open);
+            Assert.True(view.Tooltips.IsMuted);
+        }
+
+        [AvaloniaFact]
+        public void KeyPress_WhileATooltipWaits_StopsTheWait()
+        {
+            var (view, tree) = Show();
+            var mask = MaskOf(view, tree.CompositionNodes()[0]);
+            MoveTo(MiddleOf(mask));
+            Assert.Same(mask, view.Tooltips.Hovered);
+
+            window!.KeyPressQwerty(PhysicalKey.A, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Null(view.Tooltips.Hovered);
+        }
+
+        [AvaloniaFact]
+        public void MouseMove_AfterAKeyPress_OpensNoTooltipUntilTheMoveIsLongerThanTheWakeDistance()
+        {
+            var (view, tree) = Show();
+            var mask = MaskOf(view, tree.CompositionNodes()[0]);
+            ToolTip.SetShowDelay(mask, 0);
+            Assert.True(mask.Bounds.Width > 2 * TreeTooltips.WakeDistance + 2);
+            var middle = MiddleOf(mask);
+            var start = middle - new Vector(TreeTooltips.WakeDistance / 2 + 1, 0);
+            MoveTo(start);
+            window!.KeyPressQwerty(PhysicalKey.A, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            MoveTo(start + new Vector(TreeTooltips.WakeDistance - 1, 0));
+            Assert.False(ToolTip.GetIsOpen(mask));
+            Assert.True(view.Tooltips.IsMuted);
+
+            MoveTo(start + new Vector(TreeTooltips.WakeDistance + 1, 0));
+            Assert.True(ToolTip.GetIsOpen(mask));
+            Assert.False(view.Tooltips.IsMuted);
         }
 
         [AvaloniaFact]

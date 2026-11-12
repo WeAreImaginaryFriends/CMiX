@@ -100,6 +100,33 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Same(second.Item, screen.Composition.LayerManager.SelectedItem);
         }
 
+        // The open state of every row of the tree.
+        private static bool[] OpenStates(ProjectTree tree) => All(tree.Roots).Select(node => node.IsExpanded).ToArray();
+
+        // The keys of the tree view of Avalonia that open or close rows. The focused row is open for the keys that close
+        // and closed for the keys that open, so a key that goes through changes it.
+        [AvaloniaTheory]
+        [InlineData(PhysicalKey.NumPadAdd, false)]
+        [InlineData(PhysicalKey.NumPadMultiply, false)]
+        [InlineData(PhysicalKey.NumPadSubtract, true)]
+        [InlineData(PhysicalKey.NumPadDivide, true)]
+        public void Press_ATreeViewKey_OpensOrClosesNoRow(PhysicalKey key, bool open)
+        {
+            var screen = Show();
+            var layer = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            Assert.NotEmpty(layer.Children);
+            layer.IsExpanded = open;
+            Settle();
+            ItemOf(screen.View, layer).Focus();
+            Settle();
+            var before = OpenStates(screen.Tree);
+
+            Press(key);
+
+            Assert.Equal(before, OpenStates(screen.Tree));
+            Assert.Equal(open, layer.IsExpanded);
+        }
+
         [AvaloniaFact]
         public void KeyBindings_WhileANameBoxIsEdited_ArePaused()
         {
