@@ -57,11 +57,13 @@ namespace CMiX.Studio.Avalonia.Tests
                 Dispatcher.UIThread.RunJobs();
             }
 
-            // A right click on the row.
+            // A right click on the row. A request with no place of the pointer comes from a key and opens the menu under the row.
             public ContextMenu OpenMenu(TreeNode node)
             {
-                var row = RowOf(node);
-                row.RaiseEvent(new ContextRequestedEventArgs { Source = row });
+                var point = CenterOf(TreeTestScreen.RowOf(View, node));
+                Window.MouseMove(point);
+                Window.MouseDown(point, MouseButton.Right);
+                Window.MouseUp(point, MouseButton.Right);
                 Settle();
                 return Menu;
             }

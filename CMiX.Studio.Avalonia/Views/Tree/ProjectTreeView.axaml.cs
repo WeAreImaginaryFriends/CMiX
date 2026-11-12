@@ -18,6 +18,7 @@ using Avalonia.VisualTree;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views.Managers;
 using CMiX.UI.Controls.Boolean;
+using CMiX.UI.Controls.Parts;
 using CMiX.UI.Controls.String;
 using CMiX.UI.Popups;
 using CMiX.UI.Behaviors;
@@ -246,24 +247,25 @@ namespace CMiX.Studio.Avalonia.Views
             RevealRow(node);
         }
 
-        // The last place of the pointer over the tree, in the coordinates of the tree view. Tree.Add uses it to find the row.
+        // The last place of the pointer over the tree, in the coordinates of the tree view. Tree.Add opens there when no target row is shown.
         private Point lastPointer;
 
         private void OnPointerTracked(object? sender, PointerEventArgs e) => lastPointer = e.GetPosition(treeView);
 
-        // Tree.Add: the Add panel of the target row (ProjectTree.TargetNode) opens with its search field under the pointer, and the title Add.
-        // With no target it holds what the project takes, a composition. Nothing is added until the user picks an entry of the panel.
+        // Tree.Add, a key: the Add panel of the target row (ProjectTree.TargetNode) opens with the middle of its search field on the middle
+        // of that row, and the title Add. With no target, or a target row that is not shown, it opens under the pointer. With no target it
+        // holds what the project takes, a composition. Nothing is added until the user picks an entry of the panel.
         private void OnAddRequested(object? sender, EventArgs e)
         {
             if (!IsActiveView || DataContext is not ProjectTree tree)
                 return;
 
-            // The panel opens with the middle of its search field under the pointer.
-            menuAddPanel.OpenAtPoint(treeView, lastPointer, tree.GetAddGroups(tree.TargetNode), AddTitle);
+            var point = tree.TargetNode is { } node && ShownItemOf(node) is { } item ? TreeRowAnchor.CenterOf(item, treeView) : null;
+            menuAddPanel.OpenAtPoint(treeView, point ?? lastPointer, tree.GetAddGroups(tree.TargetNode), AddTitle);
         }
 
-        // Tree.Menu: the menu of the target row opens at the pointer, as a right click opens it. With no target, it is the menu
-        // of the project. A target row that is not shown (its parent is collapsed) opens no menu.
+        // Tree.Menu, a key: the menu of the target row opens under that row (see OpenMenu). With no target, it is the menu of the project,
+        // at the pointer. A target row that is not shown (its parent is collapsed) opens no menu.
         private void OnMenuRequested(object? sender, EventArgs e)
         {
             if (!IsActiveView || DataContext is not ProjectTree tree)
@@ -271,8 +273,19 @@ namespace CMiX.Studio.Avalonia.Views
 
             if (tree.TargetNode is not { } node)
                 OpenMenu(null);
-            else if (rowIndex.FindItem(node) is { } item)
-                OpenMenu(item);
+            else if (ShownItemOf(node) is { } item)
+                OpenMenu(item, underRow: true);
+        }
+
+        // The item of the row of the node, brought into view, so that a popup can open on it. Null when the row is not shown.
+        private TreeViewItem? ShownItemOf(TreeNode node)
+        {
+            if (rowIndex.FindItem(node) is not { } item)
+                return null;
+
+            RevealRow(node);
+            treeView.UpdateLayout();
+            return item;
         }
 
         // Tree.CollapseOthers: every row closes but the path to the target row. A target row in view stays at its place on the screen,
@@ -484,15 +497,30 @@ namespace CMiX.Studio.Avalonia.Views
         // blocks the request in the tunnel phase (ContextMenuGuard), so a right click during a rename opens no menu.
         // The menu belongs to the tree and no row holds one. A row with a menu would open it for the right clicks on its
         // children too, because a request goes up through every parent row.
+        // A right click has a place of the pointer: the menu opens at the pointer, and the cursor goes to the clicked row, also when the
+        // row is already selected. The Menu key has no place: the menu of the focused row, else of the target row, opens
+        // under that row.
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
         {
-            if (OpenMenu(e.Source))
+            if (e.TryGetPosition(treeView, out _))
+            {
+                if (TreeRows.ItemOf(e.Source)?.DataContext is TreeNode node && DataContext is ProjectTree tree)
+                    tree.CursorNode = node;
+
+                if (OpenMenu(e.Source))
+                    e.Handled = true;
+                return;
+            }
+
+            var item = TreeRows.ItemOf(e.Source) ?? (watched?.TargetNode is { } target ? ShownItemOf(target) : null);
+            if (OpenMenu(item, underRow: item != null))
                 e.Handled = true;
         }
 
-        // Opens the menu of the row of the source. On the space under the rows, it is the menu of the project, which has the one entry
-        // that the project takes, a composition. Both menus add through the Add panel. Returns false when there is no menu.
-        private bool OpenMenu(object? source)
+        // Opens the menu of the row of the source, at the pointer, or under the row when a key asks for it. On the space under the rows,
+        // it is the menu of the project, which has the one entry that the project takes, a composition. Both menus add through the Add
+        // panel. Returns false when there is no menu.
+        private bool OpenMenu(object? source, bool underRow = false)
         {
             treeView.ContextMenu?.Close();
 
@@ -503,6 +531,17 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.ContextMenu = menu;
             if (menu == null)
                 return false;
+
+            if (underRow && item != null && TreeRowAnchor.FromNameOf(item, treeView) is { } name)
+            {
+                // The panel goes under the row, with its left edge on the left edge of the name. The popup is larger than the panel by
+                // the margin of the shadow.
+                menu.PlacementTarget = treeView;
+                menu.Placement = PlacementMode.BottomEdgeAlignedLeft;
+                menu.PlacementRect = name;
+                menu.HorizontalOffset = -PopupFrame.ShadowMargin.Left;
+                menu.VerticalOffset = -PopupFrame.ShadowMargin.Top;
+            }
 
             menu.Open(treeView);
             return true;
