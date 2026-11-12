@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -54,13 +55,57 @@ namespace CMiX.UI.Tests
             Assert.True(ContrastRatio(Tokens.Get<Color>("ShortcutText"), Tokens.Get<Color>("PopupCardBackground")) >= 4.5);
         }
 
-        // The submenu of the main menu has the background Grey400. The value is below 4.5:1. The owner decides.
+        // The dropdown of the main menu and its submenus are on the popup card, as the context menu.
         [AvaloniaFact]
-        public void ContrastRatio_ShortcutTextOnTheMainMenuSubmenu_HasItsValue()
+        public void Open_TheMainMenuDropdownAndItsSubmenu_HaveThePopupCardBackground()
         {
-            var ratio = ContrastRatio(Tokens.Get<Color>("ShortcutText"), Tokens.Get<Color>("Grey400"));
+            var nested = new MenuItem { Header = "Recent", ItemsSource = new object[] { new MenuItem { Header = "One" } } };
+            var file = new MenuItem
+            {
+                Header = "File",
+                Theme = (ControlTheme)Application.Current!.FindResource("MenuItemTop")!,
+                ItemsSource = new object[] { nested },
+            };
+            var menu = new Menu { Theme = (ControlTheme)Application.Current!.FindResource("MenuDefault")!, ItemsSource = new object[] { file } };
+            new Window { Content = menu, Width = 500, Height = 400 }.Show();
+            Dispatcher.UIThread.RunJobs();
+            file.Open();
+            Dispatcher.UIThread.RunJobs();
+            nested.Open();
+            Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal(3.333, ratio, 3);
+            Color BackgroundOf(MenuItem item)
+            {
+                var popup = item.GetVisualDescendants().OfType<Popup>().Single(part => part.Name == "PART_Popup");
+                var border = Assert.IsType<Border>(popup.Child);
+                Assert.Equal("SubMenuBorder", border.Name);
+                return ((ISolidColorBrush)border.Background!).Color;
+            }
+
+            var card = Tokens.Get<Color>("PopupCardBackground");
+            Assert.Equal(card, BackgroundOf(file));
+            Assert.Equal(card, BackgroundOf(nested));
+        }
+
+        [AvaloniaFact]
+        public void ContrastRatio_ShortcutTextOnTheMainMenuDropdown_ReachesWcagAA()
+        {
+            var file = new MenuItem
+            {
+                Header = "File",
+                Theme = (ControlTheme)Application.Current!.FindResource("MenuItemTop")!,
+                ItemsSource = new object[] { new MenuItem { Header = "Open" } },
+            };
+            var menu = new Menu { Theme = (ControlTheme)Application.Current!.FindResource("MenuDefault")!, ItemsSource = new object[] { file } };
+            new Window { Content = menu, Width = 500, Height = 400 }.Show();
+            Dispatcher.UIThread.RunJobs();
+            file.Open();
+            Dispatcher.UIThread.RunJobs();
+
+            var popup = file.GetVisualDescendants().OfType<Popup>().Single(part => part.Name == "PART_Popup");
+            var background = ((ISolidColorBrush)((Border)popup.Child!).Background!).Color;
+
+            Assert.True(ContrastRatio(Tokens.Get<Color>("ShortcutText"), background) >= 4.5);
         }
 
         [AvaloniaFact]
