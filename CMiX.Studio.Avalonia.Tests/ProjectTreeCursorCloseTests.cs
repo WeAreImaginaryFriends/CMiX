@@ -6,7 +6,7 @@ using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // A row that closes over the cursor (the soft selection) takes the cursor, so the cursor is never on a hidden row.
+    // A row that closes over the cursor takes the cursor, so the cursor is never on a hidden row.
     // The selection does not change.
     public class ProjectTreeCursorCloseTests
     {
@@ -24,7 +24,7 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.All().Single(node => node.Item is Echo && ReferenceEquals(node.Item, scene.LayerOfA(layer).TextureModifierManager.ManagerData.Items[0]));
 
         private static void AssertCursorShows(Scene scene) =>
-            Assert.Contains(scene.Tree.SoftSelectedNode!, scene.Tree.VisibleNodes());
+            Assert.Contains(scene.Tree.CursorNode!, scene.Tree.VisibleNodes());
 
         [Fact]
         public void Collapse_CursorUnder_MovesCursorToTheRow()
@@ -32,11 +32,11 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = Scene();
             var selected = scene.LayerNodeOfA(0);
             scene.Tree.SelectedNode = selected;
-            scene.Tree.SoftSelectedNode = EchoOf(scene, 1);
+            scene.Tree.CursorNode = EchoOf(scene, 1);
 
             scene.LayerNodeOfA(1).IsExpanded = false;
 
-            Assert.Same(scene.LayerNodeOfA(1), scene.Tree.SoftSelectedNode);
+            Assert.Same(scene.LayerNodeOfA(1), scene.Tree.CursorNode);
             Assert.Same(selected, scene.Tree.SelectedNode);
         }
 
@@ -45,11 +45,11 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = Scene();
             var cursor = EchoOf(scene, 0);
-            scene.Tree.SoftSelectedNode = cursor;
+            scene.Tree.CursorNode = cursor;
 
             scene.LayerNodeOfA(1).IsExpanded = false;
 
-            Assert.Same(cursor, scene.Tree.SoftSelectedNode);
+            Assert.Same(cursor, scene.Tree.CursorNode);
         }
 
         [Fact]
@@ -57,11 +57,11 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = Scene();
             var cursor = scene.LayerNodeOfA(1);
-            scene.Tree.SoftSelectedNode = cursor;
+            scene.Tree.CursorNode = cursor;
 
             cursor.IsExpanded = false;
 
-            Assert.Same(cursor, scene.Tree.SoftSelectedNode);
+            Assert.Same(cursor, scene.Tree.CursorNode);
         }
 
         // Two parents of the cursor close, in either order. The cursor ends on the higher one, the row that shows.
@@ -75,12 +75,12 @@ namespace CMiX.Studio.Avalonia.Tests
             var inner = echo.Parent!;
             var outer = scene.LayerNodeOfA(1);
             Assert.NotSame(inner, outer);
-            scene.Tree.SoftSelectedNode = echo;
+            scene.Tree.CursorNode = echo;
 
             foreach (var row in innerFirst ? new[] { inner, outer } : new[] { outer, inner })
                 row.IsExpanded = false;
 
-            Assert.Same(outer, scene.Tree.SoftSelectedNode);
+            Assert.Same(outer, scene.Tree.CursorNode);
             AssertCursorShows(scene);
         }
 
@@ -95,13 +95,13 @@ namespace CMiX.Studio.Avalonia.Tests
             scene.Tree.SearchText = "Echo";
             var echo = EchoOf(scene, 1);
             Assert.Contains(echo, scene.Tree.VisibleNodes());
-            scene.Tree.SoftSelectedNode = echo;
+            scene.Tree.CursorNode = echo;
 
             scene.Tree.SearchText = string.Empty;
 
-            Assert.NotSame(echo, scene.Tree.SoftSelectedNode);
-            Assert.True(echo.IsOrIsUnder(scene.Tree.SoftSelectedNode!));
-            Assert.False(scene.Tree.SoftSelectedNode!.IsExpanded);
+            Assert.NotSame(echo, scene.Tree.CursorNode);
+            Assert.True(echo.IsOrIsUnder(scene.Tree.CursorNode!));
+            Assert.False(scene.Tree.CursorNode!.IsExpanded);
             AssertCursorShows(scene);
             Assert.Null(scene.Tree.SelectedNode);
         }
@@ -115,12 +115,12 @@ namespace CMiX.Studio.Avalonia.Tests
             var selected = EchoOf(scene, 0);
             scene.Tree.SelectedNode = selected;
             var cursor = EchoOf(scene, 1);
-            scene.Tree.SoftSelectedNode = cursor;
+            scene.Tree.CursorNode = cursor;
 
             var closed = scene.Tree.CollapseOthers();
 
             Assert.NotEmpty(closed);
-            Assert.Same(cursor, scene.Tree.SoftSelectedNode);
+            Assert.Same(cursor, scene.Tree.CursorNode);
             Assert.Same(selected, scene.Tree.SelectedNode);
             AssertCursorShows(scene);
         }

@@ -78,7 +78,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = Scene();
             scene.Tree.SelectedNode = scene.LayerNodeOfA(0);
-            scene.Tree.SoftSelectedNode = EchoOf(scene, 2);
+            scene.Tree.CursorNode = EchoOf(scene, 2);
 
             scene.Tree.CollapseOthers();
 
@@ -91,7 +91,7 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var scene = Scene();
             scene.Tree.SelectedNode = null;
-            scene.Tree.SoftSelectedNode = null;
+            scene.Tree.CursorNode = null;
 
             var closed = scene.Tree.CollapseOthers();
 
@@ -127,7 +127,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var target = EchoOf(scene, 2);
             scene.Tree.SelectedNode = target;
             // The scene selects the last Echo, so the close above took the cursor to a top row. Put it back on the target.
-            scene.Tree.SoftSelectedNode = target;
+            scene.Tree.CursorNode = target;
 
             scene.Tree.CollapseOthers();
             scene.Tree.SearchText = string.Empty;

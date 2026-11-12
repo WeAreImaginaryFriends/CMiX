@@ -23,7 +23,7 @@ using Project = CMiX.Core.Compositing.Project;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // The keys of the project tree. The arrow keys move the soft selection only. The key bindings come from the shortcut map.
+    // The keys of the project tree. The arrow keys move the cursor only. The key bindings come from the shortcut map.
     public class ProjectTreeKeyboardTests : IDisposable
     {
         private Window? window;
@@ -71,7 +71,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void ArrowDown_MovesTheSoftSelection_WithNoUndoStep()
+        public void ArrowDown_MovesTheCursor_WithNoUndoStep()
         {
             var screen = Show();
             var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
@@ -80,7 +80,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Press(PhysicalKey.ArrowDown);
 
-            Assert.Same(second, screen.Tree.SoftSelectedNode);
+            Assert.Same(second, screen.Tree.CursorNode);
             Assert.Same(first, screen.Tree.SelectedNode);
             Assert.Same(selectedLayer, screen.Composition.LayerManager.SelectedItem);
             Assert.False(screen.Undo.CanUndo);
@@ -144,7 +144,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void FocusFrame_OfTheSoftSelectedRow_IsAOnePixelBorderInTheSelectionColor()
+        public void FocusFrame_OfTheCursorRow_IsAOnePixelBorderInTheSelectionColor()
         {
             var screen = Show();
             var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];

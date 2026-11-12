@@ -135,7 +135,7 @@
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
                                 IsHitTestVisible="False"
                                 IsVisible="False" />
-                            <!-- The soft selected row has the keyboard focus (:focus-visible): a thin border in the bright color of its kind,
+                            <!-- The cursor row has the keyboard focus (:focus-visible): a thin border in the bright color of its kind,
                                  with no fill change. The style sets the thickness, so the hidden frame has none. The arrow keys move it. Enter or a click selects the row. -->
                             <Border
                                 Name="FocusFrame"

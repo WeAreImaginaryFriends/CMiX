@@ -112,7 +112,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var rows = screen.Tree.VisibleNodes().ToList();
             var next = rows[rows.IndexOf(screen.LayerNode(0)) + 1];
             Press(screen, PhysicalKey.ArrowDown);
-            Assert.Same(next, screen.Tree.SoftSelectedNode);
+            Assert.Same(next, screen.Tree.CursorNode);
         }
 
         [AvaloniaFact]

@@ -202,7 +202,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(IsRenaming(screen, screen.LayerNode(0)));
         }
 
-        // The tree takes the arrow keys for the soft selection. An arrow with a modifier must still reach the key of the window.
+        // The tree takes the arrow keys for the cursor. An arrow with a modifier must still reach the key of the window.
         [AvaloniaFact]
         public void Press_AltUpWithTheTreeFocused_MovesTheSelectedRowUp()
         {
@@ -245,7 +245,7 @@ namespace CMiX.Studio.Avalonia.Tests
             for (var i = 0; i < times; i++)
                 Press(screen, PhysicalKey.ArrowDown);
 
-            Assert.Same(screen.LayerNode(times), screen.Tree.SoftSelectedNode);
+            Assert.Same(screen.LayerNode(times), screen.Tree.CursorNode);
             Assert.Same(screen.LayerNode(0), screen.Tree.SelectedNode);
         }
 

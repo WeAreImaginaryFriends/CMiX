@@ -13,7 +13,7 @@ using static CMiX.Studio.Avalonia.Tests.Support.TreeFixtures;
 
 namespace CMiX.Studio.Avalonia.Tests
 {
-    // A key acts on the cursor (the soft selection). A click on a row moves the cursor to that row, also when the row is already
+    // A key acts on the cursor. A click on a row moves the cursor to that row, also when the row is already
     // selected. A click on the chevron or on a toggle of a row does not move the cursor.
     public class ProjectTreeCursorClickTests
     {
@@ -59,13 +59,13 @@ namespace CMiX.Studio.Avalonia.Tests
             using var _ = screen;
             var selected = scene.LayerNodeOfA(0);
             scene.Tree.SelectedNode = selected;
-            scene.Tree.MoveSoftSelection(2);
-            Assert.NotSame(selected, scene.Tree.SoftSelectedNode);
+            scene.Tree.MoveCursor(2);
+            Assert.NotSame(selected, scene.Tree.CursorNode);
 
             Click(screen, RowPoint(screen, selected));
 
             Assert.Same(selected, scene.Tree.SelectedNode);
-            Assert.Same(selected, scene.Tree.SoftSelectedNode);
+            Assert.Same(selected, scene.Tree.CursorNode);
             Assert.Same(selected, scene.Tree.TargetNode);
         }
 
@@ -77,12 +77,12 @@ namespace CMiX.Studio.Avalonia.Tests
             var selected = scene.LayerNodeOfA(0);
             scene.Tree.SelectedNode = selected;
             var cursor = scene.LayerNodeOfA(1);
-            scene.Tree.SoftSelectedNode = cursor;
+            scene.Tree.CursorNode = cursor;
 
             Click(screen, Middle(screen, ChevronOf(screen, selected)));
 
             Assert.False(selected.IsExpanded);
-            Assert.Same(cursor, scene.Tree.SoftSelectedNode);
+            Assert.Same(cursor, scene.Tree.CursorNode);
             Assert.Same(selected, scene.Tree.SelectedNode);
         }
 
@@ -94,14 +94,14 @@ namespace CMiX.Studio.Avalonia.Tests
             var selected = scene.LayerNodeOfA(0);
             scene.Tree.SelectedNode = selected;
             var cursor = scene.LayerNodeOfA(1);
-            scene.Tree.SoftSelectedNode = cursor;
+            scene.Tree.CursorNode = cursor;
             var toggle = FirstToggleOf(screen, selected);
             var before = toggle.IsChecked;
 
             Click(screen, Middle(screen, toggle));
 
             Assert.NotEqual(before, toggle.IsChecked);
-            Assert.Same(cursor, scene.Tree.SoftSelectedNode);
+            Assert.Same(cursor, scene.Tree.CursorNode);
             Assert.Same(selected, scene.Tree.SelectedNode);
         }
     }

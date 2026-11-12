@@ -100,8 +100,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 () => { if (TargetNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => TargetNode?.Item != null);
             OpenSelectedCommand = new RelayCommand(
-                () => Select(softSelectedNode, SelectionOrigin.Keyboard),
-                () => softSelectedNode != null);
+                () => Select(cursorNode, SelectionOrigin.Keyboard),
+                () => cursorNode != null);
             RenameSelectedByKeyCommand = ByKey(RenameSelectedCommand);
             RemoveItemByKeyCommand = ByKey(RemoveItemCommand);
             DuplicateItemByKeyCommand = ByKey(DuplicateItemCommand);
@@ -122,7 +122,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The row that the commands of the tree act on: the row of the arrow keys, else the selected row. Null when there is none.
         // Rename, Remove, Duplicate, Move, Expand, CollapseOthers, the menu, the Add panel and the toolbar use it.
-        public TreeNode? TargetNode => softSelectedNode ?? selectedNode;
+        public TreeNode? TargetNode => cursorNode ?? selectedNode;
 
         // Opens the parents of the target row and closes every other row. The target keeps its state. Nothing changes with no target
         // or during a drag. Returns the rows that it closed.
@@ -298,23 +298,23 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // Starts the rename of the target row. The view sets the name box of the row to edit mode (see RenameRequested).
         public IRelayCommand RenameSelectedCommand { get; }
 
-        // Selects the soft selected node and its chain in the lists.
+        // Selects the cursor node and its chain in the lists.
         public IRelayCommand OpenSelectedCommand { get; }
 
         // The active view handles this request (see IsActiveView): it starts the rename of the row of the node.
         public event EventHandler<TreeNode>? RenameRequested;
 
-        private TreeNode? softSelectedNode;
+        private TreeNode? cursorNode;
 
         // The row that the arrow keys move to. It does not select the chain: no undo step and no wire message.
         // Enter (OpenSelectedCommand) or a click selects the chain. A change of SelectedNode moves it to the selected node.
         // A click on a row always moves it to that row (see SelectByClick).
-        public TreeNode? SoftSelectedNode
+        public TreeNode? CursorNode
         {
-            get => softSelectedNode;
+            get => cursorNode;
             set
             {
-                if (!SetProperty(ref softSelectedNode, value))
+                if (!SetProperty(ref cursorNode, value))
                     return;
 
                 OpenSelectedCommand?.NotifyCanExecuteChanged();
@@ -340,47 +340,47 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             return nodes;
         }
 
-        // Moves the soft selection by a number of visible rows. It stops at the first and the last row.
-        public void MoveSoftSelection(int rows)
+        // Moves the cursor by a number of visible rows. It stops at the first and the last row.
+        public void MoveCursor(int rows)
         {
             var nodes = VisibleNodes();
             if (nodes.Count == 0)
                 return;
 
-            var index = softSelectedNode == null ? -1 : IndexOf(nodes, softSelectedNode);
+            var index = cursorNode == null ? -1 : IndexOf(nodes, cursorNode);
             var next = index < 0 ? (rows >= 0 ? 0 : nodes.Count - 1) : Math.Clamp(index + rows, 0, nodes.Count - 1);
-            SoftSelectedNode = nodes[next];
+            CursorNode = nodes[next];
         }
 
-        public void MoveSoftSelectionToEnd(bool last)
+        public void MoveCursorToEnd(bool last)
         {
             var nodes = VisibleNodes();
             if (nodes.Count > 0)
-                SoftSelectedNode = last ? nodes[^1] : nodes[0];
+                CursorNode = last ? nodes[^1] : nodes[0];
         }
 
-        // Left: an expanded row collapses, else the soft selection goes to the parent row.
-        public void MoveSoftSelectionOut()
+        // Left: an expanded row collapses, else the cursor goes to the parent row.
+        public void MoveCursorOut()
         {
-            if (softSelectedNode is not { } node)
+            if (cursorNode is not { } node)
                 return;
 
             if (node.IsExpanded && node.Children.Count > 0)
                 node.IsExpanded = false;
             else if (node.Parent is { } parent && !ReferenceEquals(parent, root))
-                SoftSelectedNode = parent;
+                CursorNode = parent;
         }
 
-        // Right: a collapsed row expands, else the soft selection goes to the first child row.
-        public void MoveSoftSelectionIn()
+        // Right: a collapsed row expands, else the cursor goes to the first child row.
+        public void MoveCursorIn()
         {
-            if (softSelectedNode is not { Children.Count: > 0 } node)
+            if (cursorNode is not { Children.Count: > 0 } node)
                 return;
 
             if (!node.IsExpanded)
                 node.IsExpanded = true;
             else
-                SoftSelectedNode = node.Children[0];
+                CursorNode = node.Children[0];
         }
 
         private static int IndexOf(IReadOnlyList<TreeNode> nodes, TreeNode node)
@@ -527,8 +527,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             if (!searchSetsRows)
                 searchOpened.Remove(node);
 
-            if (!node.IsExpanded && softSelectedNode is { } cursor && !ReferenceEquals(cursor, node) && cursor.IsOrIsUnder(node))
-                SoftSelectedNode = ParentsOf(cursor).LastOrDefault(parent => !parent.IsExpanded) ?? node;
+            if (!node.IsExpanded && cursorNode is { } cursor && !ReferenceEquals(cursor, node) && cursor.IsOrIsUnder(node))
+                CursorNode = ParentsOf(cursor).LastOrDefault(parent => !parent.IsExpanded) ?? node;
         }
 
         // The commands of the toolbar. They act on the target node, and they are disabled when it has nothing to do.
@@ -780,9 +780,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             {
                 // The row of the arrow keys goes to the selected row. When it does not change, the target can still change: the
                 // selection goes away while no row of the arrow keys is set.
-                var before = softSelectedNode;
-                SoftSelectedNode = selectedNode;
-                if (ReferenceEquals(before, softSelectedNode))
+                var before = cursorNode;
+                CursorNode = selectedNode;
+                if (ReferenceEquals(before, cursorNode))
                     OnTargetChanged();
             }
         }
@@ -989,7 +989,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         public void SelectByClick(TreeNode node)
         {
             Select(node, SelectionOrigin.Pointer);
-            SoftSelectedNode = node;
+            CursorNode = node;
         }
 
         // The node of an item, wherever it is in the tree. A moved item has a new node in its new list.
@@ -1046,8 +1046,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // A node leaves the tree. A selection inside it moves to the parent.
         internal void NodeRemoved(TreeNode node)
         {
-            if (softSelectedNode != null && softSelectedNode.IsOrIsUnder(node))
-                SoftSelectedNode = selectedNode != null && !selectedNode.IsOrIsUnder(node) ? selectedNode : null;
+            if (cursorNode != null && cursorNode.IsOrIsUnder(node))
+                CursorNode = selectedNode != null && !selectedNode.IsOrIsUnder(node) ? selectedNode : null;
 
             if (selectedNode == null || !selectedNode.IsOrIsUnder(node))
                 return;

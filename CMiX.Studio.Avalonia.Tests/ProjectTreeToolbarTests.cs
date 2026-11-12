@@ -289,7 +289,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var raised = 0;
             scene.Tree.MoveItemUpCommand.CanExecuteChanged += (_, _) => raised++;
 
-            scene.Tree.SoftSelectedNode = scene.LayerNodeOfA(1);
+            scene.Tree.CursorNode = scene.LayerNodeOfA(1);
 
             Assert.True(raised > 0);
             Assert.Same(scene.LayerNodeOfA(1), scene.Tree.TargetNode);
@@ -302,7 +302,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var scene = CreateScene();
             scene.Tree.SelectedNode = scene.LayerNodeOfA(0);
 
-            scene.Tree.SoftSelectedNode = scene.Group<CamerasGroup>(0);
+            scene.Tree.CursorNode = scene.Group<CamerasGroup>(0);
 
             Assert.Equal(new[] { "Add Camera", "Add Composition" }, scene.Tree.TargetAdds.Select(add => add.Header));
             Assert.Equal(new[] { true, false, false, false, false }, Enabled(scene.Tree));
@@ -581,7 +581,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var screen = Show();
             var first = screen.Scene.LayerOfA(0);
             screen.Scene.Tree.SelectedNode = screen.Scene.LayerNodeOfA(0);
-            screen.Scene.Tree.SoftSelectedNode = screen.Scene.LayerNodeOfA(1);
+            screen.Scene.Tree.CursorNode = screen.Scene.LayerNodeOfA(1);
 
             screen.Click(screen.ButtonOf("RemoveButton"));
 

@@ -176,8 +176,8 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         // Escape ends a drag of a row without a drop.
-        // Avalonia runs the key bindings of the view (the gestures of the map) before this handler. The navigation keys move the soft
-        // selection only (see ProjectTree.SoftSelectedNode). The tree view does not see them, so they select nothing. A navigation key
+        // Avalonia runs the key bindings of the view (the gestures of the map) before this handler. The navigation keys move the cursor
+        // only (see ProjectTree.CursorNode). The tree view does not see them, so they select nothing. A navigation key
         // with a modifier does nothing. A key in a name box stays in the name box. The keys of IsTreeViewKey do nothing.
         private void OnKeyDownTunnel(object? sender, KeyEventArgs e)
         {
@@ -205,8 +205,8 @@ namespace CMiX.Studio.Avalonia.Views
             if (e.KeyModifiers != KeyModifiers.None)
                 return;
 
-            MoveSoftSelection(tree, e.Key);
-            if (tree.SoftSelectedNode is { } node)
+            MoveCursor(tree, e.Key);
+            if (tree.CursorNode is { } node)
                 Dispatcher.UIThread.Post(() => FocusRow(node), DispatcherPriority.Loaded);
         }
 
@@ -217,18 +217,18 @@ namespace CMiX.Studio.Avalonia.Views
         internal static bool IsTreeViewKey(Key key) =>
             key is Key.Add or Key.Subtract or Key.Multiply or Key.Divide;
 
-        private void MoveSoftSelection(ProjectTree tree, Key key)
+        private void MoveCursor(ProjectTree tree, Key key)
         {
             switch (key)
             {
-                case Key.Up: tree.MoveSoftSelection(-1); break;
-                case Key.Down: tree.MoveSoftSelection(1); break;
-                case Key.PageUp: tree.MoveSoftSelection(-RowsInView()); break;
-                case Key.PageDown: tree.MoveSoftSelection(RowsInView()); break;
-                case Key.Home: tree.MoveSoftSelectionToEnd(false); break;
-                case Key.End: tree.MoveSoftSelectionToEnd(true); break;
-                case Key.Left: tree.MoveSoftSelectionOut(); break;
-                case Key.Right: tree.MoveSoftSelectionIn(); break;
+                case Key.Up: tree.MoveCursor(-1); break;
+                case Key.Down: tree.MoveCursor(1); break;
+                case Key.PageUp: tree.MoveCursor(-RowsInView()); break;
+                case Key.PageDown: tree.MoveCursor(RowsInView()); break;
+                case Key.Home: tree.MoveCursorToEnd(false); break;
+                case Key.End: tree.MoveCursorToEnd(true); break;
+                case Key.Left: tree.MoveCursorOut(); break;
+                case Key.Right: tree.MoveCursorIn(); break;
             }
         }
 
