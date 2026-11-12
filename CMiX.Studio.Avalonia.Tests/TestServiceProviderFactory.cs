@@ -33,6 +33,8 @@ namespace CMiX.Studio.Avalonia.Tests
             serviceCollection.AddSingleton<IMoveBlockedNotice>(provider => provider.GetRequiredService<FakeMoveBlockedNotice>());
             serviceCollection.AddSingleton<FakeMessageNotice>();
             serviceCollection.AddSingleton<IMessageNotice>(provider => provider.GetRequiredService<FakeMessageNotice>());
+            serviceCollection.AddSingleton<ToastService>();
+            serviceCollection.AddSingleton<IToastService>(provider => provider.GetRequiredService<ToastService>());
             serviceCollection.AddSingleton<PathDropService>();
             serviceCollection.AddSingleton<ProjectTree>();
             serviceCollection.AddSingleton<PanelFocusCycle>();

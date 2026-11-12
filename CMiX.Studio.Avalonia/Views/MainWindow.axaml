@@ -129,6 +129,9 @@
             ResizeDirection="Columns"
             Theme="{StaticResource GridSplitterCMiX}" />
 
+        <!-- The one toast of the window, at the bottom center over both panels (see IToastService). It takes no click and no focus. -->
+        <ui:ToastHost x:Name="toastHost" Grid.ColumnSpan="2" />
+
         </Grid>
     </DockPanel>
 

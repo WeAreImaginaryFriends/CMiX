@@ -41,10 +41,11 @@ namespace CMiX.Studio.Avalonia.Views
         // Tab navigation of the window, so Ctrl+Tab in a text box moves the focus to the next panel, not to the next control.
         private void OnKeyDownAfterTextBox(KeyEventArgs e) => textGuard.RunPausedBinding(e);
 
-        public MainWindow(UndoManager undoManager, PanelFocusCycle panelFocus) : this()
+        public MainWindow(UndoManager undoManager, PanelFocusCycle panelFocus, ToastService toasts) : this()
         {
             _undoManager = undoManager;
             panelFocus.Attach(this);
+            toasts.Attach(toastHost);
         }
 
         public MainWindow()

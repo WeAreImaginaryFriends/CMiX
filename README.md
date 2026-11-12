@@ -145,7 +145,7 @@ The file maps a command name to a gesture:
 | `Tree.CollapseAll` | Shift+Alt+E | Close every row of the tree |
 | `Tree.Search` | Ctrl+F | Put the focus in the search field of the tree |
 | `Tree.Rename` | Ctrl+R | Rename the target row |
-| `Tree.Remove` | Delete | Remove the target item |
+| `Tree.Remove` | Delete | Remove the target item. A toast at the bottom of the window shows "Removed" and the name, with the `Edit.Undo` key |
 | `Tree.Duplicate` | Shift+D | Duplicate the target item |
 | `Tree.MoveUp` | Alt+Up | Move the target item up |
 | `Tree.MoveDown` | Alt+Down | Move the target item down |

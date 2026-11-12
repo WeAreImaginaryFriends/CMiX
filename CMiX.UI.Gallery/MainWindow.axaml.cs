@@ -75,6 +75,7 @@ namespace CMiX.UI.Gallery
             Sections.Children.Add(KeyboardStates());
             Sections.Children.Add(PanelFocus());
             Sections.Children.Add(KeyCaps());
+            Sections.Children.Add(Toasts());
         }
 
         private void BindScale()
@@ -452,6 +453,15 @@ namespace CMiX.UI.Gallery
             row.Children.Add(Pair("Menu row, resting", OnCard(MenuRowSample()), "Ctrl+D"));
             row.Children.Add(Pair("Menu row, hovered", OnCard(hovered), "Ctrl+D"));
             return Frame("Key caps and shortcut text", "keycaps", row);
+        }
+
+        // The toast of a window (Toast in a ToastHost), with and without the undo key cap.
+        private Control Toasts()
+        {
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 24, Margin = new Thickness(8) };
+            row.Children.Add(new Toast { Text = "Removed Layer 1", UndoGesture = "Ctrl+Z" });
+            row.Children.Add(new Toast { Text = "Hidden: Layer 1" });
+            return Frame("Toast", "toast", row);
         }
 
         // ------------------------------------------------------------------ states

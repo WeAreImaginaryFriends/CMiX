@@ -72,6 +72,8 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<IUnsavedChangesPrompt, UnsavedChangesPrompt>();
                 serviceCollection.AddSingleton<IMoveBlockedNotice, MoveBlockedNotice>();
                 serviceCollection.AddSingleton<IMessageNotice, Services.MessageNotice>();
+                serviceCollection.AddSingleton<ToastService>();
+                serviceCollection.AddSingleton<IToastService>(provider => provider.GetRequiredService<ToastService>());
                 serviceCollection.AddSingleton<PathDropService>();
                 serviceCollection.AddSingleton<ProjectTree>();
                 serviceCollection.AddSingleton<PanelFocusCycle>();

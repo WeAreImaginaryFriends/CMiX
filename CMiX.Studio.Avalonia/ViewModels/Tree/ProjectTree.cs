@@ -29,6 +29,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
     {
         private readonly UndoManager undoManager;
         private readonly IMoveBlockedNotice? notice;
+        private readonly IToastService? toasts;
         private readonly TreeDropService dropService = new();
         private readonly PathDropService pathDrop;
         private readonly PrefabManager compositions;
@@ -39,10 +40,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private bool selecting;
 
         public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null,
-            ShortcutMap? shortcuts = null, PathDropService? pathDrop = null)
+            ShortcutMap? shortcuts = null, PathDropService? pathDrop = null, IToastService? toasts = null)
         {
             this.undoManager = undoManager;
             this.notice = notice;
+            this.toasts = toasts;
             this.pathDrop = pathDrop ?? new PathDropService();
             Shortcuts = shortcuts ?? new ShortcutMap();
             this.project = project;
@@ -76,7 +78,16 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 () => { if (TargetPlace() is var (list, item, index)) list.MoveItemTo(item, index + 1); },
                 () => TargetPlace() is var (list, _, index) && index < list.ManagerData.Items.Count - 1);
             RemoveItemCommand = new RelayCommand(
-                () => { if (TargetPlace() is var (list, item, _)) list.RemoveItem(item); },
+                () =>
+                {
+                    if (TargetPlace() is not var (list, item, _))
+                        return;
+
+                    // The name before the remove, for the toast.
+                    var name = TargetNode!.Header;
+                    list.RemoveItem(item);
+                    toasts?.ShowWithUndo($"Removed {name}");
+                },
                 () => TargetPlace() != null);
             AddAtTargetCommand = new RelayCommand(
                 () => AddRequested?.Invoke(this, EventArgs.Empty),

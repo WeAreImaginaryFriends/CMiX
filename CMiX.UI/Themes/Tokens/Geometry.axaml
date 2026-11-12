@@ -133,5 +133,7 @@
     <!-- A key cap (TextBlockKeyCap): the line around the key text, and the space between the line and the text. -->
     <Thickness x:Key="KeyCapBorderThickness">1</Thickness>
     <Thickness x:Key="KeyCapPadding">4,0</Thickness>
+    <!-- The space between a toast (ToastHost) and the bottom edge of its area. -->
+    <Thickness x:Key="ToastMargin">0,0,0,16</Thickness>
 
 </ResourceDictionary>
