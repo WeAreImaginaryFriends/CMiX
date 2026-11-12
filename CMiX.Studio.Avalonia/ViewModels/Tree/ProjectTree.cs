@@ -314,8 +314,14 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             get => cursorNode;
             set
             {
+                var old = cursorNode;
                 if (!SetProperty(ref cursorNode, value))
                     return;
+
+                if (old != null)
+                    old.IsCursor = false;
+                if (value != null)
+                    value.IsCursor = true;
 
                 OpenSelectedCommand?.NotifyCanExecuteChanged();
                 OnTargetChanged();

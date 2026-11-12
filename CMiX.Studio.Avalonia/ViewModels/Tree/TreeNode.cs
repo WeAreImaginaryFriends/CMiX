@@ -161,6 +161,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         [NotifyPropertyChangedFor(nameof(IsDimmed))]
         private bool isExpanded = true;
 
+        // True when the row is the cursor row (ProjectTree.CursorNode). The row theme binds CursorRow.IsCursor to it.
+        [ObservableProperty]
+        private bool isCursor;
+
         // The state of the row during a drag of a node (see ProjectTree.BeginDrag). The rows that take the node inside are candidates: they
         // are lit. The rows that the node can go next to are neighbors: they stay as they are, and the bar shows the place. A collapsed row
         // that has such a row under it gives a hint, so the user knows to open it. A row that takes the node by its kind but refuses

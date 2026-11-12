@@ -55,6 +55,8 @@
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="0" />
+        <!-- The cursor row of the model gets the class cursor, which shows CursorFrame. -->
+        <Setter Property="ui:CursorRow.IsCursor" Value="{Binding IsCursor}" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
                 <StackPanel />
@@ -143,6 +145,8 @@
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
                                 IsHitTestVisible="False"
                                 IsVisible="False" />
+                            <!-- The frame of the cursor row (the class cursor, see CursorRow), the same as in the lists. It is drawn over FocusFrame. -->
+                            <Border Name="CursorFrame" Theme="{DynamicResource CursorFrame}" />
                             <!-- The frame of a row that refuses the dragged node (the class dropblocked). It is drawn over the row, as the selection frame. -->
                             <Border
                                 Name="BlockedFrame"
@@ -210,6 +214,12 @@
         <Style Selector="^:focus-visible /template/ Border#FocusFrame">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
+        </Style>
+        <!-- The look of a focused tree is in CMiX.UI CursorRow.axaml. -->
+        <Style Selector="^.cursor /template/ Border#CursorFrame">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CursorFrameInactiveBrush}" />
+            <Setter Property="BorderThickness" Value="{DynamicResource CursorFrameInactiveThickness}" />
         </Style>
         <Style Selector="^:selected /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
