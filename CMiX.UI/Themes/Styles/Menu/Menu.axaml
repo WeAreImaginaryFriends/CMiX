@@ -87,8 +87,9 @@
             <Setter Property="IsVisible" Value="False" />
         </Style>
 
-        <Style Selector="^:selected /template/ Border#root">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+        <!-- The hover and the row of the arrow keys have the hover fill, as in the context menu. -->
+        <Style Selector="^:pointerover /template/ Border#root, ^:selected /template/ Border#root">
+            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
         </Style>
         <Style Selector="^:selected /template/ ContentControl#PART_IconPresenter">
             <Setter Property="Opacity" Value="1.0" />
