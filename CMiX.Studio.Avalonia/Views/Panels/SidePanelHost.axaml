@@ -6,7 +6,9 @@
     xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
     xmlns:StudioViewModels="clr-namespace:CMiX.Studio.Avalonia.ViewModels"
-    x:Name="sidePanelHost">
+    x:Name="sidePanelHost"
+    ui:PopupOwner.IsEnabled="True"
+    Classes="focuspanel">
 
     <!-- A panel of the window with an icon button at the top. The button shows the icon of what the panel shows. A click opens the list
          of the choices (a PanelChoice), each with its icon and its name, as the list of the swap button of the prefab slots does.
@@ -14,66 +16,72 @@
          The views of the choices get their data from the Context (the MainViewModel). The window sets it. -->
     <DockPanel>
 
-        <Border
-            Name="bar"
-            Padding="4"
-            Background="{DynamicResource Grey100Brush}"
-            DockPanel.Dock="Top">
-            <DockPanel>
+        <Panel DockPanel.Dock="Top">
 
-                <!-- The icon of the panel, and a chevron at its right: the chevron tells that the button opens a list. -->
-                <ToggleButton
-                    Name="pickerToggle"
-                    MinWidth="{DynamicResource ControlHeightMD}"
-                    Height="{DynamicResource ControlHeightMD}"
-                    Padding="6,0"
-                    HorizontalAlignment="Left"
-                    DockPanel.Dock="Left"
-                    ToolTip.Tip="{Binding Choice.Name, ElementName=sidePanelHost}">
-                    <StackPanel Margin="4,0" Orientation="Horizontal" Spacing="{DynamicResource SpacingSM}">
-                        <ui:AppIcon IconKey="{Binding Choice.IconKey, ElementName=sidePanelHost}" Size="{DynamicResource IconSizeXS}" />
-                        <ui:Chevron
-                            VerticalAlignment="Center"
-                            ClosedAngle="0"
-                            OpenAngle="180"
-                            IsOpen="{Binding IsChecked, ElementName=pickerToggle}" />
-                    </StackPanel>
-                </ToggleButton>
+            <Border
+                Name="bar"
+                Padding="4"
+                Background="{DynamicResource Grey100Brush}">
+                <DockPanel>
 
-                <Popup
-                    Name="pickerPopup"
-                    ui:TogglePopup.Toggle="{Binding ElementName=pickerToggle}"
-                    Placement="BottomEdgeAlignedLeft"
-                    VerticalOffset="-1">
-                    <ui:DropdownFrame>
-                        <ui:ItemPickerList
-                            Name="pickerList"
-                            IconPath="IconKey"
-                            ItemCommand="{Binding PickCommand, ElementName=sidePanelHost}"
-                            ItemsSource="{Binding Choices, ElementName=sidePanelHost}"
-                            Picked="OnPicked"
-                            TextPath="Name" />
-                    </ui:DropdownFrame>
-                </Popup>
+                    <!-- The icon of the panel, and a chevron at its right: the chevron tells that the button opens a list. -->
+                    <ToggleButton
+                        Name="pickerToggle"
+                        MinWidth="{DynamicResource ControlHeightMD}"
+                        Height="{DynamicResource ControlHeightMD}"
+                        Padding="6,0"
+                        HorizontalAlignment="Left"
+                        DockPanel.Dock="Left"
+                        ToolTip.Tip="{Binding Choice.Name, ElementName=sidePanelHost}">
+                        <StackPanel Margin="4,0" Orientation="Horizontal" Spacing="{DynamicResource SpacingSM}">
+                            <ui:AppIcon IconKey="{Binding Choice.IconKey, ElementName=sidePanelHost}" Size="{DynamicResource IconSizeXS}" />
+                            <ui:Chevron
+                                VerticalAlignment="Center"
+                                ClosedAngle="0"
+                                OpenAngle="180"
+                                IsOpen="{Binding IsChecked, ElementName=pickerToggle}" />
+                        </StackPanel>
+                    </ToggleButton>
 
-                <!-- The rest of the bar holds the tools of the choice, at the right: the search of the tree. The other choices have none. -->
-                <ContentControl
-                    Name="barTools"
-                    HorizontalContentAlignment="Right"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Choice, ElementName=sidePanelHost}">
-                    <ContentControl.DataTemplates>
-                        <DataTemplate DataType="{x:Type StudioViewModels:TreePanelChoice}">
-                            <Views:TreeSearchBox DataContext="{Binding Context.ProjectTree, ElementName=sidePanelHost}" />
-                        </DataTemplate>
-                        <DataTemplate DataType="{x:Type StudioViewModels:PanelChoice}">
-                            <Panel />
-                        </DataTemplate>
-                    </ContentControl.DataTemplates>
-                </ContentControl>
+                    <Popup
+                        Name="pickerPopup"
+                        ui:TogglePopup.Toggle="{Binding ElementName=pickerToggle}"
+                        Placement="BottomEdgeAlignedLeft"
+                        VerticalOffset="-1">
+                        <ui:DropdownFrame>
+                            <ui:ItemPickerList
+                                Name="pickerList"
+                                IconPath="IconKey"
+                                ItemCommand="{Binding PickCommand, ElementName=sidePanelHost}"
+                                ItemsSource="{Binding Choices, ElementName=sidePanelHost}"
+                                Picked="OnPicked"
+                                TextPath="Name" />
+                        </ui:DropdownFrame>
+                    </Popup>
 
-            </DockPanel>
-        </Border>
+                    <!-- The rest of the bar holds the tools of the choice, at the right: the search of the tree. The other choices have none. -->
+                    <ContentControl
+                        Name="barTools"
+                        HorizontalContentAlignment="Right"
+                        VerticalContentAlignment="Center"
+                        Content="{Binding Choice, ElementName=sidePanelHost}">
+                        <ContentControl.DataTemplates>
+                            <DataTemplate DataType="{x:Type StudioViewModels:TreePanelChoice}">
+                                <Views:TreeSearchBox DataContext="{Binding Context.ProjectTree, ElementName=sidePanelHost}" />
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type StudioViewModels:PanelChoice}">
+                                <Panel />
+                            </DataTemplate>
+                        </ContentControl.DataTemplates>
+                    </ContentControl>
+
+                </DockPanel>
+            </Border>
+
+            <!-- The accent line of the panel with the keyboard focus, over the bottom of the bar (see Themes/Styles/PanelFocus.axaml). -->
+            <Border Name="focusLine" Classes="focusline" />
+
+        </Panel>
 
         <ContentControl
             Name="content"

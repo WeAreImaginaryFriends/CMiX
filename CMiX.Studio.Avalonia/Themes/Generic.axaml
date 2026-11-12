@@ -15,4 +15,6 @@
         </ResourceDictionary>
     </Styles.Resources>
 
+    <StyleInclude Source="avares://CMiX.Studio.Avalonia/Themes/Styles/PanelFocus.axaml" />
+
 </Styles>

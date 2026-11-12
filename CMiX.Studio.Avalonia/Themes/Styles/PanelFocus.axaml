@@ -1,0 +1,25 @@
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- The accent line under the header of the panel with the keyboard focus. To use it: give the panel the class focuspanel and
+         ui:PopupOwner.IsEnabled="True", and put a Border with the class focusline at the bottom of its header, over the header.
+         The line also stays on while a popup of the panel is open (:popup-open): a menu or a flyout is out of the visual tree of
+         the panel, so :focus-within goes off while it has the focus. -->
+    <Style Selector="Border.focusline">
+        <Setter Property="Height" Value="{DynamicResource SplitterIndicatorSize}" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector=".focuspanel:focus-within Border.focusline">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector=".focuspanel:popup-open Border.focusline">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+</Styles>
