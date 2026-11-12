@@ -11,9 +11,10 @@
          whole pixels of the screen (see ProjectTreeView), so the rows are always one same pitch apart.
          It has a fill in the color of its kind (see CategoryPalette), one step brighter when the pointer is over the row itself
          (not over its children), and one more step when it is selected. A child is indented by its level.
+         Each look has one meaning: the fill shows the selection, a frame shows the cursor, the accent shows a drop.
          TreeDropMark sets the classes droptarget, dropgap and droptop.
          The classes dropgap and droptop show the place of a drag between rows. The class droptarget shows the row
-         that takes a drop inside it: it looks as if the pointer was over it. The class dropblocked shows a row that takes the
+         that takes a drop inside it: an accent frame, with no change of the fill. The class dropblocked shows a row that takes the
          kind of the dragged node but refuses it by a rule: a thin frame, and the reason in the tooltip. The marks are drawn
          over the row and take no room, so the rows never move during a drag. -->
     <converters:MarginMultiplierConverter x:Key="TreeLevelIndent" Indent="{StaticResource TreeIndent}" Left="True" />
@@ -51,7 +52,7 @@
     </ControlTheme>
 
     <ControlTheme x:Key="TreeViewItemCMiX" TargetType="TreeViewItem">
-        <!-- The row with the keyboard focus shows the FocusFrame of the template. The dotted frame of Avalonia is not wanted. -->
+        <!-- The cursor row shows the CursorFrame of the template. The dotted frame of Avalonia is not wanted. -->
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="0" />
@@ -128,29 +129,21 @@
                                     </Transitions>
                                 </Border.Transitions>
                             </Border>
-                            <!-- The selected row has a thin border in the bright color of its kind. It is drawn over the row, inside it, so the row
-                                 does not change its size. Its thickness is one pixel of the screen (see ProjectTreeView.SetRowMetrics). -->
-                            <Border
-                                Name="SelectionFrame"
-                                BorderBrush="{Binding Converter={StaticResource TreeTone}, ConverterParameter=KindSelected}"
-                                BorderThickness="{DynamicResource TreeSelectionThickness}"
-                                CornerRadius="{DynamicResource CornerRadiusAll}"
-                                IsHitTestVisible="False"
-                                IsVisible="False" />
-                            <!-- The cursor row has the keyboard focus (:focus-visible): a thin border in the bright color of its kind,
-                                 with no fill change. The style sets the thickness, so the hidden frame has none. The arrow keys move it. Enter or a click selects the row. -->
-                            <Border
-                                Name="FocusFrame"
-                                BorderBrush="{Binding Converter={StaticResource TreeTone}, ConverterParameter=KindSelected}"
-                                CornerRadius="{DynamicResource CornerRadiusAll}"
-                                IsHitTestVisible="False"
-                                IsVisible="False" />
-                            <!-- The frame of the cursor row (the class cursor, see CursorRow), the same as in the lists. It is drawn over FocusFrame. -->
+                            <!-- The frame of the cursor row (the class cursor, see CursorRow), the same as in the lists. The arrow keys move it.
+                                 Enter or a click selects the row. The selected row has no frame: its fill shows the selection. -->
                             <Border Name="CursorFrame" Theme="{DynamicResource CursorFrame}" />
-                            <!-- The frame of a row that refuses the dragged node (the class dropblocked). It is drawn over the row, as the selection frame. -->
+                            <!-- The frame of a row that refuses the dragged node (the class dropblocked). It is drawn over the row, inside it. -->
                             <Border
                                 Name="BlockedFrame"
                                 BorderBrush="{DynamicResource WarningMutedBrush}"
+                                CornerRadius="{DynamicResource CornerRadiusAll}"
+                                IsHitTestVisible="False"
+                                IsVisible="False" />
+                            <!-- The frame of the row that takes a drop inside it (:droptarget). It is drawn over CursorFrame, so the cursor never hides it.
+                                 The style sets the thickness, so the hidden frame has none. -->
+                            <Border
+                                Name="DropInsideFrame"
+                                BorderBrush="{DynamicResource AccentBrush}"
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
                                 IsHitTestVisible="False"
                                 IsVisible="False" />
@@ -202,18 +195,10 @@
         <Style Selector="^ /template/ Border#RowBorder.candidate">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillHover}" />
         </Style>
-        <!-- The pointer is tested on the row, not on the item: the item also contains its children. A row under the pointer is as bright as a
-             selected row, without the border. -->
+        <!-- The pointer is tested on the row, not on the item: the item also contains its children. A row under the pointer has the hover
+             fill. Its text does not change. A selected row keeps the selected fill under the pointer: its style comes after this one. -->
         <Style Selector="^ /template/ Border#RowBorder:pointerover">
-            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
-            <Setter Property="TextElement.Foreground" Value="{DynamicResource ActiveForegroundBrush}" />
-        </Style>
-        <Style Selector="^:selected /template/ Border#SelectionFrame">
-            <Setter Property="IsVisible" Value="True" />
-        </Style>
-        <Style Selector="^:focus-visible /template/ Border#FocusFrame">
-            <Setter Property="IsVisible" Value="True" />
-            <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
+            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillHover}" />
         </Style>
         <!-- The look of a focused tree is in CMiX.UI CursorRow.axaml. -->
         <Style Selector="^.cursor /template/ Border#CursorFrame">
@@ -225,14 +210,15 @@
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
             <Setter Property="TextElement.Foreground" Value="{DynamicResource ActiveForegroundBrush}" />
         </Style>
-        <!-- The row that takes the node or the files that are dragged over it, inside it: it is brighter than the other rows that take it. -->
-        <Style Selector="^:droptarget /template/ Border#RowBorder">
-            <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />
+        <!-- The row that takes the node or the files that are dragged over it, inside it: an accent frame inside the row. The fill does not change. -->
+        <Style Selector="^:droptarget /template/ Border#DropInsideFrame">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="BorderThickness" Value="{DynamicResource CursorFrameThickness}" />
         </Style>
         <!-- A group row (a row with no item, such as Entities) with no children has a grey fill, not the tone of its kind. An item row,
              such as a modulator, keeps the tone of its kind, also with no children. The styles come after the tone styles, so they
              replace them. The :empty class follows the number of children, so the fill changes when a group gets its first child or
-             loses its last one. The frames keep the color of the kind. -->
+             loses its last one. -->
         <Style Selector="^:empty /template/ Border#RowBorder.group">
             <Setter Property="Background" Value="{DynamicResource Grey300Brush}" />
         </Style>
@@ -240,12 +226,9 @@
             <Setter Property="Background" Value="{DynamicResource Grey400Brush}" />
         </Style>
         <Style Selector="^:empty /template/ Border#RowBorder.group:pointerover">
-            <Setter Property="Background" Value="{DynamicResource Grey500Brush}" />
+            <Setter Property="Background" Value="{DynamicResource Grey400Brush}" />
         </Style>
         <Style Selector="^:empty:selected /template/ Border#RowBorder.group">
-            <Setter Property="Background" Value="{DynamicResource Grey500Brush}" />
-        </Style>
-        <Style Selector="^:empty:droptarget /template/ Border#RowBorder.group">
             <Setter Property="Background" Value="{DynamicResource Grey500Brush}" />
         </Style>
         <Style Selector="^ /template/ Border#DimLayer.dimmed">

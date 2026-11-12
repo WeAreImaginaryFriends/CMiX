@@ -100,7 +100,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             foreach (var node in All(tree.Roots))
             {
-                var borders = ItemOf(view, node).GetVisualDescendants().OfType<Border>().Where(border => border.Name is not ("DropLine" or "SelectionFrame"));
+                var borders = ItemOf(view, node).GetVisualDescendants().OfType<Border>().Where(border => border.Name is not ("DropLine" or "CursorFrame"));
                 Assert.All(borders, border => Assert.Equal(new Thickness(0), border.BorderThickness));
             }
 
@@ -196,11 +196,65 @@ namespace CMiX.Studio.Avalonia.Tests
             TreeDrag.Over(window!, Center(view, filter), point);
             Assert.True(tree.IsDragging);
             Assert.Contains(":droptarget", ItemOf(view, target).Classes);
-            Assert.Equal(ExpectedFill(target, ToneRole.FillSelected), FillOf(view, target));
+            Assert.True(Part(view, target, "DropInsideFrame").IsEffectivelyVisible);
             TreeDrag.Release(window!, point);
 
             Assert.Empty(lists.Item1.TextureModifierManager.ManagerData.Items);
             Assert.Single(lists.Item2.TextureModifierManager.ManagerData.Items);
+        }
+
+        // A drop inside a row shows an accent frame of CursorFrameThickness inside the row. The fill stays the fill of a row that takes the node.
+        [AvaloniaFact]
+        public void DragOver_InsideARow_GivesItTheAccentFrameAndKeepsTheFill()
+        {
+            var (view, tree) = Show();
+            var firstLayer = tree.CompositionNodes()[0].Children[0].Children[0];
+            var secondLayer = tree.CompositionNodes()[0].Children[0].Children[1];
+            var filter = firstLayer.Children.Single(child => child.Group is FiltersGroup).Children[0];
+            var target = secondLayer.Children.Single(child => child.Group is FiltersGroup);
+            var point = Center(view, target);
+            var hidden = Part(view, target, "DropInsideFrame");
+            Assert.False(hidden.IsEffectivelyVisible);
+            Assert.Equal(new Thickness(0), hidden.BorderThickness);
+
+            TreeDrag.Over(window!, Center(view, filter), point);
+
+            var frame = Part(view, target, "DropInsideFrame");
+            var row = Part(view, target, "RowBorder");
+            Assert.True(frame.IsEffectivelyVisible);
+            Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("AccentBrush")!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
+            Assert.Equal((Thickness)Application.Current!.FindResource("CursorFrameThickness")!, frame.BorderThickness);
+            Assert.Equal(row.Bounds.Size, frame.Bounds.Size);
+            Assert.False(frame.IsHitTestVisible);
+            Assert.Equal(ExpectedFill(target, ToneRole.FillHover), FillOf(view, target));
+            TreeDrag.Cancel(window!, point);
+        }
+
+        // The cursor frame never hides the drop frame: the drop frame is drawn after it and is not thinner.
+        [AvaloniaFact]
+        public void DragOver_InsideTheCursorRow_DrawsTheAccentFrameOverTheCursorFrame()
+        {
+            var (view, tree) = Show();
+            var firstLayer = tree.CompositionNodes()[0].Children[0].Children[0];
+            var secondLayer = tree.CompositionNodes()[0].Children[0].Children[1];
+            var filter = firstLayer.Children.Single(child => child.Group is FiltersGroup).Children[0];
+            var target = secondLayer.Children.Single(child => child.Group is FiltersGroup);
+            var point = Center(view, target);
+
+            TreeDrag.Over(window!, Center(view, filter), point);
+            tree.CursorNode = target;
+            Settle();
+
+            Assert.Contains(":droptarget", ItemOf(view, target).Classes);
+            Assert.True(Part(view, target, "CursorFrame").IsVisible);
+            var drop = Part(view, target, "DropInsideFrame");
+            var cursor = Part(view, target, "CursorFrame");
+            var layers = ((Panel)drop.GetVisualParent()!).Children;
+            Assert.Same(layers, ((Panel)cursor.GetVisualParent()!).Children);
+            Assert.True(layers.IndexOf(drop) > layers.IndexOf(cursor));
+            Assert.True(drop.IsEffectivelyVisible);
+            Assert.True(drop.BorderThickness.Top >= cursor.BorderThickness.Top);
+            TreeDrag.Cancel(window!, point);
         }
 
         // The center of the row of the node, in the window.

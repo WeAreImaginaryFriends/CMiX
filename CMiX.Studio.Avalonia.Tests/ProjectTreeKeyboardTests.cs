@@ -9,6 +9,7 @@ using Avalonia.VisualTree;
 using CMiX.Core.Undo;
 using CMiX.Studio.Avalonia.Services;
 using CMiX.Studio.Avalonia.Tests.Support;
+using CMiX.Studio.Avalonia.Themes;
 using CMiX.Studio.Avalonia.ViewModels.Tree;
 using CMiX.Studio.Avalonia.Views;
 using CMiX.UI.Controls.String;
@@ -144,20 +145,23 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void FocusFrame_OfTheCursorRow_IsAOnePixelBorderInTheSelectionColor()
+        public void ArrowDown_TreeFocused_GivesOnlyTheCursorRowTheCursorFrame()
         {
             var screen = Show();
+            var first = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
             var second = screen.Tree.CompositionNodes()[0].Children[0].Children[1];
 
             Press(PhysicalKey.ArrowDown);
 
-            var frame = Part(screen.View, second, "FocusFrame");
-            var selection = Part(screen.View, second, "SelectionFrame");
+            var frame = Part(screen.View, second, "CursorFrame");
             Assert.True(frame.IsVisible);
-            Assert.False(selection.IsVisible);
-            Assert.Equal(new Thickness(1), frame.BorderThickness);
-            Assert.Equal(((ISolidColorBrush)selection.BorderBrush!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
-            Assert.False(Part(screen.View, screen.Tree.CompositionNodes()[0].Children[0].Children[0], "FocusFrame").IsVisible);
+            Assert.Equal((Thickness)Application.Current!.FindResource("CursorFrameThickness")!, frame.BorderThickness);
+            Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("CursorFrameBrush")!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
+
+            // The first row stays selected: it keeps the selected fill and has no frame.
+            Assert.False(Part(screen.View, first, "CursorFrame").IsVisible);
+            Assert.Equal(ExpectedFill(first, ToneRole.FillSelected), FillOf(screen.View, first));
+            Assert.All(ItemOf(screen.View, first).GetVisualDescendants().OfType<Border>(), border => Assert.False(border.Name is "SelectionFrame" or "FocusFrame"));
         }
     }
 }

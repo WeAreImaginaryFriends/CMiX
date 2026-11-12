@@ -145,19 +145,21 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void Hover_ARow_MakesItAsBrightAsASelectedRow()
+        public void Hover_ARow_GivesItTheHoverFillAndKeepsTheText()
         {
             var (window, view, tree) = Show();
             var first = tree.CompositionNodes()[0].Children[0].Children[0];
             var second = tree.CompositionNodes()[0].Children[0].Children[1];
+            var text = ((ISolidColorBrush)Application.Current!.FindResource("ForegroundBrush")!).Color;
 
             window.MouseMove(CenterOf(window, RowOf(view, second)));
             Settle(window);
-            Assert.Equal(ToneOf(second).FillSelected, FillOf(RowOf(view, second)));
-            var white = ((ISolidColorBrush)Application.Current!.FindResource("ActiveForegroundBrush")!).Color;
-            Assert.Equal(white, ((ISolidColorBrush)RowOf(view, second).GetValue(global::Avalonia.Controls.Documents.TextElement.ForegroundProperty)!).Color);
+            Assert.Equal(ToneOf(second).FillHover, FillOf(RowOf(view, second)));
+            Assert.NotEqual(ToneOf(second).FillSelected, FillOf(RowOf(view, second)));
+            Assert.Equal(text, ((ISolidColorBrush)RowOf(view, second).GetValue(global::Avalonia.Controls.Documents.TextElement.ForegroundProperty)!).Color);
             Assert.Equal(ToneOf(first).Fill, FillOf(RowOf(view, first)));
 
+            // A selected row keeps the selected fill under the pointer.
             tree.SelectedNode = second;
             Settle(window);
             Assert.Equal(ToneOf(second).FillSelected, FillOf(RowOf(view, second)));

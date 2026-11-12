@@ -60,7 +60,7 @@ namespace CMiX.Studio.Avalonia.Views
             var indent = Convert.ToDouble(Application.Current!.FindResource("TreeIndent"));
             resources["TreeDropLineGapMargin"] = new Thickness(indent, snappedHeight, 0, 0);
 
-            // The border of the selected row is one pixel of the screen, so it is as thin on a screen of 150% as on a screen of 100%.
+            // The frame of a blocked row (BlockedFrame) is one pixel of the screen, so it is as thin on a screen of 150% as on a screen of 100%.
             resources["TreeSelectionThickness"] = new Thickness(1 / scale);
         }
 

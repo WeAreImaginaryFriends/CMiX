@@ -266,6 +266,10 @@ namespace CMiX.Studio.Avalonia.Tests
         private static Border RowOf(Screen screen, TreeNode node) =>
             ItemOf(screen, node).GetTemplateChildren().OfType<Border>().First(border => border.Name == "RowBorder");
 
+        // The accent frame of a drop inside the row of the node (the class droptarget).
+        private static Border DropInsideFrameOf(Screen screen, TreeNode node) =>
+            ItemOf(screen, node).GetTemplateChildren().OfType<Border>().First(border => border.Name == "DropInsideFrame");
+
         private static void Drag(Screen screen, Point point, DataObject data, RawDragEventType last)
         {
             var effects = DragDropEffects.Copy | DragDropEffects.Move;
@@ -316,31 +320,30 @@ namespace CMiX.Studio.Avalonia.Tests
             var composition = screen.Tree.CompositionNodes()[0];
             var entities = layer.Children[0];
             var cameras = layer.Children[1];
-            bool Hovered(TreeNode node) =>
-                (RowOf(screen, node).Background as ISolidColorBrush)?.Color == TreeTestScreen.ExpectedFill(node, ToneRole.FillSelected);
+            bool Lit(TreeNode node) => DropInsideFrameOf(screen, node).IsVisible;
 
-            // Over the layer: only the layer looks hovered, not its children.
+            // Over the layer: only the layer is lit, not its children.
             Drag(screen, RowPoint(screen, layer), data, RawDragEventType.DragOver);
-            Assert.True(Hovered(layer));
-            Assert.False(Hovered(composition) || Hovered(entities) || Hovered(cameras));
+            Assert.True(Lit(layer));
+            Assert.False(Lit(composition) || Lit(entities) || Lit(cameras));
 
-            // Over the group of entities, which takes the files itself: that group looks hovered, not the layer.
+            // Over the group of entities, which takes the files itself: that group is lit, not the layer.
             Drag(screen, RowPoint(screen, entities), data, RawDragEventType.DragOver);
-            Assert.True(Hovered(entities));
-            Assert.False(Hovered(layer) || Hovered(composition) || Hovered(cameras));
+            Assert.True(Lit(entities));
+            Assert.False(Lit(layer) || Lit(composition) || Lit(cameras));
 
-            // Over a child that passes the drop to the entities of the layer: nothing looks hovered.
+            // Over a child that passes the drop to the entities of the layer: nothing is lit.
             Drag(screen, RowPoint(screen, cameras), data, RawDragEventType.DragOver);
-            Assert.False(Hovered(layer) || Hovered(composition) || Hovered(entities) || Hovered(cameras));
+            Assert.False(Lit(layer) || Lit(composition) || Lit(entities) || Lit(cameras));
 
-            // Over the composition: the composition looks hovered.
+            // Over the composition: the composition is lit.
             Drag(screen, RowPoint(screen, composition), data, RawDragEventType.DragOver);
-            Assert.True(Hovered(composition));
-            Assert.False(Hovered(layer));
+            Assert.True(Lit(composition));
+            Assert.False(Lit(layer));
 
-            // Over the empty space nothing looks hovered: the drop makes a new composition.
+            // Over the empty space nothing is lit: the drop makes a new composition.
             Drag(screen, EmptySpace(screen), data, RawDragEventType.DragOver);
-            Assert.False(Hovered(composition) || Hovered(layer));
+            Assert.False(Lit(composition) || Lit(layer));
             Assert.Empty(screen.View.GetVisualDescendants().OfType<Border>().Where(border => border.Name == "DropFrame"));
         }
 
@@ -367,7 +370,6 @@ namespace CMiX.Studio.Avalonia.Tests
             var data = FilesOf(screen.Window, frames);
             var composition = screen.Tree.CompositionNodes()[0];
             var point = RowPoint(screen, composition);
-            var palette = CategoryPalette.FromApplication();
             var effects = DragDropEffects.Copy | DragDropEffects.Move;
 
             screen.Window.DragDrop(point, RawDragEventType.DragEnter, data, effects);
@@ -375,10 +377,7 @@ namespace CMiX.Studio.Avalonia.Tests
             screen.Window.DragDrop(point, RawDragEventType.DragOver, data, effects);
             Dispatcher.UIThread.RunJobs();
 
-            var row = RowOf(screen, composition);
-            Assert.Equal(
-                palette.For(composition.Category!.Value, composition.ComposableDepth, composition.KindDepth).FillSelected,
-                (row.Background as ISolidColorBrush)?.Color);
+            Assert.True(DropInsideFrameOf(screen, composition).IsVisible);
         }
 
         [AvaloniaFact]
