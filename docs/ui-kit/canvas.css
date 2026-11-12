@@ -1,0 +1,50 @@
+/* The canvas of canvas.js: the view, the world and the zoom buttons. */
+
+[data-canvas] {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: #1c1c1f;
+    cursor: default;
+    touch-action: none;
+    user-select: none;
+}
+[data-canvas].cv-space { cursor: grab; }
+[data-canvas].cv-panning { cursor: grabbing; }
+
+[data-world] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: max-content;
+    transform-origin: 0 0;
+    --inv: 1;
+}
+
+[data-canvas-live] { user-select: text; }
+
+.cv-hud {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    gap: 1px;
+    padding: 4px;
+    border-radius: 6px;
+    background: #2b2b2e;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+}
+.cv-hud button {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #e0e0e0;
+    font: 12px "Segoe UI", system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+}
+.cv-hud button:hover { background: #404044; }
+.cv-hud .cv-zoom { min-width: 52px; }

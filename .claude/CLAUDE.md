@@ -116,6 +116,27 @@ The compiler does not check these names. Ask the owner before you change one.
 - Check a look with a test that measures a value: a color, a size or a position.
   Then tell the owner what to look at.
 
+## UI kit
+
+- `docs/ui-kit/` is the HTML copy of the UI. The owner and Claude use it to discuss a design.
+  `gallery.html` is the catalogue. Part A is CMiX.UI. Part B is CMiX.Studio.Avalonia.
+- A change of a token, a style, a control or a view updates the UI kit in the same commit.
+  This applies to `CMiX.UI/Themes`, `CMiX.UI/Controls`, `CMiX.Studio.Avalonia/Themes` and
+  `CMiX.Studio.Avalonia/Views`.
+- A change of a token: run `tools/Update-Tokens.ps1` again. A change of an icon key: run `tools/Update-Icons.ps1` again.
+  Do not edit `tokens.css`, `tokens.js` or `icons.js` by hand.
+- A class in `cmix.css` is the key of a ControlTheme or the name of a control class. A state is the name of the pseudo class
+  of Avalonia: `pointerover`, `pressed`, `checked`, `selected`, `disabled`. The template of a control is in `cmix.js`.
+- The demo of an entry is a `template` with the id `entry-<number>` in `gallery.html`. A row has a fixed letter in `data-sub`
+  or `data-sample`: the theme `ButtonStraight` is `1.1.b`. Never change a letter and never use a letter again.
+- An entry has the exact name of its class or its style key in CMiX. When a name changes
+  in the code, the entry gets the new name.
+- An entry has a fixed number. Never change a number and never use a number again.
+  A new entry gets the next free number of its category. A removed entry keeps its number
+  with the mark `removed`.
+- A design mockup is a file in `docs/ui-kit/mockups/`. It links the kit and does not copy it.
+- When you cannot update the UI kit in the step, tell the owner which entries are out of date.
+
 ## Tests
 
 - Unit tests use xUnit, TestServiceProviderFactory.Create() for a real object

@@ -1,0 +1,1076 @@
+/* Made by tools/Update-Tokens.ps1 from CMiX.UI/Themes. Do not edit. */
+window.CMIX_TOKENS = {
+    "groups":  [
+                   {
+                       "id":  "0.1",
+                       "name":  "Colors",
+                       "source":  "CMiX.UI/Themes/Tokens/Colors.axaml",
+                       "tokens":  [
+                                      {
+                                          "name":  "Grey100",
+                                          "type":  "Color",
+                                          "raw":  "#FF111113",
+                                          "css":  "#111113",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey200",
+                                          "type":  "Color",
+                                          "raw":  "#FF222224",
+                                          "css":  "#222224",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey300",
+                                          "type":  "Color",
+                                          "raw":  "#FF2b2b2e",
+                                          "css":  "#2B2B2E",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey400",
+                                          "type":  "Color",
+                                          "raw":  "#FF353539",
+                                          "css":  "#353539",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey500",
+                                          "type":  "Color",
+                                          "raw":  "#FF404044",
+                                          "css":  "#404044",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey600",
+                                          "type":  "Color",
+                                          "raw":  "#FF4c4c51",
+                                          "css":  "#4C4C51",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey700",
+                                          "type":  "Color",
+                                          "raw":  "#FF606065",
+                                          "css":  "#606065",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey800",
+                                          "type":  "Color",
+                                          "raw":  "#FF808087",
+                                          "css":  "#808087",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey900",
+                                          "type":  "Color",
+                                          "raw":  "#FFb0b0b8",
+                                          "css":  "#B0B0B8",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "TreeBackground",
+                                          "type":  "Color",
+                                          "raw":  "#FF111113",
+                                          "css":  "#111113",
+                                          "note":  "The color under the rows of the project tree: the window surface (Grey100). The palette of the rows mixes against it."
+                                      },
+                                      {
+                                          "name":  "AccentPrimary",
+                                          "type":  "Color",
+                                          "raw":  "#FF5680C2",
+                                          "css":  "#5680C2",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "AccentSecondary",
+                                          "type":  "Color",
+                                          "raw":  "#FF4d6490",
+                                          "css":  "#4D6490",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Active",
+                                          "type":  "Color",
+                                          "raw":  "#FF5680C2",
+                                          "css":  "#5680C2",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "AccentHighlight",
+                                          "type":  "Color",
+                                          "raw":  "#FF91ACD7",
+                                          "css":  "#91ACD7",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ModulatorUnassigned",
+                                          "type":  "Color",
+                                          "raw":  "#FF606065",
+                                          "css":  "#606065",
+                                          "note":  "The colors of the modulator assign button, one pair for each ModulatorCategory. The name is Modulator + category + (Highlight when the modulator is hovered). A new category needs two colors here and two brushes in Brushes.axaml."
+                                      },
+                                      {
+                                          "name":  "ModulatorInternal",
+                                          "type":  "Color",
+                                          "raw":  "#FF5680C2",
+                                          "css":  "#5680C2",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ModulatorInternalHighlight",
+                                          "type":  "Color",
+                                          "raw":  "#FF91ACD7",
+                                          "css":  "#91ACD7",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ModulatorExternal",
+                                          "type":  "Color",
+                                          "raw":  "#FFC28A56",
+                                          "css":  "#C28A56",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ModulatorExternalHighlight",
+                                          "type":  "Color",
+                                          "raw":  "#FFD7B091",
+                                          "css":  "#D7B091",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryComposable",
+                                          "type":  "Color",
+                                          "raw":  "#FFDC74D7",
+                                          "css":  "#DC74D7",
+                                          "note":  "The colors of the kinds of row in the project tree, one for each TreeCategory. A composable inside a composable moves its hue one step for each level of nesting (Level1 to Level3). The tree reads them by the name Category + kind, and shows them as tones over the panel background."
+                                      },
+                                      {
+                                          "name":  "CategoryComposableLevel1",
+                                          "type":  "Color",
+                                          "raw":  "#FFC874E4",
+                                          "css":  "#C874E4",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryComposableLevel2",
+                                          "type":  "Color",
+                                          "raw":  "#FFB27DEA",
+                                          "css":  "#B27DEA",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryComposableLevel3",
+                                          "type":  "Color",
+                                          "raw":  "#FF9F85EC",
+                                          "css":  "#9F85EC",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryEntity",
+                                          "type":  "Color",
+                                          "raw":  "#FFE56C9E",
+                                          "css":  "#E56C9E",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryCamera",
+                                          "type":  "Color",
+                                          "raw":  "#FFE66756",
+                                          "css":  "#E66756",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryLight",
+                                          "type":  "Color",
+                                          "raw":  "#FFE9D349",
+                                          "css":  "#E9D349",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryTexture",
+                                          "type":  "Color",
+                                          "raw":  "#FF9DCE64",
+                                          "css":  "#9DCE64",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryFilter",
+                                          "type":  "Color",
+                                          "raw":  "#FF60C7A2",
+                                          "css":  "#60C7A2",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryModifier",
+                                          "type":  "Color",
+                                          "raw":  "#FF68B6D4",
+                                          "css":  "#68B6D4",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CategoryModulator",
+                                          "type":  "Color",
+                                          "raw":  "#FF9A8BE4",
+                                          "css":  "#9A8BE4",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "WarningMuted",
+                                          "type":  "Color",
+                                          "raw":  "#FFB0675C",
+                                          "css":  "#B0675C",
+                                          "note":  "A muted warning tone, not a full red: the frame of a target that refuses a drop, the mark of a conflict. It is not PopupCardWarning, the line of a tooltip."
+                                      },
+                                      {
+                                          "name":  "PopupCardBackground",
+                                          "type":  "Color",
+                                          "raw":  "#FF1A1A1C",
+                                          "css":  "#1A1A1C",
+                                          "note":  "The background of every popup: the card of a tooltip, the Add panel, a menu, a flyout and a drop down. It has no outline."
+                                      },
+                                      {
+                                          "name":  "PopupCardWarning",
+                                          "type":  "Color",
+                                          "raw":  "#FFD9A066",
+                                          "css":  "#D9A066",
+                                          "note":  "The line of a tooltip that says why a control is disabled."
+                                      },
+                                      {
+                                          "name":  "PopupCardDanger",
+                                          "type":  "Color",
+                                          "raw":  "#FFE57373",
+                                          "css":  "#E57373",
+                                          "note":  "The text of a row of a menu that takes something away, such as Delete."
+                                      },
+                                      {
+                                          "name":  "Text",
+                                          "type":  "Color",
+                                          "raw":  "#FFE0E0E0",
+                                          "css":  "#E0E0E0",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ActiveText",
+                                          "type":  "Color",
+                                          "raw":  "#FFFFFFFF",
+                                          "css":  "#FFFFFF",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ShortcutText",
+                                          "type":  "Color",
+                                          "raw":  "#FF85858C",
+                                          "css":  "#85858C",
+                                          "note":  "The text of a shortcut in a tooltip, a menu and a key cap. It has a contrast of 4.74:1 on PopupCardBackground (WCAG AA)."
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "0.2",
+                       "name":  "Brushes",
+                       "source":  "CMiX.UI/Themes/Tokens/Brushes.axaml",
+                       "tokens":  [
+                                      {
+                                          "name":  "Shadow",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "Black, Opacity 0.2",
+                                          "css":  "color-mix(in srgb, #000000 20%, transparent)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "AccentBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource AccentPrimary}",
+                                          "css":  "var(--AccentPrimary)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "AccentInactiveBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource AccentSecondary}",
+                                          "css":  "var(--AccentSecondary)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "AccentHighlightBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource AccentHighlight}",
+                                          "css":  "var(--AccentHighlight)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ModulatorUnassignedBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ModulatorUnassigned}",
+                                          "css":  "var(--ModulatorUnassigned)",
+                                          "note":  "The modulator assign button. The studio finds these by name: Modulator + category + (Highlight) + Brush."
+                                      },
+                                      {
+                                          "name":  "ModulatorInternalBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ModulatorInternal}",
+                                          "css":  "var(--ModulatorInternal)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ModulatorInternalHighlightBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ModulatorInternalHighlight}",
+                                          "css":  "var(--ModulatorInternalHighlight)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ModulatorExternalBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ModulatorExternal}",
+                                          "css":  "var(--ModulatorExternal)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ModulatorExternalHighlightBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ModulatorExternalHighlight}",
+                                          "css":  "var(--ModulatorExternalHighlight)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "PanelBackground",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "Black, Opacity 0.3",
+                                          "css":  "color-mix(in srgb, #000000 30%, transparent)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "PanelBorderBackground",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "Black, Opacity 0.4",
+                                          "css":  "color-mix(in srgb, #000000 40%, transparent)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ListBoxBackground",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "Black, Opacity 0.4",
+                                          "css":  "color-mix(in srgb, #000000 40%, transparent)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "PanelBackgroundLevel1Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey200}",
+                                          "css":  "var(--Grey200)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "PanelBackgroundLevel2Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey300}",
+                                          "css":  "var(--Grey300)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "PanelBackgroundLevel3Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey400}",
+                                          "css":  "var(--Grey400)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "PopupBackgroundBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource PopupCardBackground}",
+                                          "css":  "var(--PopupCardBackground)",
+                                          "note":  "The background of every popup, flyout, drop down and context menu. PopupFrame and DropdownFrame read it."
+                                      },
+                                      {
+                                          "name":  "PopupCardWarningBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource PopupCardWarning}",
+                                          "css":  "var(--PopupCardWarning)",
+                                          "note":  "The line of a tooltip that says why a control is disabled, and the colors of a menu row that takes something away."
+                                      },
+                                      {
+                                          "name":  "PopupCardDangerBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource PopupCardDanger}",
+                                          "css":  "var(--PopupCardDanger)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "TreeBackgroundBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource TreeBackground}",
+                                          "css":  "var(--TreeBackground)",
+                                          "note":  "The background of the project tree and the layer that dims a row."
+                                      },
+                                      {
+                                          "name":  "Grey100Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey100}",
+                                          "css":  "var(--Grey100)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey200Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey200}",
+                                          "css":  "var(--Grey200)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey300Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey300}",
+                                          "css":  "var(--Grey300)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey400Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey400}",
+                                          "css":  "var(--Grey400)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey500Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey500}",
+                                          "css":  "var(--Grey500)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey600Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey600}",
+                                          "css":  "var(--Grey600)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey700Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey700}",
+                                          "css":  "var(--Grey700)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey800Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey800}",
+                                          "css":  "var(--Grey800)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "Grey900Brush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey900}",
+                                          "css":  "var(--Grey900)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "StateIdleBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey600}",
+                                          "css":  "var(--Grey600)",
+                                          "note":  "The states of the controls. Every theme reads these brushes, so a grey changes in one place. Surface controls (buttons, toggles, combo boxes, values, sliders): idle, then one step up under the pointer, then one step down from idle while pressed (a press makes the control darker). The on state is accent-inactive, and accent under the pointer. Rows (list items, menu items, tabs): transparent, then RowHover under the pointer."
+                                      },
+                                      {
+                                          "name":  "StateHoverBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey700}",
+                                          "css":  "var(--Grey700)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "StatePressedBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey100}",
+                                          "css":  "var(--Grey100)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "RowHoverBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey500}",
+                                          "css":  "var(--Grey500)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "WarningMutedBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource WarningMuted}",
+                                          "css":  "var(--WarningMuted)",
+                                          "note":  "A muted warning: the frame of a target that refuses a drop, the mark of a conflict."
+                                      },
+                                      {
+                                          "name":  "CursorFrameBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ActiveText}",
+                                          "css":  "var(--ActiveText)",
+                                          "note":  "The frame of the cursor row of a list: ActiveText while the list has the focus, Grey800 when it does not."
+                                      },
+                                      {
+                                          "name":  "CursorFrameInactiveBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey800}",
+                                          "css":  "var(--Grey800)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ForegroundBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Text}",
+                                          "css":  "var(--Text)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ActiveForegroundBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ActiveText}",
+                                          "css":  "var(--ActiveText)",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ShortcutTextBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ShortcutText}",
+                                          "css":  "var(--ShortcutText)",
+                                          "note":  "The text of a shortcut (the class shortcut of a TextBlock), and the frame of a key cap (TextBlockKeyCap)."
+                                      },
+                                      {
+                                          "name":  "ShortcutTextHoverBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey900}",
+                                          "css":  "var(--Grey900)",
+                                          "note":  "The text of a shortcut on a hovered or selected menu row (RowHoverBrush)."
+                                      },
+                                      {
+                                          "name":  "KeyCapBorderBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey600}",
+                                          "css":  "var(--Grey600)",
+                                          "note":  ""
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "0.3",
+                       "name":  "Geometry",
+                       "source":  "CMiX.UI/Themes/Tokens/Geometry.axaml",
+                       "tokens":  [
+                                      {
+                                          "name":  "CornerRadiusNone",
+                                          "type":  "CornerRadius",
+                                          "raw":  "0",
+                                          "css":  "0",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CornerRadiusAll",
+                                          "type":  "CornerRadius",
+                                          "raw":  "2",
+                                          "css":  "2px",
+                                          "note":  "Base radius: 2"
+                                      },
+                                      {
+                                          "name":  "CornerRadiusTop",
+                                          "type":  "CornerRadius",
+                                          "raw":  "2,2,0,0",
+                                          "css":  "2px 2px 0 0",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CornerRadiusBottom",
+                                          "type":  "CornerRadius",
+                                          "raw":  "0,0,2,2",
+                                          "css":  "0 0 2px 2px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CornerRadiusLeft",
+                                          "type":  "CornerRadius",
+                                          "raw":  "2,0,0,2",
+                                          "css":  "2px 0 0 2px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CornerRadiusRight",
+                                          "type":  "CornerRadius",
+                                          "raw":  "0,2,2,0",
+                                          "css":  "0 2px 2px 0",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "CornerRadiusLargeAll",
+                                          "type":  "CornerRadius",
+                                          "raw":  "4",
+                                          "css":  "4px",
+                                          "note":  "Large radius: 4"
+                                      },
+                                      {
+                                          "name":  "CornerRadiusLargeBottom",
+                                          "type":  "CornerRadius",
+                                          "raw":  "0,0,4,4",
+                                          "css":  "0 0 4px 4px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "MarginCard",
+                                          "type":  "Thickness",
+                                          "raw":  "2,1",
+                                          "css":  "1px 2px",
+                                          "note":  "The space around a card, such as ExpanderIndented: SpacingXS at the sides, SpacingXXS above and below."
+                                      },
+                                      {
+                                          "name":  "ControlHeightXS",
+                                          "type":  "Double",
+                                          "raw":  "16",
+                                          "css":  "16px",
+                                          "note":  "Control heights"
+                                      },
+                                      {
+                                          "name":  "ControlHeightMD",
+                                          "type":  "Double",
+                                          "raw":  "24",
+                                          "css":  "24px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ControlHeightXL",
+                                          "type":  "Double",
+                                          "raw":  "30",
+                                          "css":  "30px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ControlHeightXXL",
+                                          "type":  "Double",
+                                          "raw":  "34",
+                                          "css":  "34px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "IndicatorSize",
+                                          "type":  "Double",
+                                          "raw":  "8",
+                                          "css":  "8px",
+                                          "note":  "Sizes of small parts. They are not control heights, but they sit in the same scale."
+                                      },
+                                      {
+                                          "name":  "SplitterSize",
+                                          "type":  "Double",
+                                          "raw":  "8",
+                                          "css":  "8px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "SplitterIndicatorSize",
+                                          "type":  "Double",
+                                          "raw":  "2",
+                                          "css":  "2px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "SplitterRowOverlap",
+                                          "type":  "Thickness",
+                                          "raw":  "0,-4",
+                                          "css":  "-4px 0",
+                                          "note":  "A horizontal splitter lies over the edge between two rows: half of its height in each row."
+                                      },
+                                      {
+                                          "name":  "SplitterColumnOverlap",
+                                          "type":  "Thickness",
+                                          "raw":  "0,0,-6,0",
+                                          "css":  "0 -6px 0 0",
+                                          "note":  "A vertical splitter lies over the edge between two columns: SplitterSize less the scroll bar margin is in the right column."
+                                      },
+                                      {
+                                          "name":  "ScrollBarSize",
+                                          "type":  "Double",
+                                          "raw":  "8",
+                                          "css":  "8px",
+                                          "note":  "The room of a scroll bar: ScrollBarThickness plus the two sides of ScrollBarMargin. A test pins the sum."
+                                      },
+                                      {
+                                          "name":  "ScrollBarThickness",
+                                          "type":  "Double",
+                                          "raw":  "4",
+                                          "css":  "4px",
+                                          "note":  "The width of the vertical bar itself."
+                                      },
+                                      {
+                                          "name":  "ScrollBarMargin",
+                                          "type":  "Thickness",
+                                          "raw":  "2,0,2,0",
+                                          "css":  "0 2px 0 2px",
+                                          "note":  "The space at the two sides of a bar."
+                                      },
+                                      {
+                                          "name":  "ScrollBarGutter",
+                                          "type":  "Thickness",
+                                          "raw":  "0,0,8,0",
+                                          "css":  "0 8px 0 0",
+                                          "note":  "The room that the content of an overlay scroll viewer leaves on the right for the bar: ScrollBarSize. The bar lies in this room, so the content has one width with a bar and without one."
+                                      },
+                                      {
+                                          "name":  "SeparatorSize",
+                                          "type":  "Double",
+                                          "raw":  "0.5",
+                                          "css":  "0.5px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "PopupMinWidth",
+                                          "type":  "Double",
+                                          "raw":  "200",
+                                          "css":  "200px",
+                                          "note":  "The least width of the visible panel of every menu and popup, without the margin of the shadow. More content makes it wider. A popup can follow the width of its toggle instead: TogglePopup.MatchesToggleWidth."
+                                      },
+                                      {
+                                          "name":  "ColorWheelSize",
+                                          "type":  "Double",
+                                          "raw":  "200",
+                                          "css":  "200px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "TextAreaHeight2",
+                                          "type":  "Double",
+                                          "raw":  "44",
+                                          "css":  "44px",
+                                          "note":  "Multi line text boxes: two lines and four lines."
+                                      },
+                                      {
+                                          "name":  "TextAreaHeight4",
+                                          "type":  "Double",
+                                          "raw":  "88",
+                                          "css":  "88px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "IconSizeXS",
+                                          "type":  "Double",
+                                          "raw":  "16",
+                                          "css":  "16px",
+                                          "note":  "Icon glyph sizes - deliberately separate from ControlHeight*, which sizes control bounding boxes, not glyph size. See Views/Controls/AppIcon."
+                                      },
+                                      {
+                                          "name":  "IconSizeSM",
+                                          "type":  "Double",
+                                          "raw":  "12",
+                                          "css":  "12px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "IconSizeMD",
+                                          "type":  "Double",
+                                          "raw":  "16",
+                                          "css":  "16px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "IconSizeLG",
+                                          "type":  "Double",
+                                          "raw":  "24",
+                                          "css":  "24px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ListVisibleItems",
+                                          "type":  "Int32",
+                                          "raw":  "5",
+                                          "css":  "5",
+                                          "note":  "Lists and drop downs. The height of each is a number of rows of ControlHeightMD, plus the margins and the spaces around the rows. No other file holds one of these numbers. ListBoxCMiX: ListVisibleItems rows + the top and bottom of ListScrollMargin. ListBoxEditable: ListEditableVisibleItems rows + the spaces of ListSpacing + ListEditablePadding. ComboBox: ComboBoxVisibleItems rows."
+                                      },
+                                      {
+                                          "name":  "ListScrollMargin",
+                                          "type":  "Thickness",
+                                          "raw":  "2",
+                                          "css":  "2px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ListResizeHandleHeight",
+                                          "type":  "Double",
+                                          "raw":  "12",
+                                          "css":  "12px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ListEditableVisibleItems",
+                                          "type":  "Int32",
+                                          "raw":  "4",
+                                          "css":  "4",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ListSpacing",
+                                          "type":  "Double",
+                                          "raw":  "2",
+                                          "css":  "2px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ListEditablePadding",
+                                          "type":  "Thickness",
+                                          "raw":  "4",
+                                          "css":  "4px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "ComboBoxVisibleItems",
+                                          "type":  "Int32",
+                                          "raw":  "7",
+                                          "css":  "7",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "FontSizeMD",
+                                          "type":  "Double",
+                                          "raw":  "12",
+                                          "css":  "12px",
+                                          "note":  "The size of the text: about half a row of ControlHeightMD, rounded."
+                                      },
+                                      {
+                                          "name":  "SpacingXXS",
+                                          "type":  "Double",
+                                          "raw":  "1",
+                                          "css":  "1px",
+                                          "note":  "Spacing scale for Margin/Padding"
+                                      },
+                                      {
+                                          "name":  "SpacingXS",
+                                          "type":  "Double",
+                                          "raw":  "2",
+                                          "css":  "2px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "SpacingSM",
+                                          "type":  "Double",
+                                          "raw":  "4",
+                                          "css":  "4px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "SpacingMD",
+                                          "type":  "Double",
+                                          "raw":  "8",
+                                          "css":  "8px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "PopupCardPadding",
+                                          "type":  "Thickness",
+                                          "raw":  "10,8",
+                                          "css":  "8px 10px",
+                                          "note":  "The space inside the card of a tooltip and of the Add panel: SpacingMD above and below, 10 at the sides."
+                                      },
+                                      {
+                                          "name":  "TipMaxWidth",
+                                          "type":  "Double",
+                                          "raw":  "260",
+                                          "css":  "260px",
+                                          "note":  "The widest line of a tooltip. A longer description wraps."
+                                      },
+                                      {
+                                          "name":  "AddPanelWidth",
+                                          "type":  "Double",
+                                          "raw":  "200",
+                                          "css":  "200px",
+                                          "note":  "The width of the list inside the Add panel, without the card around it."
+                                      },
+                                      {
+                                          "name":  "TreeIndent",
+                                          "type":  "Double",
+                                          "raw":  "16",
+                                          "css":  "16px",
+                                          "note":  "The indent of one level, and the width of the chevron."
+                                      },
+                                      {
+                                          "name":  "TreeIndentMargin",
+                                          "type":  "Thickness",
+                                          "raw":  "16,0,0,0",
+                                          "css":  "0 0 0 16px",
+                                          "note":  "TreeIndent at the left: the drop line starts after the chevron."
+                                      },
+                                      {
+                                          "name":  "TreeRowGap",
+                                          "type":  "Double",
+                                          "raw":  "3",
+                                          "css":  "3px",
+                                          "note":  "The space between two rows at a screen of 100%. The view sets it again in whole pixels."
+                                      },
+                                      {
+                                          "name":  "TreeMargin",
+                                          "type":  "Thickness",
+                                          "raw":  "8,8,0,8",
+                                          "css":  "8px 0 8px 8px",
+                                          "note":  "The space around the tree: SpacingMD at the left, top and bottom. The scroll bar gutter is at the right."
+                                      },
+                                      {
+                                          "name":  "TreeRowContentMargin",
+                                          "type":  "Thickness",
+                                          "raw":  "2,0,0,0",
+                                          "css":  "0 0 0 2px",
+                                          "note":  "The space before the content of a row: SpacingXS."
+                                      },
+                                      {
+                                          "name":  "TreeHeaderMargin",
+                                          "type":  "Thickness",
+                                          "raw":  "4,0",
+                                          "css":  "0 4px",
+                                          "note":  "The space at the two sides of the icon and the name of a row: SpacingSM."
+                                      },
+                                      {
+                                          "name":  "TreeToolbarPadding",
+                                          "type":  "Thickness",
+                                          "raw":  "4",
+                                          "css":  "4px",
+                                          "note":  "The space inside the toolbar of the tree: SpacingSM."
+                                      },
+                                      {
+                                          "name":  "TreeSearchWidth",
+                                          "type":  "Double",
+                                          "raw":  "160",
+                                          "css":  "160px",
+                                          "note":  "The width of the search field of the tree, in the bar of the panel, at the right."
+                                      },
+                                      {
+                                          "name":  "DragScrollEdge",
+                                          "type":  "Double",
+                                          "raw":  "28",
+                                          "css":  "28px",
+                                          "note":  "The height of the zone at the top and the bottom edge that scrolls the view."
+                                      },
+                                      {
+                                          "name":  "DragScrollStep",
+                                          "type":  "Double",
+                                          "raw":  "18",
+                                          "css":  "18px",
+                                          "note":  "The largest scroll of one step of the timer."
+                                      },
+                                      {
+                                          "name":  "DragThreshold",
+                                          "type":  "Double",
+                                          "raw":  "4",
+                                          "css":  "4px",
+                                          "note":  "The distance that a press moves before a drag starts."
+                                      },
+                                      {
+                                          "name":  "CursorFrameThickness",
+                                          "type":  "Thickness",
+                                          "raw":  "2",
+                                          "css":  "2px",
+                                          "note":  "The frame of the cursor row: CursorFrameThickness while the list has the focus, CursorFrameInactiveThickness when it does not."
+                                      },
+                                      {
+                                          "name":  "CursorFrameInactiveThickness",
+                                          "type":  "Thickness",
+                                          "raw":  "1",
+                                          "css":  "1px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "OpacityDisabled",
+                                          "type":  "Double",
+                                          "raw":  "0.5",
+                                          "css":  "0.5",
+                                          "note":  "A disabled control."
+                                      },
+                                      {
+                                          "name":  "OpacityDragSource",
+                                          "type":  "Double",
+                                          "raw":  "0.4",
+                                          "css":  "0.4",
+                                          "note":  "The item that a drag moves, at its old place."
+                                      },
+                                      {
+                                          "name":  "OpacityDragGhost",
+                                          "type":  "Double",
+                                          "raw":  "0.8",
+                                          "css":  "0.8",
+                                          "note":  "The copy of the item that follows the pointer during a drag."
+                                      },
+                                      {
+                                          "name":  "OpacityIconIdle",
+                                          "type":  "Double",
+                                          "raw":  "0.6",
+                                          "css":  "0.6",
+                                          "note":  "An icon only control that is not under the pointer and not on."
+                                      },
+                                      {
+                                          "name":  "KeyCapBorderThickness",
+                                          "type":  "Thickness",
+                                          "raw":  "1",
+                                          "css":  "1px",
+                                          "note":  "A key cap (TextBlockKeyCap): the line around the key text, and the space between the line and the text."
+                                      },
+                                      {
+                                          "name":  "KeyCapPadding",
+                                          "type":  "Thickness",
+                                          "raw":  "4,0",
+                                          "css":  "0 4px",
+                                          "note":  ""
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "0.4",
+                       "name":  "Typography",
+                       "source":  "CMiX.UI/Themes/Tokens/Typography.axaml",
+                       "tokens":  [
+                                      {
+                                          "name":  "DefaultFontSize",
+                                          "type":  "Double",
+                                          "raw":  "10",
+                                          "css":  "10px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "FontFamilyMono",
+                                          "type":  "FontFamily",
+                                          "raw":  "Cascadia Mono,Consolas,Menlo,monospace",
+                                          "css":  "Cascadia Mono,Consolas,Menlo,monospace",
+                                          "note":  "The font of a shortcut and of a command name in a tooltip."
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "0.5",
+                       "name":  "Motion",
+                       "source":  "CMiX.UI/Themes/Motion.cs",
+                       "tokens":  [
+                                      {
+                                          "name":  "MotionDuration",
+                                          "type":  "TimeSpan",
+                                          "raw":  "160 ms",
+                                          "css":  "160ms",
+                                          "note":  "Motion.Duration"
+                                      },
+                                      {
+                                          "name":  "MotionFadeDuration",
+                                          "type":  "TimeSpan",
+                                          "raw":  "120 ms",
+                                          "css":  "120ms",
+                                          "note":  "Motion.FadeDuration"
+                                      },
+                                      {
+                                          "name":  "MotionEasing",
+                                          "type":  "Easing",
+                                          "raw":  "CubicEaseOut",
+                                          "css":  "cubic-bezier(0.215, 0.61, 0.355, 1)",
+                                          "note":  "Motion.Easing"
+                                      }
+                                  ]
+                   }
+               ],
+    "skipped":  [
+                    {
+                        "name":  "CheckerboardBrush",
+                        "type":  "DrawingBrush",
+                        "source":  "Tokens\\Brushes.axaml"
+                    }
+                ]
+};

@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CMiX UI kit</title>
+    <link rel="stylesheet" href="tokens.css">
+    <link rel="stylesheet" href="cmix.css">
+    <link rel="stylesheet" href="canvas.css">
+    <link rel="stylesheet" href="gallery.css">
+</head>
+<body>
+    <nav class="g-nav">
+        <div class="g-title">CMiX UI kit</div>
+        <input class="g-filter" id="filter" type="search" placeholder="Number or name, then Enter" aria-label="Find an entry">
+        <div id="nav"></div>
+        <div class="g-help">Ctrl + wheel: zoom. Wheel: scroll. Drag the background: pan. Shift + 1: show all.</div>
+    </nav>
+    <main class="g-canvas" data-canvas>
+        <div class="g-world" id="world" data-world></div>
+    </main>
+
+    <!-- The demo of an entry is a template with the id entry-<number>, for example entry-1.1.
+         The content of a demo uses the classes of cmix.css only. -->
+
+    <!-- 1 Boolean -->
+    <template id="entry-1.1">
+        <div data-sub="a" data-name="Button"><button class="Button" style="width:120px">Button</button></div>
+        <div data-sub="b" data-name="ButtonStraight"><button class="ButtonStraight" style="width:120px">Button</button></div>
+        <div data-sub="c" data-name="ButtonRounded"><button class="ButtonRounded" style="width:120px">Button</button></div>
+        <div data-sub="d" data-name="ButtonRoundedRight"><button class="ButtonRoundedRight" style="width:120px">Button</button></div>
+        <div data-sub="e" data-name="ButtonRoundedRightNoHover"><button class="ButtonRoundedRightNoHover" style="width:120px">Button</button></div>
+        <div data-sub="f" data-name="ButtonInlineCaption"><button class="ButtonInlineCaption" style="width:120px">Caption</button></div>
+        <div data-sub="g" data-name="ButtonInlineRight"><button class="ButtonInlineRight" style="width:120px">Button</button></div>
+        <div data-sub="h" data-name="ButtonItem" data-states="idle hover disabled"><button class="ButtonItem" style="width:120px">Item</button></div>
+        <div data-sub="i" data-name="ButtonValidation"><button class="ButtonValidation" style="width:120px;height:24px">OK</button></div>
+        <div data-sub="j" data-name="ButtonWindowControl"><button class="ButtonWindowControl">X</button></div>
+        <div data-sub="k" data-name="ButtonWindowIcon" data-states="idle hover pressed"><button class="ButtonWindowIcon" data-icon-key="Close"></button></div>
+    </template>
+    <template id="entry-1.2">
+        <div data-sub="a" data-name="ButtonCaptioned"><button class="ButtonCaptioned" data-caption="Caption" style="width:120px"></button></div>
+    </template>
+    <template id="entry-1.3">
+        <div data-sub="a" data-name="ButtonIcon"><button class="ButtonIcon" data-icon-key="Add"></button></div>
+    </template>
+    <template id="entry-1.4">
+        <div data-sub="a" data-name="ButtonMomentary"><button class="ButtonMomentary" style="width:120px">Momentary</button></div>
+    </template>
+    <template id="entry-1.5">
+        <div data-sub="a" data-name="ButtonIconClose" data-states="idle hover pressed"><button class="ButtonIconClose"></button></div>
+        <div data-sub="b" data-name="ButtonDragHandle" data-states="idle"><button class="ButtonDragHandle"><i class="AppIcon" data-icon-key="DragHandle"></i></button></div>
+    </template>
+    <template id="entry-1.6">
+        <div data-sub="a" data-name="ToggleButton" data-on><button class="ToggleButton" style="width:120px">Toggle</button></div>
+        <div data-sub="b" data-name="ToggleButtonRounded" data-on><button class="ToggleButtonRounded" style="width:120px">Toggle</button></div>
+        <div data-sub="c" data-name="ToggleButtonRoundedLeft" data-on><button class="ToggleButtonRoundedLeft" style="width:120px">Toggle</button></div>
+        <div data-sub="d" data-name="ToggleButtonInlineLeft" data-on><button class="ToggleButtonInlineLeft" style="width:120px">Left</button></div>
+        <div data-sub="e" data-name="ToggleButtonInlineCenter" data-on><button class="ToggleButtonInlineCenter" style="width:120px">Center</button></div>
+        <div data-sub="f" data-name="ToggleButtonInlineRight" data-on><button class="ToggleButtonInlineRight" style="width:120px">Right</button></div>
+        <div data-sub="g" data-name="ToggleButtonCheckBox" data-on><button class="ToggleButtonCheckBox" style="width:24px"></button></div>
+        <div data-sub="h" data-name="ToggleButtonCheck" data-on><button class="ToggleButtonCheck" style="width:24px"></button></div>
+        <div data-sub="i" data-name="ToggleButtonIcon" data-on data-states="idle hover"><button class="ToggleButtonIcon" data-icon-key="Settings"></button></div>
+        <div data-sub="j" data-name="ToggleButtonVisibility" data-on data-states="idle hover"><button class="ToggleButtonVisibility"></button></div>
+        <div data-sub="k" data-name="ToggleButtonPower" data-on data-states="idle hover"><button class="ToggleButtonPower"></button></div>
+        <div data-sub="l" data-name="ToggleButtonUpdate" data-on data-states="idle hover"><button class="ToggleButtonUpdate"></button></div>
+        <div data-sub="m" data-name="ToggleButtonPlayPause" data-on data-states="idle"><button class="ToggleButtonPlayPause" style="width:18px"></button></div>
+        <div data-sub="n" data-name="ToggleButtonPopup" data-on data-states="idle hover"><button class="ToggleButtonPopup" style="width:120px">Add</button></div>
+        <div data-sub="o" data-name="ToggleButtonBox" data-on><button class="ToggleButtonBox"></button></div>
+        <div data-sub="p" data-name="ToggleButtonColor" data-states="idle disabled"><button class="ToggleButtonColor" style="width:120px;--Color:#5680C280"></button></div>
+    </template>
+    <template id="entry-1.7">
+        <div data-sub="a" data-name="ToggleButtonCaptioned" data-on><button class="ToggleButtonCaptioned" data-caption="Caption" style="width:120px"></button></div>
+    </template>
+    <template id="entry-1.8">
+        <div data-sub="a" data-name="RadioButton" data-on data-states="idle hover disabled"><button class="RadioButton" style="width:120px">Radio</button></div>
+    </template>
+
+
+    <!-- 2 Number -->
+    <template id="entry-2.1">
+        <div data-sub="a" data-name="DragValue" data-states="idle hover pressed editing disabled"><div class="DragValue" data-caption="Value" data-value="0.5" style="width:220px"></div></div>
+        <div data-sub="b" data-name="DragValueInlineCaption" data-states="idle hover pressed editing disabled"><div class="DragValueInlineCaption" data-caption="Value" data-value="0.5" style="width:220px"></div></div>
+    </template>
+    <template id="entry-2.2">
+        <div data-sub="a" data-name="NumericInput" data-states="idle"><span class="NumericInput" style="width:132px">0.500</span></div>
+    </template>
+    <template id="entry-2.3">
+        <div data-sub="a" data-name="IntegerValue" data-states="idle hover pressed editing disabled"><div class="IntegerValue" data-caption="Count" data-value="5" style="width:220px"></div></div>
+    </template>
+    <template id="entry-2.4">
+        <div data-sub="a" data-name="RangeValue" data-states="idle disabled"><div class="RangeValue" data-left-caption="Min" data-left-value="0" data-right-caption="Max" data-right-value="1" style="width:280px"></div></div>
+    </template>
+    <template id="entry-2.5">
+        <div data-sub="a" data-name="SliderCMiX" data-states="idle hover pressed editing disabled"><div class="SliderCMiX" data-caption="Opacity" data-value="0.4" style="width:220px"></div></div>
+    </template>
+
+
+    <!-- 3 Vector -->
+    <template id="entry-3.1">
+        <div data-sample="a" data-name="Vector2"><div class="Vector2" data-caption="Scale" data-x="1" data-y="1" style="width:260px"></div></div>
+    </template>
+    <template id="entry-3.2">
+        <div data-sample="a" data-name="Vector3"><div class="Vector3" data-caption="Position" data-x="0" data-y="0.5" data-z="-2" style="width:260px"></div></div>
+    </template>
+    <template id="entry-3.3">
+        <div data-sample="a" data-name="Integer2"><div class="Integer2" data-caption="Count" data-x="4" data-y="3" style="width:260px"></div></div>
+    </template>
+    <template id="entry-3.4">
+        <div data-sample="a" data-name="Integer3"><div class="Integer3" data-caption="Count" data-x="4" data-y="3" data-z="2" style="width:260px"></div></div>
+    </template>
+    <template id="entry-3.5">
+        <div data-sample="a" data-name="AxisSelector2"><div class="AxisSelector2" data-caption="Axis" data-checked="X" style="width:260px"></div></div>
+    </template>
+    <template id="entry-3.6">
+        <div data-sample="a" data-name="AxisSelector3"><div class="AxisSelector3" data-caption="Axis" data-checked="XZ" style="width:260px"></div></div>
+    </template>
+
+    <!-- 4 Enum -->
+    <template id="entry-4.1">
+        <div data-sub="a" data-name="ComboBox" data-states="idle hover pressed disabled"><div class="ComboBox" style="width:140px"><div class="ComboBoxItem">Item A</div><div class="ComboBoxItem">Item B</div><div class="ComboBoxItem">Item C</div></div></div>
+        <div data-sub="b" data-name="ComboBoxItemCMiX" data-states="idle hover selected selectedhover highlighted"><div class="ComboBoxItem" style="width:140px">Item</div></div>
+        <div data-sub="c" data-name="ComboBoxWithButton" data-states="idle hover"><div class="ComboBoxWithButton" style="height:24px"><div class="ComboBoxItem">Item A</div><div class="ComboBoxItem">Item B</div></div></div>
+        <div data-sample="d" data-name="ComboBox" data-note="open, with DropdownFrame" style="height:120px"><div class="ComboBox open" data-keep-open data-selected-index="1" style="width:160px;height:24px"><div class="ComboBoxItem">Item A</div><div class="ComboBoxItem">Item B</div><div class="ComboBoxItem">Item C</div></div></div>
+    </template>
+    <template id="entry-4.2">
+        <div data-sub="a" data-name="ComboBoxCaptioned" data-states="idle hover pressed disabled"><div class="ComboBoxCaptioned" data-caption="Mode" style="width:260px"><div class="ComboBoxItem">Additive</div><div class="ComboBoxItem">Multiply</div><div class="ComboBoxItem">Screen</div></div></div>
+        <div data-sample="b" data-name="ComboBoxCaptioned" data-note="open" style="height:120px"><div class="ComboBoxCaptioned open" data-caption="Mode" data-selected-index="1" style="width:260px"><div class="ComboBoxItem">Additive</div><div class="ComboBoxItem">Multiply</div><div class="ComboBoxItem">Screen</div></div></div>
+    </template>
+    <template id="entry-4.3">
+        <div data-sample="a" data-name="ComboBoxSearch.IsSearchable" data-note="open: a SearchBox above the rows" style="height:150px"><div class="ComboBox open" data-keep-open data-is-searchable style="width:180px;height:24px"><div class="ComboBoxItem">Blur</div><div class="ComboBoxItem">Dither</div><div class="ComboBoxItem">Echo</div><div class="ComboBoxItem">Edge</div></div></div>
+    </template>
+
+    <!-- 5 String -->
+    <template id="entry-5.1">
+        <div data-sub="a" data-name="TextBlock" data-states="idle disabled"><span class="TextBlock">Text</span></div>
+        <div data-sub="b" data-name="TextBlock.shortcut" data-states="idle"><span class="TextBlock shortcut">Ctrl+D</span></div>
+    </template>
+    <template id="entry-5.2">
+        <div data-sample="a" data-name="TextBlockTrimmed"><span class="TextBlockTrimmed" style="width:140px">A very long file name that does not fit.png</span></div>
+    </template>
+    <template id="entry-5.3">
+        <div data-sub="a" data-name="Label" data-states="idle"><span class="Label" style="width:120px;height:24px">Label</span></div>
+    </template>
+    <template id="entry-5.4">
+        <div data-sub="a" data-name="TextBox" data-states="idle hover focus disabled"><input class="TextBox" type="text" value="Text" spellcheck="false" style="width:140px;height:24px"></div>
+        <div data-sub="b" data-name="TextBox, Watermark" data-states="idle"><input class="TextBox" type="text" placeholder="Watermark" style="width:140px;height:24px"></div>
+        <div data-sub="c" data-name="TextBoxNumbersOnly" data-states="idle focus disabled"><input class="TextBoxNumbersOnly" type="text" value="192" style="width:60px;height:24px;text-align:center"></div>
+    </template>
+    <template id="entry-5.5">
+        <div data-sub="a" data-name="TextBoxEditable" data-states="idle editing"><div class="TextBoxEditable" data-text="Layer 1" data-keep-editing style="width:140px"></div></div>
+        <div data-sub="b" data-name="TextBoxEditable, Suffix" data-states="idle"><div class="TextBoxEditable" data-text="Layer 1" data-suffix="3" style="width:140px"></div></div>
+    </template>
+    <template id="entry-5.6">
+        <div data-sub="a" data-name="EditableValue" data-states="idle editing"><div class="EditableValue" data-text="120" data-keep-editing style="width:80px"></div></div>
+    </template>
+    <template id="entry-5.7">
+        <div data-sub="a" data-name="SearchBox" data-states="idle"><div class="SearchBox" data-watermark="Search" style="width:160px"></div></div>
+        <div data-sub="b" data-name="SearchBox, ShowsClear" data-states="idle"><div class="SearchBox showsclear" data-watermark="Search" data-text="blur" style="width:160px"></div></div>
+    </template>
+    <template id="entry-5.8">
+        <div data-sample="a" data-name="IPBox"><div class="IPBox" data-caption="Address" data-ip="192.168.1.10" style="width:300px"></div></div>
+    </template>
+    <template id="entry-5.9">
+        <div data-sub="a" data-name="KeyGestureBox" data-states="idle recording"><div class="KeyGestureBox" style="width:140px">Ctrl+Shift+E</div></div>
+    </template>
+    <template id="entry-5.10">
+        <div data-sub="a" data-name="TextBlockKeyCap" data-states="idle"><span class="TextBlockKeyCap">Shift+A</span></div>
+    </template>
+
+    <!-- 6 Path -->
+    <template id="entry-6.1">
+        <div data-sample="a" data-name="PathSelector"><div class="PathSelector" data-caption="File" style="width:300px"><div class="ComboBoxItem"><span class="TextBlockTrimmed">texture_wall_diffuse_4k.png</span></div><div class="ComboBoxItem"><span class="TextBlockTrimmed">logo.png</span></div></div></div>
+    </template>
+
+
+    <!-- 7 ColorPicker -->
+    <template id="entry-7.1">
+        <div data-sub="a" data-name="ColorSelector" data-states="idle disabled"><div class="ColorSelector" data-caption="Color" data-color="#5680C2B0" style="width:260px"></div></div>
+        <div data-sample="b" data-name="ColorSelector" data-note="open: a PopupFrame with a ColorPickerFull, above the toggle" style="height:400px;align-items:flex-end"><div class="ColorSelector open" data-keep-open data-caption="Color" data-color="#5680C2B0" style="width:380px"></div></div>
+    </template>
+    <template id="entry-7.2">
+        <div data-sample="a" data-name="ColorPickerFull"><div class="ColorPickerFull" data-color="#C28A56"></div></div>
+    </template>
+    <template id="entry-7.3">
+        <div data-sample="a" data-name="ColorPickerSliders" data-note="click HSV, RGB or HEX"><div class="ColorPickerSliders" data-color="#5680C2" style="width:216px"></div></div>
+    </template>
+    <template id="entry-7.4">
+        <div data-sample="a" data-name="ColorPickerWheel"><div class="ColorPickerWheel" data-color="#5680C2"></div></div>
+        <div data-sample="b" data-name="SliderCMiXBrightness"><div class="SliderCMiXBrightness" style="--V:0.76;height:200px"><span class="Part_Thumb"></span></div></div>
+    </template>
+
+
+    <!-- 8 Collection -->
+    <template id="entry-8.1">
+        <div data-sub="a" data-name="ListBoxItemCMiX" data-states="idle hover selected selectedhover cursor cursorselected cursorunfocused disabled"><div class="ListBoxItemCMiX" style="width:130px"><span>Row</span></div></div>
+        <div data-sub="b" data-name="ListBoxItemBasic" data-states="idle hover selected selectedhover"><div class="ListBoxItemBasic" style="width:130px"><span>Row</span></div></div>
+        <div data-sample="c" data-name="ListBoxCMiX" data-note="ListVisibleItems rows, and the handle that changes the height"><div class="ListBoxCMiX" style="width:240px"><div class="ListBoxItemCMiX"><span>Layer 1</span></div><div class="ListBoxItemCMiX selected"><span>Layer 2</span></div><div class="ListBoxItemCMiX"><span>Layer 3</span></div></div></div>
+        <div data-sample="d" data-name="ListBox"><div class="ListBox" style="width:240px"><div class="ListBoxItemCMiX"><span>Row 1</span></div><div class="ListBoxItemCMiX selected cursor"><span>Row 2</span></div><div class="ListBoxItemCMiX"><span>Row 3</span></div></div></div>
+    </template>
+    <template id="entry-8.2">
+        <div data-sample="a" data-name="ListBoxEditable" data-note="ListBoxEditableList, with ReorderService"><div class="ListBoxEditable" data-reorder style="width:280px"><div class="ListBoxItemBasic"><span style="padding:0 4px">Item 1</span></div><div class="ListBoxItemBasic selected"><span style="padding:0 4px">Item 2</span></div><div class="ListBoxItemBasic"><span style="padding:0 4px">Item 3</span></div></div></div>
+    </template>
+    <template id="entry-8.3">
+        <div data-sample="a" data-name="ListBoxRepository"><div class="ListBoxRepository" style="width:280px;background:var(--Grey300Brush)"><div class="ListBoxItemCMiX"><span>Preset A</span></div><div class="ListBoxItemCMiX selected"><span>Preset B</span></div><button class="Button" data-slot="add">Add</button></div></div>
+    </template>
+    <template id="entry-8.4">
+        <div data-sub="a" data-name="ListItemIcon" data-states="idle on"><div class="ListItemIcon" data-state data-icon-key="Folder" data-title="Item" style="width:180px;height:24px"></div></div>
+    </template>
+    <template id="entry-8.5">
+        <div data-sample="a" data-name="PanelItem" data-note="open, then collapsed"><div class="PanelItem" data-title="Blur" style="width:280px"><div class="SliderCMiX" data-caption="Amount" data-value="0.3"></div></div><div class="PanelItem collapsed" data-title="Echo" style="width:280px"><div class="SliderCMiX" data-caption="Amount" data-value="0.3"></div></div></div>
+    </template>
+    <template id="entry-8.6">
+        <div data-sample="a" data-name="PanelItemList" data-note="the items, then the toggle ToggleButtonPopup. Click it." style="height:230px"><div class="PanelItemList" data-add-caption="Add filter" style="width:280px"><div class="PanelItem" data-title="Blur"><div class="SliderCMiX" data-caption="Amount" data-value="0.3"></div></div><div class="PanelItem collapsed" data-title="Echo"></div><div data-slot="add" class="ItemPickerList"><button class="ButtonItem highlighted">Blur</button><button class="ButtonItem">Dither</button><button class="ButtonItem">Echo</button></div></div></div>
+    </template>
+    <template id="entry-8.7">
+        <div data-sample="a" data-name="ItemPickerList" data-note="rows of ButtonItem. One row has the class highlighted."><div class="DropdownFrame" style="width:200px"><div class="ItemPickerList"><button class="ButtonItem">Blur</button><button class="ButtonItem highlighted">Dither</button><button class="ButtonItem">Echo</button><button class="ButtonItem">Edge</button></div></div></div>
+    </template>
+    <template id="entry-8.8">
+        <div data-sample="a" data-name="SearchableItemPickerList"><div class="DropdownFrame" style="width:200px"><div class="SearchableItemPickerList"><button class="ButtonItem highlighted">Blur</button><button class="ButtonItem">Dither</button><button class="ButtonItem">Echo</button></div></div></div>
+        <div data-sample="b" data-name="SearchableItemPickerList" data-note="no match"><div class="DropdownFrame" style="width:200px"><div class="SearchableItemPickerList nomatch"></div></div></div>
+    </template>
+    <template id="entry-8.9">
+        <div data-sample="a" data-name="GroupedSearchList" data-note="Collapsible: a header has a chevron"><div class="PopupCard" style="width:220px"><div class="GroupedSearchList collapsible"><div class="row header"><i class="AppIcon" data-icon-key="ChevronDown"></i><span>Transform</span></div><div class="row highlighted">Translate</div><div class="row">Rotation</div><div class="row disabled">Scale</div><div class="row header dimmed"><i class="AppIcon" data-icon-key="ChevronRight"></i><span>Color</span></div></div></div></div>
+        <div data-sample="b" data-name="GroupedSearchList" data-note="not Collapsible"><div class="PopupCard" style="width:220px"><div class="GroupedSearchList"><div class="row header"><span>Transform</span></div><div class="row">Translate</div><div class="row highlighted">Rotation</div><div class="row header"><span>Color</span></div><div class="row">Palette</div></div></div></div>
+    </template>
+
+    <!-- 10 Layout and containers -->
+    <template id="entry-10.1">
+        <div data-sample="a" data-name="DropShadowWindow" data-note="the shadow of every popup: blur 8, black, opacity 0.5, no offset" style="padding:12px"><div class="PopupFrame" style="min-width:0;width:160px;height:60px"></div></div>
+    </template>
+    <template id="entry-10.2">
+        <div data-sub="a" data-name="TabItemCMiX" data-states="idle selected disabled"><button class="TabItemCMiX"><span style="padding:6px 12px">Tab</span></button></div>
+        <div data-sub="b" data-name="TabItemHorizontal" data-states="idle hover selected"><button class="TabItemHorizontal"><i class="AppIcon" data-icon-key="Settings"></i></button></div>
+        <div data-sample="c" data-name="TabControl"><div class="TabControl" style="width:300px"><div class="TabItem selected"><span data-slot="header" style="padding:6px 12px">Composition</span><span>Page 1</span></div><div class="TabItem"><span data-slot="header" style="padding:6px 12px">Layers</span><span>Page 2</span></div><div class="TabItem"><span data-slot="header" style="padding:6px 12px">Entities</span><span>Page 3</span></div></div></div>
+        <div data-sample="d" data-name="TabControlMain"><div class="TabControlMain" style="width:300px"><div class="TabItem selected" data-icon-key="Settings"><span style="display:block;padding:8px">Page 1</span></div><div class="TabItem" data-icon-key="Menu"><span style="display:block;padding:8px">Page 2</span></div><div class="TabItem" data-icon-key="Folder"><span style="display:block;padding:8px">Page 3</span></div></div></div>
+        <div data-sample="e" data-name="TabControlVertical"><div class="TabControlVertical" style="width:300px;height:100px"><div class="TabItem selected" data-icon-key="Settings"><span style="display:block;padding:8px">Page 1</span></div><div class="TabItem" data-icon-key="Menu"><span style="display:block;padding:8px">Page 2</span></div><div class="TabItem" data-icon-key="Folder"><span style="display:block;padding:8px">Page 3</span></div></div></div>
+    </template>
+    <template id="entry-10.3">
+        <div data-sample="a" data-name="Expander" data-note="open, then collapsed"><div class="Expander" data-header="Header" style="width:220px"><span style="display:block;padding:8px">Content</span></div><div class="Expander collapsed" data-header="Header" style="width:220px"><span style="display:block;padding:8px">Content</span></div></div>
+        <div data-sample="b" data-name="ExpanderItem" data-note="open, then collapsed"><div class="ExpanderItem" data-header="Header" style="width:220px"><span style="display:block;padding:8px">Content</span></div><div class="ExpanderItem collapsed" data-header="Header" style="width:220px"><span style="display:block;padding:8px">Content</span></div></div>
+    </template>
+    <template id="entry-10.4">
+        <div data-sample="a" data-name="ExpanderIndented" data-note="open, then collapsed"><div class="ExpanderIndented" data-header="Header" style="width:220px"><span style="display:block;padding:8px">Content</span></div><div class="ExpanderIndented collapsed" data-header="Header" style="width:220px"><span style="display:block;padding:8px">Content</span></div></div>
+        <div data-sample="b" data-name="ExpanderIndented" data-note="three levels on a panel of grey 300: PanelBackgroundLevel1Brush, Level2, Level3"><div style="width:420px;padding:8px;background:var(--Grey300Brush)"><div class="ExpanderIndented" data-header="Level 1"><div style="padding:8px"><div class="DragValue" data-caption="Value" data-value="0.5"></div></div><div class="ExpanderIndented" data-header="Level 2"><div style="padding:8px"><div class="DragValue" data-caption="Value" data-value="0.5"></div></div><div class="ExpanderIndented" data-header="Level 3"><div style="padding:8px"><div class="DragValue" data-caption="Value" data-value="0.5"></div></div></div></div></div></div></div>
+    </template>
+    <template id="entry-10.5">
+        <div data-sub="a" data-name="Chevron" data-states="idle open"><i class="Chevron"></i></div>
+        <div data-sub="b" data-name="Chevron, ClosedAngle 0, OpenAngle 180" data-states="idle open"><i class="Chevron" style="--ClosedAngle:0deg;--OpenAngle:180deg"></i></div>
+    </template>
+    <template id="entry-10.6">
+        <div data-sub="a" data-name="GridSplitterCMiX, Columns" data-states="idle hover"><div style="display:flex;width:120px;height:40px"><div style="flex:1;background:var(--Grey300Brush)"></div><div class="GridSplitterCMiX" data-state data-resize-direction="Columns"></div><div style="flex:1;background:var(--Grey400Brush)"></div></div></div>
+        <div data-sub="b" data-name="GridSplitterCMiX, Rows" data-states="idle hover"><div style="display:flex;flex-direction:column;width:120px;height:48px"><div style="flex:1;background:var(--Grey300Brush)"></div><div class="GridSplitterCMiX" data-state data-resize-direction="Rows"></div><div style="flex:1;background:var(--Grey400Brush)"></div></div></div>
+    </template>
+    <template id="entry-10.7">
+        <div data-sample="a" data-name="ScrollViewerOverlay" data-note="the bar lies in the ScrollBarGutter of the content"><div class="ScrollViewerOverlay" style="width:200px;height:90px;background:var(--Grey300Brush)"><div style="padding:4px">Line 1<br>Line 2<br>Line 3<br>Line 4<br>Line 5<br>Line 6<br>Line 7<br>Line 8<br>Line 9<br>Line 10</div></div></div>
+    </template>
+    <template id="entry-10.8">
+        <div data-sample="a" data-name="Border.BorderMask" data-note="the content is cut to the corners of the Position: All, Left, Right"><div class="BorderMask" style="width:60px;height:24px"><div style="height:100%;background:var(--AccentBrush)"></div></div><div class="BorderMask" data-position="Left" style="width:60px;height:24px"><div style="height:100%;background:var(--AccentBrush)"></div></div><div class="BorderMask" data-position="Right" style="width:60px;height:24px"><div style="height:100%;background:var(--AccentBrush)"></div></div></div>
+    </template>
+    <template id="entry-10.9">
+        <div data-sample="a" data-name="ContentCaptioned" data-note="the Caption in the first 40%, the content in the other 60%"><div class="ContentCaptioned" data-caption="Caption" style="width:260px"><button class="Button">Content</button></div></div>
+    </template>
+    <template id="entry-10.10">
+        <div data-sample="a" data-name="CursorRow" data-note="the list with the keyboard focus, then the list without it. See 8.1.a for the states."><div class="ListBox focus-within" style="width:160px"><div class="ListBoxItemCMiX"><span>Row 1</span></div><div class="ListBoxItemCMiX cursor focus-within"><span>Row 2</span></div><div class="ListBoxItemCMiX selected"><span>Row 3</span></div></div><div class="ListBox" style="width:160px"><div class="ListBoxItemCMiX"><span>Row 1</span></div><div class="ListBoxItemCMiX cursor"><span>Row 2</span></div><div class="ListBoxItemCMiX selected"><span>Row 3</span></div></div></div>
+    </template>
+    <template id="entry-10.11">
+        <div data-sample="a" data-name="RowStripes" data-note="one band is a row and the space to the next row. Every second band has the opacity 0.8."><div class="RowStripes" style="width:240px;height:135px;--Brush:var(--Grey300)"></div></div>
+    </template>
+    <template id="entry-10.12">
+        <div data-sample="a" data-name="focuspanel, focusline" data-note="the panel with the keyboard focus, then the panel without it. Click in a text box."><div class="focuspanel focus-within" style="width:220px"><div style="position:relative;padding:8px;background:var(--Grey100Brush)">Focused panel<div class="focusline"></div></div><div style="padding:8px"><input class="TextBox" type="text" value="Click to focus" style="height:24px"></div></div><div class="focuspanel" style="width:220px"><div style="position:relative;padding:8px;background:var(--Grey100Brush)">Unfocused panel<div class="focusline"></div></div><div style="padding:8px"><input class="TextBox" type="text" value="Click to focus" style="height:24px"></div></div></div>
+    </template>
+    <template id="entry-10.13">
+        <div data-sample="a" data-name="AppIcon" data-note="every IconKey of Icons.cs and StudioIcons.cs, at IconSizeXS"><div class="g-icons" data-all-icons></div></div>
+    </template>
+
+
+    <!-- 9 Popups and menus -->
+    <template id="entry-9.1">
+        <div data-sub="a" data-name="MenuItemTop" data-states="idle selected disabled"><div class="MenuItemTop">File</div></div>
+        <div data-sub="b" data-name="MenuItem" data-states="idle hover selected disabled"><div class="SubMenuBorder" style="box-shadow:none;padding:0"><div class="MenuItem" data-state data-icon-key="Folder_Opened" data-input-gesture="Ctrl+O">Open</div></div></div>
+        <div data-sample="c" data-name="MenuDefault" data-note="the bar. Click File." style="height:150px"><div class="MenuDefault"><div class="MenuItemTop selected" data-keep-open>File<div class="items"><div class="MenuItem" data-input-gesture="Ctrl+N">New</div><div class="MenuItem" data-icon-key="Folder_Opened" data-input-gesture="Ctrl+O">Open</div><div class="MenuItem" data-input-gesture="Ctrl+S">Save</div><div class="MenuItem disabled">Close</div></div></div><div class="MenuItemTop">Edit<div class="items"><div class="MenuItem" data-input-gesture="Ctrl+Z">Undo</div><div class="MenuItem" data-input-gesture="Ctrl+Y">Redo</div></div></div><div class="MenuItemTop">View</div></div></div>
+    </template>
+    <template id="entry-9.2">
+        <div data-sub="a" data-name="MenuItemContext" data-states="idle hover selected on disabled"><div class="MenuPanel" style="filter:none;padding:0;min-width:160px"><div class="MenuItemContext" data-state data-input-gesture="Ctrl+D">Duplicate</div></div></div>
+        <div data-sub="b" data-name="MenuItemContext.title" data-states="idle"><div class="MenuPanel" style="filter:none;padding:0;min-width:160px"><div class="MenuItemContext title">Layer 1</div></div></div>
+        <div data-sub="c" data-name="MenuItemContext.danger" data-states="idle hover"><div class="MenuPanel" style="filter:none;padding:0;min-width:160px"><div class="MenuItemContext danger" data-state data-input-gesture="Del">Delete</div></div></div>
+        <div data-sub="d" data-name="MenuItemContext.opens" data-states="idle hover"><div class="MenuPanel" style="filter:none;padding:0;min-width:160px"><div class="MenuItemContext opens" data-state>Add</div></div></div>
+        <div data-sample="e" data-name="ContextMenuDefault" data-note="MenuPanel: a PopupFrame, PopupMinWidth wide or more. Hover Add for the submenu." style="height:190px"><div class="ContextMenu"><div class="MenuItemContext" data-icon-key="Copy" data-input-gesture="Ctrl+C">Copy</div><div class="MenuItemContext" data-icon-key="Paste" data-input-gesture="Ctrl+V">Paste</div><div class="MenuItemContext" data-input-gesture="Ctrl+D">Duplicate</div><div class="MenuItemContext">Add<div class="items"><div class="MenuItemContext">Layer</div><div class="MenuItemContext">Entity</div><div class="MenuItemContext">Camera</div></div></div><div class="MenuItemContext separator"></div><div class="MenuItemContext danger" data-input-gesture="Del">Delete</div></div></div>
+    </template>
+    <template id="entry-9.3">
+        <div data-sample="a" data-name="TitledContextMenu" data-note="the title of the owner, a line, then the rows"><div class="ContextMenu"><div class="MenuItemContext title">Layer 1</div><div class="MenuItemContext separator"></div><div class="MenuItemContext selected" data-input-gesture="F2">Rename</div><div class="MenuItemContext" data-input-gesture="Ctrl+D">Duplicate</div><div class="MenuItemContext separator"></div><div class="MenuItemContext danger" data-input-gesture="Del">Delete</div></div></div>
+    </template>
+    <template id="entry-9.4">
+        <div data-sample="a" data-name="ValueMenu" data-note="the menu of a value editor: Copy, Paste, Reset, and Reset All when the owner has it"><div class="ContextMenu"><div class="MenuItemContext title">Position X</div><div class="MenuItemContext separator"></div><div class="MenuItemContext selected">Copy</div><div class="MenuItemContext disabled">Paste</div><div class="MenuItemContext">Reset</div><div class="MenuItemContext">Reset All</div></div></div>
+    </template>
+    <template id="entry-9.5">
+        <div data-sample="a" data-name="DropdownFrame" data-note="the panel under a toggle or a combo box: the bottom corners, and the space 2,4,2,2"><div class="DropdownFrame" style="width:160px"><div class="ComboBoxItem">Item A</div><div class="ComboBoxItem selected">Item B</div></div></div>
+    </template>
+    <template id="entry-9.6">
+        <div data-sample="a" data-name="PopupFrame" data-note="the frame of every popup and menu: the large corners, and 8 of space"><div class="PopupFrame"><div class="SliderCMiX" data-caption="Amount" data-value="0.6"></div></div></div>
+    </template>
+    <template id="entry-9.7">
+        <div data-sample="a" data-name="PopupCard" data-note="without the tip, then ShowsTip on the edge Top" style="padding-top:8px"><div class="PopupCard">Content</div><div class="PopupCard">Content<i class="PopupTip" data-edge="Top"></i></div></div>
+    </template>
+    <template id="entry-9.8">
+        <div data-sample="a" data-name="FlyoutPresenterPanel" data-note="a PopupFrame of the width 300 with the room of the shadow: the panel is 284"><div class="PopupFrame" style="width:284px"><div class="DragValue" data-caption="Value" data-value="0.5"></div></div></div>
+        <div data-sample="b" data-name="FlyoutPresenterCard" data-note="a flyout whose content is a PopupCard: the presenter adds nothing"><div class="PopupCard" style="filter:drop-shadow(0 0 4px rgb(0 0 0 / 0.5))">Content</div></div>
+    </template>
+    <template id="entry-9.9">
+        <div data-sample="a" data-name="PopupButton" data-note="closed, then open. The popup is as wide as the toggle." style="height:110px"><div class="PopupButton" data-caption="Options" style="width:180px"><div class="SliderCMiX" data-caption="Amount" data-value="0.6"></div></div><div class="PopupButton open" data-keep-open data-caption="Options" style="width:180px"><div class="SliderCMiX" data-caption="Amount" data-value="0.6"></div></div></div>
+    </template>
+    <template id="entry-9.10">
+        <div data-sample="a" data-name="ToolTip" data-note="a plain text is a title" style="padding-top:8px"><div class="ToolTip" data-tip="Add"></div></div>
+        <div data-sample="b" data-name="ToolTip, TipContent" data-note="the title and the shortcut, the description, the reason, the footer" style="padding-top:8px"><div class="ToolTip" data-title="Add" data-shortcut="Shift+A"></div><div class="ToolTip" data-title="Add" data-shortcut="Shift+A" data-description="Adds a new item under the selected row."></div><div class="ToolTip" data-title="Remove" data-shortcut="Del" data-description="Removes the selected item." data-reason="Select an item first." data-footer="tree.remove"></div></div>
+        <div data-sample="c" data-name="ToolTip, live" data-note="hover the button" style="height:70px"><button class="ButtonIcon" data-icon-key="Add" data-tooltip="Add" data-tooltip-shortcut="Shift+A"></button></div>
+    </template>
+    <template id="entry-9.11">
+        <div data-sample="a" data-name="PopupTip" data-note="the edges Top, Bottom, Left and Right" style="padding:8px;gap:28px"><div class="PopupCard">Top<i class="PopupTip" data-edge="Top"></i></div><div class="PopupCard">Bottom<i class="PopupTip" data-edge="Bottom"></i></div><div class="PopupCard">Left<i class="PopupTip" data-edge="Left" style="--TipOffset:15px"></i></div><div class="PopupCard">Right<i class="PopupTip" data-edge="Right" style="--TipOffset:15px"></i></div></div>
+    </template>
+
+
+    <!-- 20 Shell -->
+    <template id="entry-20.1">
+        <div data-sample="a" data-name="MainMenu" data-note="MenuDefault with the rows File, Edit, Compo and Layer. Click a row." style="height:170px"><div class="MenuDefault"><div class="MenuItemTop">File<div class="items"><div class="MenuItem">New</div><div class="MenuItem" data-input-gesture="Ctrl+O">Open</div><div class="MenuItem">Save</div><div class="MenuItem">Save As</div><div class="MenuItem">Quit</div></div></div><div class="MenuItemTop">Edit<div class="items"><div class="MenuItem" data-input-gesture="Ctrl+Z">Undo</div><div class="MenuItem" data-input-gesture="Ctrl+Y">Redo</div></div></div><div class="MenuItemTop">Compo<div class="items"><div class="MenuItem">New Composition</div><div class="MenuItem">Delete</div><div class="MenuItem">Duplicate</div><div class="MenuItem separator"></div><div class="MenuItem">Import</div><div class="MenuItem">Export</div></div></div><div class="MenuItemTop">Layer<div class="items"><div class="MenuItem">New Layer</div><div class="MenuItem">Delete</div><div class="MenuItem">Duplicate</div></div></div></div></div>
+    </template>
+    <template id="entry-20.2">
+        <div data-sample="a" data-name="MainTabsPanel" data-note="TabControlMain with one tab for each part, and the master beat under it"><div class="MainTabsPanel" style="width:340px;height:260px;background:var(--Grey300Brush)"><div class="TabControlMain"><div class="TabItem selected" data-icon-key="Inspector" data-tooltip="Inspector"><div class="Inspector"><div class="placeholder">Select an item in the tree</div></div></div><div class="TabItem" data-icon-key="Settings"></div><div class="TabItem" data-icon-key="Composition"></div><div class="TabItem" data-icon-key="LayerScene"></div><div class="TabItem" data-icon-key="Geometry"></div><div class="TabItem" data-icon-key="Texture"></div><div class="TabItem" data-icon-key="Camera"></div><div class="TabItem" data-icon-key="MeshLight"></div><div class="TabItem" data-icon-key="Network"></div></div><div class="beat"><div class="MasterBeatControl"><div class="DragValue" data-caption="BPM" data-value="120" data-small-change="0.01"></div><div class="row"><div class="DockPanelPositioned"><button class="ToggleButton">P</button><div class="tap"><button class="ButtonStraight">TAP</button></div><button class="Button">-</button><button class="Button">+</button></div><button class="ButtonRounded reset"><i class="AppIcon" data-icon-key="Reset"></i></button></div></div></div></div></div>
+    </template>
+    <template id="entry-20.3">
+        <div data-sample="a" data-name="SidePanelHost" data-note="the bar: the button that picks what the panel shows, the tools of the choice at the right, and the focus line. Focused, then not."><div class="SidePanelHost focuspanel focus-within" style="width:320px;background:var(--TreeBackgroundBrush)"><div class="bar"><button class="ToggleButton pickerToggle"><i class="AppIcon" data-icon-key="Tree"></i><i class="Chevron"></i></button><div class="SearchBox showsclear" data-watermark="Search"></div><div class="focusline"></div></div><div class="content" style="height:40px"></div></div><div class="SidePanelHost focuspanel" style="width:320px;background:var(--Grey300Brush)"><div class="bar"><button class="ToggleButton pickerToggle"><i class="AppIcon" data-icon-key="Tabs"></i><i class="Chevron"></i></button><div class="focusline"></div></div><div class="content" style="height:40px"></div></div></div>
+        <div data-sample="b" data-name="SidePanelHost" data-note="the list of the choices: a DropdownFrame with an ItemPickerList"><div class="DropdownFrame" style="width:160px"><div class="ItemPickerList"><button class="ButtonItem highlighted"><i class="AppIcon" data-icon-key="Tree"></i>Tree</button><button class="ButtonItem"><i class="AppIcon" data-icon-key="Tabs"></i>Tabs</button><button class="ButtonItem"><i class="AppIcon" data-icon-key="Resources"></i>Assets</button></div></div></div>
+    </template>
+    <template id="entry-20.4">
+        <div data-sample="a" data-name="Inspector" data-note="the header has the fill FillSelected of the kind: the CategoryBadge, the name, the ComposableToggles"><div class="Inspector" data-kind="Entity" style="width:320px;background:var(--Grey300Brush)"><div class="header"><span class="CategoryBadge" data-icon-key="Geometry"></span><div class="TextBoxEditable name" data-text="Entity 1"></div><span class="ComposableToggles"></span></div><div style="height:30px"></div></div><div class="Inspector" data-kind="Composable" style="width:320px;background:var(--Grey300Brush)"><div class="header"><span class="CategoryBadge" data-icon-key="LayerScene"></span><div class="TextBoxEditable name" data-text="Layer 1"></div><span class="ComposableToggles" data-mask="off"></span></div><div style="height:30px"></div></div></div>
+        <div data-sample="b" data-name="Inspector" data-note="a group row: a name that does not change, and no toggle. Then nothing selected."><div class="Inspector" data-kind="Camera" style="width:320px;background:var(--Grey300Brush)"><div class="header"><span class="CategoryBadge" data-icon-key="Camera"></span><span class="name">Cameras</span></div><div style="height:30px"></div></div><div class="Inspector" style="width:320px;background:var(--Grey300Brush)"><div class="placeholder">Select an item in the tree</div></div></div>
+    </template>
+    <template id="entry-20.5">
+        <div data-sample="a" data-name="Outliner" data-note="a ComboBoxWithButton, the name of the selected item, and the remove button"><div class="Outliner" style="width:260px"><div class="ComboBoxWithButton"><div class="ComboBoxItem">Material 1</div><div class="ComboBoxItem">Material 2</div></div><div class="DockPanelPositioned"><div class="TextBoxEditable" data-text="Material 1"></div><button class="Button">-</button></div></div></div>
+    </template>
+    <template id="entry-20.6">
+        <div data-sample="a" data-name="MessageDialog" data-note="a PopupFrame of 380 or more: the icon, the title, the message, and the buttons at the right"><div class="PopupFrame"><div class="MessageDialog"><div class="message"><i class="AppIcon" data-icon-key="Warning"></i><div class="text"><span class="TitleText">Save the project?</span><span>The project has changes that are not saved.</span></div></div><div class="ButtonRow"><button class="Button">Save</button><button class="Button">Don't save</button><button class="Button">Cancel</button></div></div></div></div>
+    </template>
+    <template id="entry-20.7">
+        <div data-sample="a" data-name="ShortcutSettingsView" data-note="a scope, its rows, and the mark of a conflict"><div class="ShortcutSettingsView" style="width:340px;background:var(--Grey300Brush)"><button class="ButtonRounded ResetAllButton">Reset All</button><div class="scope"><span>Tree</span><div class="ContentCaptioned" data-caption="Add"><span class="value"><div class="KeyGestureBox">Shift+A</div></span></div><div class="ContentCaptioned" data-caption="Duplicate"><span class="value"><div class="KeyGestureBox recording">Press a key</div></span></div><div class="ContentCaptioned" data-caption="Remove" data-tooltip="Also used by Edit: Delete"><span class="value"><div class="KeyGestureBox">Del</div><i class="ConflictMark"></i></span></div></div></div></div>
+    </template>
+
+    <!-- 21 Tree -->
+    <template id="entry-21.1">
+        <div data-sub="a" data-name="TreeViewItemCMiX" data-states="idle hover selected cursor cursorselected dimmed"><div class="TreeViewItem" data-kind="Entity" data-icon-key="Geometry" data-name="Entity 1" data-keep-state style="width:170px"></div></div>
+        <div data-sub="b" data-name="TreeViewItemCMiX, group" data-states="idle hover selected"><div class="TreeViewItem group" data-kind="Entity" data-icon-key="Entity" data-header="Entities" data-counts="Entity:3" data-keep-state style="width:170px"><div class="TreeViewItem" data-kind="Entity" data-icon-key="Geometry" data-name="Entity 1"></div></div></div>
+        <div data-sub="c" data-name="TreeViewItemCMiX, group:empty" data-states="idle hover selected"><div class="TreeViewItem group" data-kind="Camera" data-icon-key="Camera" data-header="Cameras" data-keep-state style="width:170px"></div></div>
+        <div data-sub="d" data-name="TreeViewItemCMiX, drag" data-states="candidate dragsource dropblocked droptarget dropgap droptop"><div class="TreeViewItem" data-kind="Composable" data-icon-key="LayerScene" data-name="Layer 1" data-mask="off" data-keep-state style="width:170px"></div></div>
+        <div data-sample="e" data-name="TreeViewItemCMiX" data-note="the kinds of row: Composable and its three levels, Entity, Camera, Light, Texture, Filter, Modifier, Modulator"><div class="TreeView" style="width:300px;background:var(--TreeBackgroundBrush);padding:8px"><div class="TreeViewItem" data-kind="Composable" data-icon-key="Composition" data-name="Composable" data-mask="off"></div><div class="TreeViewItem" data-kind="ComposableLevel1" data-icon-key="LayerScene" data-name="ComposableLevel1" data-mask="on"></div><div class="TreeViewItem" data-kind="ComposableLevel2" data-icon-key="LayerScene" data-name="ComposableLevel2" data-mask="off"></div><div class="TreeViewItem" data-kind="ComposableLevel3" data-icon-key="LayerScene" data-name="ComposableLevel3" data-mask="off"></div><div class="TreeViewItem" data-kind="Entity" data-icon-key="Geometry" data-name="Entity"></div><div class="TreeViewItem" data-kind="Camera" data-icon-key="Camera" data-name="Camera"></div><div class="TreeViewItem" data-kind="Light" data-icon-key="MeshLight" data-name="Light"></div><div class="TreeViewItem" data-kind="Texture" data-icon-key="Texture" data-name="Texture"></div><div class="TreeViewItem" data-kind="Filter" data-icon-key="Filter" data-name="Filter"></div><div class="TreeViewItem" data-kind="Modifier" data-icon-key="Modifier" data-name="Modifier"></div><div class="TreeViewItem" data-kind="Modulator" data-icon-key="Modulator" data-name="Modulator" data-hidden></div></div></div>
+        <div data-sample="f" data-name="ProjectTreeView" data-note="the toolbar, the stripes and the rows. Click a chevron or a row. A deeper change of kind has a weaker fill."><div class="ProjectTreeView" style="width:340px"><div class="ProjectTreeToolbar"><button class="ButtonIcon" data-icon-key="Add" data-tooltip="Add" data-tooltip-shortcut="Shift+A"></button><button class="ButtonIcon" data-icon-key="Duplicate" data-tooltip="Duplicate"></button><button class="ButtonIcon" data-icon-key="ArrowUp" data-tooltip="Move up"></button><button class="ButtonIcon" data-icon-key="ArrowDown" data-tooltip="Move down"></button><button class="ButtonIcon" data-icon-key="Remove" data-tooltip="Remove"></button></div><div class="tree"><div class="RowStripes"></div><div class="TreeView"><div class="TreeViewItem expanded" data-kind="Composable" data-icon-key="Composition" data-name="Composition 1" data-mask="off"><div class="TreeViewItem expanded" data-kind="ComposableLevel1" data-icon-key="LayerScene" data-name="Layer 1" data-mask="off"><div class="TreeViewItem group expanded" data-kind="Entity" data-kind-depth="1" data-icon-key="Entity" data-header="Entities"><div class="TreeViewItem selected expanded" data-kind="Entity" data-kind-depth="1" data-icon-key="Geometry" data-name="Entity 1"><div class="TreeViewItem group" data-kind="Modifier" data-kind-depth="2" data-icon-key="Modifier" data-header="Modifiers" data-counts="Modifier:2"><div class="TreeViewItem" data-kind="Modifier" data-kind-depth="2" data-icon-key="Modifier" data-name="Translate"></div></div><div class="TreeViewItem group" data-kind="Texture" data-kind-depth="2" data-icon-key="Texture" data-header="Textures"></div></div><div class="TreeViewItem" data-kind="Entity" data-kind-depth="1" data-icon-key="TextIcon" data-name="Text 1" data-hidden></div></div><div class="TreeViewItem group" data-kind="Camera" data-kind-depth="1" data-icon-key="Camera" data-header="Cameras"></div><div class="TreeViewItem group" data-kind="Light" data-kind-depth="1" data-icon-key="MeshLight" data-header="Lights" data-counts="Light:2" data-hidden-count="1"><div class="TreeViewItem" data-kind="Light" data-kind-depth="1" data-icon-key="MeshLight" data-name="Light 1"></div></div></div><div class="TreeViewItem" data-kind="ComposableLevel1" data-icon-key="LayerScene" data-name="Layer 2" data-mask="on" data-counts="Entity:4,Camera:1,Light:2" data-more="2"><div class="TreeViewItem" data-kind="Entity" data-icon-key="Geometry" data-name="Entity"></div></div></div></div></div></div></div>
+        <div data-sample="g" data-name="TreeChevronToggle" data-note="closed, then open"><div class="TreeViewItem" data-kind="Entity" data-icon-key="Entity" data-name="Closed" style="width:140px"><div class="TreeViewItem" data-kind="Entity" data-icon-key="Geometry" data-name="Child"></div></div><div class="TreeViewItem expanded" data-kind="Entity" data-icon-key="Entity" data-name="Open" style="width:140px"><div class="TreeViewItem" data-kind="Entity" data-icon-key="Geometry" data-name="Child"></div></div></div>
+    </template>
+    <template id="entry-21.2">
+        <div data-sample="a" data-name="ProjectTreeToolbar" data-note="five ButtonIcon: Add, Duplicate, Move up, Move down, and Remove at the right. Hover one."><div class="ProjectTreeToolbar" style="width:300px;background:var(--Grey300Brush)"><button class="ButtonIcon" data-icon-key="Add" data-tooltip="Add" data-tooltip-shortcut="Shift+A"></button><button class="ButtonIcon" data-icon-key="Duplicate" data-tooltip="Duplicate" data-tooltip-shortcut="Ctrl+D"></button><button class="ButtonIcon disabled" data-icon-key="ArrowUp"></button><button class="ButtonIcon disabled" data-icon-key="ArrowDown"></button><button class="ButtonIcon" data-icon-key="Remove" data-tooltip="Remove" data-tooltip-shortcut="Del"></button></div></div>
+    </template>
+    <template id="entry-21.3">
+        <div data-sample="a" data-name="TreeSearchBox" data-note="a SearchBox with ShowsClear, TreeSearchWidth wide. Empty, then with text."><div class="SearchBox showsclear" data-watermark="Search" style="width:160px"></div><div class="SearchBox showsclear" data-watermark="Search" data-text="layer" style="width:160px"></div></div>
+    </template>
+    <template id="entry-21.4">
+        <div data-sample="a" data-name="RowToggles" data-note="at the right end of a row, 50 wide: a composable (mask and eye), an item (eye), a group (the eye that hides the list)"><div class="TreeViewItem" data-kind="Composable" data-icon-key="LayerScene" data-name="Layer" data-mask="on" style="width:150px"></div><div class="TreeViewItem" data-kind="Entity" data-icon-key="Geometry" data-name="Entity" data-hidden style="width:150px"></div><div class="TreeViewItem group" data-kind="Entity" data-icon-key="Entity" data-header="Entities" style="width:150px"><div class="TreeViewItem" data-kind="Entity" data-icon-key="Geometry" data-name="Entity"></div></div></div>
+    </template>
+    <template id="entry-21.5">
+        <div data-sample="a" data-name="CategoryBadge" data-note="a white icon on a square of one row, on the color of the kind"><div data-kind="Entity" style="background:var(--FillSelected);padding:3px"><span class="CategoryBadge" data-icon-key="Geometry"></span></div><div data-kind="Camera" style="background:var(--FillSelected);padding:3px"><span class="CategoryBadge" data-icon-key="Camera"></span></div><div data-kind="Texture" style="background:var(--FillSelected);padding:3px"><span class="CategoryBadge" data-icon-key="Texture"></span></div></div>
+    </template>
+    <template id="entry-21.6">
+        <div data-sub="a" data-name="KindCountBadges" data-states="idle hovered selected"><span class="KindCountBadges" data-counts="Entity:4,Camera:1,Light:12" data-more="2" data-hidden-count="1"></span></div>
+    </template>
+    <template id="entry-21.7">
+        <div data-sample="a" data-name="AddPanel" data-note="a PopupCard: the line of text, the search field, then the groups of what the node can take" style="padding-top:8px"><div class="PopupCard AddPanel"><span class="title">Add to Layer 02</span><div class="GroupedSearchList"><div class="row header"><span>Entities</span></div><div class="row highlighted" data-kind="Entity"><i class="kind"></i>Mesh</div><div class="row" data-kind="Entity"><i class="kind"></i>Text</div><div class="row header"><span>Cameras</span></div><div class="row" data-kind="Camera"><i class="kind"></i>Camera</div><div class="row header"><span>Lights</span></div><div class="row" data-kind="Light"><i class="kind"></i>Point light</div></div><i class="PopupTip" data-edge="Left" style="--TipOffset:44px"></i></div></div>
+    </template>
+    <template id="entry-21.8">
+        <div data-sample="a" data-name="TreeDragGhost" data-note="the label of the dragged row: its fill, its icon and its name, with the opacity OpacityDragGhost"><span class="TreeDragGhost" data-kind="Entity"><i class="AppIcon" data-icon-key="Geometry"></i><span>Entity 1</span></span><span class="TreeDragGhost" data-kind="Composable"><i class="AppIcon" data-icon-key="LayerScene"></i><span>Layer 1</span></span></div>
+    </template>
+    <template id="entry-21.9">
+        <div data-sample="a" data-name="TreeDropMarker" data-note="a drop between two rows (dropgap), a drop inside a row (droptarget), a row that refuses the node (dropblocked), and a row that can not take it (dimmed)"><div class="TreeView" style="width:260px;background:var(--TreeBackgroundBrush);padding:8px"><div class="TreeViewItem dropgap" data-kind="Entity" data-icon-key="Geometry" data-name="Entity 1"></div><div class="TreeViewItem dragsource" data-kind="Entity" data-icon-key="Geometry" data-name="Entity 2"></div><div class="TreeViewItem droptarget candidate" data-kind="Composable" data-icon-key="LayerScene" data-name="Layer 2" data-mask="off"></div><div class="TreeViewItem dropblocked" data-kind="Composable" data-icon-key="LayerScene" data-name="Layer 3" data-mask="off"></div><div class="TreeViewItem dimmed" data-kind="Camera" data-icon-key="Camera" data-name="Camera 1"></div></div></div>
+    </template>
+    <template id="entry-21.10">
+        <div data-sample="a" data-name="CategoryPalette" data-note="for each kind: Fill, FillHover, FillSelected, then Kind, KindHover, KindSelected. The second row of a kind is one level deeper."><div class="g-palette" data-palette></div></div>
+    </template>
+
+    <!-- 22 Managers -->
+    <template id="entry-22.1">
+        <div data-sample="a" data-name="PrefabListItemTemplates" data-note="a ListItemIcon with the icon of the type: TextEntity, Entity, FullscreenQuad, LightEntity, Camera, TextureSourceBase, Material, ColorPaletteModifier"><div class="ListBox" style="width:260px"><div class="ListBoxItemCMiX"><div class="ListItemIcon" data-icon-key="TextIcon" data-title="Text 1"></div></div><div class="ListBoxItemCMiX selected"><div class="ListItemIcon" data-icon-key="Geometry" data-title="Entity 1"></div></div><div class="ListBoxItemCMiX"><div class="ListItemIcon" data-icon-key="FullscreenQuad" data-title="Quad 1"></div></div><div class="ListBoxItemCMiX"><div class="ListItemIcon checked" data-icon-key="MeshLight" data-title="Light 1"></div></div><div class="ListBoxItemCMiX"><div class="ListItemIcon" data-icon-key="Camera" data-title="Camera 1"></div></div><div class="ListBoxItemCMiX"><div class="ListItemIcon" data-icon-key="Texture" data-title="Texture 1"></div></div><div class="ListBoxItemCMiX"><div class="ListItemIcon" data-icon-key="World" data-title="Material 1"></div></div><div class="ListBoxItemCMiX"><div class="ListItemIcon" data-icon-key="Coloration" data-title="Palette 1"></div></div></div></div>
+    </template>
+    <template id="entry-22.2">
+        <div data-sample="a" data-name="PrefabRowMenu" data-note="the menu of a row: a TitledContextMenu. The rows depend on the row. Add opens the AddPanel."><div class="ContextMenu"><div class="MenuItemContext title">Layer 1</div><div class="MenuItemContext separator"></div><div class="MenuItemContext opens" data-icon-key="Add" data-input-gesture="Shift+A">Add</div><div class="MenuItemContext separator"></div><div class="MenuItemContext" data-icon-key="Rename" data-input-gesture="F2">Rename</div><div class="MenuItemContext" data-icon-key="Duplicate" data-input-gesture="Ctrl+D">Duplicate</div><div class="MenuItemContext separator"></div><div class="MenuItemContext danger" data-icon-key="Remove" data-input-gesture="Del">Remove</div></div></div>
+    </template>
+    <template id="entry-22.3">
+        <div data-sample="a" data-name="PrefabSlotManager" data-note="a ListBoxCMiX, then: swap, the SelectionPanel, move down, move up, duplicate, remove"><div class="PrefabSlotManager" style="width:300px"><div class="ListBoxCMiX"><div class="ListBoxItemCMiX selected"><div class="ListItemIcon" data-icon-key="Texture" data-title="Texture 1"></div></div><div class="ListBoxItemCMiX"><div class="ListItemIcon" data-icon-key="Texture" data-title="Texture 2"></div></div></div><div class="DockPanelPositioned"><button class="ToggleButton">⇄</button><div class="SelectionPanel"><div class="PopupButton" data-caption="Add Texture" data-position="None"></div></div><button class="Button"><i class="AppIcon" data-icon-key="ArrowDown"></i></button><button class="Button"><i class="AppIcon" data-icon-key="ArrowUp"></i></button><button class="Button"><i class="AppIcon" data-icon-key="Duplicate"></i></button><button class="Button"><i class="AppIcon" data-icon-key="Remove"></i></button></div></div></div>
+    </template>
+    <template id="entry-22.4">
+        <div data-sample="a" data-name="RepositoryTab" data-note="a TabItemHorizontal with the icon of a repository: Texture, Camera, MeshLight"><div style="display:flex;background:var(--Grey400Brush)"><button class="TabItemHorizontal selected"><i class="AppIcon" data-icon-key="Texture"></i></button><button class="TabItemHorizontal"><i class="AppIcon" data-icon-key="Camera"></i></button><button class="TabItemHorizontal"><i class="AppIcon" data-icon-key="MeshLight"></i></button></div></div>
+    </template>
+    <template id="entry-22.5">
+        <div data-sample="a" data-name="AssetPathSelector" data-note="a PathSelector for an asset of the project"><div class="PathSelector" data-caption="Image" style="width:300px"><div class="ComboBoxItem"><span class="TextBlockTrimmed">background.png</span></div><div class="ComboBoxItem"><span class="TextBlockTrimmed">logo.png</span></div></div></div>
+    </template>
+
+    <!-- 23 Messenger -->
+    <template id="entry-23.1">
+        <div data-sample="a" data-name="SyncStatusIndicator" data-note="disconnected, connecting, connected, connected and not in sync"><div class="SyncStatusIndicator">Disconnected</div><div class="SyncStatusIndicator" data-state="connecting">Connecting</div><div class="SyncStatusIndicator" data-state="connected">Connected</div><div class="SyncStatusIndicator" data-state="unsynced">Not in sync</div></div>
+    </template>
+    <template id="entry-23.2">
+        <div data-sub="a" data-name="EllipseSyncConnection" data-states="idle connecting connected unsynced"><i class="EllipseSyncConnection"></i></div>
+        <div data-sub="b" data-name="EllipseSyncState" data-states="idle insync"><i class="EllipseSyncState"></i></div>
+    </template>
+
+    <!-- 24 Beat -->
+    <template id="entry-24.1">
+        <div data-sample="a" data-name="BeatControls" data-note="the BPM on a field that lights with the beat, then - and +"><div class="BeatControls" style="width:300px"><span class="caption">Beat</span><div class="DockPanelPositioned"><div class="MainBorder"><span>120.00</span></div><button class="Button">-</button><button class="Button">+</button></div></div></div>
+    </template>
+    <template id="entry-24.2">
+        <div data-sample="a" data-name="MasterBeatControl" data-note="the BPM, then: pause, TAP on a field that lights with the beat, - and +, and reset"><div class="MasterBeatControl" style="width:320px"><div class="DragValue" data-caption="BPM" data-value="120" data-small-change="0.01"></div><div class="row"><div class="DockPanelPositioned"><button class="ToggleButton">P</button><div class="tap"><button class="ButtonStraight">TAP</button></div><button class="Button">-</button><button class="Button">+</button></div><button class="ButtonRounded reset"><i class="AppIcon" data-icon-key="Reset"></i></button></div></div></div>
+    </template>
+    <template id="entry-24.3">
+        <div data-sample="a" data-name="Quantize" data-note="an IntegerValue with a ToggleButtonBox as its LeadingContent. On, then off."><div class="IntegerValue" data-caption="Quantize" data-value="4" style="width:300px"><button class="ToggleButtonBox checked" data-slot="leading" style="margin-right:4px"></button></div><div class="IntegerValue" data-caption="Quantize" data-value="4" style="width:300px"><button class="ToggleButtonBox" data-slot="leading" style="margin-right:4px"></button></div></div>
+    </template>
+    <template id="entry-24.4">
+        <div data-sample="a" data-name="Easing" data-note="a ToggleButtonCaptioned, then two ComboBoxCaptioned that are one block"><div style="width:300px"><button class="ToggleButtonCaptioned checked" data-caption="Easing" style="margin-bottom:8px"></button><div class="StackPanelPositioned"><div class="ComboBoxCaptioned" data-caption="Function"><div class="ComboBoxItem">Linear</div><div class="ComboBoxItem">Quad</div><div class="ComboBoxItem">Cubic</div></div><div class="ComboBoxCaptioned" data-caption="Mode"><div class="ComboBoxItem">In</div><div class="ComboBoxItem">Out</div><div class="ComboBoxItem">InOut</div></div></div></div></div>
+    </template>
+
+    <!-- 25 Modulation -->
+    <template id="entry-25.1">
+        <div data-sample="a" data-name="DragValueModulatable" data-note="a DragValue with a ButtonModulatorAssign at its right: no modulator, internal, external"><div class="DragValueModulatable" data-caption="Value" data-value="0.5" style="width:280px"></div><div class="DragValueModulatable" data-caption="Value" data-value="0.5" data-modulator="Internal" style="width:280px"></div><div class="DragValueModulatable" data-caption="Value" data-value="0.5" data-modulator="External" style="width:280px"></div></div>
+    </template>
+    <template id="entry-25.2">
+        <div data-sample="a" data-name="SliderModulatable"><div class="SliderModulatable" data-caption="Strength" data-value="0.4" style="width:280px"></div><div class="SliderModulatable" data-caption="Strength" data-value="0.4" data-modulator="Internal" style="width:280px"></div></div>
+    </template>
+    <template id="entry-25.3">
+        <div data-sample="a" data-name="IntegerValueModulatable"><div class="IntegerValueModulatable" data-caption="Count" data-value="5" style="width:280px"></div></div>
+    </template>
+    <template id="entry-25.4">
+        <div data-sample="a" data-name="ToggleButtonModulatable" data-note="off, then on"><div class="ToggleButtonModulatable" data-caption="Play" style="width:280px"></div><div class="ToggleButtonModulatable checked" data-caption="Play" data-modulator="External" style="width:280px"></div></div>
+    </template>
+    <template id="entry-25.5">
+        <div data-sample="a" data-name="ButtonMomentaryModulatable"><div class="ButtonMomentaryModulatable" data-caption="Do Seek" style="width:280px"></div></div>
+    </template>
+    <template id="entry-25.6">
+        <div data-sample="a" data-name="Vector2Modulatable"><div class="Vector2Modulatable" data-caption="Scale" data-x="1" data-y="1" style="width:280px"></div></div>
+    </template>
+    <template id="entry-25.7">
+        <div data-sample="a" data-name="Vector3Modulatable"><div class="Vector3Modulatable" data-caption="Position" data-x="0" data-y="0.5" data-z="-2" style="width:280px"></div></div>
+    </template>
+    <template id="entry-25.8">
+        <div data-sample="a" data-name="PanelModulatable" data-note="the content, then the ModifierManager that adds a modulator" style="height:150px"><div class="PanelModulatable" style="width:300px"><div class="SliderModulatable" data-caption="Strength" data-value="0.4" data-modulator="Internal"></div><div class="PanelItemList ModifierManager" data-add-caption="Add Modulator"><div class="PanelItem collapsed" data-title="LFO" style="background:var(--Grey400Brush)"></div><div data-slot="add" class="ItemPickerList"><button class="ButtonItem highlighted">LFO</button><button class="ButtonItem">Random</button><button class="ButtonItem">FFT</button></div></div></div></div>
+    </template>
+    <template id="entry-25.9">
+        <div data-sub="a" data-name="ButtonModulatorAssign" data-states="idle disabled"><button class="ButtonModulatorAssign"></button></div>
+        <div data-sub="b" data-name="ButtonModulatorAssign, Internal" data-states="idle highlight"><button class="ButtonModulatorAssign" data-modulator="Internal"></button></div>
+        <div data-sub="c" data-name="ButtonModulatorAssign, External" data-states="idle highlight"><button class="ButtonModulatorAssign" data-modulator="External"></button></div>
+        <div data-sample="d" data-name="MenuItemModulatorOutput" data-note="the menu of the button: one row for each output of a modulator. The row of the output in use is checked."><div class="ContextMenu"><div class="MenuItemContext">LFO 1</div><div class="MenuItemContext checked">LFO 2</div><div class="MenuItemContext">Random 1</div></div></div>
+    </template>
+    <template id="entry-25.10">
+        <div data-sample="a" data-name="FloatRangeEditor" data-note="a ContentCaptioned with a RangeValue: Min and Max"><div class="FloatRangeEditor" data-caption="Range" data-minimum="0" data-maximum="1" style="width:340px"></div></div>
+    </template>
+    <template id="entry-25.11">
+        <div data-sample="a" data-name="RedisAddressSelector" data-note="a ComboBoxCaptioned with the addresses of the registry"><div class="ComboBoxCaptioned" data-caption="Address" style="width:300px"><div class="ComboBoxItem"><span class="TextBlockTrimmed">cmix:tracking:visitor:0</span></div><div class="ComboBoxItem"><span class="TextBlockTrimmed">cmix:audio:level</span></div></div></div>
+    </template>
+
+    <!-- 26 Composable -->
+    <template id="entry-26.1">
+        <div data-sample="a" data-name="ComposableManagerItem" data-note="the name, then the ComposableToggles of the size small"><div class="ComposableManagerItem" style="width:240px"><div class="TextBoxEditable" data-text="Layer 1"></div><span class="ComposableToggles small" data-mask="off"></span></div><div class="ComposableManagerItem" style="width:240px"><div class="TextBoxEditable" data-text="Layer 2"></div><span class="ComposableToggles small" data-mask="on" data-hidden></span></div></div>
+    </template>
+    <template id="entry-26.2">
+        <div data-sample="a" data-name="ComposableManagerToolbar" data-note="ButtonRounded with no fill: add, duplicate, move up, move down, and remove at the right"><div class="ComposableManagerToolbar" style="width:240px"><button class="ButtonRounded"><i class="AppIcon" data-icon-key="Add"></i></button><button class="ButtonRounded"><i class="AppIcon" data-icon-key="Duplicate"></i></button><button class="ButtonRounded"><i class="AppIcon" data-icon-key="ArrowUp"></i></button><button class="ButtonRounded"><i class="AppIcon" data-icon-key="ArrowDown"></i></button><button class="ButtonRounded"><i class="AppIcon" data-icon-key="Remove"></i></button></div></div>
+    </template>
+    <template id="entry-26.3">
+        <div data-sample="a" data-name="ComposableToggles" data-note="the header of the inspector: a composable, an item that is not a composable, no item"><span class="ComposableToggles" data-mask="on"></span><span class="ComposableToggles"></span><span class="ComposableToggles" data-empty></span></div>
+        <div data-sample="b" data-name="ComposableToggles.row" data-note="the tree: no fill"><span class="ComposableToggles row" data-mask="off"></span><span class="ComposableToggles row" data-hidden></span></div>
+        <div data-sample="c" data-name="ComposableToggles.small" data-note="the lists of composables"><span class="ComposableToggles small" data-mask="on"></span><span class="ComposableToggles small" data-mask="off" data-hidden></span></div>
+        <div data-sub="d" data-name="ToggleButtonMask" data-on data-states="idle hover"><button class="ToggleButtonMask"></button></div>
+    </template>
+    <template id="entry-26.4">
+        <div data-sub="a" data-name="ListBoxItemComposable" data-states="idle hover selected selectedhover"><div class="ListBoxItemComposable" style="width:200px"><div class="ComposableManagerItem"><div class="TextBoxEditable" data-text="Layer 1"></div><span class="ComposableToggles small" data-mask="off"></span></div></div></div>
+        <div data-sample="b" data-name="ListBoxComposable"><div class="ListBoxComposable" style="width:240px"><div class="ListBoxItemComposable selected"><div class="ComposableManagerItem"><div class="TextBoxEditable" data-text="Layer 1"></div><span class="ComposableToggles small" data-mask="off"></span></div></div><div class="ListBoxItemComposable"><div class="ComposableManagerItem"><div class="TextBoxEditable" data-text="Layer 2"></div><span class="ComposableToggles small" data-mask="on"></span></div></div><div class="ListBoxItemComposable"><div class="ComposableManagerItem"><div class="TextBoxEditable" data-text="Layer 3"></div><span class="ComposableToggles small" data-mask="off" data-hidden></span></div></div></div></div>
+    </template>
+
+    <!-- 27 Panels -->
+    <template id="entry-27.1">
+        <div data-sample="a" data-name="Parameter panel" data-note="every modifier, filter, source and modulator is this: a PanelModulatable with rows of modulatable controls. Here: TranslateModifier in a PanelItem." style="height:250px"><div class="PanelItem" data-title="Translate" style="width:320px"><div class="PanelModulatable"><div style="display:flex;flex-direction:column;gap:8px"><div class="StackPanelPositioned"><div class="ComboBoxCaptioned" data-caption="Type" style="padding-right:24px"><div class="ComboBoxItem">Object</div><div class="ComboBoxItem">Group</div></div><div class="IntegerValueModulatable" data-caption="Count" data-value="1"></div></div><div class="Vector3Modulatable" data-caption="Position" data-x="0" data-y="0" data-z="0"></div></div><div class="PanelItemList ModifierManager" data-add-caption="Add Modulator"></div></div></div></div>
+        <div data-sample="b" data-name="Parameter panel" data-note="a filter: Blur in a PanelItem" style="height:120px"><div class="PanelItem" data-title="Blur" style="width:320px"><div class="PanelModulatable"><div class="SliderModulatable" data-caption="Strength" data-value="0.3"></div><div class="PanelItemList ModifierManager" data-add-caption="Add Modulator"></div></div></div></div>
+    </template>
+    <template id="entry-27.3">
+        <div data-sample="a" data-name="ModifierModeSelector" data-note="a ComboBoxCaptioned and an IntegerValueModulatable that are one block"><div class="StackPanelPositioned" style="width:300px"><div class="ComboBoxCaptioned" data-caption="Type" style="padding-right:24px"><div class="ComboBoxItem">Object</div><div class="ComboBoxItem">Group</div></div><div class="IntegerValueModulatable" data-caption="Count" data-value="1"></div></div></div>
+    </template>
+    <template id="entry-27.4">
+        <div data-sample="a" data-name="EntityModifiersSection" data-note="an ExpanderIndented with the header Modifiers and a ModifierManager" style="height:170px"><div style="width:340px;padding:8px;background:var(--Grey300Brush)"><div class="ExpanderIndented" data-header="Modifiers"><div class="PanelItemList ModifierManager" data-add-caption="Add Modifier" style="margin:0 8px 8px"><div class="PanelItem collapsed" data-title="Translate"></div><div class="PanelItem collapsed checked" data-title="Rotation"></div></div></div></div></div>
+    </template>
+    <template id="entry-27.5">
+        <div data-sample="a" data-name="TextureSlot" data-note="a PrefabSlotManager with 8 of space, two rows or more, and the PopupButton Add Texture"><div style="width:320px;background:var(--Grey300Brush)"><div class="PrefabSlotManager" style="margin:8px"><div class="ListBoxCMiX" style="--ListVisibleItems:2"><div class="ListBoxItemCMiX selected"><div class="ListItemIcon" data-icon-key="Texture" data-title="Image 1"></div></div></div><div class="DockPanelPositioned"><button class="ToggleButton">⇄</button><div class="SelectionPanel"><div class="PopupButton" data-caption="Add Texture" data-position="None"></div></div><button class="Button"><i class="AppIcon" data-icon-key="ArrowDown"></i></button><button class="Button"><i class="AppIcon" data-icon-key="ArrowUp"></i></button><button class="Button"><i class="AppIcon" data-icon-key="Duplicate"></i></button><button class="Button"><i class="AppIcon" data-icon-key="Remove"></i></button></div></div></div></div>
+    </template>
+    <template id="entry-27.6">
+        <div data-sample="a" data-name="PlayerTransport" data-note="Play, Loop and Do Seek: one block"><div class="StackPanelPositioned" style="width:300px"><div class="ToggleButtonModulatable checked" data-caption="Play"></div><div class="ToggleButtonModulatable" data-caption="Loop"></div><div class="ButtonMomentaryModulatable" data-caption="Do Seek"></div></div></div>
+    </template>
+    <template id="entry-27.7">
+        <div data-sample="a" data-name="TextBoxTypeWriter" data-note="the text field of the TypeWriter source: more than one line"><textarea class="TextBoxTypeWriter" rows="4" spellcheck="false" style="width:300px">The quick brown fox
+jumps over the lazy dog.</textarea></div>
+    </template>
+    <template id="entry-27.8">
+        <div data-sample="a" data-name="ModifierManager" data-note="a PanelItemList of PanelItem, and the toggle that adds one" style="height:200px"><div class="PanelItemList ModifierManager" data-add-caption="Add Modifier" style="width:320px"><div class="PanelItem" data-title="Translate"><div class="Vector3Modulatable" data-caption="Position" data-x="0" data-y="0" data-z="0"></div></div><div class="PanelItem collapsed" data-title="Rotation"></div></div></div>
+    </template>
+
+    <script src="tokens.js"></script>
+    <script src="icons.js"></script>
+    <script src="cmix.js"></script>
+    <script src="catalogue.js"></script>
+    <script src="canvas.js"></script>
+    <script src="gallery.js"></script>
+</body>
+</html>

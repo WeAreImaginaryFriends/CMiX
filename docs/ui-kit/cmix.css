@@ -1,0 +1,1539 @@
+/* The controls of CMiX in CSS. One block for each style file of CMiX.UI and CMiX.Studio.Avalonia.
+   The values come from tokens.css. A class is the key of a ControlTheme or the name of a control class.
+   A state is a pseudo class of the browser or the class with the name of the pseudo class of Avalonia:
+   :hover or .pointerover, :active or .pressed, .checked, :disabled or .disabled.
+   Avalonia has no specificity: in one control the last style that matches wins, and a derived theme wins
+   over its base. The order of the rules in a block follows that. */
+
+/* The corners of one control. A control inside it does not get them. */
+@property --Position { syntax: "*"; inherits: false; }
+
+:root {
+    /* CheckerboardBrush of Brushes.axaml. The generator does not read a DrawingBrush. */
+    --CheckerboardBrush: conic-gradient(var(--Grey300) 25%, var(--Grey100) 0 50%, var(--Grey300) 0 75%, var(--Grey100) 0) 0 0 / 16px 16px;
+    /* The application sets no font. Avalonia uses the font of the system. */
+    --FontFamilyDefault: "Segoe UI", system-ui, sans-serif;
+}
+
+/* TopLevel.axaml and TextBlock.axaml: the text of the whole UI. */
+.cmix {
+    font-family: var(--FontFamilyDefault);
+    font-size: var(--FontSizeMD);
+    line-height: normal;
+    color: var(--ForegroundBrush);
+    background: var(--Grey100Brush);
+}
+
+.cmix {
+    *, *::before, *::after { box-sizing: border-box; }
+
+    button {
+        all: unset;
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        white-space: nowrap;
+        cursor: default;
+        color: var(--ForegroundBrush);
+    }
+
+    /* TextBlock.shortcut */
+    .shortcut {
+        font-family: var(--FontFamilyMono);
+        color: var(--ShortcutTextBrush);
+    }
+
+    /* PositionedControl.Position: the corners of a control by its place in a group. */
+    /* A control reads --Position for its corners, and has the corners of its theme without it. */
+    [data-position="None"] { --Position: var(--CornerRadiusNone); }
+    [data-position="All"] { --Position: var(--CornerRadiusAll); }
+    [data-position="Left"] { --Position: var(--CornerRadiusLeft); }
+    [data-position="Right"] { --Position: var(--CornerRadiusRight); }
+    [data-position="Top"] { --Position: var(--CornerRadiusTop); }
+    [data-position="Bottom"] { --Position: var(--CornerRadiusBottom); }
+
+    /* ---------------------------------------------------------------- AppIcon.axaml */
+    .AppIcon {
+        display: block;
+        flex: none;
+        width: var(--IconSizeXS);
+        height: var(--IconSizeXS);
+        color: var(--ForegroundBrush);
+        svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+    }
+
+    /* ---------------------------------------------------------------- Button.axaml */
+    .Button, .ButtonStraight, .ButtonRounded, .ButtonRoundedRight, .ButtonRoundedRightNoHover,
+    .ButtonInlineCaption, .ButtonInlineRight, .ButtonCaptioned, .ButtonIcon, .ButtonMomentary,
+    .ButtonWindowControl, .ButtonWindowIcon,
+    .ToggleButton, .ToggleButtonRounded, .ToggleButtonRoundedLeft, .ToggleButtonCheck,
+    .ToggleButtonInlineLeft, .ToggleButtonInlineCenter, .ToggleButtonInlineRight {
+        height: var(--ControlHeightMD);
+        background: var(--StateIdleBrush);
+        border-radius: var(--Position, var(--CornerRadiusAll));
+        &:hover, &.pointerover { background: var(--StateHoverBrush); }
+        &:active, &.pressed { background: var(--StatePressedBrush); }
+        &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+
+    .ButtonStraight, .ToggleButtonInlineCenter { border-radius: var(--Position, var(--CornerRadiusNone)); }
+    .ButtonRoundedRight, .ButtonRoundedRightNoHover, .ButtonInlineRight, .ToggleButtonInlineRight { border-radius: var(--Position, var(--CornerRadiusRight)); }
+    .ToggleButtonRoundedLeft, .ToggleButtonInlineLeft { border-radius: var(--Position, var(--CornerRadiusLeft)); }
+
+    .ButtonRoundedRightNoHover {
+        &:hover, &.pointerover, &:active, &.pressed { background: transparent; }
+    }
+
+    .ButtonInlineCaption, .ButtonCaptioned {
+        &:hover, &.pointerover { background: var(--AccentInactiveBrush); }
+        &:active, &.pressed { background: var(--AccentBrush); }
+    }
+
+    .ButtonInlineRight, .ButtonMomentary {
+        &:active, &.pressed, &.held { background: var(--AccentBrush); }
+    }
+
+    .ButtonIcon {
+        width: var(--ControlHeightMD);
+        background: transparent;
+        > .AppIcon { opacity: 0.9; }
+    }
+
+    .ButtonItem {
+        height: var(--ControlHeightMD);
+        justify-content: flex-start;
+        padding-left: 8px;
+        background: transparent;
+        border-radius: var(--CornerRadiusAll);
+        &:hover, &.pointerover, &.highlighted { background: var(--RowHoverBrush); }
+        &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+
+    .ButtonValidation {
+        background: var(--AccentInactiveBrush);
+        border-bottom: 2px solid var(--Shadow);
+        border-radius: var(--CornerRadiusAll);
+        &:active, &.pressed { background: var(--AccentBrush); }
+        &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+
+    .ButtonWindowControl, .ButtonWindowIcon {
+        width: var(--ControlHeightXL);
+        height: var(--ControlHeightXL);
+    }
+
+    .ButtonWindowIcon {
+        background: transparent;
+        border-radius: 0;
+        > .AppIcon { opacity: 0.75; }
+        &:hover > .AppIcon, &.pointerover > .AppIcon, &:active > .AppIcon, &.pressed > .AppIcon { opacity: 1; }
+    }
+
+    /* The left half shows the color without its alpha. The right half shows the color over the checkerboard.
+       The color is the variable --Color of the element. */
+    .ToggleButtonColor {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        height: var(--ControlHeightMD);
+        border-radius: var(--CornerRadiusAll);
+        .solid { height: 100%; background: rgb(from var(--Color, #FFFFFF) r g b); border-radius: var(--CornerRadiusLeft); }
+        .alpha { height: 100%; background: linear-gradient(var(--Color, #FFFFFF), var(--Color, #FFFFFF)), var(--CheckerboardBrush); border-radius: var(--CornerRadiusRight); }
+        &:disabled, &.disabled { pointer-events: none; .solid, .alpha { opacity: var(--OpacityDisabled); } }
+    }
+
+    /* ---------------------------------------------------------------- IconButton.axaml */
+    .ButtonIconClose {
+        width: var(--ControlHeightMD);
+        padding: 6px;
+        background: transparent;
+        overflow: visible;
+        > .AppIcon { opacity: var(--OpacityIconIdle); }
+        &:hover > .AppIcon, &.pointerover > .AppIcon, &:active > .AppIcon, &.pressed > .AppIcon { opacity: 1; }
+    }
+
+    .ButtonDragHandle {
+        width: var(--ControlHeightMD);
+        height: var(--ControlHeightMD);
+        padding: 4px;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    /* ---------------------------------------------------------------- ToggleButton.axaml */
+    /* The styles of the toggle come after the pressed style of the Button, so a press shows no color of its own. */
+    .ToggleButton, .ToggleButtonRounded, .ToggleButtonRoundedLeft, .ToggleButtonCheck,
+    .ToggleButtonInlineLeft, .ToggleButtonInlineCenter, .ToggleButtonInlineRight {
+        &:active, &.pressed { background: var(--StateHoverBrush); }
+        &.checked { background: var(--AccentInactiveBrush); }
+        &.checked:hover, &.checked.pointerover { background: var(--AccentBrush); }
+    }
+
+    .ToggleButtonCheck {
+        > .AppIcon { display: none; margin: 2px; opacity: 0.75; }
+        &.checked > .AppIcon { display: block; }
+    }
+
+    .ToggleButtonCheckBox {
+        padding: 4px;
+        background: var(--StateIdleBrush);
+        border-radius: var(--CornerRadiusAll);
+        > .AppIcon { opacity: 0; }
+        &:hover, &.pointerover { background: var(--StateHoverBrush); }
+        &.checked { background: var(--AccentInactiveBrush); > .AppIcon { opacity: 1; } }
+        &.checked:hover, &.checked.pointerover { background: var(--AccentBrush); }
+        &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+
+    .ToggleButtonIcon, .ToggleButtonVisibility, .ToggleButtonPower, .ToggleButtonUpdate {
+        width: var(--ControlHeightXS);
+        height: var(--ControlHeightXS);
+        padding: 1px;
+        background: transparent;
+        overflow: visible;
+        opacity: var(--OpacityIconIdle);
+        &:hover, &.pointerover { opacity: 1; }
+    }
+
+    .ToggleButtonVisibility, .ToggleButtonPlayPause {
+        > .AppIcon:nth-child(2) { display: none; }
+        &.checked > .AppIcon:nth-child(1) { display: none; }
+        &.checked > .AppIcon:nth-child(2) { display: block; }
+    }
+
+    .ToggleButtonPower, .ToggleButtonUpdate {
+        &.checked { opacity: 1; }
+    }
+
+    .ToggleButtonPlayPause {
+        padding: 1px;
+        background: transparent;
+        opacity: var(--OpacityIconIdle);
+    }
+
+    .ToggleButtonPopup {
+        position: relative;
+        height: var(--ControlHeightMD);
+        background: var(--StateIdleBrush);
+        border-radius: var(--CornerRadiusLeft);
+        .plus { position: absolute; left: 0; padding: 4px 4px 4px 8px; }
+        .content { padding: 4px 4px 4px 8px; }
+        &:hover, &.pointerover { background: var(--StateHoverBrush); }
+        &.checked { background: var(--AccentBrush); }
+    }
+
+    /* The box alone, and the box with its Caption. The box is in the value column: 40% is empty at the left. */
+    .ToggleButtonBox, .ToggleButtonCaptioned > .box {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--ControlHeightXS);
+        height: var(--ControlHeightXS);
+        background: var(--StateIdleBrush);
+        border-radius: var(--CornerRadiusAll);
+        overflow: visible;
+        .AppIcon { opacity: 0; }
+    }
+    .ToggleButtonBox {
+        &:hover, &.pointerover { background: var(--StateHoverBrush); }
+        &.checked { background: var(--AccentInactiveBrush); .AppIcon { opacity: 1; } }
+        &.checked:hover, &.checked.pointerover { background: var(--AccentBrush); }
+        &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+    .ToggleButtonCaptioned {
+        height: var(--ControlHeightMD);
+        justify-content: flex-start;
+        padding-left: 40%;
+        overflow: visible;
+        > .caption { padding: 0 4px; }
+        > .box:hover, &.pointerover > .box { background: var(--StateHoverBrush); }
+        &.checked > .box { background: var(--AccentInactiveBrush); .AppIcon { opacity: 1; } }
+        &.checked > .box:hover, &.checked.pointerover > .box { background: var(--AccentBrush); }
+        &:disabled, &.disabled { pointer-events: none; > .box { opacity: var(--OpacityDisabled); } }
+    }
+
+    /* ---------------------------------------------------------------- RadioButton.axaml */
+    .RadioButton {
+        height: var(--ControlHeightMD);
+        background: var(--StateIdleBrush);
+        border-radius: var(--Position, var(--CornerRadiusAll));
+        &:hover, &.pointerover { background: var(--StateHoverBrush); }
+        &.checked { background: var(--AccentInactiveBrush); }
+        &.checked:hover, &.checked.pointerover { background: var(--AccentBrush); }
+        &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+}
+
+.cmix {
+    /* ---------------------------------------------------------------- ContentCaptioned.axaml */
+    /* The Caption in the first 40%, at the right. The content in the other 60%. */
+    .ContentCaptioned, .DragValue, .IntegerValue {
+        display: grid;
+        grid-template-columns: 40% 60%;
+        height: var(--ControlHeightMD);
+        > .caption { justify-self: end; align-self: center; margin-right: 8px; white-space: nowrap; }
+    }
+
+    /* ---------------------------------------------------------------- NumericInput.axaml */
+    /* The text field of a value while the user types. It is hidden until the edit starts. */
+    .NumericInput {
+        display: flex;
+        align-items: center;
+        height: var(--ControlHeightMD);
+        padding: 0 8px;
+        background: var(--Grey100Brush);
+        color: var(--ForegroundBrush);
+        white-space: nowrap;
+        cursor: text;
+    }
+
+    /* ---------------------------------------------------------------- DragValue.axaml */
+    .DragValue, .IntegerValue, .DragValueInlineCaption {
+        height: var(--ControlHeightMD);
+        border-radius: var(--Position, var(--CornerRadiusAll));
+
+        .mainBorder {
+            position: relative;
+            display: block;
+            height: 100%;
+            min-width: 0;
+            overflow: hidden;
+            background: var(--StateIdleBrush);
+            border-radius: inherit;
+        }
+        .borderValueDisplay {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: var(--StateIdleBrush);
+            white-space: nowrap;
+        }
+        .borderValueDisplay:hover, &.pointerover .borderValueDisplay { background: var(--StateHoverBrush); cursor: ew-resize; }
+        &:active .borderValueDisplay, &.pressed .borderValueDisplay { background: var(--StatePressedBrush); }
+
+        /* The two buttons show under the pointer, and stay while the value is pressed. */
+        .SubButton, .AddButton {
+            position: absolute;
+            top: 0;
+            display: none;
+            width: var(--ControlHeightMD);
+            height: 100%;
+            background: var(--StateIdleBrush);
+            > .AppIcon { opacity: 0.5; }
+            &:hover { background: var(--StateHoverBrush); }
+            &:active { background: var(--StatePressedBrush); }
+        }
+        .SubButton { left: 0; }
+        .AddButton { right: 0; }
+        .mainBorder:hover .SubButton, .mainBorder:hover .AddButton,
+        &.pointerover .SubButton, &.pointerover .AddButton { display: flex; }
+        &:active .SubButton, &:active .AddButton,
+        &.pressed .SubButton, &.pressed .AddButton { display: flex; background: var(--StatePressedBrush); }
+
+        .NumericInput { display: none; position: absolute; inset: 0; height: auto; }
+        &.editing {
+            .NumericInput { display: flex; }
+            .borderValueDisplay, .SubButton, .AddButton { display: none; }
+        }
+
+        &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+
+    /* The Caption at the left and the value at the right, inside the value. */
+    .DragValueInlineCaption {
+        display: block;
+        .borderValueDisplay { justify-content: space-between; padding: 0 6px; }
+        .captionDisplay { padding-left: 24px; }
+        .valueDisplay { padding-right: 24px; }
+    }
+
+    /* ---------------------------------------------------------------- RangeValue.axaml */
+    /* Two DragValueInlineCaption: the left one has the corners Left, the right one has the corners Right. */
+    .RangeValue {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        height: var(--ControlHeightMD);
+        > :nth-child(2) { margin-left: 1px; }
+    }
+
+    /* ---------------------------------------------------------------- Sliders/Slider.axaml */
+    /* The part before the value is RepeatButtonDecrease. The part after the value is RepeatButtonIncrease.
+       --Fraction is the value from 0 to 1. */
+    .SliderCMiX {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: var(--ControlHeightMD);
+        overflow: hidden;
+        border-radius: var(--Position, var(--CornerRadiusAll));
+        --Decrease: var(--AccentInactiveBrush);
+        --Increase: var(--StateIdleBrush);
+        background: linear-gradient(to right, var(--Decrease) calc(var(--Fraction, 0) * 100%), var(--Increase) 0);
+        white-space: nowrap;
+
+        .sliderName { padding: 0 8px; pointer-events: none; }
+        .textDisplay { padding: 0 8px 0 0; pointer-events: none; }
+        &:hover, &.pointerover { --Decrease: var(--AccentBrush); --Increase: var(--StateHoverBrush); }
+        &:active, &.pressed { --Increase: var(--StatePressedBrush); }
+
+        .NumericInput { display: none; position: absolute; inset: 0; height: auto; }
+        &.editing {
+            .NumericInput { display: flex; }
+            .sliderName, .textDisplay { display: none; }
+        }
+
+        &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+}
+
+.cmix {
+    /* ---------------------------------------------------------------- Panels/StackPanelPositioned.cs */
+    /* A column of controls that are one block: the first has the corners Top, the last has the corners Bottom. */
+    .StackPanelPositioned {
+        display: flex;
+        flex-direction: column;
+        gap: var(--SpacingXXS);
+        > * { --Position: var(--CornerRadiusNone); }
+        > :first-child { --Position: var(--CornerRadiusTop); }
+        > :last-child { --Position: var(--CornerRadiusBottom); }
+        > :only-child { --Position: var(--CornerRadiusAll); }
+    }
+
+    /* ---------------------------------------------------------------- Vector/AxisSelector2.axaml, AxisSelector3.axaml */
+    .AxisSelector2, .AxisSelector3 {
+        display: grid;
+        grid-template-columns: 40% 60%;
+        height: var(--ControlHeightMD);
+        > .caption { justify-self: end; align-self: center; margin-right: 8px; white-space: nowrap; }
+        > .outerBorder { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; overflow: hidden; border-radius: var(--CornerRadiusAll); }
+        > .outerBorder > :nth-child(2) { margin: 0 1px; }
+    }
+
+    /* ---------------------------------------------------------------- Chevron.axaml */
+    /* The icon ChevronDown. It points right when closed and down when open. A drop down sets 0 and 180 degrees. */
+    .Chevron {
+        display: block;
+        flex: none;
+        width: var(--IconSizeXS);
+        height: var(--IconSizeXS);
+        opacity: 0.5;
+        pointer-events: none;
+        transform: rotate(var(--ClosedAngle, -90deg));
+        transition: transform var(--MotionDuration) var(--MotionEasing);
+        &.open { transform: rotate(var(--OpenAngle, 0deg)); }
+    }
+
+    /* ---------------------------------------------------------------- Windows/Window.axaml: DropShadowWindow */
+    .DropdownFrame, .PopupFrame, .PopupCard { filter: drop-shadow(0 0 4px rgb(0 0 0 / 0.5)); }
+
+    /* ---------------------------------------------------------------- Menu/DropdownFrame.axaml */
+    /* The panel under a toggle or a combo box. It is 2 under its control. */
+    .DropdownFrame {
+        padding: 4px 2px 2px;
+        background: var(--PopupBackgroundBrush);
+        border-radius: var(--CornerRadiusBottom);
+    }
+
+    /* ---------------------------------------------------------------- ComboBox.axaml */
+    /* The theme sets no height: a ComboBox is as high as its chevron, or as high as the place it fills. */
+    .ComboBox, .ComboBoxWithButton {
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        min-height: var(--IconSizeXS);
+
+        > .Popup { display: none; position: absolute; left: 0; top: calc(100% + 2px); z-index: 10; min-width: 100%; }
+        &.open > .Popup { display: block; }
+        .items { max-height: calc(var(--ComboBoxVisibleItems) * var(--ControlHeightMD)); overflow: hidden auto; scrollbar-width: none; }
+        .SearchBox { margin: 4px 4px 2px; }
+        &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+    .ComboBox {
+        > .toggle {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 0;
+            padding: 0 8px;
+            background: var(--StateIdleBrush);
+            border-radius: var(--Position, var(--CornerRadiusNone));
+            > .Chevron { --ClosedAngle: 0deg; --OpenAngle: 180deg; }
+        }
+        > .toggle:hover, &.pointerover > .toggle { background: var(--StateHoverBrush); }
+        > .toggle:active, &.pressed > .toggle { background: var(--StatePressedBrush); }
+        &.open > .toggle { background: var(--AccentBrush); border-radius: var(--CornerRadiusTop); }
+        > .contentPresenter { position: absolute; left: 8px; right: 30px; top: 0; bottom: 0; display: flex; align-items: center; overflow: hidden; white-space: nowrap; pointer-events: none; }
+    }
+    .ComboBoxWithButton {
+        > .toggle { width: 22px; > .Chevron { --ClosedAngle: 0deg; --OpenAngle: 180deg; } }
+        > .Popup { width: 250px; }
+    }
+
+    .ComboBoxItem, .ComboBoxItemCMiX {
+        display: flex;
+        align-items: center;
+        height: calc(var(--ControlHeightMD) - 1px);
+        margin-bottom: 1px;
+        padding: 0 4px;
+        border-radius: var(--CornerRadiusAll);
+        white-space: nowrap;
+        &:hover, &.pointerover, &.highlighted { background: var(--RowHoverBrush); }
+        &.selected { background: var(--AccentInactiveBrush); }
+        &.selected:hover, &.selected.pointerover, &.selected.highlighted { background: var(--AccentBrush); }
+    }
+
+    /* ---------------------------------------------------------------- Enum/ComboBoxCaptioned.axaml */
+    .ComboBoxCaptioned {
+        display: grid;
+        grid-template-columns: 40% 60%;
+        height: var(--ControlHeightMD);
+        > .caption { justify-self: end; align-self: center; margin-right: 8px; white-space: nowrap; }
+        > .ComboBox > .toggle { border-radius: var(--CornerRadiusAll); }
+        > .ComboBox.open > .toggle { border-radius: var(--CornerRadiusTop); }
+        &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+
+    /* ---------------------------------------------------------------- Label.axaml */
+    .Label { display: flex; align-items: center; justify-content: center; color: var(--ForegroundBrush); background: transparent; white-space: nowrap; }
+
+    /* ---------------------------------------------------------------- TextBlock.axaml */
+    .TextBlock { color: var(--ForegroundBrush); &.disabled { opacity: var(--OpacityDisabled); } }
+
+    /* ---------------------------------------------------------------- String/TextBlockTrimmed.cs */
+    /* One line. The text ends with three dots when it does not fit. */
+    .TextBlockTrimmed { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--ForegroundBrush); }
+
+    /* ---------------------------------------------------------------- TextBox.axaml */
+    input.TextBox, input.TextBoxNumbersOnly, textarea.TextBox {
+        all: unset;
+        box-sizing: border-box;
+        display: block;
+        width: 100%;
+        min-width: 0;
+        color: var(--ForegroundBrush);
+        caret-color: var(--ForegroundBrush);
+        background: var(--Grey100Brush);
+        cursor: text;
+        &::selection { background: var(--AccentBrush); }
+        &::placeholder { color: var(--ForegroundBrush); opacity: 0.5; }
+        &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+    input.TextBox, textarea.TextBox {
+        padding: 0 6px;
+        border: 1px solid transparent;
+        border-radius: var(--CornerRadiusAll);
+        &:hover, &.pointerover { border-color: var(--Grey400Brush); }
+        &:focus, &.focus { border-color: var(--Grey600Brush); }
+    }
+    input.TextBoxNumbersOnly {
+        border: 1px solid var(--Grey100Brush);
+        &:focus, &.focus { border-color: var(--Grey600Brush); }
+    }
+
+    /* ---------------------------------------------------------------- Parts/SearchBox.axaml */
+    /* The magnifier is inside the field, at the left. With ShowsClear, a clear button is at the right while the field holds text. */
+    .SearchBox {
+        position: relative;
+        display: block;
+        height: var(--ControlHeightMD);
+        > .TextBox { height: 100%; padding: 0 6px 0 28px; }
+        &.showsclear > .TextBox { padding-right: var(--ControlHeightMD); }
+        > .AppIcon { position: absolute; left: 8px; top: calc(50% - var(--IconSizeXS) / 2); opacity: 0.5; pointer-events: none; }
+        > .ButtonIconClose { position: absolute; right: 0; top: 0; height: 100%; padding: 4px; display: none; }
+        &.showsclear.hastext > .ButtonIconClose { display: flex; }
+    }
+
+    /* ---------------------------------------------------------------- String/TextBoxEditable.axaml */
+    /* A name that a double click on the text changes into a text field. */
+    .TextBoxEditable {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: var(--ControlHeightMD);
+        > .TextDisplay { min-width: var(--ControlHeightMD); padding: 2px 4px; white-space: nowrap; }
+        > .Suffix { margin-left: 4px; }
+        > .TextBox { display: none; position: absolute; left: 0; right: 0; top: calc(50% - 10px); height: 20px; padding: 1px 3px; color: var(--ActiveForegroundBrush); caret-color: var(--AccentInactiveBrush); }
+        &.editing { > .TextDisplay, > .Suffix { visibility: hidden; } > .TextBox { display: block; } }
+    }
+
+    /* ---------------------------------------------------------------- String/EditableValue.axaml */
+    .EditableValue {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: var(--ControlHeightMD);
+        > .TextBox { display: none; position: absolute; inset: 0; height: 100%; padding: 5px; border: 0; background: var(--Grey300Brush); color: var(--ActiveForegroundBrush); caret-color: var(--Grey700Brush); &::selection { background: var(--Grey700Brush); } }
+        &.editing { > .TextDisplay { visibility: hidden; } > .TextBox { display: block; } }
+    }
+
+    /* ---------------------------------------------------------------- String/IPBox.axaml */
+    /* Four number fields with a point between them: 1 part for a field, half a part for a point. */
+    .IPBox {
+        display: grid;
+        grid-template-columns: 40% 60%;
+        height: var(--ControlHeightMD);
+        > .caption { justify-self: end; align-self: center; margin-right: 8px; white-space: nowrap; }
+        > .parts { display: grid; grid-template-columns: 1fr 0.5fr 1fr 0.5fr 1fr 0.5fr 1fr; min-width: 0; }
+        .TextBoxNumbersOnly { height: 100%; text-align: center; }
+        .Label { background: var(--Grey100Brush); }
+    }
+
+    /* ---------------------------------------------------------------- String/KeyGestureBox.axaml */
+    .KeyGestureBox {
+        display: flex;
+        align-items: center;
+        height: var(--ControlHeightMD);
+        padding: 0 6px;
+        background: var(--Grey100Brush);
+        border: 1px solid transparent;
+        border-radius: var(--CornerRadiusAll);
+        white-space: nowrap;
+        &.recording { border-color: var(--AccentBrush); }
+    }
+
+    /* ---------------------------------------------------------------- KeyCap.axaml */
+    .TextBlockKeyCap {
+        display: inline-flex;
+        align-items: center;
+        padding: var(--KeyCapPadding);
+        border: var(--KeyCapBorderThickness) solid var(--KeyCapBorderBrush);
+        border-radius: var(--CornerRadiusAll);
+        font-family: var(--FontFamilyMono);
+        color: var(--ShortcutTextBrush);
+        white-space: nowrap;
+    }
+
+    /* ---------------------------------------------------------------- Path/PathSelector.axaml */
+    /* A ComboBox with the corners Left, and a Button with the icon Folder at its right. */
+    .PathSelector {
+        display: grid;
+        grid-template-columns: 40% 60%;
+        height: var(--ControlHeightMD);
+        > .caption { justify-self: end; align-self: center; margin-right: 8px; white-space: nowrap; }
+        > .DockPanelPositioned { display: flex; min-width: 0; }
+        .ComboBox { flex: 1; min-width: 0; }
+        .ComboBox > .toggle { border-radius: var(--CornerRadiusLeft); }
+        .Button { flex: none; width: var(--ControlHeightMD); margin-left: 1px; border-radius: var(--CornerRadiusRight); }
+    }
+}
+
+.cmix {
+    /* The chevron of a drop down that is open. The states of a ComboBoxCaptioned go to its ComboBox. */
+    .ComboBox.open > .toggle > .Chevron, .ComboBoxWithButton.open > .toggle > .Chevron { transform: rotate(var(--OpenAngle)); }
+    .ComboBoxWithButton.open > .toggle { background: var(--AccentInactiveBrush); }
+    .ComboBoxCaptioned.pointerover > .ComboBox > .toggle { background: var(--StateHoverBrush); }
+    .ComboBoxCaptioned.pressed > .ComboBox > .toggle { background: var(--StatePressedBrush); }
+}
+
+.cmix {
+    /* ---------------------------------------------------------------- Menu/PopupFrame.axaml */
+    /* The frame of every popup and menu: the popup color, the large corners, 8 of space, and the window shadow. */
+    .PopupFrame {
+        display: block;
+        width: max-content;
+        min-width: var(--PopupMinWidth);
+        padding: 8px;
+        background: var(--PopupBackgroundBrush);
+        border-radius: var(--CornerRadiusLargeAll);
+    }
+
+    /* ---------------------------------------------------------------- Sliders/ColorPickerWheel.axaml */
+    /* Hue 0 is at 3 o'clock and grows against the clock. The center is white. --V is the value of the color, 0 to 1. */
+    .ColorPickerWheel {
+        position: relative;
+        flex: none;
+        width: var(--ColorWheelSize);
+        height: var(--ColorWheelSize);
+        > .wheel { position: absolute; inset: 5px; overflow: hidden; border-radius: 50%; background: #000; }
+        > .wheel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: var(--V, 1);
+            background: radial-gradient(closest-side, #FFF, transparent), conic-gradient(from 90deg, red, magenta, blue, cyan, lime, yellow, red);
+        }
+        > .PART_CursorEllipse { position: absolute; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 0.2px #000; }
+    }
+
+    /* The slider of the value, at the right of the wheel: white at the top, black at the bottom. */
+    .SliderCMiXBrightness {
+        position: relative;
+        flex: none;
+        width: 16px;
+        border: 1px solid #000;
+        background: linear-gradient(#FFF, #000);
+        > .Part_Thumb {
+            position: absolute;
+            left: -1px;
+            right: -1px;
+            top: calc((1 - var(--V, 1)) * 100% - 5px);
+            height: 10px;
+            background: #000;
+            box-shadow: 0 0 0 0.5px #FFF;
+        }
+        > .Part_Thumb::after { content: ""; position: absolute; inset: 0; background: #FFF; opacity: var(--V, 1); box-shadow: 0 0 0 0.5px #000; }
+    }
+
+    /* ---------------------------------------------------------------- ColorPicker/ColorPickerSliders.axaml */
+    /* Three RadioButton pick the mode. The sliders of the modes lie on each other: one mode shows. */
+    .ColorPickerSliders {
+        display: flex;
+        flex-direction: column;
+        > .modes { display: grid; grid-template-columns: repeat(3, 1fr); height: var(--ControlHeightMD); }
+        > .modes > :nth-child(2) { margin: 0 1px; }
+        > .panel { display: grid; margin: 8px 0; }
+        > .panel > .mode { grid-area: 1 / 1; display: flex; flex-direction: column; }
+        > .panel > .mode > .SliderCMiX:nth-child(2) { margin: 1px 0; }
+        > .panel > .mode > .TextBox { height: var(--ControlHeightMD); }
+        &[data-mode="HSV"] > .panel > .mode:not([data-mode="HSV"]),
+        &[data-mode="RGB"] > .panel > .mode:not([data-mode="RGB"]),
+        &[data-mode="HEX"] > .panel > .mode:not([data-mode="HEX"]) { opacity: 0; pointer-events: none; }
+    }
+
+    /* ---------------------------------------------------------------- ColorPicker/ColorPickerFull.axaml */
+    .ColorPickerFull {
+        display: flex;
+        flex-direction: column;
+        width: max-content;
+        > .top { display: flex; }
+        > .ColorPickerSliders { margin-top: 8px; }
+    }
+
+    /* ---------------------------------------------------------------- ColorPicker/ColorSelector.axaml */
+    /* A ToggleButtonColor. Its popup opens above it, with a ColorPickerFull in a PopupFrame. */
+    .ColorSelector {
+        position: relative;
+        display: grid;
+        grid-template-columns: 40% 60%;
+        height: var(--ControlHeightMD);
+        > .caption { justify-self: end; align-self: center; margin-right: 8px; white-space: nowrap; }
+        > .Popup { display: none; position: absolute; left: 40%; bottom: 100%; z-index: 10; }
+        &.open > .Popup { display: block; }
+        &.disabled { pointer-events: none; }
+    }
+}
+
+.cmix {
+    /* ---------------------------------------------------------------- ScrollViewer.axaml */
+    /* ScrollViewerOverlay: the content leaves ScrollBarGutter at the right, and the bar lies in it.
+       ScrollBar: a thumb of ScrollBarThickness with ScrollBarMargin at its sides, on a track of black with 0.2 of opacity. */
+    .ScrollViewerOverlay {
+        overflow: hidden auto;
+        scrollbar-gutter: stable;
+        &::-webkit-scrollbar { width: var(--ScrollBarSize); height: var(--ScrollBarSize); }
+        &::-webkit-scrollbar-track { background: linear-gradient(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.2)) content-box; border: solid transparent; border-width: 0 2px; border-radius: 4px; }
+        &::-webkit-scrollbar-thumb { background: var(--Grey500Brush) content-box; border: solid transparent; border-width: 0 2px; border-radius: 4px; }
+        &::-webkit-scrollbar-thumb:hover { background: var(--StateHoverBrush) content-box; }
+        &::-webkit-scrollbar-thumb:active { background: var(--StatePressedBrush) content-box; }
+    }
+
+    /* ---------------------------------------------------------------- ListBox.axaml */
+    .ListBox, .ListBoxCMiX > .Bd {
+        background: var(--ListBoxBackground);
+        border-radius: var(--CornerRadiusAll);
+        padding: var(--ListScrollMargin);
+    }
+    .ListBox > .items, .ListBoxCMiX > .Bd > .items { display: flex; flex-direction: column; gap: var(--ListSpacing); height: 100%; }
+
+    /* ListBoxCMiX: a list with a handle under it that changes its height. It shows ListVisibleItems rows or more. */
+    .ListBoxCMiX {
+        display: flex;
+        flex-direction: column;
+        border-radius: var(--CornerRadiusAll);
+        > .Bd { min-height: calc(var(--ListVisibleItems) * var(--ControlHeightMD) + (var(--ListVisibleItems) - 1) * var(--ListSpacing) + 4px); }
+        > .resizeBorder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: var(--ListResizeHandleHeight);
+            overflow: hidden;
+            background: var(--ListBoxBackground);
+            cursor: ns-resize;
+            > .AppIcon { opacity: 0.25; }
+        }
+    }
+
+    /* ListBoxEditableList: no scroll viewer, as high as its rows. */
+    .ListBoxEditableList {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ListSpacing);
+        padding: var(--ListEditablePadding);
+        background: var(--ListBoxBackground);
+        border-radius: var(--CornerRadiusAll);
+    }
+
+    /* A row is transparent, RowHoverBrush under the pointer, and accent when it is selected.
+       The frame of the cursor row lies over the row and takes no room. */
+    .ListBoxItemBasic, .ListBoxItemCMiX, .ListBoxItem {
+        position: relative;
+        display: flex;
+        align-items: center;
+        border-radius: var(--CornerRadiusAll);
+        color: var(--ForegroundBrush);
+        > * { flex: 1; min-width: 0; }
+        &:hover, &.pointerover { background: var(--RowHoverBrush); }
+        &.selected { background: var(--AccentInactiveBrush); }
+        &.selected:hover, &.selected.pointerover { background: var(--AccentBrush); }
+        &.cursor::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: var(--CursorFrameInactiveThickness) solid var(--CursorFrameInactiveBrush);
+            border-radius: var(--CornerRadiusAll);
+            pointer-events: none;
+        }
+        &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+    .ListBoxItemCMiX, .ListBoxItem { flex: none; height: var(--ControlHeightMD); padding-left: 2px; }
+
+    /* ---------------------------------------------------------------- CursorRow.axaml */
+    /* The frame of the cursor row while its list has the keyboard focus. */
+    :focus-within > .items > .cursor::after, :focus-within > .cursor::after,
+    .cursor.focus-within::after { border: var(--CursorFrameThickness) solid var(--CursorFrameBrush); }
+
+    /* ---------------------------------------------------------------- Collection/ListBoxEditable.axaml */
+    /* The list, and at its right two groups of buttons: add and remove, then move up and move down. */
+    .ListBoxEditable {
+        display: flex;
+        align-items: flex-start;
+        > .ListBoxEditableList { flex: 1; min-width: 0; min-height: calc(var(--ListEditableVisibleItems) * var(--ControlHeightMD) + (var(--ListEditableVisibleItems) - 1) * var(--ListSpacing) + 8px); }
+        > .buttons { display: flex; flex-direction: column; gap: 6px; margin-left: 4px; }
+        > .buttons > .StackPanelPositioned > .Button { width: var(--ControlHeightMD); height: var(--ControlHeightMD); }
+        > .buttons .AppIcon { opacity: 0.7; }
+        .ListBoxItemBasic > .ButtonDragHandle { flex: none; }
+    }
+
+    /* ---------------------------------------------------------------- Collection/ListBoxRepository.axaml */
+    .ListBoxRepository {
+        display: flex;
+        flex-direction: column;
+        > .ListBoxCMiX { margin: 8px; }
+        > .DockPanelPositioned { display: flex; margin: 0 8px 8px; }
+        > .DockPanelPositioned > :first-child { flex: 1; min-width: 0; --Position: var(--CornerRadiusLeft); }
+        > .DockPanelPositioned > .Button:last-child { flex: none; width: var(--ControlHeightMD); margin-left: 1px; --Position: var(--CornerRadiusRight); > .AppIcon { opacity: 0.7; } }
+    }
+
+    /* ---------------------------------------------------------------- Collection/ListItemIcon.axaml */
+    .ListItemIcon {
+        display: flex;
+        align-items: center;
+        > .AppIcon { margin: 0 4px; opacity: 0.7; }
+        > .TextBoxEditable { flex: 1; min-width: 0; }
+        > .ToggleButtonVisibility { margin: 0 4px; }
+    }
+
+    /* ---------------------------------------------------------------- Collection/ItemPickerList.axaml */
+    /* Rows of ButtonItem. One row is lit: the highlighted row. */
+    .ItemPickerList {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-height: calc(var(--ComboBoxVisibleItems) * (var(--ControlHeightMD) + 4px) - 4px);
+        overflow: hidden auto;
+        scrollbar-width: none;
+        > .ButtonItem { flex: none; gap: var(--SpacingMD); }
+        > .ButtonItem:hover:not(.highlighted) { background: transparent; }
+    }
+
+    /* ---------------------------------------------------------------- Collection/SearchableItemPickerList.axaml, GroupedSearchList.axaml */
+    .SearchableItemPickerList, .GroupedSearchList {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        > .PART_NoMatch { display: none; margin: 0 0 4px 8px; opacity: 0.5; }
+        &.nomatch > .PART_NoMatch { display: block; }
+    }
+    .GroupedSearchList {
+        > .PART_Rows { display: flex; flex-direction: column; }
+        .row { display: flex; align-items: center; gap: 8px; flex: none; height: var(--ControlHeightMD); padding: 0 8px 0 12px; border-radius: var(--CornerRadiusAll); }
+        .row.highlighted { background: var(--RowHoverBrush); }
+        .row.disabled { opacity: 0.4; }
+        .row.header { gap: 6px; padding: 0 6px; color: var(--Grey900Brush); }
+        .row.header.dimmed { opacity: 0.5; }
+        &.collapsible .row:not(.header) { padding-left: 24px; }
+    }
+
+    /* ---------------------------------------------------------------- Expander.axaml */
+    /* The class collapsed closes an expander. The chevron points down when the expander is open. */
+    .Expander, .ExpanderItem, .ExpanderIndented {
+        display: flex;
+        flex-direction: column;
+        color: var(--ForegroundBrush);
+        > .PART_toggle { justify-content: flex-start; flex: none; overflow: visible; }
+        > .PART_toggle > .header { flex: 1; min-width: 0; display: flex; align-items: center; }
+        &:not(.collapsed) > .PART_toggle > .Chevron { transform: rotate(0deg); }
+        &.collapsed > .content { display: none; }
+        &.disabled > .PART_toggle { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+
+    .Expander {
+        border-top: 1px solid var(--PanelBorderBackground);
+        > .PART_toggle { height: var(--ControlHeightMD); margin: 0 8px; background: var(--PanelBackground); }
+        > .PART_toggle > .header { margin: 0 8px; }
+        > .content { background: var(--PanelBackground); }
+    }
+
+    .ExpanderItem {
+        background: var(--Grey300Brush);
+        border: 1px solid transparent;
+        border-radius: var(--CornerRadiusAll);
+        > .PART_toggle { height: var(--ControlHeightXL); padding-left: 4px; background: var(--Grey300Brush); }
+        > .PART_toggle > .Chevron { margin: 0 1.5px; }
+        > .PART_toggle > .header { margin-left: 4px; }
+    }
+
+    /* A card. Its background comes from the number of ExpanderIndented around it: level 1, 2, then 3. */
+    .ExpanderIndented {
+        --Level: var(--PanelBackgroundLevel1Brush);
+        margin: var(--MarginCard);
+        overflow: hidden;
+        border-radius: var(--CornerRadiusAll);
+        > .PART_toggle { height: var(--ControlHeightXL); background: var(--Level); }
+        > .PART_toggle > .Chevron { margin: 0 4px; }
+        > .content { background: var(--Level); }
+        .ExpanderIndented { --Level: var(--PanelBackgroundLevel2Brush); }
+        .ExpanderIndented .ExpanderIndented { --Level: var(--PanelBackgroundLevel3Brush); }
+    }
+
+    /* ---------------------------------------------------------------- PanelItem.axaml */
+    /* An ExpanderItem. Its header has the Title, then the eye, the close button and the drag handle. */
+    .PanelItem {
+        > .PART_toggle > .header > .title { flex: 1; min-width: 0; }
+        > .PART_toggle > .header > .ToggleButtonVisibility { width: var(--ControlHeightMD); }
+        > .PART_toggle > .header > .ButtonDragHandle { margin: 0 2px 0 8px; }
+        > .content { padding: 8px; }
+    }
+
+    /* ---------------------------------------------------------------- Collection/PanelItemList.axaml */
+    .PanelItemList {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        > .ToggleButtonPopup { margin-top: 8px; }
+        > .Popup { display: none; }
+        &.open > .Popup { display: block; margin-top: 2px; }
+    }
+
+    /* ---------------------------------------------------------------- PopupButton.axaml */
+    /* A ToggleButton. Its popup is a DropdownFrame under it, as wide as the toggle. */
+    .PopupButton {
+        position: relative;
+        display: block;
+        > .Popup { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 2px); z-index: 10; }
+        &.open > .Popup { display: block; }
+    }
+
+    /* ---------------------------------------------------------------- Tab.axaml */
+    .TabControl, .TabControlMain, .TabControlVertical {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        > .strip { display: flex; flex: none; }
+        > .contentPanel { flex: 1; min-width: 0; min-height: 0; }
+        > .contentPanel > .TabItem { display: none; }
+        > .contentPanel > .TabItem.selected { display: block; }
+    }
+    .TabControl {
+        > .strip { border-bottom: 1px solid var(--Grey500Brush); }
+        > .contentPanel { padding: 4px; }
+    }
+    .TabControlMain > .strip { align-self: flex-start; background: var(--Grey400Brush); }
+    .TabControlVertical {
+        flex-direction: row;
+        > .strip { flex-direction: column; background: var(--Grey200Brush); }
+    }
+
+    .TabItemCMiX {
+        width: auto;
+        border-radius: 0;
+        background: var(--Grey300Brush);
+        color: var(--ForegroundBrush);
+        border-bottom: 3px solid transparent;
+        &.selected { color: var(--ActiveForegroundBrush); border-bottom-color: var(--Grey700Brush); }
+        &.disabled { pointer-events: none; > * { opacity: var(--OpacityDisabled); } }
+    }
+    /* A tab of one icon: the icon is dim at rest, and lit under the pointer and while selected. */
+    .TabItemHorizontal {
+        flex: none;
+        width: var(--ControlHeightXL);
+        height: var(--ControlHeightXL);
+        background: var(--Grey200Brush);
+        > * { opacity: var(--OpacityIconIdle); }
+        &:hover > *, &.pointerover > *, &.selected > * { opacity: 1; }
+        &.selected { background: var(--StateHoverBrush); }
+    }
+
+    /* ---------------------------------------------------------------- GridSplitter.axaml */
+    /* It lies over the edge between two panels and takes no room. data-resize-direction is Columns or Rows. */
+    .GridSplitterCMiX {
+        position: relative;
+        z-index: 1;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &::after { content: ""; background: transparent; }
+        &:hover, &.pointerover { background: var(--Grey100Brush); }
+        &:hover::after, &.pointerover::after { background: var(--Grey600Brush); }
+        &[data-resize-direction="Columns"] { width: var(--SplitterSize); margin: 0 -4px; cursor: ew-resize; &::after { width: var(--SplitterIndicatorSize); height: 100%; } }
+        &[data-resize-direction="Rows"] { height: var(--SplitterSize); margin: var(--SplitterRowOverlap); cursor: ns-resize; &::after { height: var(--SplitterIndicatorSize); width: 100%; } }
+    }
+
+    /* ---------------------------------------------------------------- PanelFocus.axaml */
+    /* The accent line under the header of the panel that has the keyboard focus. */
+    .focusline { position: absolute; left: 0; right: 0; bottom: 0; display: none; height: var(--SplitterIndicatorSize); background: var(--AccentBrush); pointer-events: none; }
+    .focuspanel:focus-within .focusline, .focuspanel.focus-within .focusline, .focuspanel.popup-open .focusline { display: block; }
+
+    /* ---------------------------------------------------------------- Border.axaml */
+    /* A Border with the class BorderMask cuts its content to the corners of its Position. */
+    .BorderMask { overflow: hidden; border-radius: var(--Position, var(--CornerRadiusAll)); }
+
+    /* ---------------------------------------------------------------- Parts/RowStripes.cs */
+    /* Bands behind the rows of a list or a tree. One band is one row and the space to the next row.
+       --Brush is the one color. Every second band has it with the opacity 0.8. */
+    .RowStripes {
+        --RowPitch: calc(var(--ControlHeightMD) + var(--TreeRowGap));
+        --Brush: var(--Grey200);
+        background: repeating-linear-gradient(to bottom, var(--Brush) 0 var(--RowPitch), color-mix(in srgb, var(--Brush) 80%, transparent) var(--RowPitch) calc(var(--RowPitch) * 2));
+    }
+}
+
+.cmix {
+    /* The header of an expander is not a button element, so it can hold buttons. */
+    .PART_toggle { display: flex; align-items: center; cursor: default; }
+}
+
+.cmix {
+    position: relative;
+
+    /* ---------------------------------------------------------------- Menu/PopupCard.axaml, Parts/PopupTip.cs */
+    /* The card of a tooltip or of a panel. The tip is a triangle on one edge: its base is 10 and its height is 5.
+       data-edge on the tip is Top, Bottom, Left or Right. --TipOffset is the distance from the start of the edge to the middle of the tip. */
+    .PopupCard, .ToolTip {
+        position: relative;
+        display: block;
+        width: max-content;
+        padding: var(--PopupCardPadding);
+        background: var(--PopupBackgroundBrush);
+        border-radius: var(--CornerRadiusLargeAll);
+    }
+    .ToolTip { filter: drop-shadow(0 0 4px rgb(0 0 0 / 0.5)); max-width: calc(var(--TipMaxWidth) + 20px); pointer-events: none; }
+    .PopupTip {
+        position: absolute;
+        width: 10px;
+        height: 5px;
+        background: var(--PopupBackgroundBrush);
+        pointer-events: none;
+        &[data-edge="Top"] { left: calc(var(--TipOffset, 20px) - 5px); bottom: 100%; clip-path: polygon(0 100%, 50% 0, 100% 100%); }
+        &[data-edge="Bottom"] { left: calc(var(--TipOffset, 20px) - 5px); top: 100%; clip-path: polygon(0 0, 50% 100%, 100% 0); }
+        &[data-edge="Left"] { width: 5px; height: 10px; right: 100%; top: calc(var(--TipOffset, 20px) - 5px); clip-path: polygon(100% 0, 0 50%, 100% 100%); }
+        &[data-edge="Right"] { width: 5px; height: 10px; left: 100%; top: calc(var(--TipOffset, 20px) - 5px); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+    }
+
+    /* ---------------------------------------------------------------- ToolTip.axaml */
+    /* A text is a title. A TipContent has the title and the shortcut, the description, the reason and the footer. */
+    .ToolTip {
+        > .TipContent { display: flex; flex-direction: column; gap: var(--SpacingSM); max-width: var(--TipMaxWidth); }
+        .line { display: flex; justify-content: space-between; align-items: center; }
+        .title { font-weight: 500; color: var(--ActiveForegroundBrush); }
+        .shortcut { margin-left: 12px; white-space: nowrap; }
+        .description { color: var(--Grey900Brush); }
+        .reason { color: var(--PopupCardWarningBrush); }
+        .footer { padding-top: 4px; border-top: 1px solid var(--Grey400Brush); font-family: var(--FontFamilyMono); color: var(--Grey700Brush); }
+    }
+
+    /* ---------------------------------------------------------------- Menu/ContextMenu.axaml */
+    /* MenuPanel, ContextMenuDefault and MenuFlyoutPresenterDefault: a PopupFrame with rows of MenuItemContext.
+       The shortcuts and the arrows of the rows of one menu line up. */
+    .ContextMenu, .MenuPanel, .MenuItemContext > .Popup > .PopupFrame {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-content: start;
+        width: max-content;
+        min-width: var(--PopupMinWidth);
+        padding: 8px;
+        background: var(--PopupBackgroundBrush);
+        border-radius: var(--CornerRadiusLargeAll);
+        filter: drop-shadow(0 0 4px rgb(0 0 0 / 0.5));
+    }
+
+    .MenuItemContext {
+        position: relative;
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: subgrid;
+        align-items: center;
+        height: var(--ControlHeightMD);
+        padding: 4px 8px;
+        white-space: nowrap;
+        cursor: default;
+        > .head { display: flex; align-items: center; min-width: 0; }
+        > .head > .AppIcon { margin-right: 16px; }
+        > .PART_InputGestureText { margin-left: 24px; }
+        > .PART_InputGestureText:empty { margin-left: 0; }
+        > .PART_Arrow { display: none; margin-left: 8px; opacity: 0.7; }
+        &.opens > .PART_Arrow { display: block; }
+        &:hover, &.pointerover, &.selected { background: var(--RowHoverBrush); }
+        &:hover > .shortcut, &.pointerover > .shortcut, &.selected > .shortcut { color: var(--ShortcutTextHoverBrush); }
+        &.checked { background: var(--AccentInactiveBrush); }
+        &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+        &.title { opacity: 1; pointer-events: none; background: transparent; > .head { color: var(--Grey800Brush); font-weight: 500; } }
+        &.danger > .head { color: var(--PopupCardDangerBrush); }
+        &.separator { height: var(--SeparatorSize); margin: 4px 0; padding: 0; background: var(--Grey600Brush); pointer-events: none; }
+        > .Popup { display: none; position: absolute; left: 100%; top: -8px; z-index: 11; }
+        &:hover > .Popup, &.open > .Popup { display: block; }
+    }
+
+    /* ---------------------------------------------------------------- Menu/Menu.axaml */
+    /* MenuDefault is the bar. Its rows are MenuItemTop. The rows of a drop down of the bar are MenuItem. */
+    .MenuDefault { display: flex; align-items: center; color: var(--ForegroundBrush); }
+
+    .MenuItemTop {
+        position: relative;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        cursor: default;
+        > .head { display: flex; align-items: center; }
+        > .head > .PART_HeaderPresenter { margin: 4px; }
+        &.selected { background: var(--AccentBrush); }
+        &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+        > .Popup { display: none; position: absolute; left: -4px; top: calc(100% + 4px); z-index: 10; }
+        &.selected > .Popup { display: block; }
+    }
+    .SubMenuBorder {
+        display: grid;
+        grid-template-columns: 32px auto auto;
+        width: max-content;
+        padding: 2px;
+        background: var(--PopupBackgroundBrush);
+        box-shadow: 0 0 8px 0 #000;
+    }
+    .MenuItem {
+        position: relative;
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: subgrid;
+        align-items: center;
+        padding: 8px 32px 8px 0;
+        white-space: nowrap;
+        cursor: default;
+        > .AppIcon { justify-self: center; }
+        > .PART_HeaderPresenter { grid-column: 2; margin-left: 4px; }
+        > .PART_InputGestureText { grid-column: 3; margin-left: 24px; }
+        &:hover, &.pointerover, &.selected { background: var(--RowHoverBrush); }
+        &:hover > .shortcut, &.pointerover > .shortcut, &.selected > .shortcut { color: var(--ShortcutTextHoverBrush); }
+        &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+        &.separator { height: 1px; padding: 0; background: var(--Grey500Brush); pointer-events: none; }
+    }
+}
+
+/* ======================================================================== CMiX.Studio.Avalonia */
+
+.cmix {
+    /* ---------------------------------------------------------------- Themes/CategoryPalette.cs */
+    /* The tones of a kind of row: the color of the kind over the background of the tree.
+       --Kind is the color of the kind. --KindDepth is the number of changes of kind above the row.
+       A fill is 24%, 30% under the pointer and 40% when selected, times 0.8 for each depth, down to 12%, 16% and 30%.
+       A count square is 60%, 85% under the pointer and 100% when selected. */
+    [data-kind] {
+        --Level: pow(0.8, var(--KindDepth, 0));
+        --Fill: color-mix(in srgb, var(--Kind) calc(max(12, 24 * var(--Level)) * 1%), var(--TreeBackground));
+        --FillHover: color-mix(in srgb, var(--Kind) calc(max(16, 30 * var(--Level)) * 1%), var(--TreeBackground));
+        --FillSelected: color-mix(in srgb, var(--Kind) calc(max(30, 40 * var(--Level)) * 1%), var(--TreeBackground));
+        --KindTone: color-mix(in srgb, var(--Kind) 60%, var(--TreeBackground));
+        --KindHover: color-mix(in srgb, var(--Kind) 85%, var(--TreeBackground));
+        --KindSelected: var(--Kind);
+    }
+    [data-kind="Composable"] { --Kind: var(--CategoryComposable); }
+    [data-kind="ComposableLevel1"] { --Kind: var(--CategoryComposableLevel1); }
+    [data-kind="ComposableLevel2"] { --Kind: var(--CategoryComposableLevel2); }
+    [data-kind="ComposableLevel3"] { --Kind: var(--CategoryComposableLevel3); }
+    [data-kind="Entity"] { --Kind: var(--CategoryEntity); }
+    [data-kind="Camera"] { --Kind: var(--CategoryCamera); }
+    [data-kind="Light"] { --Kind: var(--CategoryLight); }
+    [data-kind="Texture"] { --Kind: var(--CategoryTexture); }
+    [data-kind="Filter"] { --Kind: var(--CategoryFilter); }
+    [data-kind="Modifier"] { --Kind: var(--CategoryModifier); }
+    [data-kind="Modulator"] { --Kind: var(--CategoryModulator); }
+
+    /* ---------------------------------------------------------------- Themes/Styles/ComposableListBox.axaml: ToggleButtonMask */
+    .ToggleButtonMask {
+        width: var(--ControlHeightXS);
+        height: var(--ControlHeightXS);
+        padding: 1px;
+        background: transparent;
+        overflow: visible;
+        opacity: var(--OpacityIconIdle);
+        &:hover, &.pointerover, &.checked { opacity: 1; }
+        > .AppIcon:nth-child(2) { display: none; }
+        &.checked > .AppIcon:nth-child(1) { display: none; }
+        &.checked > .AppIcon:nth-child(2) { display: block; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Component/Composable/ComposableToggles.axaml */
+    /* The mask toggle, then the visibility toggle, each on a square. An empty square has no button.
+       No class: the header of the inspector. row: the tree. small: the lists of composables. */
+    .ComposableToggles {
+        display: flex;
+        flex: none;
+        gap: var(--SpacingXXS);
+        > .slot { display: flex; align-items: center; justify-content: center; width: var(--ControlHeightMD); height: var(--ControlHeightMD); background: var(--PanelBackgroundLevel2Brush); border-radius: var(--CornerRadiusAll); }
+        > .slot.empty { background: var(--Grey100Brush); }
+        &.row > .slot, &.row > .slot.empty { background: transparent; }
+        &.row > .slot.mask { justify-content: flex-end; }
+        &.small { gap: var(--SpacingSM); }
+        &.small > .slot { width: var(--ControlHeightXS); height: var(--ControlHeightXS); background: transparent; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Tree/KindCountBadges.axaml */
+    /* What a collapsed row holds: a square for each kind with the number of items, then "+n" for the other kinds, then "n hidden". */
+    .KindCountBadges {
+        display: flex;
+        align-items: center;
+        gap: var(--SpacingXS);
+        white-space: nowrap;
+        > .kindcount, > .MoreKinds { display: flex; align-items: center; justify-content: center; height: var(--ControlHeightXS); min-width: var(--ControlHeightXS); padding: 0 4px; border-radius: var(--CornerRadiusAll); color: var(--ActiveForegroundBrush); }
+        > .kindcount { background: var(--KindTone); }
+        &.hovered > .kindcount, &.selected > .kindcount { background: var(--KindSelected); }
+        > .MoreKinds { background: var(--Grey600Brush); }
+        > .HiddenCount { opacity: var(--OpacityDisabled); }
+    }
+
+    /* ---------------------------------------------------------------- Themes/Styles/ProjectTree.axaml */
+    /* A row of the project tree. The fill shows the kind and the selection, a frame shows the cursor, the accent shows a drop.
+       The chevron is at the left of the colored row, after the indent of the level. Under the row is the space TreeRowGap. */
+    .TreeViewItem {
+        display: block;
+        --Indent: calc(var(--TreeIndent) * var(--TreeLevel, 0));
+        position: relative;
+
+        > .RowGrid { display: flex; align-items: stretch; height: var(--ControlHeightMD); }
+        > .RowGrid > .TreeChevronToggle {
+            flex: none;
+            width: var(--TreeIndent);
+            margin-left: var(--Indent);
+            background: transparent;
+            > svg { width: 6px; height: 10px; overflow: visible; fill: none; stroke: var(--ForegroundBrush); stroke-width: 1.5; transform-origin: 40% 50%; transition: transform var(--MotionDuration) var(--MotionEasing); }
+        }
+        &.expanded > .RowGrid > .TreeChevronToggle > svg { transform: rotate(90deg); }
+        &.empty > .RowGrid > .TreeChevronToggle { opacity: 0; pointer-events: none; }
+
+        > .RowGrid > .RowBorder {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            padding-left: 2px;
+            background: var(--Fill);
+            border-radius: var(--CornerRadiusAll);
+            color: var(--ForegroundBrush);
+            > .AppIcon { margin: 0 4px; color: inherit; }
+            > .header { flex: 1; min-width: 0; display: flex; align-items: center; }
+            > .header > .TextBlock { margin: 0 4px; color: inherit; white-space: nowrap; }
+            > .header .TextDisplay { color: inherit; }
+            > .RowToggles { flex: none; display: flex; justify-content: flex-end; width: 50px; }
+            &:hover { background: var(--FillHover); }
+            /* The marks lie over the row and take no room. */
+            &::after { content: ""; position: absolute; inset: 0; border-radius: var(--CornerRadiusAll); pointer-events: none; }
+        }
+        &.pointerover > .RowGrid > .RowBorder, &.candidate > .RowGrid > .RowBorder { background: var(--FillHover); }
+        &.selected > .RowGrid > .RowBorder { background: var(--FillSelected); color: var(--ActiveForegroundBrush); }
+        &.dragsource > .RowGrid > .RowBorder { opacity: var(--OpacityDragSource); }
+
+        /* A group row with no children is grey. */
+        &.group.empty > .RowGrid > .RowBorder { background: var(--Grey300Brush); }
+        &.group.empty > .RowGrid > .RowBorder:hover, &.group.empty.pointerover > .RowGrid > .RowBorder, &.group.empty.candidate > .RowGrid > .RowBorder { background: var(--Grey400Brush); }
+        &.group.empty.selected > .RowGrid > .RowBorder { background: var(--Grey500Brush); }
+
+        &.dimmed > .RowGrid > .RowBorder::after { background: color-mix(in srgb, var(--TreeBackground) 60%, transparent); }
+        &.cursor > .RowGrid > .RowBorder::after { border: var(--CursorFrameInactiveThickness) solid var(--CursorFrameInactiveBrush); }
+        &.cursor.focus-within > .RowGrid > .RowBorder::after, .TreeView:focus-within &.cursor > .RowGrid > .RowBorder::after { border: var(--CursorFrameThickness) solid var(--CursorFrameBrush); }
+        &.dropblocked > .RowGrid > .RowBorder::after { border: 1px solid var(--WarningMutedBrush); }
+        &.droptarget > .RowGrid > .RowBorder::after { border: var(--CursorFrameThickness) solid var(--AccentBrush); }
+
+        > .GapUnderTheRow { height: var(--TreeRowGap); }
+        &:not(.expanded) > .items, &.empty > .items { display: none; }
+
+        /* The line of a drop between two rows: in the space under the row (dropgap), or at the top of the first row (droptop). */
+        > .DropLine { display: none; position: absolute; left: calc(var(--Indent) + var(--TreeIndent)); right: 0; background: var(--AccentBrush); pointer-events: none; }
+        &.dropgap > .DropLine { display: block; top: var(--ControlHeightMD); height: var(--TreeRowGap); }
+        &.droptop > .DropLine { display: block; top: 0; height: var(--SplitterIndicatorSize); }
+    }
+
+    /* ---------------------------------------------------------------- Views/Tree/ProjectTreeView.axaml */
+    /* The toolbar, then the rows over the stripes. */
+    .ProjectTreeView {
+        display: flex;
+        flex-direction: column;
+        background: var(--TreeBackgroundBrush);
+        > .ProjectTreeToolbar { background: var(--Grey300Brush); }
+        > .tree { position: relative; flex: 1; min-height: 0; }
+        > .tree > .RowStripes { position: absolute; inset: 0; opacity: 0.6; --Brush: var(--Grey200); background-position: 0 8px; }
+        > .tree > .TreeView { position: relative; padding: 8px 8px 8px 8px; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Tree/ProjectTreeToolbar.axaml */
+    .ProjectTreeToolbar {
+        display: flex;
+        padding: var(--TreeToolbarPadding);
+        > :last-child { margin-left: auto; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Tree/TreeDragGhost.cs */
+    /* The label of the dragged row. It follows the pointer. */
+    .TreeDragGhost {
+        display: inline-flex;
+        align-items: center;
+        height: var(--ControlHeightMD);
+        padding: 0 2px;
+        background: var(--Fill);
+        border-radius: var(--CornerRadiusAll);
+        opacity: var(--OpacityDragGhost);
+        white-space: nowrap;
+        pointer-events: none;
+        > .AppIcon, > span { margin: 0 4px; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Tree/AddPanel.cs */
+    /* A PopupCard with a line of text, then a GroupedSearchList of AddPanelWidth. A row has a square in the color of its kind. */
+    .AddPanel {
+        > .title { display: flex; align-items: center; height: var(--ControlHeightMD); color: var(--ForegroundBrush); }
+        > .GroupedSearchList { width: var(--AddPanelWidth); margin-top: 4px; }
+        .kind { flex: none; width: 12.8px; height: 12.8px; background: var(--Kind); border-radius: 2px; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Tree/CategoryBadge.axaml */
+    /* The icon of an item in the title bar of the inspector. The bar has the color of the kind. */
+    .CategoryBadge {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--ControlHeightMD);
+        height: var(--ControlHeightMD);
+        border-radius: var(--CornerRadiusAll);
+        > .AppIcon { color: var(--ActiveForegroundBrush); }
+    }
+
+    /* ---------------------------------------------------------------- Views/Inspector/Inspector.axaml */
+    .Inspector {
+        display: flex;
+        flex-direction: column;
+        > .header { display: flex; align-items: center; flex: none; height: var(--ControlHeightXL); padding: 0 8px; background: var(--FillSelected); }
+        > .header > .CategoryBadge { margin-right: 8px; }
+        > .header > .name { flex: 1; min-width: 0; }
+        > .placeholder { margin: 8px; text-align: center; opacity: 0.5; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Panels/SidePanelHost.axaml */
+    /* A panel of the window. Its bar has the button that picks what the panel shows, and the tools of the choice at the right. */
+    .SidePanelHost {
+        display: flex;
+        flex-direction: column;
+        > .bar { position: relative; display: flex; align-items: center; justify-content: space-between; flex: none; padding: 4px; background: var(--Grey100Brush); }
+        > .bar > .pickerToggle { width: auto; min-width: var(--ControlHeightMD); padding: 0 10px; gap: var(--SpacingSM); }
+        > .bar > .pickerToggle > .Chevron { --ClosedAngle: 0deg; --OpenAngle: 180deg; }
+        > .bar > .pickerToggle.checked > .Chevron { transform: rotate(180deg); }
+        > .bar > .SearchBox { width: var(--TreeSearchWidth); }
+        > .content { flex: 1; min-height: 0; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Panels/MainTabsPanel.axaml */
+    /* The tabs of the app (TabControlMain) and, under them, the master beat. */
+    .MainTabsPanel {
+        display: flex;
+        flex-direction: column;
+        > .TabControlMain { flex: 1; min-height: 0; }
+        > .beat { flex: none; padding: 8px; background: var(--Grey300Brush); border: solid var(--Grey100Brush); border-width: 0 2px; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Controls/Outliner.axaml */
+    .Outliner {
+        display: flex;
+        height: var(--ControlHeightMD);
+        > .ComboBoxWithButton { flex: none; }
+        > .DockPanelPositioned { flex: 1; display: flex; min-width: 0; }
+        > .DockPanelPositioned > .TextBoxEditable { flex: 1; min-width: 0; background: var(--Grey200Brush); border: 0.5px solid var(--Grey300Brush); }
+        > .DockPanelPositioned > .Button { flex: none; width: 22px; --Position: var(--CornerRadiusRight); }
+    }
+
+    /* ---------------------------------------------------------------- Views/Dialogs/MessageDialog.axaml */
+    .MessageDialog {
+        display: flex;
+        flex-direction: column;
+        gap: var(--SpacingMD);
+        min-width: 380px;
+        > .message { display: flex; }
+        > .message > .AppIcon { margin: 8px; opacity: 0.9; }
+        > .message > .text { display: flex; flex-direction: column; justify-content: center; gap: 4px; max-width: 420px; }
+        > .message .TitleText { font-weight: 600; }
+        > .ButtonRow { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--SpacingSM); align-self: flex-end; }
+        > .ButtonRow > .Button { padding: 0 16px; }
+    }
+
+    /* ---------------------------------------------------------------- Views/ShortcutSettingsView.axaml */
+    .ShortcutSettingsView {
+        display: flex;
+        flex-direction: column;
+        gap: var(--SpacingMD);
+        padding: 8px;
+        > .ResetAllButton { align-self: flex-end; width: auto; padding: 0 8px; }
+        > .scope { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+        .ContentCaptioned > .value { display: flex; align-items: center; min-width: 0; }
+        .ContentCaptioned .KeyGestureBox { flex: 1; min-width: 0; }
+        .ConflictMark { flex: none; width: var(--IndicatorSize); height: var(--IndicatorSize); margin-left: 4px; border-radius: 50%; background: var(--WarningMutedBrush); }
+    }
+
+    /* ---------------------------------------------------------------- Views/Managers/PrefabSlotManager.axaml */
+    /* A ListBoxCMiX, and under it: the swap toggle, the SelectionPanel, then move down, move up, duplicate and remove. */
+    .PrefabSlotManager {
+        display: flex;
+        flex-direction: column;
+        > .DockPanelPositioned { display: flex; gap: 1px; margin-top: 4px; }
+        > .DockPanelPositioned > .Button, > .DockPanelPositioned > .ToggleButton { flex: none; width: var(--ControlHeightMD); --Position: var(--CornerRadiusNone); > .AppIcon { opacity: 0.7; } }
+        > .DockPanelPositioned > .SelectionPanel { flex: 1; min-width: 0; height: var(--ControlHeightMD); }
+        > .DockPanelPositioned > :first-child { --Position: var(--CornerRadiusLeft); }
+        > .DockPanelPositioned > :last-child { --Position: var(--CornerRadiusRight); }
+    }
+
+    /* ---------------------------------------------------------------- Themes/Styles/StatusIndicators.axaml, Views/Messenger/SyncStatusIndicator.axaml */
+    /* EllipseSyncConnection: red, green when connected, orange when connected and not in sync, grey while it connects.
+       EllipseSyncState: grey, blue when in sync. */
+    .EllipseSyncConnection, .EllipseSyncState { display: block; flex: none; width: var(--IndicatorSize); height: var(--IndicatorSize); border-radius: 50%; }
+    .EllipseSyncConnection {
+        background: red;
+        &.connected { background: green; }
+        &.connected.unsynced { background: orange; }
+        &.connecting { background: gray; }
+    }
+    .EllipseSyncState { background: gray; &.insync { background: dodgerblue; } }
+    .SyncStatusIndicator { display: flex; align-items: center; gap: var(--SpacingSM); white-space: nowrap; }
+
+    /* ---------------------------------------------------------------- Views/Beat/BeatControls.axaml, MasterBeatControl.axaml */
+    .BeatControls {
+        display: grid;
+        grid-template-columns: 40% 60%;
+        height: var(--ControlHeightMD);
+        > .caption { justify-self: end; align-self: center; margin: 0 8px; }
+        > .DockPanelPositioned { display: flex; gap: 1px; min-width: 0; }
+        .MainBorder { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: var(--Grey500Brush); border-radius: var(--CornerRadiusLeft); overflow: hidden; }
+        .MainBorder::before { content: ""; position: absolute; inset: 0; background: var(--Grey700Brush); opacity: var(--Beat, 0.4); }
+        .MainBorder > span { position: relative; }
+        .Button { flex: none; width: var(--ControlHeightMD); --Position: var(--CornerRadiusNone); }
+        .Button:last-child { --Position: var(--CornerRadiusRight); }
+    }
+    .MasterBeatControl {
+        display: flex;
+        flex-direction: column;
+        > .DragValue { margin-bottom: 8px; }
+        > .row { display: flex; height: var(--ControlHeightMD); padding-left: 40%; }
+        > .row > .DockPanelPositioned { flex: 1; display: flex; gap: 1px; min-width: 0; }
+        > .row > .DockPanelPositioned > * { flex: none; width: var(--ControlHeightMD); --Position: var(--CornerRadiusNone); }
+        > .row > .DockPanelPositioned > :first-child { --Position: var(--CornerRadiusLeft); background: transparent; }
+        > .row > .DockPanelPositioned > :first-child.checked { background: var(--AccentInactiveBrush); }
+        > .row > .DockPanelPositioned > :last-child { --Position: var(--CornerRadiusRight); }
+        > .row > .DockPanelPositioned > .tap { position: relative; flex: 1; width: auto; }
+        > .row > .DockPanelPositioned > .tap::before { content: ""; position: absolute; inset: 0; background: var(--Grey600Brush); opacity: var(--Beat, 0.5); }
+        > .row > .DockPanelPositioned > .tap > .ButtonStraight { position: relative; height: 100%; background: transparent; }
+        > .row > .reset { flex: none; width: var(--ControlHeightMD); margin-left: 4px; }
+    }
+
+    /* ---------------------------------------------------------------- Views/Modulation/ButtonModulatorAssign.axaml */
+    /* The button at the right of a value that a modulator can drive. The dot is grey with no modulator,
+       ModulatorInternal or ModulatorExternal with one, and the Highlight color while the modulator is hovered. */
+    .ButtonModulatorAssign {
+        flex: none;
+        width: var(--ControlHeightMD);
+        height: var(--ControlHeightMD);
+        background: transparent;
+        border-radius: var(--CornerRadiusRight);
+        &::before { content: ""; width: var(--IndicatorSize); height: var(--IndicatorSize); border-radius: 50%; background: var(--ModulatorUnassignedBrush); }
+        &[data-modulator="Internal"]::before { background: var(--ModulatorInternalBrush); }
+        &[data-modulator="Internal"].highlight::before { background: var(--ModulatorInternalHighlightBrush); }
+        &[data-modulator="External"]::before { background: var(--ModulatorExternalBrush); }
+        &[data-modulator="External"].highlight::before { background: var(--ModulatorExternalHighlightBrush); }
+        &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
+    }
+
+    /* The content of a DragValue has LeadingContent at its left and TrailingContent at its right. */
+    .DragValue > .value, .IntegerValue > .value { display: flex; align-items: center; min-width: 0; }
+    .DragValue > .value > .mainBorder, .IntegerValue > .value > .mainBorder { flex: 1; }
+
+    /* ---------------------------------------------------------------- Views/Modulation/*Modulatable.axaml */
+    .SliderModulatable { display: flex; height: var(--ControlHeightMD); > .SliderCMiX { flex: 1; min-width: 0; } }
+    .ToggleButtonModulatable, .ButtonMomentaryModulatable {
+        display: grid;
+        grid-template-columns: 40% 60%;
+        height: var(--ControlHeightMD);
+        > .value { grid-column: 2; display: flex; min-width: 0; }
+    }
+    .FloatRangeEditor { display: grid; grid-template-columns: 40% 60%; height: var(--ControlHeightMD); > .caption { justify-self: end; align-self: center; margin-right: 8px; white-space: nowrap; } }
+
+    /* PanelModulatable: the content, then the ModifierManager that adds a modulator. */
+    .PanelModulatable { display: flex; flex-direction: column; > .PanelItemList { margin-top: 8px; } }
+
+    /* ---------------------------------------------------------------- Views/Component/Composable/ComposableManagerItem.axaml, ComposableManagerToolbar.axaml */
+    .ComposableManagerItem {
+        display: flex;
+        align-items: center;
+        min-height: var(--ControlHeightMD);
+        > .TextBoxEditable { flex: 1; min-width: 0; margin-left: 3px; }
+        > .ComposableToggles { margin: 0 4px; }
+    }
+    .ComposableManagerToolbar {
+        display: flex;
+        > .ButtonRounded { flex: none; width: var(--ControlHeightMD); background: transparent; > .AppIcon { opacity: 0.9; } }
+        > .ButtonRounded:hover { background: var(--StateHoverBrush); }
+        > .ButtonRounded:active { background: var(--StatePressedBrush); }
+        > :last-child { margin-left: auto; }
+    }
+
+    /* ---------------------------------------------------------------- Themes/Styles/ComposableListBox.axaml */
+    .ListBoxComposable { display: flex; flex-direction: column; background: var(--Grey100Brush); }
+    .ListBoxItemComposable {
+        padding-left: 1px;
+        &:hover, &.pointerover { background: var(--RowHoverBrush); }
+        &.selected { background: var(--AccentInactiveBrush); }
+        &.selected:hover, &.selected.pointerover { background: var(--AccentBrush); }
+    }
+
+    /* ---------------------------------------------------------------- Views/Modifiers/ModifierManager.axaml */
+    /* A PanelItemList. Each PanelItem has 4 of space above and below. */
+    .ModifierManager > .PanelItem { margin: 4px 0; }
+
+    /* ---------------------------------------------------------------- Themes/Styles/TypeWriter.axaml */
+    textarea.TextBoxTypeWriter {
+        all: unset;
+        box-sizing: border-box;
+        display: block;
+        width: 100%;
+        padding: 4px 6px;
+        background: var(--ListBoxBackground);
+        border-radius: var(--CornerRadiusAll);
+        color: var(--ForegroundBrush);
+        white-space: pre-wrap;
+        cursor: text;
+        &::selection { background: var(--AccentBrush); }
+    }
+}
+
+.cmix {
+    /* The square of the eye of a group row, and the count squares of a row under the pointer or selected. */
+    .RowToggles > .slot { display: flex; align-items: center; justify-content: center; width: var(--ControlHeightMD); height: var(--ControlHeightMD); }
+    .RowBorder:hover .kindcount, .TreeViewItem.pointerover > .RowGrid .kindcount, .TreeViewItem.selected > .RowGrid .kindcount { background: var(--KindSelected); }
+    .RowBorder .TextBoxEditable { flex: none; }
+    .RowBorder > .header > .KindCountBadges { margin-left: 4px; }
+
+    /* The corners of a PopupButton go to its toggle. */
+    .PopupButton { border-radius: var(--Position, var(--CornerRadiusAll)); > .ToggleButton { border-radius: inherit; } }
+}
