@@ -104,8 +104,9 @@ No visual change. This phase removes the live hazard of finding 1.
 
 | Step | Work | Files | Tests | Cx |
 |---|---|---|---|---|
-| 2.1 | Add `TreeRowAnchor.CenterOf(TreeViewItem, Visual)`. W and Shift+A from a key open at the cursor row. A right-click opens at the pointer and puts the cursor on the clicked row, also on the selected row (left clicks do this since step 1.9). Shift+F10 and the Menu key open the menu of the focused row. | `TreeRows.cs` (or new `TreeRowAnchor.cs`), `AddPanel.cs`, `ProjectTreeView.axaml.cs` | Panel position equals row position; Menu key test | 3 |
+| 2.1 | Add `TreeRowAnchor.CenterOf(TreeViewItem, Visual)`. W and Shift+A from a key open at the cursor row. A right-click opens at the pointer and puts the cursor on the clicked row, also on the selected row (left clicks do this since step 1.9). The Menu key opens the menu of the focused row. No Shift+F10: the owner wants no F keys. | `TreeRows.cs` (or new `TreeRowAnchor.cs`), `AddPanel.cs`, `ProjectTreeView.axaml.cs` | Panel position equals row position; Menu key test | 3 |
 | 2.2 | Give `MenuItemContext` a `:selected` look with the hover fill (D14). | `CMiX.UI` `ContextMenu.axaml` | Measure the fill of a selected menu row | 2 |
+| 2.3 | Rename the commands that no longer act under the pointer: `AddUnderPointerCommand` to `AddAtTargetCommand`, `OpenMenuUnderPointerCommand` to `OpenMenuAtTargetCommand`, `ToggleExpandUnderPointerCommand` to `ToggleExpandTargetCommand`. Follow "How to rename". Found in step 2.1. | `ProjectTree.cs`, `MainWindow.axaml`, tests, docs | Binding tests with the new names | 2 |
 
 ### Phase 3: Shared tokens and the cursor look
 
@@ -163,7 +164,7 @@ Isolate one branch (Shift+F, header badge "Isolated, Esc back"), M "Move to...",
 | Phase | Wave A | Wave B | Wave C | Wave D |
 |---|---|---|---|---|
 | 1 | 1.2, 1.5, 1.6, 1.7 | 1.3, 1.4, 1.8 | 1.9, 1.10 | 1.1 (the rename goes last, so no branch keeps the old names) |
-| 2 | 2.1, 2.2 | | | |
+| 2 | 2.1, 2.2 | 2.3 | | |
 | 3 | 3.1 | 3.3, 3.5, 3.6 | 3.2, 3.4 | 3.7 |
 | 4 | 4.1, 4.2 | 4.3 | | |
 | 5 | 5.1, 5.2, 5.5 | 5.3, 5.4, 5.6 | | |
