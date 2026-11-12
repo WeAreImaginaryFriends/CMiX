@@ -13,6 +13,41 @@ namespace CMiX.Studio.Avalonia.Tests
     // Two views can show the same tree (both side panels). Each view gives its own hooks. A view that goes takes back only its own.
     public class TreeViewHooksTests
     {
+        // The order of the active view: the focus in the rows, then the focus in the panel, then the pointer, then the first view.
+        [Fact]
+        public void IsActiveView_FocusInRowsPanelAndPointer_FollowsTheOrder()
+        {
+            var tree = CreateScene().Tree;
+            var rows = false;
+            var panel = false;
+            var pointer = new TreeViewHooks { IsPointerOverTree = () => true };
+            var focus = new TreeViewHooks { IsTreeFocused = () => rows, IsPanelFocused = () => panel };
+            tree.AttachView(pointer);
+            tree.AttachView(focus);
+
+            Assert.True(tree.IsActiveView(pointer));
+
+            panel = true;
+            Assert.True(tree.IsActiveView(focus));
+
+            panel = false;
+            rows = true;
+            Assert.True(tree.IsActiveView(focus));
+        }
+
+        [Fact]
+        public void IsActiveView_RowsFocusedInOneViewAndPanelFocusedInTheOther_TheRowsWin()
+        {
+            var tree = CreateScene().Tree;
+            var panel = new TreeViewHooks { IsPanelFocused = () => true };
+            var rows = new TreeViewHooks { IsTreeFocused = () => true };
+            tree.AttachView(panel);
+            tree.AttachView(rows);
+
+            Assert.True(tree.IsActiveView(rows));
+            Assert.False(tree.IsActiveView(panel));
+        }
+
         [Fact]
         public void DetachView_OneOfTwoViews_TheOtherViewStillAnswers()
         {

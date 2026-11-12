@@ -18,6 +18,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public Func<bool> IsFocusInOtherPanel { get; init; } = () => false;
 
+        // True when the focused control is in the side panel of the view: the rows, the search box or the bar.
+        public Func<bool> IsPanelFocused { get; init; } = () => false;
+
         public Action ToggleDragRow { get; init; } = () => { };
 
         public Action CancelDrag { get; init; } = () => { };

@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -18,7 +19,8 @@ using Echo = CMiX.Core.Texturing.Filters.Echo;
 namespace CMiX.Studio.Avalonia.Tests
 {
     // Both side panels can show the same tree. One request of the tree has one answer: the active view answers it
-    // (ProjectTree.IsActiveView: the view with the focus, else the view under the pointer, else the first view).
+    // (ProjectTree.IsActiveView: the view with the focus in its rows, else the view with the focus in its side panel, else the view
+    // under the pointer, else the first view).
     public class ProjectTreeActiveViewTests : IDisposable
     {
         private Window? window;
@@ -191,6 +193,55 @@ namespace CMiX.Studio.Avalonia.Tests
             var focused = mainWindow.FocusManager!.GetFocusedElement() as Visual;
             Assert.NotNull(focused);
             Assert.True(hosts[active].GetVisualDescendants().OfType<TreeSearchBox>().Single().IsVisualAncestorOf(focused!));
+        }
+
+        // Both side panels of the main window show the tree. The pointer is over the tree of the first panel, and the search box of
+        // the second panel has the focus.
+        private (Window Window, List<SidePanelHost> Hosts, MainViewModel ViewModel) ShowFocusInSecondSearchBox()
+        {
+            var (_, mainWindow, viewModel) = TestServiceProviderFactory.ShowMainWindow();
+            window = mainWindow;
+            viewModel.Project.CompositionManager.AddItem(typeof(CMiX.Core.Compositing.Composition));
+            viewModel.RightPanel = PanelChoice.Tree;
+            TestServiceProviderFactory.Pump();
+            var hosts = mainWindow.GetVisualDescendants().OfType<SidePanelHost>().ToList();
+            Assert.Equal(2, hosts.Count);
+            var firstView = ViewOf(hosts[0]);
+            mainWindow.MouseMove(firstView.TranslatePoint(new Point(firstView.Bounds.Width / 2, firstView.Bounds.Height / 2), mainWindow)!.Value);
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(firstView.IsPointerOver);
+            BoxOf(hosts[1]).Field.FocusInput();
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(BoxOf(hosts[1]).IsKeyboardFocusWithin);
+            return (mainWindow, hosts, viewModel);
+        }
+
+        private static ProjectTreeView ViewOf(SidePanelHost host) => host.GetVisualDescendants().OfType<ProjectTreeView>().Single();
+
+        private static TreeSearchBox BoxOf(SidePanelHost host) => host.GetVisualDescendants().OfType<TreeSearchBox>().Single();
+
+        [AvaloniaFact]
+        public void FocusTree_FocusInTheSearchBoxOfTheSecondPanel_FocusesTheRowsOfTheSecondPanelOnly()
+        {
+            var (_, hosts, viewModel) = ShowFocusInSecondSearchBox();
+
+            viewModel.ProjectTree.FocusTree();
+            TestServiceProviderFactory.Pump();
+
+            Assert.True(ViewOf(hosts[1]).IsKeyboardFocusWithin);
+            Assert.False(ViewOf(hosts[0]).IsKeyboardFocusWithin);
+        }
+
+        [AvaloniaFact]
+        public void FocusSearch_PointerOverTheFirstTreeAndFocusInTheSecondPanel_FocusesTheSecondSearchBox()
+        {
+            var (_, hosts, viewModel) = ShowFocusInSecondSearchBox();
+
+            viewModel.ProjectTree.FocusSearch();
+            TestServiceProviderFactory.Pump();
+
+            Assert.True(BoxOf(hosts[1]).IsKeyboardFocusWithin);
+            Assert.False(BoxOf(hosts[0]).IsKeyboardFocusWithin);
         }
     }
 }

@@ -179,9 +179,11 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public void DetachView(TreeViewHooks view) => views.Remove(view);
 
-        // The view that does a job for one view only: the view with the focus, else the view under the pointer, else the first view.
+        // The view that does a job for one view only: the view with the focus in its rows, else the view with the focus in its side
+        // panel (its search box, its bar), else the view under the pointer, else the first view.
         private TreeViewHooks? ActiveView() =>
-            views.Find(view => view.IsTreeFocused()) ?? views.Find(view => view.IsPointerOverTree()) ?? (views.Count > 0 ? views[0] : null);
+            views.Find(view => view.IsTreeFocused()) ?? views.Find(view => view.IsPanelFocused())
+            ?? views.Find(view => view.IsPointerOverTree()) ?? (views.Count > 0 ? views[0] : null);
 
         // True when the view of these hooks is the active view (see ActiveView). A view answers a request (RenameRequested,
         // AddRequested, MenuRequested, CollapseOthersRequested, TreeFocusRequested, SearchFocusRequested) only when this is true,

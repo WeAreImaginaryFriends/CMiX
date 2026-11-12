@@ -44,7 +44,8 @@ namespace CMiX.Studio.Avalonia.Views
         }
 
         // The focus waits for the layout, in case the panel shows the tree only now. With two panels that show the tree, only the box of
-        // the panel of the active view answers (see ProjectTreeView.IsActiveView). A box with no tree view in its panel answers.
+        // the panel of the active view answers (see ProjectTreeView.IsActiveView). The focus in this box makes its panel the active
+        // panel, also with the pointer over the other tree. A box with no tree view in its panel answers.
         private void OnSearchFocusRequested(object? sender, EventArgs e)
         {
             if (TreeViewOfPanel() is { IsActiveView: false })
