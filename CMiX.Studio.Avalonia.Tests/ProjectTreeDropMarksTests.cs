@@ -140,7 +140,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.True(layer.IsDropBlocked);
             Assert.True(frame.IsEffectivelyVisible);
-            Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("DropBlockedBrush")!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
+            Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("WarningMutedBrush")!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
             Assert.Equal((Thickness)view.FindResource("TreeSelectionThickness")!, frame.BorderThickness);
             Assert.True(frame.BorderThickness.Top > 0);
             Assert.False(frame.IsHitTestVisible);

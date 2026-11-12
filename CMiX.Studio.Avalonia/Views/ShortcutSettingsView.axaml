@@ -47,7 +47,7 @@
                                                 Height="{DynamicResource IndicatorSize}"
                                                 Margin="4,0,0,0"
                                                 VerticalAlignment="Center"
-                                                Fill="{DynamicResource DropBlockedBrush}"
+                                                Fill="{DynamicResource WarningMutedBrush}"
                                                 IsVisible="{Binding IsConflict}" />
                                         </Grid>
                                     </ui:ContentCaptioned>

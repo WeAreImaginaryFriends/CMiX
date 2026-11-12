@@ -85,7 +85,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var marks = view.GetVisualDescendants().OfType<Ellipse>().Where(e => e.Name == "ConflictMark" && e.IsVisible).ToList();
 
             Assert.Equal(new[] { "Tree.Rename", "Tree.Remove" }, marks.Select(mark => ((ShortcutRow)mark.DataContext!).Name));
-            var expected = ((ISolidColorBrush)Application.Current!.FindResource("DropBlockedBrush")!).Color;
+            var expected = ((ISolidColorBrush)Application.Current!.FindResource("WarningMutedBrush")!).Color;
             Assert.All(marks, mark => Assert.Equal(expected, ((ISolidColorBrush)mark.Fill!).Color));
             Assert.Contains("Remove", ToolTip.GetTip(Box(view, "Tree.Rename").GetVisualAncestors().OfType<CMiX.UI.Controls.Parts.ContentCaptioned>().First()) as string);
         }

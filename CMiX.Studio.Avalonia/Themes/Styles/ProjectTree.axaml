@@ -146,7 +146,7 @@
                             <!-- The frame of a row that refuses the dragged node (the class dropblocked). It is drawn over the row, as the selection frame. -->
                             <Border
                                 Name="BlockedFrame"
-                                BorderBrush="{DynamicResource DropBlockedBrush}"
+                                BorderBrush="{DynamicResource WarningMutedBrush}"
                                 CornerRadius="{DynamicResource CornerRadiusAll}"
                                 IsHitTestVisible="False"
                                 IsVisible="False" />

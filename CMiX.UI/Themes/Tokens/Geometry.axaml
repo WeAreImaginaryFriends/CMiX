@@ -116,4 +116,18 @@
     <!-- The distance that a press moves before a drag starts. -->
     <x:Double x:Key="DragThreshold">4</x:Double>
 
+    <!-- The frame of the cursor row: CursorFrameThickness while the list has the focus, CursorFrameInactiveThickness when it does not. -->
+    <Thickness x:Key="CursorFrameThickness">2</Thickness>
+    <Thickness x:Key="CursorFrameInactiveThickness">1</Thickness>
+
+    <!-- Opacities. A style file holds no opacity as a number. -->
+    <!-- A disabled control. -->
+    <x:Double x:Key="OpacityDisabled">0.5</x:Double>
+    <!-- The item that a drag moves, at its old place. -->
+    <x:Double x:Key="OpacityDragSource">0.4</x:Double>
+    <!-- The copy of the item that follows the pointer during a drag. -->
+    <x:Double x:Key="OpacityDragGhost">0.8</x:Double>
+    <!-- An icon only control that is not under the pointer and not on. -->
+    <x:Double x:Key="OpacityIconIdle">0.6</x:Double>
+
 </ResourceDictionary>

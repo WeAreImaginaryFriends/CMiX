@@ -53,8 +53,12 @@
     <SolidColorBrush x:Key="StatePressedBrush" Color="{DynamicResource Grey100}" />
     <SolidColorBrush x:Key="RowHoverBrush" Color="{DynamicResource Grey500}" />
 
-    <!-- The frame of a tree row that refuses a dragged node. -->
-    <SolidColorBrush x:Key="DropBlockedBrush" Color="{DynamicResource DropBlocked}" />
+    <!-- A muted warning: the frame of a target that refuses a drop, the mark of a conflict. -->
+    <SolidColorBrush x:Key="WarningMutedBrush" Color="{DynamicResource WarningMuted}" />
+
+    <!-- The frame of the cursor row of a list: ActiveText while the list has the focus, Grey800 when it does not. -->
+    <SolidColorBrush x:Key="CursorFrameBrush" Color="{DynamicResource ActiveText}" />
+    <SolidColorBrush x:Key="CursorFrameInactiveBrush" Color="{DynamicResource Grey800}" />
 
     <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource Text}" />
     <SolidColorBrush x:Key="ActiveForegroundBrush" Color="{DynamicResource ActiveText}" />
