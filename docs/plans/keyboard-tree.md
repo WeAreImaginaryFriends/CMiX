@@ -95,6 +95,7 @@ No visual change. This phase removes the live hazard of finding 1.
 | 1.4 | When a row closes over the cursor, move the cursor to that row. | `ProjectTree.cs`, `TreeNode.cs` | `Collapse_CursorUnder_MovesCursorToTheRow` | 2 |
 | 1.5 | Fix the hook overwrite of two tree views (finding 6). | `ProjectTreeView.axaml.cs`, `ProjectTree.cs` | Two views watch, one unwatches, the other still works | 3 |
 | 1.6 | `Conflicts` also checks the Edit and File scopes against every scope. | `ShortcutMap.cs` | `Conflicts_TreeGestureOnUndo_ReportsTheConflict` | 2 |
+| 1.8 | With two tree views, only the active view (`ProjectTree.ActiveView()` rule) handles a request: RenameRequested, AddRequested, MenuRequested, CollapseOthersRequested, TreeFocusRequested. Today every view handles it, so W opens two menus. Found in step 1.5. | `ProjectTree.cs`, `ProjectTreeView.axaml.cs` | Two views, one request, one handler | 3 |
 | 1.7 | The tunnel handler swallows the keys of Avalonia's TreeView that the design does not use (Add, Subtract, Multiply, Divide) and blocks Ctrl+click until multi-select exists. Any key closes the open tooltip; no tooltip opens until the mouse moves. | `ProjectTreeView.axaml.cs`, `TreeTooltips.cs` | Key tests, tooltip test | 2 |
 
 ### Phase 2: Menus at the cursor row
@@ -159,7 +160,7 @@ Isolate one branch (Shift+F, header badge "Isolated, Esc back"), M "Move to...",
 
 | Phase | Wave A | Wave B | Wave C | Wave D |
 |---|---|---|---|---|
-| 1 | 1.2, 1.5, 1.6, 1.7 | 1.3, 1.4 | 1.1 (the rename goes last, so no branch keeps the old names) | |
+| 1 | 1.2, 1.5, 1.6, 1.7 | 1.3, 1.4, 1.8 | 1.1 (the rename goes last, so no branch keeps the old names) | |
 | 2 | 2.1, 2.2 | | | |
 | 3 | 3.1 | 3.3, 3.5, 3.6 | 3.2, 3.4 | 3.7 |
 | 4 | 4.1, 4.2 | 4.3 | | |
