@@ -1,0 +1,26 @@
+﻿<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- A key cap: the text of one key in a small rounded frame, for example in a hint strip. Set it on a ContentControl,
+         with the key text as the content. The text has the look of every shortcut (TextBlock.shortcut). -->
+    <ControlTheme x:Key="TextBlockKeyCap" TargetType="ContentControl">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Name="PART_Cap"
+                    Padding="{DynamicResource KeyCapPadding}"
+                    BorderBrush="{DynamicResource KeyCapBorderBrush}"
+                    BorderThickness="{DynamicResource KeyCapBorderThickness}"
+                    CornerRadius="{DynamicResource CornerRadiusAll}">
+                    <TextBlock
+                        Name="PART_KeyText"
+                        Classes="shortcut"
+                        Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

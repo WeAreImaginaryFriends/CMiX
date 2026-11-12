@@ -12,9 +12,12 @@
                     Padding="0,8,32,8"
                     Background="{TemplateBinding Background}">
                     <Grid VerticalAlignment="Center">
+                        <!-- The icon, the label and the shortcut. The label and the shortcut have the same width in every row of a menu,
+                             so the shortcuts line up. -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MenuHeader" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="MenuGesture" />
                         </Grid.ColumnDefinitions>
                         <ContentControl
                             Name="PART_IconPresenter"
@@ -38,6 +41,14 @@
                                 </DataTemplate>
                             </ContentPresenter.DataTemplates>
                         </ContentPresenter>
+                        <TextBlock
+                            Name="PART_InputGestureText"
+                            Grid.Column="2"
+                            Margin="24,0,0,0"
+                            VerticalAlignment="Center"
+                            Classes="shortcut"
+                            IsVisible="{TemplateBinding InputGesture, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureText}}" />
                         <Popup
                             Name="PART_Popup"
                             HorizontalOffset="-8"

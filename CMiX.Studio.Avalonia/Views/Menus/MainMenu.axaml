@@ -50,13 +50,16 @@
                 Header="Edit"
                 Theme="{DynamicResource MenuItemTop}">
 
+                <!-- The gestures come from the shortcut map of the window (Edit.Undo, Edit.Redo), as the key bindings of the window. -->
                 <MenuItem
                     Command="{Binding UndoCommand}"
-                    Header="Undo    Ctrl + Z" />
+                    Header="Undo"
+                    InputGesture="{Binding $parent[Window].DataContext.Shortcuts[Edit.Undo]}" />
 
                 <MenuItem
                     Command="{Binding RedoCommand}"
-                    Header="Redo    Ctrl + Shift + Z" />
+                    Header="Redo"
+                    InputGesture="{Binding $parent[Window].DataContext.Shortcuts[Edit.Redo]}" />
 
             </MenuItem>
 

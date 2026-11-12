@@ -44,6 +44,7 @@
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/PanelItem.axaml" />
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/Windows/Window.axaml" />
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/Menu/PopupFlyout.axaml" />
+                <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/KeyCap.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

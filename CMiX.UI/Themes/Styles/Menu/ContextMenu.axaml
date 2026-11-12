@@ -53,8 +53,7 @@
                             Grid.Column="2"
                             Margin="24,0,0,0"
                             VerticalAlignment="Center"
-                            FontFamily="{DynamicResource FontFamilyMono}"
-                            Foreground="{DynamicResource Grey700Brush}"
+                            Classes="shortcut"
                             IsVisible="{TemplateBinding InputGesture, Converter={x:Static ObjectConverters.IsNotNull}}"
                             Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureText}}" />
                         <ui:AppIcon

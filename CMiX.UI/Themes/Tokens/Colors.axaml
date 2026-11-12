@@ -59,4 +59,7 @@
     <Color x:Key="Text">#FFE0E0E0</Color>
     <Color x:Key="ActiveText">#FFFFFFFF</Color>
 
+    <!-- The text of a shortcut in a tooltip, a menu and a key cap. It has a contrast of 4.74:1 on PopupCardBackground (WCAG AA). -->
+    <Color x:Key="ShortcutText">#FF85858C</Color>
+
 </ResourceDictionary>

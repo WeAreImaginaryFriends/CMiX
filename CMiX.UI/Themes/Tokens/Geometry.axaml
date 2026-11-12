@@ -130,4 +130,8 @@
     <!-- An icon only control that is not under the pointer and not on. -->
     <x:Double x:Key="OpacityIconIdle">0.6</x:Double>
 
+    <!-- A key cap (TextBlockKeyCap): the line around the key text, and the space between the line and the text. -->
+    <Thickness x:Key="KeyCapBorderThickness">1</Thickness>
+    <Thickness x:Key="KeyCapPadding">4,0</Thickness>
+
 </ResourceDictionary>

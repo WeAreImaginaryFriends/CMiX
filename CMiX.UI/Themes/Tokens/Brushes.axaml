@@ -83,4 +83,8 @@
         </DrawingBrush.Drawing>
     </DrawingBrush>
 
+    <!-- The text of a shortcut (the class shortcut of a TextBlock), and the frame of a key cap (TextBlockKeyCap). -->
+    <SolidColorBrush x:Key="ShortcutTextBrush" Color="{DynamicResource ShortcutText}" />
+    <SolidColorBrush x:Key="KeyCapBorderBrush" Color="{DynamicResource Grey600}" />
+
 </ResourceDictionary>
