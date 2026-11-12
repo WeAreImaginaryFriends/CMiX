@@ -51,6 +51,7 @@
         BorderThickness="0"
         FocusAdorner="{x:Null}"
         ItemsSource="{Binding Roots}"
+        KeyboardNavigation.TabNavigation="Once"
         SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
 
         <TreeView.ItemsPanel>

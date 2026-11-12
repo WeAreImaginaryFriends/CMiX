@@ -39,6 +39,7 @@
                 IsVisible="{Binding Group, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <ToggleButton
                     x:Name="groupHideToggle"
+                    Focusable="False"
                     IsChecked="{Binding Group.Manager.Hidden.Value}"
                     Theme="{DynamicResource ToggleButtonVisibility}" />
             </Border>

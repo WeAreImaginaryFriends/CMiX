@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -162,6 +163,50 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(Part(screen.View, first, "CursorFrame").IsVisible);
             Assert.Equal(ExpectedFill(first, ToneRole.FillSelected), FillOf(screen.View, first));
             Assert.All(ItemOf(screen.View, first).GetVisualDescendants().OfType<Border>(), border => Assert.False(border.Name is "SelectionFrame" or "FocusFrame"));
+        }
+
+        private static bool InTree(IInputElement? element, ProjectTreeView view) => element is Visual visual && view.GetVisualDescendants().OfType<TreeView>().First().GetVisualDescendants().Contains(visual);
+
+        [AvaloniaFact]
+        public void Tab_FromARow_LeavesTheTreeInOneStep()
+        {
+            var screen = Show();
+            Assert.True(InTree(window!.FocusManager!.GetFocusedElement(), screen.View));
+
+            Press(PhysicalKey.Tab);
+
+            Assert.False(InTree(window.FocusManager!.GetFocusedElement(), screen.View));
+        }
+
+        [AvaloniaFact]
+        public void ShiftTab_FromOutsideTheTree_ComesBackToTheTreeInOneStep()
+        {
+            var screen = Show();
+            Press(PhysicalKey.Tab);
+            Assert.False(InTree(window!.FocusManager!.GetFocusedElement(), screen.View));
+
+            Press(PhysicalKey.Tab, RawInputModifiers.Shift);
+
+            Assert.IsType<TreeViewItem>(window.FocusManager!.GetFocusedElement());
+        }
+
+        [AvaloniaFact]
+        public void Click_TheToggleOfTheFocusedRow_TogglesAndKeepsTheFocusOnTheRow()
+        {
+            var screen = Show();
+            var node = screen.Tree.CompositionNodes()[0].Children[0].Children[0];
+            var row = ItemOf(screen.View, node);
+            var toggle = row.GetVisualDescendants().OfType<ToggleButton>().First(button => button.Name == "visibilityToggle" && button.IsEffectivelyVisible);
+            Assert.False(toggle.Focusable);
+            var before = toggle.IsChecked;
+            var point = toggle.TranslatePoint(new Point(toggle.Bounds.Width / 2, toggle.Bounds.Height / 2), window!)!.Value;
+
+            window!.MouseDown(point, MouseButton.Left);
+            window.MouseUp(point, MouseButton.Left);
+            Settle();
+
+            Assert.NotEqual(before, toggle.IsChecked);
+            Assert.Same(row, window.FocusManager!.GetFocusedElement());
         }
     }
 }

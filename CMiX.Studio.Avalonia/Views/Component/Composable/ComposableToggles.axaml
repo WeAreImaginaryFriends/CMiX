@@ -63,6 +63,7 @@
         <Border Classes="slot visibility" Classes.empty="{Binding $parent[Views:ComposableToggles].DataContext, Converter={x:Static ObjectConverters.IsNull}}">
             <ToggleButton
                 x:Name="visibilityToggle"
+                Focusable="False"
                 IsChecked="{Binding PrefabService.Visibility.Value}"
                 IsVisible="{Binding $parent[Views:ComposableToggles].DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
                 Theme="{DynamicResource ToggleButtonVisibility}" />
@@ -76,6 +77,7 @@
                     <DataTemplate DataType="{x:Type Compositing:IComposable}">
                         <ToggleButton
                             x:Name="maskToggle"
+                            Focusable="False"
                             IsChecked="{Binding Mask.IsMask.Value}"
                             Theme="{DynamicResource ToggleButtonMask}"
                             ToolTip.Tip="Mask" />
