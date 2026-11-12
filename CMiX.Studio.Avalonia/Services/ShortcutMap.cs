@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Avalonia.Input;
+using CMiX.UI.Converters;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CMiX.Studio.Avalonia.Services
@@ -28,7 +29,7 @@ namespace CMiX.Studio.Avalonia.Services
         public static string DefaultPath =>
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CMiX", FileName);
 
-        // An empty gesture: the name has no default gesture. A digit key is D1, not 1: KeyGesture.Parse reads "1" as the key value 1.
+        // An empty gesture: the name has no default gesture. A digit key is written D1. The file also accepts "Ctrl+1".
         private readonly (string Name, string Gesture)[] defaults =
         {
             ("Edit.Undo", "Ctrl+Z"),
@@ -170,6 +171,7 @@ namespace CMiX.Studio.Avalonia.Services
             RaiseChanged();
         }
 
+        // The file keeps the D form of a digit key, for example "Ctrl+D1".
         public void Save()
         {
             var settings = new ShortcutFile();
@@ -183,14 +185,14 @@ namespace CMiX.Studio.Avalonia.Services
         {
             foreach (var (entry, gesture) in defaults)
                 if (entry == name)
-                    return gesture.Length == 0 ? null : KeyGesture.Parse(gesture);
+                    return gesture.Length == 0 ? null : KeyGestureTextConverter.Parse(gesture);
 
             return null;
         }
 
         private static bool IsRetiredDefault(string name, string? text) =>
             text != null && TryParse(text, out var gesture) && gesture != null
-            && retiredDefaults.Any(retired => retired.Name == name && KeyGesture.Parse(retired.Gesture).Equals(gesture));
+            && retiredDefaults.Any(retired => retired.Name == name && KeyGestureTextConverter.Parse(retired.Gesture).Equals(gesture));
 
         private static bool TryParse(string? text, out KeyGesture? gesture)
         {
@@ -203,7 +205,7 @@ namespace CMiX.Studio.Avalonia.Services
 
             try
             {
-                gesture = KeyGesture.Parse(text);
+                gesture = KeyGestureTextConverter.Parse(text);
                 return true;
             }
             catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException)

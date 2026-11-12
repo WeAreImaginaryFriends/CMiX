@@ -9,6 +9,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using CMiX.UI.Controls.Parts;
+using CMiX.UI.Converters;
 
 namespace CMiX.UI.Controls.String
 {
@@ -122,12 +123,12 @@ namespace CMiX.UI.Controls.String
 
         private void UpdateText()
         {
-            GestureText.Text = IsFocused ? RecordingText : Gesture?.ToString() ?? NoneText;
+            GestureText.Text = IsFocused ? RecordingText : Gesture is { } gesture ? KeyGestureTextConverter.TextOf(gesture) : NoneText;
         }
 
         bool IValueText.CanCopyValueText() => Gesture != null;
 
-        string IValueText.CopyValueText() => Gesture?.ToString() ?? string.Empty;
+        string IValueText.CopyValueText() => Gesture is { } gesture ? KeyGestureTextConverter.TextOf(gesture) : string.Empty;
 
         bool IValueText.CanPasteValueText(string? text) => TryParse(text, out _);
 
@@ -145,7 +146,7 @@ namespace CMiX.UI.Controls.String
 
             try
             {
-                gesture = KeyGesture.Parse(text.Trim());
+                gesture = KeyGestureTextConverter.Parse(text.Trim());
                 return gesture.Key != Key.None;
             }
             catch (Exception e) when (e is ArgumentException or FormatException)

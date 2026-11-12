@@ -47,6 +47,15 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
+        public void Show_ANumberKey_ShowsTheDigit()
+        {
+            var box = new KeyGestureBox { Gesture = new KeyGesture(Key.D1, KeyModifiers.Control) };
+            Show(box);
+
+            Assert.Equal("Ctrl+1", box.ShownText);
+        }
+
+        [AvaloniaFact]
         public void Show_NoGesture_ShowsNone()
         {
             var box = new KeyGestureBox();

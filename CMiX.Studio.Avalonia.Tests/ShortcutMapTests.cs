@@ -147,6 +147,37 @@ namespace CMiX.Studio.Avalonia.Tests
                 Assert.Equal(map[name], copy[name]);
         }
 
+        // KeyGesture.Parse alone reads "1" as the key value 1 and "3" as Tab.
+        [Fact]
+        public void Load_ADigitKey_GivesTheNumberKey()
+        {
+            WriteFile("{ \"Shortcuts\": { \"Window.FocusPanel1\": \"Ctrl+1\", \"Window.FocusPanel3\": \"Ctrl+3\", \"Window.FocusPanel4\": \"Ctrl+Shift+1\", \"Tree.Focus\": \"Ctrl+D2\" } }");
+            var map = new ShortcutMap(FilePath);
+
+            map.Load();
+
+            Assert.Equal(new KeyGesture(Key.D1, KeyModifiers.Control), map["Window.FocusPanel1"]);
+            Assert.Equal(new KeyGesture(Key.D3, KeyModifiers.Control), map["Window.FocusPanel3"]);
+            Assert.Equal(new KeyGesture(Key.D1, KeyModifiers.Control | KeyModifiers.Shift), map["Window.FocusPanel4"]);
+            Assert.Equal(new KeyGesture(Key.D2, KeyModifiers.Control), map["Tree.Focus"]);
+        }
+
+        [Fact]
+        public void Save_ADigitKey_WritesTheDFormAndLoadsItBack()
+        {
+            WriteFile("{ \"Shortcuts\": { \"Tree.Focus\": \"Ctrl+5\" } }");
+            var map = new ShortcutMap(FilePath);
+            map.Load();
+
+            map.Save();
+
+            using (var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(FilePath)))
+                Assert.Equal("Ctrl+D5", json.RootElement.GetProperty("Shortcuts").GetProperty("Tree.Focus").GetString());
+            var copy = new ShortcutMap(FilePath);
+            copy.Load();
+            Assert.Equal(new KeyGesture(Key.D5, KeyModifiers.Control), copy["Tree.Focus"]);
+        }
+
         [Fact]
         public void Save_AfterSet_WritesTheChange()
         {
