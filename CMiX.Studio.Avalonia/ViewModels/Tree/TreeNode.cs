@@ -264,7 +264,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // A new name can make the row match the search, or stop it.
         partial void OnHeaderChanged(string value) => tree.RefreshSearch();
 
-        // The search does not close again a row that the user opened or closed (see ProjectTree.OnRowExpandedChanged).
+        // The search does not close again a row that the user opened or closed. A row that closes over the cursor takes the cursor
+        // (see ProjectTree.OnRowExpandedChanged).
         partial void OnIsExpandedChanged(bool value) => tree.OnRowExpandedChanged(this);
 
         public bool IsOrIsUnder(TreeNode node)

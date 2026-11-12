@@ -126,6 +126,8 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.NotEmpty(opened);
             var target = EchoOf(scene, 2);
             scene.Tree.SelectedNode = target;
+            // The scene selects the last Echo, so the close above took the cursor to a top row. Put it back on the target.
+            scene.Tree.SoftSelectedNode = target;
 
             scene.Tree.CollapseOthers();
             scene.Tree.SearchText = string.Empty;

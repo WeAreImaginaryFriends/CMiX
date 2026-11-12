@@ -504,10 +504,15 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // A row opens or closes. A change that the search did not make is a change of the user (or of the drag), so the search does
         // not change that row back.
+        // A row that closes over the cursor takes the cursor, so the cursor is never on a hidden row. The cursor goes to the highest
+        // closed parent, the one row of its parents that shows. The selection does not change.
         internal void OnRowExpandedChanged(TreeNode node)
         {
             if (!searchSetsRows)
                 searchOpened.Remove(node);
+
+            if (!node.IsExpanded && softSelectedNode is { } cursor && !ReferenceEquals(cursor, node) && cursor.IsOrIsUnder(node))
+                SoftSelectedNode = ParentsOf(cursor).LastOrDefault(parent => !parent.IsExpanded) ?? node;
         }
 
         // The commands of the toolbar. They act on the target node, and they are disabled when it has nothing to do.
