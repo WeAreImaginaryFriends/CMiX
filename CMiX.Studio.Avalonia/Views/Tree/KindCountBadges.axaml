@@ -6,6 +6,8 @@
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views">
 
     <!-- What a collapsed row holds: a small square for each kind, in the color of the kind, with how many items of that kind.
+         At most TreeNode.MaxShownKindCounts squares show. A grey square "+n" counts the other kinds. After the squares, the text "n hidden"
+         in the disabled look counts the hidden rows under the row, so a hidden row is never out of sight.
          The DataContext is the tree node. The squares are at the full color when the pointer is over the row, as when the row is selected (the pseudo classes hovered and selected, set from IsHovered and IsSelected). -->
     <UserControl.Styles>
         <Style Selector="Border.kindcount">
@@ -19,29 +21,56 @@
         </Style>
     </UserControl.Styles>
 
-    <ItemsControl ItemsSource="{Binding KindCounts}">
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" Spacing="{DynamicResource SpacingXS}" />
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type Tree:KindCount}">
-                <Border
-                    Classes="kindcount"
-                    Height="{DynamicResource ControlHeightXS}"
-                    MinWidth="{DynamicResource ControlHeightXS}"
-                    CornerRadius="{DynamicResource CornerRadiusAll}"
-                    ToolTip.Tip="{Binding Description}">
-                    <TextBlock
-                        Margin="4,0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Foreground="{DynamicResource ActiveForegroundBrush}"
-                        Text="{Binding Count}" />
-                </Border>
-            </DataTemplate>
-        </ItemsControl.ItemTemplate>
-    </ItemsControl>
+    <StackPanel Orientation="Horizontal" Spacing="{DynamicResource SpacingXS}">
+        <ItemsControl ItemsSource="{Binding ShownKindCounts}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="{DynamicResource SpacingXS}" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type Tree:KindCount}">
+                    <Border
+                        Classes="kindcount"
+                        Height="{DynamicResource ControlHeightXS}"
+                        MinWidth="{DynamicResource ControlHeightXS}"
+                        CornerRadius="{DynamicResource CornerRadiusAll}"
+                        ToolTip.Tip="{Binding Description}">
+                        <TextBlock
+                            Margin="4,0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource ActiveForegroundBrush}"
+                            Text="{Binding Count}" />
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Border
+            Name="MoreKinds"
+            Height="{DynamicResource ControlHeightXS}"
+            MinWidth="{DynamicResource ControlHeightXS}"
+            VerticalAlignment="Center"
+            Background="{DynamicResource Grey600Brush}"
+            CornerRadius="{DynamicResource CornerRadiusAll}"
+            IsVisible="{Binding HasMoreKinds}"
+            ToolTip.Tip="{Binding MoreKindsDescription}">
+            <TextBlock
+                Margin="4,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource ActiveForegroundBrush}"
+                Text="{Binding MoreKindsCount, StringFormat='+{0}'}" />
+        </Border>
+
+        <TextBlock
+            Name="HiddenCount"
+            VerticalAlignment="Center"
+            Foreground="{DynamicResource ForegroundBrush}"
+            IsVisible="{Binding HasHiddenRows}"
+            Opacity="{DynamicResource OpacityDisabled}"
+            Text="{Binding HiddenCount, StringFormat='{}{0} hidden'}" />
+    </StackPanel>
 
 </UserControl>

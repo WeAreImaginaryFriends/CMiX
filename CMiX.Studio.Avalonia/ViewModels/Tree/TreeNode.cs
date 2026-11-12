@@ -76,7 +76,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
             // The counts are computed once here, and again only when the children change.
             kindCounts = ComputeKindCounts();
-            Children.CollectionChanged += (_, _) => RaiseKindCountsChanged();
+            hiddenCount = ComputeHiddenCount();
+            Children.CollectionChanged += (_, _) =>
+            {
+                RaiseKindCountsChanged();
+                RecountHidden();
+            };
         }
 
         // The lists that an item holds, as groups (see TreeGroup.GroupsOf). A group row has no item. The inspector shows the panel of the group.
@@ -135,11 +140,24 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         public bool HasKindCounts => kindCounts.Count > 0;
 
+        // A collapsed row shows at most this number of kind squares. One more square shows the number of the other kinds.
+        public const int MaxShownKindCounts = 3;
+
+        public IReadOnlyList<KindCount> ShownKindCounts => kindCounts.Count <= MaxShownKindCounts ? kindCounts : kindCounts.Take(MaxShownKindCounts).ToList();
+
+        // The number of kinds that the row does not show as squares.
+        public int MoreKindsCount => Math.Max(0, kindCounts.Count - MaxShownKindCounts);
+
+        public bool HasMoreKinds => MoreKindsCount > 0;
+
+        // The tooltip of the square of the other kinds: one kind on each line.
+        public string MoreKindsDescription => string.Join(Environment.NewLine, kindCounts.Skip(MaxShownKindCounts).Select(count => count.Description));
+
         // The item that has a mask: a composition or a layer. The other rows have none.
         public IControl? MaskOwner => Item is Composition or Layer ? Item : null;
 
-        // A collapsed row shows what it holds. An open row shows it in the rows under it.
-        public bool ShowsKindCounts => HasKindCounts && !IsExpanded;
+        // A collapsed row shows what it holds, and how many hidden rows it holds. An open row shows it in the rows under it.
+        public bool ShowsKindCounts => (HasKindCounts || HasHiddenRows) && !IsExpanded;
 
         // The rows under a group change what its parent holds, so the parent tells its own change too.
         private void RaiseKindCountsChanged()
@@ -147,6 +165,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             kindCounts = ComputeKindCounts();
             OnPropertyChanged(nameof(KindCounts));
             OnPropertyChanged(nameof(HasKindCounts));
+            OnPropertyChanged(nameof(ShownKindCounts));
+            OnPropertyChanged(nameof(MoreKindsCount));
+            OnPropertyChanged(nameof(HasMoreKinds));
+            OnPropertyChanged(nameof(MoreKindsDescription));
             OnPropertyChanged(nameof(ShowsKindCounts));
             if (Item == null)
                 Parent?.RaiseKindCountsChanged();
@@ -164,6 +186,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // True when the row is the cursor row (ProjectTree.CursorNode). The row theme binds CursorRow.IsCursor to it.
         [ObservableProperty]
         private bool isCursor;
+
+        // True when the row is above the cursor row. Its indent guide is darker then (see TreeIndentGuides).
+        [ObservableProperty]
+        private bool isOnCursorBranch;
+
+        // Sets IsOnCursorBranch on each row above the cursor row.
+        internal static void SetCursorBranch(TreeNode? cursor, bool value)
+        {
+            for (var parent = cursor?.Parent; parent != null; parent = parent.Parent)
+                parent.IsOnCursorBranch = value;
+        }
 
         // The state of the row during a drag of a node (see ProjectTree.BeginDrag). The rows that take the node inside are candidates: they
         // are lit. The rows that the node can go next to are neighbors: they stay as they are, and the bar shows the place. A collapsed row
@@ -390,8 +423,40 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         private void OnHiddenChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "Value")
-                RaiseUnderHiddenParentChanged();
+            if (e.PropertyName != "Value")
+                return;
+
+            OnPropertyChanged(nameof(IsHidden));
+            RaiseUnderHiddenParentChanged();
+            Parent?.RecountHidden();
+        }
+
+        // The number of hidden rows under the row, at all levels. A collapsed row shows it, so a hidden row is never out of sight.
+        public int HiddenCount => hiddenCount;
+
+        public bool HasHiddenRows => hiddenCount > 0;
+
+        private int hiddenCount;
+
+        private int ComputeHiddenCount() => Children.Sum(child => (child.IsHidden ? 1 : 0) + child.HiddenCount);
+
+        // Computes the count again. When it changes, the row above computes its count again too.
+        private void RecountHidden()
+        {
+            var count = ComputeHiddenCount();
+            if (count == hiddenCount)
+                return;
+
+            var had = HasHiddenRows;
+            hiddenCount = count;
+            OnPropertyChanged(nameof(HiddenCount));
+            if (had != HasHiddenRows)
+            {
+                OnPropertyChanged(nameof(HasHiddenRows));
+                OnPropertyChanged(nameof(ShowsKindCounts));
+            }
+
+            Parent?.RecountHidden();
         }
 
         private void RaiseUnderHiddenParentChanged()

@@ -148,6 +148,94 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.True(top > 0);
         }
 
+        private static Border MoreKindsOf(KindCountBadges badges) =>
+            badges.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "MoreKinds");
+
+        private static TextBlock HiddenCountOf(KindCountBadges badges) =>
+            badges.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "HiddenCount");
+
+        private static void Hide(TreeNode node) => ((CMiX.Core.Prefabs.IPrefab)node.Item!).PrefabService.Visibility.Value = true;
+
+        [AvaloniaFact]
+        public void Show_ARowWithFiveKinds_ShowsThreeSquaresAndPlusTwo()
+        {
+            var tree = CreateScene([1], s =>
+            {
+                AddKinds(s.Layer);
+                s.Layer.CameraManager.AddItem(typeof(CMiX.Core.Rendering.Cameras.Camera));
+                s.Layer.LightManager.AddItem(typeof(CMiX.Core.Rendering.Lights.LightEntity));
+            }).Tree;
+            var screen = TreeTestScreen.Show(tree, 500, 600);
+            window = screen.Window;
+            var layer = tree.CompositionNodes()[0].Children[0].Children[0];
+            layer.IsExpanded = false;
+            Settle();
+
+            var badges = BadgesOf(screen.View, layer);
+            var more = MoreKindsOf(badges);
+
+            Assert.Equal(new[] { "2", "1", "3" }, SquaresOf(badges).Select(NumberIn));
+            Assert.True(more.IsEffectivelyVisible);
+            Assert.Equal("+2", NumberIn(more));
+            Assert.Equal("1 Camera" + Environment.NewLine + "1 Light", ToolTip.GetTip(more));
+        }
+
+        [AvaloniaFact]
+        public void Show_ARowWithThreeKinds_ShowsNoPlusSquare()
+        {
+            var (view, _, layer, _) = Show();
+            layer.IsExpanded = false;
+            Settle();
+
+            Assert.False(MoreKindsOf(BadgesOf(view, layer)).IsEffectivelyVisible);
+            Assert.False(HiddenCountOf(BadgesOf(view, layer)).IsEffectivelyVisible);
+        }
+
+        [AvaloniaFact]
+        public void Hide_RowsUnderACollapsedRow_ShowsTheHiddenCountInTheDisabledLook()
+        {
+            var (view, tree, layer, _) = Show();
+            var composition = tree.CompositionNodes()[0];
+            var entities = layer.Children.Single(child => child.Group is EntitiesGroup);
+
+            Hide(entities.Children[0]);
+            Hide(entities.Children[1]);
+            layer.IsExpanded = false;
+            Settle();
+
+            var text = HiddenCountOf(BadgesOf(view, layer));
+            Assert.True(text.IsEffectivelyVisible);
+            Assert.Equal("2 hidden", text.Text);
+            Assert.Equal((double)Application.Current!.FindResource("OpacityDisabled")!, text.Opacity);
+
+            // A row higher up counts every hidden row under it: the layer and its two entities.
+            Hide(layer);
+            composition.IsExpanded = false;
+            Settle();
+            Assert.Equal(3, composition.HiddenCount);
+            Assert.Equal("3 hidden", HiddenCountOf(BadgesOf(view, composition)).Text);
+
+            ((CMiX.Core.Prefabs.IPrefab)layer.Item!).PrefabService.Visibility.Value = false;
+            Settle();
+            Assert.Equal("2 hidden", HiddenCountOf(BadgesOf(view, composition)).Text);
+        }
+
+        [AvaloniaFact]
+        public void Hide_AnEmptyHiddenGroup_ShowsTheCountOnTheCollapsedRow()
+        {
+            var (view, _, _, empty) = Show();
+            var cameras = empty.Children.Single(child => child.Group is CamerasGroup);
+
+            cameras.Group!.Manager.Hidden.Value = true;
+            empty.IsExpanded = false;
+            Settle();
+
+            var badges = BadgesOf(view, empty);
+            Assert.True(badges.IsEffectivelyVisible);
+            Assert.Empty(SquaresOf(badges));
+            Assert.Equal("1 hidden", HiddenCountOf(badges).Text);
+        }
+
         [AvaloniaFact]
         public void Rename_ARow_MovesTheSquares()
         {

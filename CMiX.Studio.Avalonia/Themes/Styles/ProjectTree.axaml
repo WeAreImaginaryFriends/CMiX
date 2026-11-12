@@ -68,6 +68,9 @@
                 <!-- The marks of a drag are drawn over the whole item: the row and the rows under it. -->
                 <Panel>
                 <StackPanel>
+                    <!-- The row and the space under it, with the indent guides over them. -->
+                    <Panel>
+                    <StackPanel>
                     <!-- The chevron is at the left of the colored row, outside it, after the indent of the row. The toggles are inside the colored
                          row, at its right end, as icons with no fill (see RowToggles). Only the chevron expands a row. -->
                     <Grid Name="RowGrid" ColumnDefinitions="Auto,*">
@@ -154,6 +157,16 @@
                          row is one row height plus one space from the next, and the pitch of the rows never changes. The drop line is a
                          part of the item too, and it fills this space. -->
                     <Border Name="GapUnderTheRow" Height="{DynamicResource TreeRowGap}" />
+                    </StackPanel>
+                    <!-- A line in the middle of each indent step, through the row and the space under it, so the lines of the rows join.
+                         The lines take no room and no click (see TreeIndentGuides). -->
+                    <Views:TreeIndentGuides
+                        Name="IndentGuides"
+                        Level="{TemplateBinding Level}"
+                        Indent="{DynamicResource TreeIndent}"
+                        Brush="{DynamicResource IndentGuideBrush}"
+                        ActiveBrush="{DynamicResource IndentGuideActiveBrush}" />
+                    </Panel>
                     <!-- The same animation as the expanders. The panel owns the IsVisible of the presenter. -->
                     <ui:CollapsePanel Name="PART_Collapse" IsExpanded="{TemplateBinding IsExpanded}">
                         <Panel>

@@ -471,6 +471,8 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                     old.IsCursor = false;
                 if (value != null)
                     value.IsCursor = true;
+                TreeNode.SetCursorBranch(old, false);
+                TreeNode.SetCursorBranch(value, true);
 
                 OpenSelectedCommand?.NotifyCanExecuteChanged();
                 OnTargetChanged();
