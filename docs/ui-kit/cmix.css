@@ -1298,6 +1298,11 @@
         > .tree { position: relative; flex: 1; min-height: 0; }
         > .tree > .RowStripes { position: absolute; inset: 0; opacity: 0.6; --Brush: var(--Grey200); background-position: 0 8px; }
         > .tree > .TreeView { position: relative; padding: 8px 8px 8px 8px; }
+        /* Border#GrabFrame: during a grab (Tree.Grab, class grabbing) an AccentBrush frame of CursorFrameThickness goes around the rows. */
+        &.grabbing > .tree::after {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            border: var(--CursorFrameThickness) solid var(--AccentBrush);
+        }
     }
 
     /* ---------------------------------------------------------------- Views/Tree/ProjectTreeToolbar.axaml */

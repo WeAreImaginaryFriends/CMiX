@@ -58,6 +58,7 @@
         <KeyBinding Command="{Binding ProjectTree.RevealSelectedCommand}" Gesture="{Binding Shortcuts[Tree.Reveal]}" />
         <KeyBinding Command="{Binding ProjectTree.ToggleHideTargetCommand}" Gesture="{Binding Shortcuts[Tree.Hide]}" />
         <KeyBinding Command="{Binding ProjectTree.ShowAllCommand}" Gesture="{Binding Shortcuts[Tree.ShowAll]}" />
+        <KeyBinding Command="{Binding ProjectTree.GrabTargetCommand}" Gesture="{Binding Shortcuts[Tree.Grab]}" />
     </Window.KeyBindings>
 
     <DockPanel Background="{DynamicResource Grey100Brush}" LastChildFill="True">

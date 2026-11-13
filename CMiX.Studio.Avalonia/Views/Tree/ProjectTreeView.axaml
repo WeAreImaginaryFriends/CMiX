@@ -23,6 +23,17 @@
         <KeyBinding Command="{Binding OpenSelectedCommand}" Gesture="{Binding Shortcuts[Tree.Open]}" />
     </UserControl.KeyBindings>
 
+    <UserControl.Styles>
+        <!-- The class grabbing is on the view while a grab runs (see ProjectTreeView.OnGrabChanged). The frame is hidden by a style, not by
+             a local value, so the style of the class can show it. -->
+        <Style Selector="Border#GrabFrame">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="Views|ProjectTreeView.grabbing Border#GrabFrame">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+    </UserControl.Styles>
+
     <!-- The toolbar is over the tree. Its Add button opens the Add panel under it. -->
     <DockPanel Background="{DynamicResource TreeBackgroundBrush}">
 
@@ -133,6 +144,14 @@
         </TreeView.DataTemplates>
 
     </TreeView>
+
+    <!-- The frame of a grab (Tree.Grab): an accent frame around the rows while the grab runs, so the mode shows at the edge of the eye.
+         It takes no click. -->
+    <Border
+        x:Name="GrabFrame"
+        BorderBrush="{DynamicResource AccentBrush}"
+        BorderThickness="{DynamicResource CursorFrameThickness}"
+        IsHitTestVisible="False" />
 
     </Grid>
 

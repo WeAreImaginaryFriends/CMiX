@@ -115,7 +115,7 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void ShowGhost(TreeNode node, Point position)
         {
-            var item = treeView.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(row => ReferenceEquals(row.DataContext, node));
+            var item = ItemOf(node);
             if (item != null && TreeRows.RowBorderOf(item) is Border row)
                 ghost.Show(row, node.IconKey, node.Header, treeView, position);
         }
@@ -130,6 +130,7 @@ namespace CMiX.Studio.Avalonia.Views
             Aim(position);
             ShowBlockReason(hoveredItem);
             TrackRest(hoveredItem);
+            ghost.Ghost.IsVisible = true;
             ghost.Move(treeView, position, DropLineTop());
             autoScroller().Track(scroller() is { } view ? treeView.TranslatePoint(position, view)?.Y : null);
         }
@@ -147,6 +148,30 @@ namespace CMiX.Studio.Avalonia.Views
             else
                 marker.Mark(null, null);
         }
+
+        // Marks the place that a key gives (see TreeGrab), not the place under the pointer. The row of the place is the hovered row, so
+        // Tree.Expand opens or closes it. The label hides: the mark shows the place, and the pointer is not where the place is.
+        internal void AimAt(TreeNode target, DropPosition position)
+        {
+            if (source == null)
+                return;
+
+            StopRest();
+            var item = ItemOf(target);
+            hoveredItem = item;
+            hoveredNode = item != null ? target : null;
+            closedByKey = null;
+            if (item != null && CanDrop(target, position))
+                marker.Mark(item, position);
+            else
+                marker.Mark(null, null);
+
+            ShowBlockReason(null);
+            ghost.Ghost.IsVisible = false;
+        }
+
+        private TreeViewItem? ItemOf(TreeNode node) =>
+            treeView.GetVisualDescendants().OfType<TreeViewItem>().FirstOrDefault(row => ReferenceEquals(row.DataContext, node));
 
         // The wheel during the drag: positive steps scroll up (see DragAutoScroller.ScrollByWheel).
         internal void ScrollByWheel(int steps)
@@ -241,6 +266,7 @@ namespace CMiX.Studio.Avalonia.Views
             autoScroller().StopNow();
             marker.Mark(null, null);
             ghost.Hide();
+            ghost.Ghost.IsVisible = true;
             treeView.Cursor = cursorBefore;
             cursorBefore = null;
         }

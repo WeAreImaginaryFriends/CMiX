@@ -48,6 +48,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ["Tree.Reveal"] = "Reveal the selected row",
             ["Tree.Hide"] = "Hide or show",
             ["Tree.ShowAll"] = "Show all rows",
+            ["Tree.Grab"] = "Grab the row",
         };
 
         private readonly ShortcutMap map;

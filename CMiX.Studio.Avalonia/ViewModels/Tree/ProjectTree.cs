@@ -112,9 +112,10 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             RenameSelectedCommand = new RelayCommand(
                 () => { if (TargetNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => TargetNode?.Item != null);
+            // Enter during a drag or a grab places the row (see TreeGrab), so it selects nothing then.
             OpenSelectedCommand = new RelayCommand(
                 () => Select(cursorNode, SelectionOrigin.Keyboard),
-                () => cursorNode != null);
+                () => cursorNode != null && !IsDragging);
             RenameSelectedByKeyCommand = ByKey(RenameSelectedCommand);
             RemoveItemByKeyCommand = ByKey(RemoveItemCommand);
             DuplicateItemByKeyCommand = ByKey(DuplicateItemCommand);
@@ -370,6 +371,17 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             RevealRequested?.Invoke(this, node);
             return true;
         }
+
+        private IRelayCommand? grabTargetCommand;
+
+        // Grabs the target row (Tree.Grab): the row follows the pointer and the arrow keys until a click or Enter puts it down (see
+        // TreeGrab). The command has the condition of every tree key (see CanRunTreeKey). A row that cannot move cannot be grabbed.
+        public IRelayCommand GrabTargetCommand => grabTargetCommand ??= new RelayCommand(
+            () => { if (TargetNode is { } node && CanDrag(node)) GrabRequested?.Invoke(this, node); },
+            () => CanRunTreeKey() && TargetNode is { } node && CanDrag(node));
+
+        // The active view handles this request (see IsActiveView): it starts the grab of the node.
+        public event EventHandler<TreeNode>? GrabRequested;
 
         // The hooks of the views that show the tree. The two side panels can show the same tree.
         private readonly List<TreeViewHooks> views = new();

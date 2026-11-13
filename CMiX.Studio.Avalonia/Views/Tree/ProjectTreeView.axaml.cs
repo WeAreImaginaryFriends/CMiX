@@ -41,6 +41,7 @@ namespace CMiX.Studio.Avalonia.Views
         private readonly TreeScrollAnchor scrollAnchor;
         private readonly TreeDragSession dragSession;
         private readonly TreeRowDrag rowDrag;
+        private readonly TreeGrab grab;
         private readonly TreeTooltips tooltips;
 
         // What this view tells the tree and does for it (see ProjectTree.AttachView).
@@ -70,6 +71,12 @@ namespace CMiX.Studio.Avalonia.Views
         // The drag of a row with a pressed button. A test reads it.
         internal TreeRowDrag RowDrag => rowDrag;
 
+        // The grab of a row with the key (Tree.Grab). A test reads it.
+        internal TreeGrab Grab => grab;
+
+        // The class of the view while a grab runs: the view shows the accent frame (GrabFrame).
+        internal const string GrabbingClass = "grabbing";
+
         public ProjectTreeView()
         {
             InitializeComponent();
@@ -83,6 +90,7 @@ namespace CMiX.Studio.Avalonia.Views
             scrollAnchor = new TreeScrollAnchor(treeView, rowIndex, () => ScrollerOfTree);
             dragSession = new TreeDragSession(treeView, () => DataContext as ProjectTree, marker, () => AutoScroller, scrollAnchor, () => ScrollerOfTree);
             rowDrag = new TreeRowDrag(treeView, dragSession);
+            grab = new TreeGrab(this, treeView, dragSession, () => DataContext as ProjectTree, node => RevealRow(node), OnGrabChanged);
             hooks = new TreeViewHooks
             {
                 IsPointerOverTree = () => IsPointerOver,
@@ -91,7 +99,11 @@ namespace CMiX.Studio.Avalonia.Views
                 IsFocusInOtherPanel = IsFocusInOtherPanel,
                 IsPanelFocused = IsPanelFocused,
                 ToggleDragRow = dragSession.ToggleHovered,
-                CancelDrag = rowDrag.Cancel,
+                CancelDrag = () =>
+                {
+                    rowDrag.Cancel();
+                    grab.Cancel();
+                },
                 CloseRowsInView = OnCloseRowsInView
             };
 
@@ -134,6 +146,9 @@ namespace CMiX.Studio.Avalonia.Views
         {
             get
             {
+                if (grab.IsGrabbing)
+                    return TreeHintMode.Grab;
+
                 if (treeView.ContextMenu?.IsOpen == true || menuAddPanel.IsOpen)
                     return TreeHintMode.Menu;
 
@@ -334,6 +349,21 @@ namespace CMiX.Studio.Avalonia.Views
                 OpenMenu(item, underRow: true);
         }
 
+        // Tree.Grab: the grab of the target row starts at the last place of the pointer over the tree (see TreeGrab). A row that is
+        // not shown (its parent is collapsed) is not grabbed.
+        private void OnGrabRequested(object? sender, TreeNode node)
+        {
+            if (IsActiveView && ShownItemOf(node) != null)
+                grab.Start(node, lastPointer);
+        }
+
+        // The grab starts or ends: the frame of the grab and the hint strip follow it.
+        private void OnGrabChanged()
+        {
+            Classes.Set(GrabbingClass, grab.IsGrabbing);
+            UpdateHints();
+        }
+
         // The item of the row of the node, brought into view, so that a popup can open on it. Null when the row is not shown.
         private TreeViewItem? ShownItemOf(TreeNode node)
         {
@@ -488,6 +518,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.MenuRequested += OnMenuRequested;
             watched.CollapseOthersRequested += OnCollapseOthersRequested;
             watched.RevealRequested += OnRevealRequested;
+            watched.GrabRequested += OnGrabRequested;
             watched.TreeFocusRequested += OnTreeFocusRequested;
             watched.Shortcuts.PropertyChanged += OnShortcutsChanged;
             watched.AttachView(hooks);
@@ -505,6 +536,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.MenuRequested -= OnMenuRequested;
             watched.CollapseOthersRequested -= OnCollapseOthersRequested;
             watched.RevealRequested -= OnRevealRequested;
+            watched.GrabRequested -= OnGrabRequested;
             watched.TreeFocusRequested -= OnTreeFocusRequested;
             watched.Shortcuts.PropertyChanged -= OnShortcutsChanged;
             watched.DetachView(hooks);
@@ -596,6 +628,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             scaledTopLevel = null;
             rowDrag.Cancel();
+            grab.Detach();
             autoScroller?.Dispose();
             autoScroller = null;
 
@@ -631,6 +664,13 @@ namespace CMiX.Studio.Avalonia.Views
         // under that row.
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
         {
+            // A click of the grab asks for no menu: the grab takes it (see TreeGrab).
+            if (grab.TakeMenuBlock())
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (e.TryGetPosition(treeView, out _))
             {
                 if (TreeRows.ItemOf(e.Source)?.DataContext is TreeNode node && DataContext is ProjectTree tree)
