@@ -61,6 +61,7 @@
                                 Margin="0,0,32,8"
                                 Padding="0"
                                 Background="{DynamicResource PopupBackgroundBrush}"
+                                CornerRadius="{DynamicResource CornerRadiusAll}"
                                 BoxShadow="0 0 8 0 #FF000000">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                     <ItemsPresenter
@@ -146,6 +147,7 @@
                                 Margin="0,0,8,8"
                                 Padding="2"
                                 Background="{DynamicResource PopupBackgroundBrush}"
+                                CornerRadius="{DynamicResource CornerRadiusAll}"
                                 BoxShadow="0 0 8 0 #FF000000">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                     <ItemsPresenter

@@ -14,7 +14,7 @@
                     <Panel MinWidth="{TemplateBinding PanelMinWidth}">
                         <Border
                             Background="{DynamicResource PopupBackgroundBrush}"
-                            CornerRadius="{DynamicResource CornerRadiusLargeAll}"
+                            CornerRadius="{DynamicResource CornerRadiusAll}"
                             Padding="0" />
 
                         <Border Padding="8">

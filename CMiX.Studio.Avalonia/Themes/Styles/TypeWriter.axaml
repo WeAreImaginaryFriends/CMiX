@@ -23,7 +23,7 @@
                     Background="{DynamicResource ListBoxBackground}"
                     BorderBrush="{DynamicResource Grey400Brush}"
                     BorderThickness="0.5"
-                    CornerRadius="{DynamicResource CornerRadiusLargeAll}"
+                    CornerRadius="{DynamicResource CornerRadiusAll}"
                     VerticalAlignment="Stretch">
                     <ScrollViewer
                         Name="PART_ScrollViewer"

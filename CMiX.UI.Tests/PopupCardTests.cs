@@ -43,7 +43,7 @@ namespace CMiX.UI.Tests
             var fill = (ISolidColorBrush)Application.Current!.FindResource("PopupBackgroundBrush")!;
             Assert.Equal(fill.Color, ((ISolidColorBrush)box.Background!).Color);
             Assert.Equal(new Thickness(0), box.BorderThickness);
-            Assert.Equal((CornerRadius)Application.Current!.FindResource("CornerRadiusLargeAll")!, box.CornerRadius);
+            Assert.Equal((CornerRadius)Application.Current!.FindResource("CornerRadiusAll")!, box.CornerRadius);
         }
 
         [AvaloniaFact]

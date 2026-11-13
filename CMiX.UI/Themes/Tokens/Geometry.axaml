@@ -4,16 +4,13 @@
 
     <CornerRadius x:Key="CornerRadiusNone">0</CornerRadius>
 
-    <!-- Base radius: 2 -->
+    <!-- The one radius: 2. Every corner that is round has it. -->
     <CornerRadius x:Key="CornerRadiusAll">2</CornerRadius>
     <CornerRadius x:Key="CornerRadiusTop">2,2,0,0</CornerRadius>
     <CornerRadius x:Key="CornerRadiusBottom">0,0,2,2</CornerRadius>
     <CornerRadius x:Key="CornerRadiusLeft">2,0,0,2</CornerRadius>
     <CornerRadius x:Key="CornerRadiusRight">0,2,2,0</CornerRadius>
 
-    <!-- Large radius: 4 -->
-    <CornerRadius x:Key="CornerRadiusLargeAll">4</CornerRadius>
-    <CornerRadius x:Key="CornerRadiusLargeBottom">0,0,4,4</CornerRadius>
 
     <!-- The space around a card, such as ExpanderIndented: SpacingXS at the sides, SpacingXXS above and below. -->
     <Thickness x:Key="MarginCard">2,1</Thickness>

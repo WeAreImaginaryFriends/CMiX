@@ -9,7 +9,7 @@
     d:DesignHeight="600">
 
     <ui:ContentCaptioned Caption="{Binding Caption, ElementName=ipBox}">
-        <Border VerticalAlignment="Stretch" CornerRadius="8" Height="{DynamicResource ControlHeightMD}">
+        <Border VerticalAlignment="Stretch" CornerRadius="{DynamicResource CornerRadiusAll}" Height="{DynamicResource ControlHeightMD}">
         <Grid >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
