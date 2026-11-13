@@ -46,7 +46,7 @@
         <ui:ListItemIcon Icon="Beat" Title="{Binding PrefabService.Name.Value, Mode=TwoWay}" IsChecked="{Binding PrefabService.Visibility.Value, Mode=TwoWay}" />
     </DataTemplate>-->
 
-    <DataTemplate DataType="{x:Type Modulators:TrackingModulator}">
+    <DataTemplate DataType="{x:Type Modulators:TrackingModulatorBase}">
         <ui:ListItemIcon Icon="Camera" Title="{Binding PrefabService.Name.Value, Mode=TwoWay}" IsChecked="{Binding PrefabService.Visibility.Value, Mode=TwoWay}" />
     </DataTemplate>
 

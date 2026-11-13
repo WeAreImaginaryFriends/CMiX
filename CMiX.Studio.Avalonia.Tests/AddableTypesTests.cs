@@ -24,6 +24,12 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
+        public void LabelOf_TheLISAModulator_IsLISA()
+        {
+            Assert.Equal("LISA", AddableTypes.LabelOf(typeof(LISAModulator)));
+        }
+
+        [Fact]
         public void LabelOf_ATextureType_KeepsTheName()
         {
             Assert.Equal("Image", AddableTypes.LabelOf(typeof(Image)));
