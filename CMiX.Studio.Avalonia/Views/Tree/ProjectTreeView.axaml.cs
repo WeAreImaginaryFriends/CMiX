@@ -39,6 +39,7 @@ namespace CMiX.Studio.Avalonia.Views
         private readonly TreeRowIndex rowIndex;
         private readonly TreeDropMarker marker;
         private readonly TreeScrollAnchor scrollAnchor;
+        private readonly TreeDragSession dragSession;
         private readonly TreeRowDrag rowDrag;
         private readonly TreeTooltips tooltips;
 
@@ -63,7 +64,10 @@ namespace CMiX.Studio.Avalonia.Views
         // The mark of the drop. A test reads it.
         internal TreeDropMarker Marker => marker;
 
-        // The drag of a row. A test reads it.
+        // The drag of a row, for every way to start it. A test reads it.
+        internal TreeDragSession DragSession => dragSession;
+
+        // The drag of a row with a pressed button. A test reads it.
         internal TreeRowDrag RowDrag => rowDrag;
 
         public ProjectTreeView()
@@ -77,7 +81,8 @@ namespace CMiX.Studio.Avalonia.Views
             rowIndex = new TreeRowIndex(treeView);
             marker = new TreeDropMarker(rowIndex);
             scrollAnchor = new TreeScrollAnchor(treeView, rowIndex, () => ScrollerOfTree);
-            rowDrag = new TreeRowDrag(treeView, () => DataContext as ProjectTree, marker, () => AutoScroller, scrollAnchor, () => ScrollerOfTree);
+            dragSession = new TreeDragSession(treeView, () => DataContext as ProjectTree, marker, () => AutoScroller, scrollAnchor, () => ScrollerOfTree);
+            rowDrag = new TreeRowDrag(treeView, dragSession);
             hooks = new TreeViewHooks
             {
                 IsPointerOverTree = () => IsPointerOver,
@@ -85,7 +90,7 @@ namespace CMiX.Studio.Avalonia.Views
                 IsTextBoxFocused = () => IsInTextBox(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement()),
                 IsFocusInOtherPanel = IsFocusInOtherPanel,
                 IsPanelFocused = IsPanelFocused,
-                ToggleDragRow = rowDrag.ToggleHovered,
+                ToggleDragRow = dragSession.ToggleHovered,
                 CancelDrag = rowDrag.Cancel,
                 CloseRowsInView = OnCloseRowsInView
             };
@@ -467,7 +472,7 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(ProjectTree.SelectedNode) || rowDrag.IsDropping || watched?.SelectedNode is not { } node
+            if (e.PropertyName != nameof(ProjectTree.SelectedNode) || dragSession.IsDropping || watched?.SelectedNode is not { } node
                 || watched.Origin is not (SelectionOrigin.Program or SelectionOrigin.Peer))
                 return;
 

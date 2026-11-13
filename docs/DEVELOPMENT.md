@@ -440,13 +440,13 @@ A test that opens a menu at the pointer must put the pointer at the left of the 
 
 ### Rows that a drag opens
 
-`TreeRowDrag` opens collapsed rows during a drag, so the user can reach a place deep in the tree.
+`TreeDragSession` opens collapsed rows during a drag, so the user can reach a place deep in the tree.
 
 - `OpensOnRest` tells which rows open: a collapsed row with children and a place for the dragged node under it (`HasDropTargetBelow`). A row that takes the node itself, such as a layer for an entity, counts too, because the places between its children show only when it is open.
 - `TrackRest` runs on each move of the drag. A rest starts when the pointer comes onto such a row, and moves inside that row keep it counting. Another row, or the end of the drag, stops it. A `DispatcherTimer` with `RestDelay` (0.6 s, `DefaultRestDelay`) then calls `OpenRested`. A test can set `RestDelay`, or call `OpenRested` at once, because the headless platform does not fire a `DispatcherTimer`.
 - `OpenedByDrag` lists every row that the drag opened, in order. A new drag starts a new list.
-- `Tree.Expand` (E) during a drag runs `ProjectTree.ToggleExpandTargetCommand`, as outside a drag. While `ProjectTree.IsDragging` is true, the command calls `ProjectTree.ToggleDragRow`, which the view sets to `TreeRowDrag.ToggleHovered`. `ToggleHovered` opens the row under the pointer at once, or closes it when this drag opened it. It does not close a row that was open before the drag. A row that E closed does not open again on a rest until the pointer leaves it.
-- `CloseOpenedRows(kept)` closes the rows of `OpenedByDrag`, except `kept` and its parents. After a drop, `StartDrop` calls it with the drop target, so for a drop Before or After a row, the parents of that row stay open. After a cancel, or a release with no drop, `End` closes every row of the list.
+- `Tree.Expand` (E) during a drag runs `ProjectTree.ToggleExpandTargetCommand`, as outside a drag. While `ProjectTree.IsDragging` is true, the command calls `ProjectTree.ToggleDragRow`, which the view sets to `TreeDragSession.ToggleHovered`. `ToggleHovered` opens the row under the pointer at once, or closes it when this drag opened it. It does not close a row that was open before the drag. A row that E closed does not open again on a rest until the pointer leaves it.
+- `CloseOpenedRows(kept)` closes the rows of `OpenedRows`, except `kept` and its parents. After a drop, `StartDrop` calls it with the target of the slot (`TreeDragSession.Slot`), so for a drop Before or After a row, the parents of that row stay open. After a cancel, or a drop with no slot, `Finish` closes every row of the list.
 - `CollapsePanel` closes a row over a few frames, so the rows above the view get shorter after the close. `TreeScrollAnchor.HoldWhileClosing` puts the anchor row back after each layout of the tree, until the `PART_Collapse` panel of every closed row reaches `Progress` 0, or after 500 layout passes. The drop and the cancel both use it after `RestoreAnchor`.
 
 ### The label of a drag
@@ -456,7 +456,7 @@ A test that opens a menu at the pointer must put the pointer at the left of the 
 - The label is a `Border` with the fill and the corners of the row, a `StackPanel` with an `AppIcon` and a `TextBlock`. It is as wide as its content. It is a little transparent (`GhostOpacity`).
 - `Show` takes the row, the icon key, the name, the reference control and the pointer. `iconMiddle` is the distance from the left edge of the label to the middle of the icon. `Move` puts that middle over the pointer, and the left edge stays inside the overlay layer.
 - The label is above the pointer. The gap is the token `SpacingSM`. When there is no room above, the label goes under the pointer.
-- `TreeRowDrag.Track` moves the label after it marks the drop. It gives `Move` the top of the drop line (`DropLineTop`, from `TreeDropMarker.Line`). When that line is above the pointer, the label goes above the line.
+- `TreeDragSession.Track` moves the label after it marks the drop. It gives `Move` the top of the drop line (`DropLineTop`, from `TreeDropMarker.Line`). When that line is above the pointer, the label goes above the line.
 
 ### The keys of the tree
 
