@@ -43,7 +43,7 @@
         </Style>
 
         <Style Selector="^:checked:pointerover /template/ Border#radioButtonBorder">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
     </ControlTheme>
 

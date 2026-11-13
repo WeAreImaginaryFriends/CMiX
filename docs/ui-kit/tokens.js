@@ -91,6 +91,13 @@ window.CMIX_TOKENS = {
                                           "note":  ""
                                       },
                                       {
+                                          "name":  "AccentHover",
+                                          "type":  "Color",
+                                          "raw":  "#FF4B74B6",
+                                          "css":  "#4B74B6",
+                                          "note":  "The fill of a control that is on, or of a row that is selected, under the pointer. It is between AccentSecondary and AccentPrimary: white text has a contrast of 4.70:1 on it. AccentPrimary is for lines, such as the focus line and the drop line."
+                                      },
+                                      {
                                           "name":  "Active",
                                           "type":  "Color",
                                           "raw":  "#FF5680C2",
@@ -109,20 +116,20 @@ window.CMIX_TOKENS = {
                                           "type":  "Color",
                                           "raw":  "#FF606065",
                                           "css":  "#606065",
-                                          "note":  "The colors of the modulator assign button, one pair for each ModulatorCategory. The name is Modulator + category + (Highlight when the modulator is hovered). A new category needs two colors here and two brushes in Brushes.axaml."
+                                          "note":  "The colors of the modulator assign button, one pair for each ModulatorCategory. The name is Modulator + category + (Highlight when the modulator is hovered). A new category needs two colors here and two brushes in Brushes.axaml. An internal modulator has the color of the modulator rows of the tree (CategoryModulator), not the accent: the accent means on or selected."
                                       },
                                       {
                                           "name":  "ModulatorInternal",
                                           "type":  "Color",
-                                          "raw":  "#FF5680C2",
-                                          "css":  "#5680C2",
+                                          "raw":  "#FF9A8BE4",
+                                          "css":  "#9A8BE4",
                                           "note":  ""
                                       },
                                       {
                                           "name":  "ModulatorInternalHighlight",
                                           "type":  "Color",
-                                          "raw":  "#FF91ACD7",
-                                          "css":  "#91ACD7",
+                                          "raw":  "#FFBDB4ED",
+                                          "css":  "#BDB4ED",
                                           "note":  ""
                                       },
                                       {
@@ -509,6 +516,13 @@ window.CMIX_TOKENS = {
                                           "raw":  "{DynamicResource Grey500}",
                                           "css":  "var(--Grey500)",
                                           "note":  ""
+                                      },
+                                      {
+                                          "name":  "StateOnHoverBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource AccentHover}",
+                                          "css":  "var(--AccentHover)",
+                                          "note":  "A control that is on, or a row that is selected, under the pointer. At rest it has AccentInactiveBrush. The text on the two fills is ActiveForegroundBrush."
                                       },
                                       {
                                           "name":  "WarningMutedBrush",

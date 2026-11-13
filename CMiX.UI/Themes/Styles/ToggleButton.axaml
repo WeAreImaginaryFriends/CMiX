@@ -14,7 +14,7 @@
         </Style>
 
         <Style Selector="^:checked:pointerover /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
 
         <Style Selector="^:unchecked:pointerover /template/ Border#border">
@@ -85,7 +85,7 @@
         </Style>
 
         <Style Selector="^:checked:pointerover /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
 
         <Style Selector="^:checked:pointerover /template/ ui|AppIcon#icon">
@@ -296,7 +296,7 @@
             <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
         </Style>
         <Style Selector="^:checked /template/ Border#box:pointerover">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
         <Style Selector="^:checked /template/ ui|AppIcon#icon">
             <Setter Property="Opacity" Value="1" />
@@ -359,7 +359,7 @@
             <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
         </Style>
         <Style Selector="^:checked /template/ Border#box:pointerover">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
         <Style Selector="^:checked /template/ ui|AppIcon#icon">
             <Setter Property="Opacity" Value="1" />

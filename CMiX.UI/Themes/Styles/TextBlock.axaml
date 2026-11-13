@@ -20,6 +20,17 @@
         <Setter Property="Foreground" Value="{DynamicResource ShortcutTextHoverBrush}" />
     </Style>
 
+    <!-- A text that is the content of a control that is on, or of a row that is selected, lies on the accent: it is ActiveForegroundBrush.
+         These styles are here and not in the themes of the controls: a ControlTheme can not style a child of its control. -->
+    <Style Selector="ToggleButton:checked > TextBlock, RadioButton:checked > TextBlock, ListBoxItem:selected > TextBlock, ComboBoxItem:selected > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ActiveForegroundBrush}" />
+    </Style>
+
+    <!-- The header of an expander is a toggle that is checked while the expander is open. It is not on the accent: its text does not change. -->
+    <Style Selector="ToggleButton#PART_toggle:checked > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    </Style>
+
     <Style Selector="TextBlock:disabled">
         <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
     </Style>

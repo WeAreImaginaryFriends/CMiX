@@ -134,7 +134,7 @@
             <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
         </Style>
         <Style Selector="^:selected:pointerover /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
         <Style Selector="^:pointerover:not(:selected) /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
@@ -144,7 +144,7 @@
             <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
         </Style>
         <Style Selector="^.highlighted:selected /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
     </ControlTheme>
 

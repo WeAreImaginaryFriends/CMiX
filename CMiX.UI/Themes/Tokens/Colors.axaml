@@ -17,16 +17,21 @@
 
     <Color x:Key="AccentPrimary">#FF5680C2</Color>
     <Color x:Key="AccentSecondary">#FF4d6490</Color>
+    <!-- The fill of a control that is on, or of a row that is selected, under the pointer. It is between AccentSecondary and
+         AccentPrimary: white text has a contrast of 4.70:1 on it. AccentPrimary is for lines, such as the focus line and the drop line. -->
+    <Color x:Key="AccentHover">#FF4B74B6</Color>
     <Color x:Key="Active">#FF5680C2</Color>
 
     <Color x:Key="AccentHighlight">#FF91ACD7</Color>
 
     <!-- The colors of the modulator assign button, one pair for each ModulatorCategory.
          The name is Modulator + category + (Highlight when the modulator is hovered).
-         A new category needs two colors here and two brushes in Brushes.axaml. -->
+         A new category needs two colors here and two brushes in Brushes.axaml.
+         An internal modulator has the color of the modulator rows of the tree (CategoryModulator), not the accent: the accent
+         means on or selected. -->
     <Color x:Key="ModulatorUnassigned">#FF606065</Color>
-    <Color x:Key="ModulatorInternal">#FF5680C2</Color>
-    <Color x:Key="ModulatorInternalHighlight">#FF91ACD7</Color>
+    <Color x:Key="ModulatorInternal">#FF9A8BE4</Color>
+    <Color x:Key="ModulatorInternalHighlight">#FFBDB4ED</Color>
     <Color x:Key="ModulatorExternal">#FFC28A56</Color>
     <Color x:Key="ModulatorExternalHighlight">#FFD7B091</Color>
 

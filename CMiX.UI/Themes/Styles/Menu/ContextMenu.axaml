@@ -105,6 +105,9 @@
         <Style Selector="^:checked /template/ Border#root">
             <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
         </Style>
+        <Style Selector="^:checked /template/ ContentPresenter#PART_HeaderPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource ActiveForegroundBrush}" />
+        </Style>
 
         <Style Selector="^:disabled /template/ Border#root">
             <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />

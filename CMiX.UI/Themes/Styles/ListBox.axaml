@@ -166,10 +166,15 @@
             </ControlTemplate>
         </Setter>
         <Style Selector="^:selected:pointerover /template/ Border#Bd">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
         <Style Selector="^:selected:not(:pointerover) /template/ Border#Bd">
             <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
+        </Style>
+        <!-- The text of a selected row is ActiveForegroundBrush: it lies on the accent. This style is for a row whose content takes the
+             color of the row. A text that is the content of the row has its style in TextBlock.axaml. -->
+        <Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource ActiveForegroundBrush}" />
         </Style>
         <Style Selector="^:pointerover:not(:selected) /template/ Border#Bd">
             <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />

@@ -57,6 +57,9 @@
     <SolidColorBrush x:Key="StateHoverBrush" Color="{DynamicResource Grey700}" />
     <SolidColorBrush x:Key="StatePressedBrush" Color="{DynamicResource Grey500}" />
     <SolidColorBrush x:Key="RowHoverBrush" Color="{DynamicResource Grey500}" />
+    <!-- A control that is on, or a row that is selected, under the pointer. At rest it has AccentInactiveBrush. The text on the two
+         fills is ActiveForegroundBrush. -->
+    <SolidColorBrush x:Key="StateOnHoverBrush" Color="{DynamicResource AccentHover}" />
 
     <!-- A muted warning: the frame of a target that refuses a drop, the mark of a conflict. -->
     <SolidColorBrush x:Key="WarningMutedBrush" Color="{DynamicResource WarningMuted}" />

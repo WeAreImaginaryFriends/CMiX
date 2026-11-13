@@ -168,7 +168,7 @@
     .ToggleButtonInlineLeft, .ToggleButtonInlineCenter, .ToggleButtonInlineRight {
         &:active, &.pressed { background: var(--StateHoverBrush); }
         &.checked { background: var(--AccentInactiveBrush); }
-        &.checked:hover, &.checked.pointerover { background: var(--AccentBrush); }
+        &.checked:hover, &.checked.pointerover { background: var(--StateOnHoverBrush); }
     }
 
     .ToggleButtonCheck {
@@ -183,7 +183,7 @@
         > .AppIcon { opacity: 0; }
         &:hover, &.pointerover { background: var(--StateHoverBrush); }
         &.checked { background: var(--AccentInactiveBrush); > .AppIcon { opacity: 1; } }
-        &.checked:hover, &.checked.pointerover { background: var(--AccentBrush); }
+        &.checked:hover, &.checked.pointerover { background: var(--StateOnHoverBrush); }
         &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
     }
 
@@ -240,7 +240,7 @@
     .ToggleButtonBox {
         &:hover, &.pointerover { background: var(--StateHoverBrush); }
         &.checked { background: var(--AccentInactiveBrush); .AppIcon { opacity: 1; } }
-        &.checked:hover, &.checked.pointerover { background: var(--AccentBrush); }
+        &.checked:hover, &.checked.pointerover { background: var(--StateOnHoverBrush); }
         &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
     }
     .ToggleButtonCaptioned {
@@ -251,7 +251,7 @@
         > .caption { padding: 0 4px; }
         > .box:hover, &.pointerover > .box { background: var(--StateHoverBrush); }
         &.checked > .box { background: var(--AccentInactiveBrush); .AppIcon { opacity: 1; } }
-        &.checked > .box:hover, &.checked.pointerover > .box { background: var(--AccentBrush); }
+        &.checked > .box:hover, &.checked.pointerover > .box { background: var(--StateOnHoverBrush); }
         &:disabled, &.disabled { pointer-events: none; > .box { opacity: var(--OpacityDisabled); } }
     }
 
@@ -262,7 +262,7 @@
         border-radius: var(--Position, var(--CornerRadiusAll));
         &:hover, &.pointerover { background: var(--StateHoverBrush); }
         &.checked { background: var(--AccentInactiveBrush); }
-        &.checked:hover, &.checked.pointerover { background: var(--AccentBrush); }
+        &.checked:hover, &.checked.pointerover { background: var(--StateOnHoverBrush); }
         &:disabled, &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
     }
 }
@@ -485,7 +485,7 @@
         white-space: nowrap;
         &:hover, &.pointerover, &.highlighted { background: var(--RowHoverBrush); }
         &.selected { background: var(--AccentInactiveBrush); }
-        &.selected:hover, &.selected.pointerover, &.selected.highlighted { background: var(--AccentBrush); }
+        &.selected:hover, &.selected.pointerover, &.selected.highlighted { background: var(--StateOnHoverBrush); }
     }
 
     /* ---------------------------------------------------------------- Enum/ComboBoxCaptioned.axaml */
@@ -798,7 +798,7 @@
         > * { flex: 1; min-width: 0; }
         &:hover, &.pointerover { background: var(--RowHoverBrush); }
         &.selected { background: var(--AccentInactiveBrush); }
-        &.selected:hover, &.selected.pointerover { background: var(--AccentBrush); }
+        &.selected:hover, &.selected.pointerover { background: var(--StateOnHoverBrush); }
         &.cursor::after {
             content: "";
             position: absolute;
@@ -1522,7 +1522,7 @@
         padding-left: 1px;
         &:hover, &.pointerover { background: var(--RowHoverBrush); }
         &.selected { background: var(--AccentInactiveBrush); }
-        &.selected:hover, &.selected.pointerover { background: var(--AccentBrush); }
+        &.selected:hover, &.selected.pointerover { background: var(--StateOnHoverBrush); }
     }
 
     /* ---------------------------------------------------------------- Views/Modifiers/ModifierManager.axaml */
@@ -1554,4 +1554,18 @@
 
     /* The corners of a PopupButton go to its toggle. */
     .PopupButton { border-radius: var(--Position, var(--CornerRadiusAll)); > .ToggleButton { border-radius: inherit; } }
+}
+
+.cmix {
+    /* ---------------------------------------------------------------- TextBlock.axaml, ListBox.axaml, ContextMenu.axaml: the text on the accent */
+    /* The text of a control that is on, or of a row that is selected, is ActiveForegroundBrush.
+       The fill is AccentInactiveBrush at rest and StateOnHoverBrush under the pointer. */
+    .ToggleButton.checked, .ToggleButtonRounded.checked, .ToggleButtonRoundedLeft.checked,
+    .ToggleButtonInlineLeft.checked, .ToggleButtonInlineCenter.checked, .ToggleButtonInlineRight.checked,
+    .RadioButton.checked,
+    .ListBoxItem.selected, .ListBoxItemCMiX.selected, .ListBoxItemBasic.selected,
+    .ComboBoxItem.selected, .ComboBoxItemCMiX.selected,
+    .MenuItemContext.checked > .head {
+        color: var(--ActiveForegroundBrush);
+    }
 }

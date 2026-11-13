@@ -66,7 +66,7 @@ namespace CMiX.Studio.Avalonia.Tests
             row.IsSelected = true;
             Pointer(row, true);
 
-            Assert.Equal(Brush("AccentBrush"), Background(row));
+            Assert.Equal(Brush("StateOnHoverBrush"), Background(row));
         }
     }
 }

@@ -13,11 +13,12 @@
     --TreeBackground: #111113;
     --AccentPrimary: #5680C2;
     --AccentSecondary: #4D6490;
+    --AccentHover: #4B74B6;
     --Active: #5680C2;
     --AccentHighlight: #91ACD7;
     --ModulatorUnassigned: #606065;
-    --ModulatorInternal: #5680C2;
-    --ModulatorInternalHighlight: #91ACD7;
+    --ModulatorInternal: #9A8BE4;
+    --ModulatorInternalHighlight: #BDB4ED;
     --ModulatorExternal: #C28A56;
     --ModulatorExternalHighlight: #D7B091;
     --CategoryComposable: #DC74D7;
@@ -73,6 +74,7 @@
     --StateHoverBrush: var(--Grey700);
     --StatePressedBrush: var(--Grey500);
     --RowHoverBrush: var(--Grey500);
+    --StateOnHoverBrush: var(--AccentHover);
     --WarningMutedBrush: var(--WarningMuted);
     --CursorFrameBrush: var(--ActiveText);
     --CursorFrameInactiveBrush: var(--Grey800);
