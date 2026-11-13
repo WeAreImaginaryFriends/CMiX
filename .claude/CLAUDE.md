@@ -134,6 +134,10 @@ The compiler does not check these names. Ask the owner before you change one.
 - An entry has a fixed number. Never change a number and never use a number again.
   A new entry gets the next free number of its category. A removed entry keeps its number
   with the mark `removed`.
+- A change of the look that needs a decision of the owner is a proposal in the sandbox: one object in `sandbox.js` and one block
+  in `sandbox.css` under the class `sb-` and its number. It shows Before and After, and changes nothing in CMiX or in `cmix.css`.
+  One proposal is one decision. The number of a proposal (`S1`) is for the discussion only. After the decision, remove the
+  proposal. A yes goes into CMiX first, then into `cmix.css`.
 - A design mockup is a file in `docs/ui-kit/mockups/`. It links the kit and does not copy it.
 - When you cannot update the UI kit in the step, tell the owner which entries are out of date.
 

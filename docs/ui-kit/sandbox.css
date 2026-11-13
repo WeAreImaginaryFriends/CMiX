@@ -1,0 +1,15 @@
+/* The After look of the proposals of sandbox.js. One block for each proposal, under the class "sb-" + its number.
+   Nothing here applies outside the sandbox. When the owner decides, remove the block of the proposal.
+   When the answer is yes, the change goes into CMiX first, and then into cmix.css as a copy. */
+
+/* ---------------------------------------------------------------- S1: text on a control that is on or selected */
+.cmix .sb-S1 {
+    /* The fill of "on + hover": between AccentSecondary and AccentPrimary. White text has 4.70 : 1 on it. */
+    --AccentBrush: #4B74B6;
+}
+.cmix .sb-S1 .ToggleButton.checked,
+.cmix .sb-S1 .RadioButton.checked,
+.cmix .sb-S1 .ListBoxItemCMiX.selected,
+.cmix .sb-S1 .ComboBoxItem.selected {
+    color: var(--ActiveForegroundBrush);
+}

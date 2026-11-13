@@ -399,6 +399,75 @@
 
     /* ------------------------------------------------------------------ build */
 
+    /* The sandbox: the proposals of sandbox.js that wait for a decision. It is the first row, and it is not there when no proposal waits. */
+    var proposals = window.CMIX_SANDBOX || [];
+    if (proposals.length) {
+        var sandboxLabel = 'Sandbox';
+        nav.appendChild(el('div', 'g-part g-part-sandbox', 'Sandbox: waiting for your decision'));
+        var sandboxRow = row('Sandbox', 'proposals that wait for your decision. Nothing here is in CMiX. A proposal goes away when you decide.');
+        sandboxRow.classList.add('g-sandboxrow');
+        proposals.forEach(function (p) {
+            var b = el('section', 'g-board g-proposal');
+            b.id = p.id;
+            var l = el('h2', 'g-boardlabel');
+            l.appendChild(el('span', 'g-id', p.id));
+            l.appendChild(el('span', 'g-boardname', p.title));
+            l.addEventListener('click', function () { go(p.id, true, true); });
+            b.appendChild(l);
+
+            var head = el('div', 'g-proposalhead');
+            head.appendChild(el('span', 'g-tag g-tag-wait', 'Waiting for your decision'));
+            head.appendChild(el('h3', 'g-question', p.question));
+            head.appendChild(el('p', 'g-why', p.why));
+            b.appendChild(head);
+
+            var sides = el('div', 'g-sides');
+            [['Before', 'as it is in CMiX now', p.before, ''], ['After', 'the proposal', p.after, 'sb-' + p.id]].forEach(function (side) {
+                var column = el('div', 'g-side' + (side[3] ? ' g-side-after' : ''));
+                var title = el('div', 'g-sidetitle', side[0]);
+                title.appendChild(el('small', '', side[1]));
+                column.appendChild(title);
+                var body = el('div', 'g-demo cmix');
+                body.setAttribute('data-canvas-live', '');
+                var holder = el('div', side[3]);
+                holder.innerHTML = p.sample;
+                body.appendChild(holder);
+                column.appendChild(body);
+                column.appendChild(el('p', 'g-sidenote', side[2]));
+                sides.appendChild(column);
+            });
+            b.appendChild(sides);
+
+            if (p.facts && p.facts.length) {
+                var facts = el('table', 'g-facts');
+                var top = el('tr');
+                ['', 'Before', 'After'].forEach(function (h) { top.appendChild(el('th', 'g-statehead', h)); });
+                facts.appendChild(top);
+                p.facts.forEach(function (f) {
+                    var tr = el('tr');
+                    f.forEach(function (cell, i) { tr.appendChild(el('td', i ? 'g-fact' : '', cell)); });
+                    facts.appendChild(tr);
+                });
+                b.appendChild(facts);
+            }
+            var effect = el('p', 'g-effect');
+            effect.appendChild(el('b', '', 'If you say yes: '));
+            effect.appendChild(document.createTextNode(p.effect));
+            b.appendChild(effect);
+            var answer = el('p', 'g-answer');
+            answer.appendChild(document.createTextNode('To decide, write '));
+            answer.appendChild(el('code', '', p.id + ' yes'));
+            answer.appendChild(document.createTextNode(' or '));
+            answer.appendChild(el('code', '', p.id + ' no'));
+            answer.appendChild(document.createTextNode(', or say what to change.'));
+            b.appendChild(answer);
+
+            sandboxRow.appendChild(b);
+            register(p.id, b, { kind: 'board', zoom: 1, path: [sandboxLabel, p.id + ' ' + p.title], board: p.id, search: p.id + ' ' + p.title + ' sandbox proposal' });
+            navLink(p.id, p.title, '', '', false);
+        });
+    }
+
     var tokenRow = null;
     catalogue.forEach(function (part) {
         var partLabel = 'Part ' + part.part + ' · ' + part.title;

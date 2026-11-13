@@ -275,3 +275,30 @@ body {
     .g-nav { display: none; }
     .g-topbar, .g-canvas { left: 0; }
 }
+
+/* ------------------------------------------------------------------ the sandbox: proposals that wait for a decision */
+.g-part-sandbox { color: var(--c-ink); }
+.g-board.g-proposal { width: 1000px; min-width: 0; padding: 28px 32px; border-style: dashed; border-color: var(--c-mute); }
+.g-proposalhead { margin-bottom: 20px; }
+.g-tag-wait { display: inline-block; border-color: var(--c-ink); color: var(--c-ink); }
+.g-question { margin: 10px 0 8px; font: 600 20px/28px var(--c-sans); color: var(--c-ink); }
+.g-why { margin: 0; max-width: 760px; font: 400 14px/22px var(--c-sans); color: var(--c-text); }
+.g-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.g-side { min-width: 0; border: 1px solid var(--c-line); border-radius: 6px; }
+.g-side-after { border-color: var(--c-ink); }
+.g-sidetitle { padding: 8px 16px; background: var(--c-head); border-radius: 5px 5px 0 0; font: 700 13px/20px var(--c-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink); }
+.g-sidetitle small { margin-left: 10px; font: 400 12px/20px var(--c-sans); letter-spacing: 0; text-transform: none; color: var(--c-mute); }
+.g-side > .g-demo.cmix { border-radius: 0; padding: 20px 16px; }
+.g-sidenote { margin: 0; padding: 10px 16px; font: 400 12px/18px var(--c-mono); color: var(--c-text); }
+.g-facts { margin-top: 20px; border-collapse: collapse; }
+.g-facts th { padding: 0 32px 6px 0; }
+.g-facts td { padding: 6px 32px 6px 0; border-top: 1px solid var(--c-head); font: 400 13px/20px var(--c-sans); color: var(--c-text); }
+.g-facts td.g-fact { font: 600 13px/20px var(--c-mono); color: var(--c-ink); }
+.g-effect, .g-answer { margin: 16px 0 0; max-width: 760px; font: 400 14px/22px var(--c-sans); color: var(--c-text); }
+.g-effect b { color: var(--c-ink); }
+.g-answer code { padding: 1px 6px; border-radius: 3px; background: var(--c-head); font: 600 12.5px/18px var(--c-mono); color: var(--c-ink); }
+
+/* The grid of a sample of a proposal: a line for each control, a column for each state. */
+.sb-grid { display: grid; grid-template-columns: 130px repeat(2, 128px); gap: 6px 12px; align-items: center; }
+.sb-col { font: 700 11px/16px var(--c-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-mute); }
+.sb-rowname { font: 400 12px/16px var(--c-mono); color: var(--c-text); }
