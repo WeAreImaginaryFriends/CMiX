@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Views="clr-namespace:CMiX.Studio.Avalonia.Views"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     d:DesignWidth="400"
     d:DesignHeight="600">
@@ -11,7 +12,7 @@
 
         <Views:SyncSettings />
 
-        <Expander Header="Peers">
+        <ui:ExpanderIndented Header="Peers">
             <StackPanel>
                 <Grid Margin="8,8,8,0">
                     <Grid.ColumnDefinitions>
@@ -93,9 +94,9 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
-        </Expander>
+        </ui:ExpanderIndented>
 
-        <Expander Header="Statistics">
+        <ui:ExpanderIndented Header="Statistics">
             <StackPanel Margin="8">
                 <Grid
                     Height="{DynamicResource ControlHeightMD}"
@@ -203,7 +204,7 @@
                 </Grid>
             </StackPanel>
 
-        </Expander>
+        </ui:ExpanderIndented>
 
     </StackPanel>
 
