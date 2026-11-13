@@ -61,6 +61,9 @@ namespace CMiX.Studio.Avalonia.Tests
             var view = mainWindow.GetVisualDescendants().OfType<ProjectTreeView>().Single();
             this.view = view;
             var screen = new Screen(provider, mainWindow, viewModel, view);
+            // The rows open and close with no animation, so no row moves while a test reads its place.
+            foreach (var panel in view.GetVisualDescendants().OfType<CMiX.UI.Panels.CollapsePanel>())
+                panel.Duration = TimeSpan.Zero;
             // The layer rows are closed, so the place under a layer row is the place after that layer.
             for (var i = 0; i < 3; i++)
                 screen.LayerNode(i).IsExpanded = false;
