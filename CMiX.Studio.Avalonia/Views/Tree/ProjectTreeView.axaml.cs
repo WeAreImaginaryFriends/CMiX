@@ -141,7 +141,8 @@ namespace CMiX.Studio.Avalonia.Views
         // The mode that the hint strip shows. Null before the first hints.
         private TreeHintMode? shownHintMode;
 
-        // The mode of the tree now: a menu or the Add panel of this view is open, else the focus is in the search field of the panel.
+        // The mode of the tree now: a menu or the Add panel of this view is open, else the focus is in the search field of the panel, else
+        // a search filters the rows while the focus is in this view.
         internal TreeHintMode HintMode
         {
             get
@@ -152,7 +153,10 @@ namespace CMiX.Studio.Avalonia.Views
                 if (treeView.ContextMenu?.IsOpen == true || menuAddPanel.IsOpen)
                     return TreeHintMode.Menu;
 
-                return IsSearchFocused() ? TreeHintMode.Search : TreeHintMode.Idle;
+                if (IsSearchFocused())
+                    return TreeHintMode.Search;
+
+                return watched?.IsSearchActive == true && IsKeyboardFocusWithin ? TreeHintMode.Filter : TreeHintMode.Idle;
             }
         }
 
@@ -247,7 +251,8 @@ namespace CMiX.Studio.Avalonia.Views
                 e.Handled = true;
         }
 
-        // Escape ends a drag of a row without a drop.
+        // Escape ends a drag of a row without a drop. Else, while a search is active, Escape clears it (see ProjectTree.ClearSearch): the
+        // focus and the cursor row stay. A grab, a menu and a name box take their Escape first. With no search, Escape does nothing here.
         // Avalonia runs the key bindings of the view (the gestures of the map) before this handler. The navigation keys move the cursor
         // only (see ProjectTree.CursorNode). The tree view does not see them, so they select nothing. A navigation key
         // with a modifier does nothing. A key in a name box stays in the name box. The keys of IsTreeViewKey do nothing.
@@ -262,6 +267,13 @@ namespace CMiX.Studio.Avalonia.Views
 
             if (watched is not { } tree || IsInTextBox(e.Source))
                 return;
+
+            if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None && tree.IsSearchActive && !tree.IsDragging)
+            {
+                tree.ClearSearch();
+                e.Handled = true;
+                return;
+            }
 
             // The tree view opens and closes rows on these keys by itself. The design does not use them.
             if (IsTreeViewKey(e.Key))
@@ -557,6 +569,9 @@ namespace CMiX.Studio.Avalonia.Views
 
         private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == nameof(ProjectTree.IsSearchActive))
+                UpdateHints();
+
             if (e.PropertyName != nameof(ProjectTree.SelectedNode) || dragSession.IsDropping || watched?.SelectedNode is not { } node
                 || watched.Origin is not (SelectionOrigin.Program or SelectionOrigin.Peer))
                 return;

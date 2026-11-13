@@ -31,7 +31,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.Equal(
                 new[] { "Edit.Undo", "Edit.Redo", "Edit.RedoAlt", "File.Open", "Window.NextPanel", "Window.PreviousPanel", "Window.FocusPanel1",
-                    "Window.FocusPanel2", "Window.FocusPanel3", "Window.FocusPanel4", "Tree.Focus", "Tree.Add", "Tree.Menu", "Tree.Expand", "Tree.CollapseOthers", "Tree.ExpandBranch", "Tree.CloseLevel", "Tree.OpenLevel", "Tree.CollapseAll", "Tree.Search", "Tree.Rename", "Tree.Remove", "Tree.Duplicate", "Tree.MoveUp", "Tree.MoveDown", "Tree.Open", "Tree.Reveal", "Tree.Hide", "Tree.ShowAll", "Tree.Grab" },
+                    "Window.FocusPanel2", "Window.FocusPanel3", "Window.FocusPanel4", "Tree.Focus", "Tree.Add", "Tree.Menu", "Tree.Expand", "Tree.CollapseOthers", "Tree.ExpandBranch", "Tree.CloseLevel", "Tree.OpenLevel", "Tree.CollapseAll", "Tree.Search", "Tree.ClearSearch", "Tree.Rename", "Tree.Remove", "Tree.Duplicate", "Tree.MoveUp", "Tree.MoveDown", "Tree.Open", "Tree.Reveal", "Tree.Hide", "Tree.ShowAll", "Tree.Grab" },
                 map.Names);
             // Tree.Focus has no default: Ctrl+1 to Ctrl+4 go to the panels.
             foreach (var name in map.Names.Where(name => name != "Tree.Focus"))
@@ -54,6 +54,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(new KeyGesture(Key.Q, KeyModifiers.Shift), map["Tree.OpenLevel"]);
             Assert.Equal(new KeyGesture(Key.E, KeyModifiers.Shift | KeyModifiers.Alt), map["Tree.CollapseAll"]);
             Assert.Equal(new KeyGesture(Key.F, KeyModifiers.Control), map["Tree.Search"]);
+            Assert.Equal(new KeyGesture(Key.F, KeyModifiers.Alt), map["Tree.ClearSearch"]);
             Assert.Equal(new KeyGesture(Key.D, KeyModifiers.Shift), map["Tree.Duplicate"]);
             Assert.Equal(new KeyGesture(Key.H), map["Tree.Hide"]);
             Assert.Equal(new KeyGesture(Key.H, KeyModifiers.Alt), map["Tree.ShowAll"]);

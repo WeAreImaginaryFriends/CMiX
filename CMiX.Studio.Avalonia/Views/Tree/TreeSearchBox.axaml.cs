@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
@@ -17,15 +18,33 @@ namespace CMiX.Studio.Avalonia.Views
     // Escape clears the text, and Escape in an empty field gives the focus back to the rows. Enter moves the cursor of the tree to the
     // next match, and Shift+Enter to the match before. The selection does not change, and the field keeps the focus. Down gives the focus
     // to the cursor row. During a drag, Escape ends the drag without a drop, as it does in the tree, and the other keys do nothing.
-    // The clear button of the field empties the text, as Escape does, and the field keeps the focus.
+    // The clear button of the field empties the text, as Escape does, and the field keeps the focus. The text stays when the focus goes
+    // out of the field: the rows stay dimmed until the text is cleared, by Escape in the tree or by Tree.ClearSearch (Alt+F).
     public partial class TreeSearchBox : UserControl
     {
         private ProjectTree? watched;
+
+        // The class of the field while a search filters the rows and the focus is not in the field (see TreeSearchBox.axaml).
+        internal const string FilteringClass = "filtering";
 
         public TreeSearchBox()
         {
             InitializeComponent();
             searchField.AddHandler(KeyDownEvent, OnFieldKeyDown, RoutingStrategies.Tunnel);
+            searchField.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == IsKeyboardFocusWithinProperty)
+                    UpdateFiltering();
+            };
+        }
+
+        private void UpdateFiltering() =>
+            searchField.Classes.Set(FilteringClass, watched?.IsSearchActive == true && !searchField.IsKeyboardFocusWithin);
+
+        private void OnWatchedPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ProjectTree.IsSearchActive))
+                UpdateFiltering();
         }
 
         // For the tests: the field, and its clear button.
@@ -37,11 +56,19 @@ namespace CMiX.Studio.Avalonia.Views
             base.OnDataContextChanged(e);
 
             if (watched != null)
+            {
                 watched.SearchFocusRequested -= OnSearchFocusRequested;
+                watched.PropertyChanged -= OnWatchedPropertyChanged;
+            }
 
             watched = DataContext as ProjectTree;
             if (watched != null)
+            {
                 watched.SearchFocusRequested += OnSearchFocusRequested;
+                watched.PropertyChanged += OnWatchedPropertyChanged;
+            }
+
+            UpdateFiltering();
         }
 
         // The focus waits for the layout, in case the panel shows the tree only now. With two panels that show the tree, only the box of

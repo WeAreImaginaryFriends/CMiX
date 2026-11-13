@@ -52,6 +52,7 @@ namespace CMiX.Studio.Avalonia.Services
             ("Tree.OpenLevel", "Shift+Q"),
             ("Tree.CollapseAll", "Shift+Alt+E"),
             ("Tree.Search", "Ctrl+F"),
+            ("Tree.ClearSearch", "Alt+F"),
             ("Tree.Rename", "Ctrl+R"),
             ("Tree.Remove", "Delete"),
             ("Tree.Duplicate", "Shift+D"),

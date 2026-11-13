@@ -108,6 +108,8 @@ While the search runs, the parents of every match open, so every match is in sig
 
 Enter in the field moves the cursor row of the tree to the next match, and Shift+Enter to the match before. At the last match, the next one is the first. The selection does not change, and the focus stays in the field. Down puts the focus in the tree on the cursor row, and Enter there selects the row. Escape clears the text, and Escape in an empty field gives the focus back to the rows.
 
+Text in the field means that the search is on. Down, a click on a row or a move to another panel keeps the text, and the other rows stay dimmed. While the focus is not in the field, its border has the accent color, and with the focus in the tree the hint strip shows "Esc clear search" and "Ctrl+F edit search". Escape in the tree clears the search: the focus and the cursor row stay, and the parents of the cursor row stay open. A grab, an open menu and a rename take Escape first. With no search, Escape in the tree does nothing. `Tree.ClearSearch` (Alt+F) clears the search from anywhere and puts the focus on the cursor row.
+
 There is no search during a drag of a row. The box takes no text, Ctrl+F does nothing, and the tree shows only the look of the drag. After the drop, the search look comes back with the same text.
 
 A tooltip is a dark card with a tip that points at the pointer. It shows a title and, for the buttons of the toolbar, the shortcut. A disabled button says why in its tooltip.
@@ -144,6 +146,7 @@ The file maps a command name to a gesture:
 | `Tree.OpenLevel` | Shift+Q | Open the shallowest closed level of the rows that show |
 | `Tree.CollapseAll` | Shift+Alt+E | Close every row of the tree |
 | `Tree.Search` | Ctrl+F | Put the focus in the search field of the tree |
+| `Tree.ClearSearch` | Alt+F | Clear the search of the tree and put the focus on the cursor row. It works from anywhere, also from a text box, while a search is active and no row is dragged or grabbed. The main menu has no access key on F for this reason |
 | `Tree.Rename` | Ctrl+R | Rename the target row |
 | `Tree.Remove` | Delete | Remove the target item. A toast at the bottom of the window shows "Removed" and the name, with the `Edit.Undo` key |
 | `Tree.Duplicate` | Shift+D | Duplicate the target item |
@@ -159,7 +162,7 @@ The part of a name before the dot is its scope. Two names of one scope must not 
 
 The panels are the side panels of the window, from left to right: panel 1 is the left panel. Each panel keeps the control that had the focus last, and the focus goes back to that control. When no control of the panel had the focus, the focus goes to the cursor row of the tree, or to the first control of the panel. The panel keys also work while a text box has the focus. The accent line under the bar of the panel shows the panel with the focus. `Tree.Focus` has no default gesture, because Ctrl+1 to Ctrl+4 go to the panels. Set one in the Shortcuts section of the Settings tab.
 
-Every tree shortcut but `Tree.Open` has one condition. The keyboard focus comes first: the shortcut works while the tree has the focus, with the pointer anywhere. It also works while the pointer is over the tree and no other panel has the focus, for example after a click on an empty part of the window. While a control of another panel has the focus, the pointer over the tree is not enough: click the tree first. No tree shortcut works while a text box has the focus. No tree shortcut works while a row is dragged, but `Tree.Expand`, which then opens or closes the row under the pointer. `Tree.Open`, Enter and the arrow keys need the focus in the tree. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D, and a `Tree.Rename` of F2 becomes Ctrl+R.
+Every tree shortcut but `Tree.Open` and `Tree.ClearSearch` has one condition. The keyboard focus comes first: the shortcut works while the tree has the focus, with the pointer anywhere. It also works while the pointer is over the tree and no other panel has the focus, for example after a click on an empty part of the window. While a control of another panel has the focus, the pointer over the tree is not enough: click the tree first. No tree shortcut works while a text box has the focus. No tree shortcut works while a row is dragged, but `Tree.Expand`, which then opens or closes the row under the pointer. `Tree.Open`, Enter and the arrow keys need the focus in the tree. The file holds every default since its first save, so a default of an earlier version that is still in the file gives the default of now: a `Tree.Duplicate` of Ctrl+D becomes Shift+D, and a `Tree.Rename` of F2 becomes Ctrl+R.
 
 The Shortcuts section of the Settings tab edits the shortcuts and saves each change to the file at once, and a missing file is created on save. A red dot marks a gesture that two commands of one scope have, and its tooltip names the other command.
 

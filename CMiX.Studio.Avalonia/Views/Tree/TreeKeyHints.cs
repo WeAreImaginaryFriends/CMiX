@@ -19,6 +19,9 @@ namespace CMiX.Studio.Avalonia.Views
         // The keyboard focus is in the search field of the panel.
         Search,
 
+        // A search filters the rows, and the keyboard focus is in the tree.
+        Filter,
+
         // A menu or the Add panel of the tree is open.
         Menu,
 
@@ -53,6 +56,14 @@ namespace CMiX.Studio.Avalonia.Views
                     new KeyHint(ShiftEnter, "previous"),
                     new KeyHint(Down, "to tree"),
                     new KeyHint(Escape, "clear")
+                },
+                TreeHintMode.Filter => new[]
+                {
+                    new KeyHint(Escape, "clear search"),
+                    KeyHint.Of("edit search", shortcuts["Tree.Search"]),
+                    new KeyHint(Arrows, "move"),
+                    KeyHint.Of("select", shortcuts["Tree.Open"]),
+                    KeyHint.Of("menu", shortcuts["Tree.Menu"])
                 },
                 TreeHintMode.Menu => new[] { new KeyHint(Escape, "close") },
                 TreeHintMode.Grab => new[]

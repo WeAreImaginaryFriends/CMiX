@@ -50,6 +50,9 @@
         <KeyBinding Command="{Binding ProjectTree.OpenLevelCommand}" Gesture="{Binding Shortcuts[Tree.OpenLevel]}" />
         <KeyBinding Command="{Binding ProjectTree.CollapseAllCommand}" Gesture="{Binding Shortcuts[Tree.CollapseAll]}" />
         <KeyBinding Command="{Binding ProjectTree.FocusSearchCommand}" Gesture="{Binding Shortcuts[Tree.Search]}" />
+        <!-- Tree.ClearSearch does not have the condition of the tree keys: it runs from anywhere, also from a text box, while a search is
+             active and no drag runs (see ProjectTree.ClearSearchCommand). -->
+        <KeyBinding Command="{Binding ProjectTree.ClearSearchCommand}" Gesture="{Binding Shortcuts[Tree.ClearSearch]}" />
         <KeyBinding Command="{Binding ProjectTree.RenameSelectedByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Rename]}" />
         <KeyBinding Command="{Binding ProjectTree.RemoveItemByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Remove]}" />
         <KeyBinding Command="{Binding ProjectTree.DuplicateItemByKeyCommand}" Gesture="{Binding Shortcuts[Tree.Duplicate]}" />

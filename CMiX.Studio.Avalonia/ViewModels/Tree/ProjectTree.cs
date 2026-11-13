@@ -109,6 +109,13 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             FocusSearchCommand = new RelayCommand(
                 FocusSearch,
                 CanRunTreeKey);
+            ClearSearchCommand = new RelayCommand(
+                () =>
+                {
+                    ClearSearch();
+                    FocusTree();
+                },
+                () => IsSearchActive && !IsDragging);
             RenameSelectedCommand = new RelayCommand(
                 () => { if (TargetNode is { Item: not null } node) RenameRequested?.Invoke(this, node); },
                 () => TargetNode?.Item != null);
@@ -483,6 +490,21 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
                 SearchFocusRequested?.Invoke(this, EventArgs.Empty);
         }
 
+        // Clears the search from anywhere, also from the search box, and gives the focus to the cursor row (Tree.ClearSearch). The
+        // command runs only while a search is active and no drag or grab runs.
+        public IRelayCommand ClearSearchCommand { get; }
+
+        // Clears the text of the search. The cursor row stays, and its parents stay open (see SyncSearchRows). The focus does not move.
+        // Nothing changes during a drag or with no active search.
+        public void ClearSearch()
+        {
+            if (!IsSearchActive || IsDragging)
+                return;
+
+            searchCursor = cursorNode;
+            SearchText = string.Empty;
+        }
+
         // True when a view of the tree or one of its controls has the focus.
         public Func<bool> IsTreeFocused { get; set; }
 
@@ -646,6 +668,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // True while the text of the search is not empty, as at the last refresh of the search.
         private bool searchActive;
 
+        // True while the search filters the rows: the text holds more than spaces, and the rows that do not match are dimmed.
+        public bool IsSearchActive => searchActive;
+
         // The rows that match the search, in the order of the tree from the top.
         public IReadOnlyList<TreeNode> SearchMatches => searchMatches;
 
@@ -659,6 +684,12 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             var text = searchText.Trim();
             var wasActive = searchActive;
             searchActive = text.Length > 0;
+            if (searchActive != wasActive)
+            {
+                OnPropertyChanged(nameof(IsSearchActive));
+                ClearSearchCommand?.NotifyCanExecuteChanged();
+            }
+
             if (!searchActive && !wasActive && searchMatches.Count == 0 && searchOpened.Count == 0)
                 return;
 
@@ -703,7 +734,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         // Opens the parents of every match, so every match is in sight, and closes the rows that the search opened and that lead to no
         // match any more. There is no search during a drag: EndDrag does it once the drag is over.
         // At the end of the search, the parents of the selected row stay open, so the user can go on with it: they leave the list.
-        // The same applies to the cursor row while MoveCursorToMatch put the cursor there. These rows keep their state. The other rows
+        // The same applies to the cursor row while MoveCursorToMatch or ClearSearch put it in searchCursor. These rows keep their state. The other rows
         // that the search opened close, and the view keeps the rows still.
         private void SyncSearchRows()
         {
@@ -1085,6 +1116,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             IsDragging = dragging;
             OnPropertyChanged(nameof(IsDragging));
             FocusSearchCommand.NotifyCanExecuteChanged();
+            ClearSearchCommand.NotifyCanExecuteChanged();
         }
 
         // Sets the drag state of a row and of the rows under it. It tells whether a row that takes the node is at or under the row.

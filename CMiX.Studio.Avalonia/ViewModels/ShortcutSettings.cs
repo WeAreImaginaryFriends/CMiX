@@ -39,6 +39,7 @@ namespace CMiX.Studio.Avalonia.ViewModels
             ["Tree.OpenLevel"] = "Open one level",
             ["Tree.CollapseAll"] = "Collapse all",
             ["Tree.Search"] = "Search",
+            ["Tree.ClearSearch"] = "Clear the search",
             ["Tree.Rename"] = "Rename",
             ["Tree.Remove"] = "Remove",
             ["Tree.Duplicate"] = "Duplicate",
