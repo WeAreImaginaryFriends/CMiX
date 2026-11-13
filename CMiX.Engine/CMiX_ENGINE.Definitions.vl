@@ -2071,7 +2071,7 @@
                 <Pin Id="NS28gdG2acAODtKWpb6jaC" Name="Name" Kind="InputPin" />
                 <Pin Id="Pcit5CRDKffMWgn1zdadYW" Name="SyncMode" Kind="InputPin" />
               </Node>
-              <Pad Id="FwsfvVLj5huNPzj9dGu3yj" Comment="Name" Bounds="377,310,20,15" ShowValueBox="true" isIOBox="true" Value="X">
+              <Pad Id="FwsfvVLj5huNPzj9dGu3yj" Comment="Name" Bounds="379,320,20,15" ShowValueBox="true" isIOBox="true" Value="X">
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastDependency="VL.CoreLib.vl">
                   <Choice Kind="TypeFlag" Name="String" />
                 </p:TypeAnnotation>
