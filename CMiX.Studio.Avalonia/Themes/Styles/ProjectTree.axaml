@@ -25,6 +25,9 @@
     <!-- The cover of a row: the dim of a drag, or the dim of the search while no drag runs (see TreeCoverConverter). -->
     <StudioConverters:TreeCoverConverter x:Key="TreeCover" />
 
+    <!-- The cursor row and the rows above it are drawn over the other rows (see TreeLiftConverter). -->
+    <StudioConverters:TreeLiftConverter x:Key="TreeLift" />
+
     <!-- How much of the cover stays over a row that can not take a dragged node. -->
     <x:Double x:Key="TreeDimOpacity">0.6</x:Double>
 
@@ -52,12 +55,18 @@
     </ControlTheme>
 
     <ControlTheme x:Key="TreeViewItemCMiX" TargetType="TreeViewItem">
-        <!-- The cursor row shows the CursorFrame of the template. The dotted frame of Avalonia is not wanted. -->
+        <!-- The cursor row shows the CursorFrame of the template and a shadow. The dotted frame of Avalonia is not wanted. -->
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="0" />
-        <!-- The cursor row of the model gets the class cursor, which shows CursorFrame. -->
+        <!-- The cursor row of the model gets the class cursor, which shows CursorFrame and the shadow of the row. -->
         <Setter Property="ui:CursorRow.IsCursor" Value="{Binding IsCursor}" />
+        <Setter Property="ZIndex">
+            <MultiBinding Converter="{StaticResource TreeLift}">
+                <Binding Path="IsCursor" />
+                <Binding Path="IsOnCursorBranch" />
+            </MultiBinding>
+        </Setter>
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
                 <StackPanel />
@@ -66,10 +75,10 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <!-- The marks of a drag are drawn over the whole item: the row and the rows under it. -->
-                <Panel>
+                <Panel Name="ItemRoot" Classes.fresh="{Binding IsFresh}">
                 <StackPanel>
                     <!-- The row and the space under it, with the indent guides over them. -->
-                    <Panel>
+                    <Panel Name="RowLift">
                     <StackPanel>
                     <!-- The chevron is at the left of the colored row, outside it, after the indent of the row. The toggles are inside the colored
                          row, at its right end, as icons with no fill (see RowToggles). Only the chevron expands a row. -->
@@ -218,6 +227,23 @@
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="BorderBrush" Value="{DynamicResource CursorFrameInactiveBrush}" />
             <Setter Property="BorderThickness" Value="{DynamicResource CursorFrameInactiveThickness}" />
+        </Style>
+        <!-- A row that is new fades in (the class fresh, see TreeNode.IsFresh), with the time of the other fades of the tree. -->
+        <Style Selector="^ /template/ Panel#ItemRoot.fresh">
+            <Style.Animations>
+                <Animation Duration="{x:Static ui:Motion.FadeDuration}" Easing="CubicEaseOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <!-- The cursor row is drawn over the rows under it, so its shadow falls on them (see the styles of ProjectTreeView). -->
+        <Style Selector="^.cursor /template/ Panel#RowLift">
+            <Setter Property="ZIndex" Value="1" />
         </Style>
         <Style Selector="^:selected /template/ Border#RowBorder">
             <Setter Property="Background" Value="{Binding Converter={StaticResource TreeTone}, ConverterParameter=FillSelected}" />

@@ -183,6 +183,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         [NotifyPropertyChangedFor(nameof(IsDimmed))]
         private bool isExpanded = true;
 
+        // True for a row of an item that was added after the tree was made, and not by the load of a project. The row fades in.
+        public bool IsFresh { get; private set; }
+
         // True when the row is the cursor row (ProjectTree.CursorNode). The row theme binds CursorRow.IsCursor to it.
         [ObservableProperty]
         private bool isCursor;
@@ -339,7 +342,7 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    InsertChildren(e.NewStartingIndex, e.NewItems!.Cast<IControl>());
+                    InsertChildren(e.NewStartingIndex, e.NewItems!.Cast<IControl>(), fresh: !tree.IsLoading);
 
                     // A new item shows at once: the rows above it open. A loaded item opens nothing.
                     if (!tree.IsLoading)
@@ -366,10 +369,14 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
             tree.ListChanged();
         }
 
-        private void InsertChildren(int index, IEnumerable<IControl> items)
+        private void InsertChildren(int index, IEnumerable<IControl> items, bool fresh = false)
         {
             foreach (var item in items)
-                Children.Insert(index++, CreateItemNode(item));
+            {
+                var node = CreateItemNode(item);
+                node.IsFresh = fresh;
+                Children.Insert(index++, node);
+            }
         }
 
         private void RemoveChildren(int index, int count)

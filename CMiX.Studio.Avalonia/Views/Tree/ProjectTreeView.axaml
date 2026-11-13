@@ -95,6 +95,11 @@
             <Style Selector="TreeView:focus-within TreeViewItem.cursor /template/ Border#CursorFrame">
                 <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
             </Style>
+            <!-- The cursor row of the tree looks raised: it has a shadow (DropShadowRow), with the focus and without it.
+                 The item is drawn over the rows around it (see TreeLiftConverter). -->
+            <Style Selector="TreeViewItem.cursor /template/ Border#RowBorder">
+                <Setter Property="Effect" Value="{DynamicResource DropShadowRow}" />
+            </Style>
         </TreeView.Styles>
 
         <TreeView.DataTemplates>
