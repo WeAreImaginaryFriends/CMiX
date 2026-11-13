@@ -131,6 +131,50 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.Equal(tone.KindSelected, FillOf(SquaresOf(badges).First()));
         }
 
+        private static AvaloniaColor NumberColorOf(Border square) =>
+            ((ISolidColorBrush)square.GetVisualDescendants().OfType<TextBlock>().Single().Foreground!).Color;
+
+        private static AvaloniaColor ColorOf(string key) => ((ISolidColorBrush)Application.Current!.FindResource(key)!).Color;
+
+        // The number is white on the square at rest, and dark on the full color of a row that is under the pointer or selected.
+        [AvaloniaFact]
+        public void Select_ARow_MakesTheNumbersDark()
+        {
+            var (view, tree, layer, _) = Show();
+            layer.IsExpanded = false;
+            Settle();
+            var badges = BadgesOf(view, layer);
+
+            Assert.All(SquaresOf(badges), square => Assert.Equal(ColorOf("ActiveForegroundBrush"), NumberColorOf(square)));
+
+            badges.IsHovered = true;
+            Settle();
+            Assert.All(SquaresOf(badges), square => Assert.Equal(ColorOf("TreeBackgroundBrush"), NumberColorOf(square)));
+
+            badges.IsHovered = false;
+            tree.SelectedNode = layer;
+            Settle();
+            Assert.All(SquaresOf(badges), square => Assert.Equal(ColorOf("TreeBackgroundBrush"), NumberColorOf(square)));
+        }
+
+        // The dark number can be read on the full color of every kind: a contrast of 4.5:1 or more.
+        [AvaloniaTheory]
+        [InlineData(TreeCategory.Composable)]
+        [InlineData(TreeCategory.Entity)]
+        [InlineData(TreeCategory.Camera)]
+        [InlineData(TreeCategory.Light)]
+        [InlineData(TreeCategory.Texture)]
+        [InlineData(TreeCategory.Filter)]
+        [InlineData(TreeCategory.Modifier)]
+        [InlineData(TreeCategory.Modulator)]
+        public void TheDarkNumber_OnTheFullColorOfAKind_CanBeRead(TreeCategory category)
+        {
+            var dark = ColorOf("TreeBackgroundBrush");
+
+            for (var depth = 0; depth <= CategoryPalette.LastComposableLevel; depth++)
+                Assert.True(CMiX.UI.Mathematics.ColorMix.Contrast(dark, palette.For(category, depth).KindSelected) >= 4.5);
+        }
+
         [AvaloniaFact]
         public void Show_ASquare_IsSixteenHighInTheMiddleOfTheRow()
         {

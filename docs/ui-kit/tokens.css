@@ -58,6 +58,8 @@
     --PopupCardWarningBrush: var(--PopupCardWarning);
     --PopupCardDangerBrush: var(--PopupCardDanger);
     --TreeBackgroundBrush: var(--TreeBackground);
+    --IndentGuideBrush: var(--Grey400);
+    --IndentGuideActiveBrush: var(--Grey700);
     --Grey100Brush: var(--Grey100);
     --Grey200Brush: var(--Grey200);
     --Grey300Brush: var(--Grey300);
@@ -69,13 +71,14 @@
     --Grey900Brush: var(--Grey900);
     --StateIdleBrush: var(--Grey600);
     --StateHoverBrush: var(--Grey700);
-    --StatePressedBrush: var(--Grey100);
+    --StatePressedBrush: var(--Grey500);
     --RowHoverBrush: var(--Grey500);
     --WarningMutedBrush: var(--WarningMuted);
     --CursorFrameBrush: var(--ActiveText);
     --CursorFrameInactiveBrush: var(--Grey800);
     --ForegroundBrush: var(--Text);
     --ActiveForegroundBrush: var(--ActiveText);
+    --TextMutedBrush: var(--ShortcutText);
     --ShortcutTextBrush: var(--ShortcutText);
     --ShortcutTextHoverBrush: var(--Grey900);
     --KeyCapBorderBrush: var(--Grey600);
@@ -145,6 +148,7 @@
     --OpacityIconIdle: 0.6;
     --KeyCapBorderThickness: 1px;
     --KeyCapPadding: 0 4px;
+    --ToastMargin: 0 0 16px 0;
     /* 0.4 Typography: CMiX.UI/Themes/Tokens/Typography.axaml */
     --DefaultFontSize: 10px;
     --FontFamilyMono: Cascadia Mono,Consolas,Menlo,monospace;

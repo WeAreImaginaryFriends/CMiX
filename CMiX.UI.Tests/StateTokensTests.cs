@@ -13,7 +13,7 @@ using Xunit;
 
 namespace CMiX.UI.Tests
 {
-    // The surface controls read their greys from the state tokens: idle, one step up under the pointer, two steps up while pressed.
+    // The surface controls read their greys from the state tokens: idle, one step up under the pointer, one step under idle while pressed.
     public class StateTokensTests
     {
         private static Color Token(string key) => ((ISolidColorBrush)Application.Current!.FindResource(key)!).Color;
@@ -25,7 +25,7 @@ namespace CMiX.UI.Tests
         {
             Assert.Equal(Grey(600), Token("StateIdleBrush"));
             Assert.Equal(Grey(700), Token("StateHoverBrush"));
-            Assert.Equal(Grey(100), Token("StatePressedBrush"));
+            Assert.Equal(Grey(500), Token("StatePressedBrush"));
             Assert.Equal(Grey(500), Token("RowHoverBrush"));
         }
 
@@ -88,6 +88,34 @@ namespace CMiX.UI.Tests
             var pressed = Token("StatePressedBrush");
 
             Assert.True(pressed.R < idle.R);
+        }
+
+        // A pressed control must show on the window and on every panel: its grey is not the grey of a surface.
+        [AvaloniaTheory]
+        [InlineData(100)]
+        [InlineData(200)]
+        [InlineData(300)]
+        [InlineData(400)]
+        public void Press_AControl_IsNotTheGreyOfASurface(int surface)
+        {
+            Assert.NotEqual(Grey(surface), Token("StatePressedBrush"));
+        }
+
+        // The thumb of a scroll bar is Grey500 at rest, the pressed grey of a control. A thumb that is dragged stays lit.
+        [AvaloniaFact]
+        public void AScrollThumb_ThatIsPressed_IsNotAtItsIdleGrey()
+        {
+            var viewer = new ScrollViewer { Width = 100, Height = 60, Content = new Border { Height = 400 } };
+            new Window { Content = viewer, Width = 300, Height = 100 }.Show();
+            Dispatcher.UIThread.RunJobs();
+            var thumb = viewer.GetVisualDescendants().OfType<Thumb>().First(part => part.Name == "thumb" && part.IsEffectivelyVisible);
+            var idle = ((ISolidColorBrush)thumb.Background!).Color;
+
+            ((IPseudoClasses)thumb.Classes).Set(":pressed", true);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(Token("StateHoverBrush"), ((ISolidColorBrush)thumb.Background!).Color);
+            Assert.NotEqual(idle, ((ISolidColorBrush)thumb.Background!).Color);
         }
 
         [AvaloniaFact]

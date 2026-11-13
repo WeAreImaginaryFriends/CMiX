@@ -125,8 +125,9 @@
         <Style Selector="^ /template/ Thumb#thumb:pointerover">
             <Setter Property="Background" Value="{DynamicResource StateHoverBrush}" />
         </Style>
+        <!-- A thumb that is dragged stays lit. Its idle grey is the pressed grey of a control, so the pressed token would show nothing. -->
         <Style Selector="^ /template/ Thumb#thumb:pressed">
-            <Setter Property="Background" Value="{DynamicResource StatePressedBrush}" />
+            <Setter Property="Background" Value="{DynamicResource StateHoverBrush}" />
         </Style>
 
         <!--  ScrollBar page repeat buttons, the long area between the buttons, not the thumb  -->

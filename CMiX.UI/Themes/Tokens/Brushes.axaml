@@ -50,11 +50,12 @@
 
     <!-- The states of the controls. Every theme reads these brushes, so a grey changes in one place.
          Surface controls (buttons, toggles, combo boxes, values, sliders): idle, then one step up under the pointer,
-         then one step down from idle while pressed (a press makes the control darker). The on state is accent-inactive, and accent under the pointer.
+         then one step under idle while pressed (a press makes the control darker). The pressed grey is not the grey of a
+         surface (Grey100 to Grey400), so a pressed control shows on the window and on every panel. The on state is accent-inactive, and accent under the pointer.
          Rows (list items, menu items, tabs): transparent, then RowHover under the pointer. -->
     <SolidColorBrush x:Key="StateIdleBrush" Color="{DynamicResource Grey600}" />
     <SolidColorBrush x:Key="StateHoverBrush" Color="{DynamicResource Grey700}" />
-    <SolidColorBrush x:Key="StatePressedBrush" Color="{DynamicResource Grey100}" />
+    <SolidColorBrush x:Key="StatePressedBrush" Color="{DynamicResource Grey500}" />
     <SolidColorBrush x:Key="RowHoverBrush" Color="{DynamicResource Grey500}" />
 
     <!-- A muted warning: the frame of a target that refuses a drop, the mark of a conflict. -->
@@ -66,6 +67,9 @@
 
     <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource Text}" />
     <SolidColorBrush x:Key="ActiveForegroundBrush" Color="{DynamicResource ActiveText}" />
+    <!-- Quiet text on a popup: the title of a menu, the last line of a tooltip. It is the color of a shortcut, the darkest text that
+         has a contrast of 4.5:1 on PopupCardBackground. -->
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{DynamicResource ShortcutText}" />
 
     <DrawingBrush x:Key="CheckerboardBrush" TileMode="Tile" DestinationRect="0,0,16,16">
         <DrawingBrush.Drawing>

@@ -81,5 +81,19 @@ namespace CMiX.UI.Tests
             Assert.All(new[] { "Shift+A", "Tree.Add" }, text =>
                 Assert.Equal(mono, tip.GetVisualDescendants().OfType<TextBlock>().Single(block => block.Text == text).FontFamily));
         }
+
+        // The last line of a tooltip is quiet, and it can still be read: TextMutedBrush has a contrast of 4.5:1 or more on the card.
+        [AvaloniaFact]
+        public void Show_TheFooter_HasTheMutedTextColorThatCanBeRead()
+        {
+            var tip = Show(new TipContent("Add", "Shift+A", Footer: "Tree.Add"));
+
+            var footer = tip.GetVisualDescendants().OfType<TextBlock>().Single(block => block.Text == "Tree.Add");
+            var muted = ((ISolidColorBrush)Application.Current!.FindResource("TextMutedBrush")!).Color;
+            var card = ((ISolidColorBrush)Application.Current!.FindResource("PopupBackgroundBrush")!).Color;
+
+            Assert.Equal(muted, ((ISolidColorBrush)footer.Foreground!).Color);
+            Assert.True(CMiX.UI.Mathematics.ColorMix.Contrast(muted, card) >= 4.5);
+        }
     }
 }

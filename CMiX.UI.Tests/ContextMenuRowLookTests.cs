@@ -121,7 +121,7 @@ namespace CMiX.UI.Tests
 
             var root = Part<Border>(rows["Layer 02"], "root");
             var header = Part<ContentPresenter>(rows["Layer 02"], "PART_HeaderPresenter");
-            var quiet = ((ISolidColorBrush)Application.Current!.FindResource("Grey800Brush")!).Color;
+            var quiet = ((ISolidColorBrush)Application.Current!.FindResource("TextMutedBrush")!).Color;
             Assert.Equal(1, root.Opacity);
             Assert.Equal(quiet, ((ISolidColorBrush)header.Foreground!).Color);
             Assert.Equal(FontWeight.Medium, header.FontWeight);

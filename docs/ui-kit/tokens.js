@@ -406,6 +406,20 @@ window.CMIX_TOKENS = {
                                           "note":  "The background of the project tree and the layer that dims a row."
                                       },
                                       {
+                                          "name":  "IndentGuideBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey400}",
+                                          "css":  "var(--Grey400)",
+                                          "note":  "The indent guides of the project tree: a quiet line at each level, and a stronger line on the branch of the cursor row."
+                                      },
+                                      {
+                                          "name":  "IndentGuideActiveBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey700}",
+                                          "css":  "var(--Grey700)",
+                                          "note":  ""
+                                      },
+                                      {
                                           "name":  "Grey100Brush",
                                           "type":  "SolidColorBrush",
                                           "raw":  "{DynamicResource Grey100}",
@@ -473,7 +487,7 @@ window.CMIX_TOKENS = {
                                           "type":  "SolidColorBrush",
                                           "raw":  "{DynamicResource Grey600}",
                                           "css":  "var(--Grey600)",
-                                          "note":  "The states of the controls. Every theme reads these brushes, so a grey changes in one place. Surface controls (buttons, toggles, combo boxes, values, sliders): idle, then one step up under the pointer, then one step down from idle while pressed (a press makes the control darker). The on state is accent-inactive, and accent under the pointer. Rows (list items, menu items, tabs): transparent, then RowHover under the pointer."
+                                          "note":  "The states of the controls. Every theme reads these brushes, so a grey changes in one place. Surface controls (buttons, toggles, combo boxes, values, sliders): idle, then one step up under the pointer, then one step under idle while pressed (a press makes the control darker). The pressed grey is not the grey of a surface (Grey100 to Grey400), so a pressed control shows on the window and on every panel. The on state is accent-inactive, and accent under the pointer. Rows (list items, menu items, tabs): transparent, then RowHover under the pointer."
                                       },
                                       {
                                           "name":  "StateHoverBrush",
@@ -485,8 +499,8 @@ window.CMIX_TOKENS = {
                                       {
                                           "name":  "StatePressedBrush",
                                           "type":  "SolidColorBrush",
-                                          "raw":  "{DynamicResource Grey100}",
-                                          "css":  "var(--Grey100)",
+                                          "raw":  "{DynamicResource Grey500}",
+                                          "css":  "var(--Grey500)",
                                           "note":  ""
                                       },
                                       {
@@ -530,6 +544,13 @@ window.CMIX_TOKENS = {
                                           "raw":  "{DynamicResource ActiveText}",
                                           "css":  "var(--ActiveText)",
                                           "note":  ""
+                                      },
+                                      {
+                                          "name":  "TextMutedBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ShortcutText}",
+                                          "css":  "var(--ShortcutText)",
+                                          "note":  "Quiet text on a popup: the title of a menu, the last line of a tooltip. It is the color of a shortcut, the darkest text that has a contrast of 4.5:1 on PopupCardBackground."
                                       },
                                       {
                                           "name":  "ShortcutTextBrush",
@@ -1013,6 +1034,13 @@ window.CMIX_TOKENS = {
                                           "raw":  "4,0",
                                           "css":  "0 4px",
                                           "note":  ""
+                                      },
+                                      {
+                                          "name":  "ToastMargin",
+                                          "type":  "Thickness",
+                                          "raw":  "0,0,0,16",
+                                          "css":  "0 0 16px 0",
+                                          "note":  "The space between a toast (ToastHost) and the bottom edge of its area."
                                       }
                                   ]
                    },

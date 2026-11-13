@@ -123,7 +123,7 @@
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="^.title /template/ ContentPresenter#PART_HeaderPresenter">
-            <Setter Property="Foreground" Value="{DynamicResource Grey800Brush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
             <Setter Property="FontWeight" Value="Medium" />
         </Style>
 

@@ -731,7 +731,8 @@
         &::-webkit-scrollbar-track { background: linear-gradient(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.2)) content-box; border: solid transparent; border-width: 0 2px; border-radius: 4px; }
         &::-webkit-scrollbar-thumb { background: var(--Grey500Brush) content-box; border: solid transparent; border-width: 0 2px; border-radius: 4px; }
         &::-webkit-scrollbar-thumb:hover { background: var(--StateHoverBrush) content-box; }
-        &::-webkit-scrollbar-thumb:active { background: var(--StatePressedBrush) content-box; }
+        /* A thumb that is dragged stays lit: its idle grey is the pressed grey of a control. */
+        &::-webkit-scrollbar-thumb:active { background: var(--StateHoverBrush) content-box; }
     }
 
     /* ---------------------------------------------------------------- ListBox.axaml */
@@ -1047,7 +1048,7 @@
         .shortcut { margin-left: 12px; white-space: nowrap; }
         .description { color: var(--Grey900Brush); }
         .reason { color: var(--PopupCardWarningBrush); }
-        .footer { padding-top: 4px; border-top: 1px solid var(--Grey400Brush); font-family: var(--FontFamilyMono); color: var(--Grey700Brush); }
+        .footer { padding-top: 4px; border-top: 1px solid var(--Grey400Brush); font-family: var(--FontFamilyMono); color: var(--TextMutedBrush); }
     }
 
     /* ---------------------------------------------------------------- Menu/ContextMenu.axaml */
@@ -1085,7 +1086,7 @@
         &:hover > .shortcut, &.pointerover > .shortcut, &.selected > .shortcut { color: var(--ShortcutTextHoverBrush); }
         &.checked { background: var(--AccentInactiveBrush); }
         &.disabled { opacity: var(--OpacityDisabled); pointer-events: none; }
-        &.title { opacity: 1; pointer-events: none; background: transparent; > .head { color: var(--Grey800Brush); font-weight: 500; } }
+        &.title { opacity: 1; pointer-events: none; background: transparent; > .head { color: var(--TextMutedBrush); font-weight: 500; } }
         &.danger > .head { color: var(--PopupCardDangerBrush); }
         &.separator { height: var(--SeparatorSize); margin: 4px 0; padding: 0; background: var(--Grey600Brush); pointer-events: none; }
         > .Popup { display: none; position: absolute; left: 100%; top: -8px; z-index: 11; }
@@ -1203,7 +1204,8 @@
         white-space: nowrap;
         > .kindcount, > .MoreKinds { display: flex; align-items: center; justify-content: center; height: var(--ControlHeightXS); min-width: var(--ControlHeightXS); padding: 0 4px; border-radius: var(--CornerRadiusAll); color: var(--ActiveForegroundBrush); }
         > .kindcount { background: var(--KindTone); }
-        &.hovered > .kindcount, &.selected > .kindcount { background: var(--KindSelected); }
+        /* The number is dark on the full color of a row that is under the pointer or selected. */
+        &.hovered > .kindcount, &.selected > .kindcount { background: var(--KindSelected); color: var(--TreeBackgroundBrush); }
         > .MoreKinds { background: var(--Grey600Brush); }
         > .HiddenCount { opacity: var(--OpacityDisabled); }
     }
@@ -1530,7 +1532,7 @@
 .cmix {
     /* The square of the eye of a group row, and the count squares of a row under the pointer or selected. */
     .RowToggles > .slot { display: flex; align-items: center; justify-content: center; width: var(--ControlHeightMD); height: var(--ControlHeightMD); }
-    .RowBorder:hover .kindcount, .TreeViewItem.pointerover > .RowGrid .kindcount, .TreeViewItem.selected > .RowGrid .kindcount { background: var(--KindSelected); }
+    .RowBorder:hover .kindcount, .TreeViewItem.pointerover > .RowGrid .kindcount, .TreeViewItem.selected > .RowGrid .kindcount { background: var(--KindSelected); color: var(--TreeBackgroundBrush); }
     .RowBorder .TextBoxEditable { flex: none; }
     .RowBorder > .header > .KindCountBadges { margin-left: 4px; }
 
