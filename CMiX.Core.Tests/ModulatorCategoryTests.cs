@@ -20,6 +20,7 @@ namespace CMiX.Core.Tests
             [typeof(RedisIntModulator)] = ModulatorCategory.External,
             [typeof(RedisBoolModulator)] = ModulatorCategory.External,
             [typeof(TrackingModulator)] = ModulatorCategory.External,
+            [typeof(LISAModulator)] = ModulatorCategory.External,
             [typeof(VisitorDataModulator)] = ModulatorCategory.External,
         };
 
