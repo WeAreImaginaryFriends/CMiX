@@ -88,11 +88,37 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [Fact]
-        public void ComposableDepth_ADeeperComposable_ChangesTheHueAndNotTheStrength()
+        public void ComposableDepth_ADeeperComposable_ChangesTheColorAndNotTheStrength()
         {
             var palette = Palette();
 
             Assert.NotEqual(palette.For(TreeCategory.Composable, 0).Fill, palette.For(TreeCategory.Composable, 3).Fill);
+        }
+
+        // In the theme, a composable is one step darker for each level of nesting, so the levels can be told apart.
+        [AvaloniaFact]
+        public void FromApplication_ADeeperComposable_HasADarkerFill()
+        {
+            var palette = CategoryPalette.FromApplication();
+
+            for (var depth = 1; depth <= CategoryPalette.LastComposableLevel; depth++)
+            {
+                var above = palette.For(TreeCategory.Composable, depth - 1);
+                var deeper = palette.For(TreeCategory.Composable, depth);
+                Assert.True(LuminanceOf(deeper.Fill) < LuminanceOf(above.Fill), $"level {depth} at rest");
+                Assert.True(LuminanceOf(deeper.FillSelected) < LuminanceOf(above.FillSelected), $"level {depth} selected");
+            }
+        }
+
+        // The deepest composable was almost the color of a modulator. It keeps the hue of a composable: more red than blue.
+        [AvaloniaFact]
+        public void FromApplication_TheDeepestComposable_KeepsTheHueOfAComposable()
+        {
+            var deepest = (Color)Application.Current!.FindResource("CategoryComposableLevel3")!;
+            var modulator = (Color)Application.Current!.FindResource("CategoryModulator")!;
+
+            Assert.True(deepest.R > deepest.B);
+            Assert.True(modulator.B > modulator.R);
         }
 
         [Theory]

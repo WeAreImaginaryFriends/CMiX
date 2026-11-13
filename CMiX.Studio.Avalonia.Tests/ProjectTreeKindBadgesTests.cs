@@ -171,8 +171,8 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             var dark = ColorOf("TreeBackgroundBrush");
 
-            for (var depth = 0; depth <= CategoryPalette.LastComposableLevel; depth++)
-                Assert.True(CMiX.UI.Mathematics.ColorMix.Contrast(dark, palette.For(category, depth).KindSelected) >= 4.5);
+            // A count square has the color of its kind at the level 0 (see TreeToneConverter).
+            Assert.True(CMiX.UI.Mathematics.ColorMix.Contrast(dark, palette.For(category).KindSelected) >= 4.5);
         }
 
         [AvaloniaFact]

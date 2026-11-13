@@ -144,27 +144,27 @@ window.CMIX_TOKENS = {
                                           "type":  "Color",
                                           "raw":  "#FFDC74D7",
                                           "css":  "#DC74D7",
-                                          "note":  "The colors of the kinds of row in the project tree, one for each TreeCategory. A composable inside a composable moves its hue one step for each level of nesting (Level1 to Level3). The tree reads them by the name Category + kind, and shows them as tones over the panel background."
+                                          "note":  "The colors of the kinds of row in the project tree, one for each TreeCategory. A composable inside a composable keeps the hue of a composable and is one step darker for each level of nesting (Level1 to Level3). The hue does not move, so a deep composable does not get the color of another kind. The tree reads them by the name Category + kind, and shows them as tones over the panel background."
                                       },
                                       {
                                           "name":  "CategoryComposableLevel1",
                                           "type":  "Color",
-                                          "raw":  "#FFC874E4",
-                                          "css":  "#C874E4",
+                                          "raw":  "#FFBE58B9",
+                                          "css":  "#BE58B9",
                                           "note":  ""
                                       },
                                       {
                                           "name":  "CategoryComposableLevel2",
                                           "type":  "Color",
-                                          "raw":  "#FFB27DEA",
-                                          "css":  "#B27DEA",
+                                          "raw":  "#FF9E3E9B",
+                                          "css":  "#9E3E9B",
                                           "note":  ""
                                       },
                                       {
                                           "name":  "CategoryComposableLevel3",
                                           "type":  "Color",
-                                          "raw":  "#FF9F85EC",
-                                          "css":  "#9F85EC",
+                                          "raw":  "#FF7D2B7A",
+                                          "css":  "#7D2B7A",
                                           "note":  ""
                                       },
                                       {

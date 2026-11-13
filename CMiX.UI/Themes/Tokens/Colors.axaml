@@ -31,12 +31,13 @@
     <Color x:Key="ModulatorExternalHighlight">#FFD7B091</Color>
 
     <!-- The colors of the kinds of row in the project tree, one for each TreeCategory.
-         A composable inside a composable moves its hue one step for each level of nesting (Level1 to Level3).
+         A composable inside a composable keeps the hue of a composable and is one step darker for each level of nesting (Level1 to Level3).
+         The hue does not move, so a deep composable does not get the color of another kind.
          The tree reads them by the name Category + kind, and shows them as tones over the panel background. -->
     <Color x:Key="CategoryComposable">#FFDC74D7</Color>
-    <Color x:Key="CategoryComposableLevel1">#FFC874E4</Color>
-    <Color x:Key="CategoryComposableLevel2">#FFB27DEA</Color>
-    <Color x:Key="CategoryComposableLevel3">#FF9F85EC</Color>
+    <Color x:Key="CategoryComposableLevel1">#FFBE58B9</Color>
+    <Color x:Key="CategoryComposableLevel2">#FF9E3E9B</Color>
+    <Color x:Key="CategoryComposableLevel3">#FF7D2B7A</Color>
     <Color x:Key="CategoryEntity">#FFE56C9E</Color>
     <Color x:Key="CategoryCamera">#FFE66756</Color>
     <Color x:Key="CategoryLight">#FFE9D349</Color>
