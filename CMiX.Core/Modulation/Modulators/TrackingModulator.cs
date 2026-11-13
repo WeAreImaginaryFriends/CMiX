@@ -6,58 +6,28 @@ using CMiX.Core.Prefabs;
 
 namespace CMiX.Core.Modulation.Modulators
 {
-    [ModulatorCategory(ModulatorCategory.External)]
-    public class TrackingModulator : ModulatorBase
+    public class TrackingModulator : TrackingModulatorBase
     {
-        public TrackingModulator(PrefabService prefabService, 
-                                 GenericValue<int> count, 
+        public TrackingModulator(PrefabService prefabService,
+                                 GenericValue<int> count,
                                  GenericValue<float> x,
                                  GenericValue<float> y,
                                  FloatRange xRange,
                                  FloatRange yRange)
-            : base(prefabService)
+            : base(prefabService, count, x, y, xRange, yRange)
         {
-            Count = count;
-            X = x;
-            Y = y;
-            XRange = xRange;
-            YRange = yRange;
         }
 
-        public override IReadOnlyList<IModulatorOutput> Outputs { get; } = new IModulatorOutput[]
+        public override IControlModel ToModel()
         {
-            new ModulatorOutput<int>("Count"),
-            new ModulatorOutput<float>("X"),
-            new ModulatorOutput<float>("Y")
-        };
-
-        public GenericValue<int> Count { get; set; }
-        public GenericValue<float> X { get; set; }
-        public GenericValue<float> Y { get; set; }
-        public FloatRange XRange { get; set; }
-        public FloatRange YRange { get; set; }
-
-        public override IControlModel ToModel() => new TrackingModulatorModel
-        {
-            ID = ID,
-            PrefabService = (PrefabServiceModel)PrefabService.ToModel(),
-            Count = (GenericValueModel<int>)Count.ToModel(),
-            X = (GenericValueModel<float>)X.ToModel(),
-            Y = (GenericValueModel<float>)Y.ToModel(),
-            XRange = (FloatRangeModel)XRange.ToModel(),
-            YRange = (FloatRangeModel)YRange.ToModel()
-        };
+            var model = new TrackingModulatorModel();
+            FillBaseModel(model);
+            return model;
+        }
 
         public override void FromModel(IControlModel model)
         {
-            var m = (TrackingModulatorModel)model;
-            ID = m.ID;
-            PrefabService.FromModel(m.PrefabService);
-            Count.FromModel(m.Count);
-            X.FromModel(m.X);
-            Y.FromModel(m.Y);
-            XRange.FromModel(m.XRange);
-            YRange.FromModel(m.YRange);
+            ReadBaseModel((TrackingModulatorModel)model);
         }
     }
 }
