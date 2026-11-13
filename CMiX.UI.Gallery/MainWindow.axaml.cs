@@ -13,6 +13,7 @@ using Avalonia.VisualTree;
 using CMiX.UI.AttachedProperties;
 using CMiX.UI.Controls;
 using CMiX.UI.Controls.Number;
+using CMiX.UI.Controls.Parts;
 using CMiX.UI.Panels;
 using CMiX.UI.Popups;
 
@@ -76,6 +77,7 @@ namespace CMiX.UI.Gallery
             Sections.Children.Add(PanelFocus());
             Sections.Children.Add(KeyCaps());
             Sections.Children.Add(Toasts());
+            Sections.Children.Add(HintStrips());
         }
 
         private void BindScale()
@@ -462,6 +464,28 @@ namespace CMiX.UI.Gallery
             row.Children.Add(new Toast { Text = "Removed Layer 1", UndoGesture = "Ctrl+Z" });
             row.Children.Add(new Toast { Text = "Hidden: Layer 1" });
             return Frame("Toast", "toast", row);
+        }
+
+        // The hint strip (KeyHintStrip) under a panel, with the hints of the tree: idle, search, menu and grab.
+        private Control HintStrips()
+        {
+            Control Strip(string name, params KeyHint[] hints)
+            {
+                var pair = new StackPanel { Spacing = 4, Width = 440 };
+                pair.Children.Add(Header(name));
+                pair.Children.Add(new KeyHintStrip { Hints = hints });
+                return pair;
+            }
+
+            var column = new StackPanel { Spacing = 12, Margin = new Thickness(8) };
+            column.Children.Add(Strip("Idle", new KeyHint("Arrows", "move"), new KeyHint("Return", "select"), new KeyHint("E", "open"),
+                new KeyHint("W", "menu"), new KeyHint("Shift+A", "add"), new KeyHint("Ctrl+Z", "undo")));
+            column.Children.Add(Strip("Search", new KeyHint("Return", "next"), new KeyHint("Shift+Return", "previous"),
+                new KeyHint("Down", "to tree"), new KeyHint("Escape", "clear")));
+            column.Children.Add(Strip("Menu open", new KeyHint("Escape", "close")));
+            column.Children.Add(Strip("Grab", new KeyHint(new[] { "Click", "Return" }, "place"), new KeyHint(new[] { "Right click", "Escape" }, "cancel"),
+                new KeyHint("Arrows", "valid places"), new KeyHint("E", "open row")));
+            return Frame("Key hint strip", "hintstrip", column);
         }
 
         // ------------------------------------------------------------------ states

@@ -82,6 +82,8 @@
     --ShortcutTextBrush: var(--ShortcutText);
     --ShortcutTextHoverBrush: var(--Grey900);
     --KeyCapBorderBrush: var(--Grey600);
+    --HintStripBackgroundBrush: var(--Grey200);
+    --HintStripTextBrush: var(--ShortcutText);
     /* 0.3 Geometry: CMiX.UI/Themes/Tokens/Geometry.axaml */
     --CornerRadiusNone: 0;
     --CornerRadiusAll: 2px;
@@ -149,6 +151,9 @@
     --KeyCapBorderThickness: 1px;
     --KeyCapPadding: 0 4px;
     --ToastMargin: 0 0 16px 0;
+    --HintStripHeight: 22px;
+    --HintStripPadding: 0 8px;
+    --HintStripSpacing: 12px;
     /* 0.4 Typography: CMiX.UI/Themes/Tokens/Typography.axaml */
     --DefaultFontSize: 10px;
     --FontFamilyMono: Cascadia Mono,Consolas,Menlo,monospace;

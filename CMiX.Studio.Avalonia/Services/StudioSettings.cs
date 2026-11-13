@@ -39,6 +39,13 @@ namespace CMiX.Studio.Avalonia.Services
         public string PeerName { get; set; } = "";
     }
 
+    // The look of the Studio, in the same file: { "Interface": { "ShowKeyHints": true } }. InterfaceOptions reads and writes it.
+    public class InterfaceSettings
+    {
+        // The hint strip of the keys under the tree (KeyHintStrip).
+        public bool ShowKeyHints { get; set; } = true;
+    }
+
     public class StudioSettings
     {
         public const string FileName = "studio-settings.json";
@@ -46,6 +53,8 @@ namespace CMiX.Studio.Avalonia.Services
         public static string DefaultPath => Path.Combine(AppContext.BaseDirectory, FileName);
 
         public RedisSettings Redis { get; set; } = new();
+
+        public InterfaceSettings Interface { get; set; } = new();
 
         public static StudioSettings Load() => Load(DefaultPath);
 

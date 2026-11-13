@@ -129,6 +129,9 @@ namespace CMiX.Studio.Avalonia.ViewModels
         // The settings tab edits the shortcuts with this.
         public ShortcutSettings ShortcutSettings { get; }
 
+        // The settings tab edits the interface settings with this. It is the object of the tree.
+        public InterfaceOptions Interface => ProjectTree.Interface;
+
         public IRelayCommand UndoCommand { get; }
         public IRelayCommand RedoCommand { get; }
 

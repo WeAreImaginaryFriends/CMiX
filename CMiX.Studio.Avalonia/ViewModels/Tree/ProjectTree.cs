@@ -40,13 +40,15 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
         private bool selecting;
 
         public ProjectTree(Project project, UndoManager undoManager, IMoveBlockedNotice? notice = null,
-            ShortcutMap? shortcuts = null, PathDropService? pathDrop = null, IToastService? toasts = null)
+            ShortcutMap? shortcuts = null, PathDropService? pathDrop = null, IToastService? toasts = null,
+            InterfaceOptions? interfaceOptions = null)
         {
             this.undoManager = undoManager;
             this.notice = notice;
             this.toasts = toasts;
             this.pathDrop = pathDrop ?? new PathDropService();
             Shortcuts = shortcuts ?? new ShortcutMap();
+            Interface = interfaceOptions ?? new InterfaceOptions();
             this.project = project;
             compositions = project.CompositionManager;
             // The one row under the root is the group of the compositions. The compositions are under it.
@@ -426,6 +428,9 @@ namespace CMiX.Studio.Avalonia.ViewModels.Tree
 
         // The gestures of the key bindings of the tree view (the names Tree.*).
         public ShortcutMap Shortcuts { get; }
+
+        // The interface settings, for example the hint strip of the keys under the tree (InterfaceOptions.ShowKeyHints).
+        public InterfaceOptions Interface { get; }
 
         // Opens the Add panel of the target row on that row (Tree.Add). With no target, the panel offers a composition. The panel
         // adds nothing at once. The command has the condition of every tree key (see CanRunTreeKey).

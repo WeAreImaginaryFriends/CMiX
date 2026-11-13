@@ -96,5 +96,8 @@
     <!-- The text of a shortcut on a hovered or selected menu row (RowHoverBrush). -->
     <SolidColorBrush x:Key="ShortcutTextHoverBrush" Color="{DynamicResource Grey900}" />
     <SolidColorBrush x:Key="KeyCapBorderBrush" Color="{DynamicResource Grey600}" />
+    <!-- A hint strip (KeyHintStrip): a quiet fill, and the words in the grey of a shortcut. -->
+    <SolidColorBrush x:Key="HintStripBackgroundBrush" Color="{DynamicResource Grey200}" />
+    <SolidColorBrush x:Key="HintStripTextBrush" Color="{DynamicResource ShortcutText}" />
 
 </ResourceDictionary>

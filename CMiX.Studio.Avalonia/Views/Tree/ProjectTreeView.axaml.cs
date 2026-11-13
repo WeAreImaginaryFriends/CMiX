@@ -120,6 +120,55 @@ namespace CMiX.Studio.Avalonia.Views
             // tree. The layout that follows shows that no control has the focus.
             treeView.LayoutUpdated += (_, _) => CheckTheLostFocus();
             tooltips = new TreeTooltips(treeView);
+            menuAddPanel.Closed += (_, _) => UpdateHints();
+        }
+
+        // The hint strip under the rows. A test reads it.
+        internal KeyHintStrip HintStrip => hintStrip;
+
+        // The mode that the hint strip shows. Null before the first hints.
+        private TreeHintMode? shownHintMode;
+
+        // The mode of the tree now: a menu or the Add panel of this view is open, else the focus is in the search field of the panel.
+        internal TreeHintMode HintMode
+        {
+            get
+            {
+                if (treeView.ContextMenu?.IsOpen == true || menuAddPanel.IsOpen)
+                    return TreeHintMode.Menu;
+
+                return IsSearchFocused() ? TreeHintMode.Search : TreeHintMode.Idle;
+            }
+        }
+
+        // The strip gets new hints only when the mode or a gesture changes, so the text never changes for nothing.
+        private void UpdateHints(bool gesturesChanged = false)
+        {
+            if (watched is not { } tree)
+                return;
+
+            var mode = HintMode;
+            if (!gesturesChanged && mode == shownHintMode)
+                return;
+
+            shownHintMode = mode;
+            hintStrip.Hints = TreeKeyHints.For(mode, tree.Shortcuts);
+        }
+
+        // The focus moves before the next control is known, so the check runs after the event.
+        private void OnWindowFocusChanged(object? sender, RoutedEventArgs e) =>
+            Dispatcher.UIThread.Post(() => UpdateHints(), DispatcherPriority.Input);
+
+        private void OnShortcutsChanged(object? sender, PropertyChangedEventArgs e) => UpdateHints(gesturesChanged: true);
+
+        // True when the focus is in the search field of the tree of this view, in the panel of this view.
+        private bool IsSearchFocused()
+        {
+            if (FocusedControl() is not Visual focused || focused.FindAncestorOfType<TreeSearchBox>(true) is not { } box
+                || !ReferenceEquals(box.DataContext, watched))
+                return false;
+
+            return this.FindAncestorOfType<SidePanelHost>() is not { } host || host.IsVisualAncestorOf(box);
         }
 
         // True while a check of the focus waits to run.
@@ -269,6 +318,7 @@ namespace CMiX.Studio.Avalonia.Views
 
             var point = tree.TargetNode is { } node && ShownItemOf(node) is { } item ? TreeRowAnchor.CenterOf(item, treeView) : null;
             menuAddPanel.OpenAtPoint(treeView, point ?? lastPointer, tree.GetAddGroups(tree.TargetNode), AddTitle);
+            UpdateHints();
         }
 
         // Tree.Menu, a key: the menu of the target row opens under that row (see OpenMenu). With no target, it is the menu of the project,
@@ -439,7 +489,9 @@ namespace CMiX.Studio.Avalonia.Views
             watched.CollapseOthersRequested += OnCollapseOthersRequested;
             watched.RevealRequested += OnRevealRequested;
             watched.TreeFocusRequested += OnTreeFocusRequested;
+            watched.Shortcuts.PropertyChanged += OnShortcutsChanged;
             watched.AttachView(hooks);
+            UpdateHints(gesturesChanged: true);
         }
 
         private void Unwatch()
@@ -454,6 +506,7 @@ namespace CMiX.Studio.Avalonia.Views
             watched.CollapseOthersRequested -= OnCollapseOthersRequested;
             watched.RevealRequested -= OnRevealRequested;
             watched.TreeFocusRequested -= OnTreeFocusRequested;
+            watched.Shortcuts.PropertyChanged -= OnShortcutsChanged;
             watched.DetachView(hooks);
         }
 
@@ -523,6 +576,8 @@ namespace CMiX.Studio.Avalonia.Views
             if (scaledTopLevel == null)
                 return;
 
+            scaledTopLevel.AddHandler(GotFocusEvent, OnWindowFocusChanged, RoutingStrategies.Bubble, handledEventsToo: true);
+            scaledTopLevel.AddHandler(LostFocusEvent, OnWindowFocusChanged, RoutingStrategies.Bubble, handledEventsToo: true);
             rowMetrics.SetRowMetrics(scaledTopLevel.RenderScaling);
             scaledTopLevel.ScalingChanged += OnScalingChanged;
         }
@@ -533,7 +588,11 @@ namespace CMiX.Studio.Avalonia.Views
 
             attached = false;
             if (scaledTopLevel != null)
+            {
                 scaledTopLevel.ScalingChanged -= OnScalingChanged;
+                scaledTopLevel.RemoveHandler(GotFocusEvent, OnWindowFocusChanged);
+                scaledTopLevel.RemoveHandler(LostFocusEvent, OnWindowFocusChanged);
+            }
 
             scaledTopLevel = null;
             rowDrag.Cancel();
@@ -601,6 +660,9 @@ namespace CMiX.Studio.Avalonia.Views
             treeView.ContextMenu = menu;
             if (menu == null)
                 return false;
+
+            menu.Opened += (_, _) => UpdateHints();
+            menu.Closed += (_, _) => UpdateHints();
 
             if (underRow && item != null && TreeRowAnchor.FromNameOf(item, treeView) is { } name)
             {

@@ -79,6 +79,12 @@ namespace CMiX.Studio.Avalonia
                 serviceCollection.AddSingleton<PanelFocusCycle>();
                 serviceCollection.AddSingleton(_ =>
                 {
+                    var options = new InterfaceOptions(StudioSettings.DefaultPath);
+                    options.Load();
+                    return options;
+                });
+                serviceCollection.AddSingleton(_ =>
+                {
                     var shortcuts = new ShortcutMap();
                     shortcuts.Load();
                     return shortcuts;

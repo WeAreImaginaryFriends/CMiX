@@ -162,6 +162,8 @@ Every tree shortcut but `Tree.Open` has one condition. The keyboard focus comes 
 
 The Shortcuts section of the Settings tab edits the shortcuts and saves each change to the file at once, and a missing file is created on save. A red dot marks a gesture that two commands of one scope have, and its tooltip names the other command.
 
+A hint strip under the rows of the tree shows the useful keys of the current mode: the rows (Arrows move, Enter select, E open, W menu, Shift+A add, Ctrl+Z undo), the search field (Enter next, Shift+Enter previous, Down to tree, Escape clear) and an open menu (Escape close). It shows the gestures of the shortcut file, so a changed key shows correctly. The strip takes no click and no focus. The toggle "Show key hints under the tree" in the Interface section of the Settings tab hides it. The Studio saves the toggle at once in `studio-settings.json`, as `Interface.ShowKeyHints`.
+
 While a text box has the focus, the text box gets the keys first. In the tree, the shortcuts do nothing while a name is edited.
 
 In the tree, the arrow keys, Page Up, Page Down, Home and End move the keyboard focus from row to row. Left collapses a row or goes to its parent. Right expands a row or goes to its first child. The row with the focus has a thin border in the bright color of its kind. The keyboard focus does not select the row: it writes no undo step and sends nothing to the peers. Enter or a click selects the row. The target row is the row of the arrow keys, else the selected row. The tree shortcuts and the toolbar buttons act on the target row.

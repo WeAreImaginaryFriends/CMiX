@@ -54,7 +54,8 @@ window.CMIX_CATALOGUE = [
                     { id: '5.7', name: 'SearchBox', source: 'CMiX.UI/Controls/Parts/SearchBox.axaml' },
                     { id: '5.8', name: 'IPBox', source: 'CMiX.UI/Controls/String/IPBox.axaml' },
                     { id: '5.9', name: 'KeyGestureBox', source: 'CMiX.UI/Controls/String/KeyGestureBox.axaml' },
-                    { id: '5.10', name: 'KeyCap', source: 'CMiX.UI/Themes/Styles/KeyCap.axaml' }
+                    { id: '5.10', name: 'KeyCap', source: 'CMiX.UI/Themes/Styles/KeyCap.axaml' },
+                    { id: '5.11', name: 'KeyHintStrip', source: 'CMiX.UI/Controls/Parts/KeyHintStrip.cs' }
                 ]
             },
             {

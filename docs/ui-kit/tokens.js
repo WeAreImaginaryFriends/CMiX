@@ -572,6 +572,20 @@ window.CMIX_TOKENS = {
                                           "raw":  "{DynamicResource Grey600}",
                                           "css":  "var(--Grey600)",
                                           "note":  ""
+                                      },
+                                      {
+                                          "name":  "HintStripBackgroundBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource Grey200}",
+                                          "css":  "var(--Grey200)",
+                                          "note":  "A hint strip (KeyHintStrip): a quiet fill, and the words in the grey of a shortcut."
+                                      },
+                                      {
+                                          "name":  "HintStripTextBrush",
+                                          "type":  "SolidColorBrush",
+                                          "raw":  "{DynamicResource ShortcutText}",
+                                          "css":  "var(--ShortcutText)",
+                                          "note":  ""
                                       }
                                   ]
                    },
@@ -1041,6 +1055,27 @@ window.CMIX_TOKENS = {
                                           "raw":  "0,0,0,16",
                                           "css":  "0 0 16px 0",
                                           "note":  "The space between a toast (ToastHost) and the bottom edge of its area."
+                                      },
+                                      {
+                                          "name":  "HintStripHeight",
+                                          "type":  "Double",
+                                          "raw":  "22",
+                                          "css":  "22px",
+                                          "note":  "A hint strip (KeyHintStrip): its height, the space at its two sides (SpacingMD), and the space between two hints."
+                                      },
+                                      {
+                                          "name":  "HintStripPadding",
+                                          "type":  "Thickness",
+                                          "raw":  "8,0",
+                                          "css":  "0 8px",
+                                          "note":  ""
+                                      },
+                                      {
+                                          "name":  "HintStripSpacing",
+                                          "type":  "Double",
+                                          "raw":  "12",
+                                          "css":  "12px",
+                                          "note":  ""
                                       }
                                   ]
                    },

@@ -135,5 +135,9 @@
     <Thickness x:Key="KeyCapPadding">4,0</Thickness>
     <!-- The space between a toast (ToastHost) and the bottom edge of its area. -->
     <Thickness x:Key="ToastMargin">0,0,0,16</Thickness>
+    <!-- A hint strip (KeyHintStrip): its height, the space at its two sides (SpacingMD), and the space between two hints. -->
+    <x:Double x:Key="HintStripHeight">22</x:Double>
+    <Thickness x:Key="HintStripPadding">8,0</Thickness>
+    <x:Double x:Key="HintStripSpacing">12</x:Double>
 
 </ResourceDictionary>

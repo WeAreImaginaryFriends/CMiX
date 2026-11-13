@@ -114,6 +114,8 @@ namespace CMiX.Studio.Avalonia.Views
             var settings = StudioSettings.FromSyncOptions(edited);
             settings.Redis.UseCredentialManager = UseCredentialManagerBox.IsChecked == true;
             settings.Redis.CredentialName = CredentialNameBox.Text ?? string.Empty;
+            // The file also holds the interface settings. They stay as they are.
+            settings.Interface = StudioSettings.Load().Interface ?? new InterfaceSettings();
 
             try
             {

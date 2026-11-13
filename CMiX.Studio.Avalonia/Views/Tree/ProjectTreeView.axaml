@@ -31,6 +31,12 @@
         DockPanel.Dock="Top"
         Padding="{DynamicResource TreeToolbarPadding}" />
 
+    <!-- The keys of the mode of the tree, under the rows (see TreeKeyHints). The Settings tab hides it. It takes no click and no focus. -->
+    <ui:KeyHintStrip
+        x:Name="hintStrip"
+        DockPanel.Dock="Bottom"
+        IsVisible="{Binding Interface.ShowKeyHints}" />
+
     <!-- The stripes are behind the tree, in the same cell, and follow its rows. A row is one pitch (row height plus space) from the next, so
          the bands stay under the rows whatever is open. The rows have their own fill, so the stripes show between them and beside them. -->
     <Grid>

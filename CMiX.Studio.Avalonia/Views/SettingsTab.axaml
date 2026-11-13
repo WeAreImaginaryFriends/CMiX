@@ -23,6 +23,14 @@
                 <Managers:RedisAddressesPanel DataContext="{Binding Project.RedisAddressRegistry}" />
             </ui:ExpanderIndented>
 
+            <!-- Saved in studio-settings.json at once (see InterfaceOptions). -->
+            <ui:ExpanderIndented Header="Interface">
+                <ui:ToggleButtonCaptioned
+                    x:Name="ShowKeyHintsToggle"
+                    Caption="Show key hints under the tree"
+                    IsChecked="{Binding Interface.ShowKeyHints, Mode=TwoWay}" />
+            </ui:ExpanderIndented>
+
             <ui:ExpanderIndented Header="Shortcuts" IsExpanded="False">
                 <Views:ShortcutSettingsView DataContext="{Binding ShortcutSettings}" />
             </ui:ExpanderIndented>

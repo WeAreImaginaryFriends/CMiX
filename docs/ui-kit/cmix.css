@@ -610,6 +610,22 @@
         white-space: nowrap;
     }
 
+    /* ---------------------------------------------------------------- Parts/KeyHintStrip.cs */
+    /* One quiet line at the bottom of a panel: a span.hint per hint, with its key caps and its words. It takes no click. */
+    .KeyHintStrip {
+        display: flex;
+        align-items: center;
+        gap: var(--HintStripSpacing);
+        height: var(--HintStripHeight);
+        padding: var(--HintStripPadding);
+        background: var(--HintStripBackgroundBrush);
+        color: var(--HintStripTextBrush);
+        overflow: hidden;
+        white-space: nowrap;
+        pointer-events: none;
+        > .hint { display: inline-flex; align-items: center; gap: var(--SpacingSM); }
+    }
+
     /* ---------------------------------------------------------------- Path/PathSelector.axaml */
     /* A ComboBox with the corners Left, and a Button with the icon Folder at its right. */
     .PathSelector {
