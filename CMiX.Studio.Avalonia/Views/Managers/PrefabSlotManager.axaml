@@ -31,7 +31,7 @@
                 CommandParameter="{Binding SelectedItem}"
                 DockPanel.Dock="Right"
                 IsEnabled="{Binding ManagerData.Items.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=0}">
-                <ui:AppIcon Opacity="0.7" IconKey="Remove" Size="{DynamicResource IconSizeXS}" />
+                <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="Remove" Size="{DynamicResource IconSizeXS}" />
             </Button>
 
             <Button
@@ -43,7 +43,7 @@
                 CommandParameter="{Binding SelectedItem}"
                 DockPanel.Dock="Right"
                 IsEnabled="{Binding ManagerData.Items.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=0}">
-                <ui:AppIcon Opacity="0.7" IconKey="Duplicate" Size="{DynamicResource IconSizeXS}" />
+                <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="Duplicate" Size="{DynamicResource IconSizeXS}" />
             </Button>
 
             <Button
@@ -55,7 +55,7 @@
                 CommandParameter="{Binding SelectedItem}"
                 DockPanel.Dock="Right"
                 IsEnabled="{Binding ManagerData.Items.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=0}">
-                <ui:AppIcon Opacity="0.7" IconKey="ArrowUp" Size="{DynamicResource IconSizeXS}" />
+                <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="ArrowUp" Size="{DynamicResource IconSizeXS}" />
             </Button>
 
             <Button
@@ -66,7 +66,7 @@
                 CommandParameter="{Binding SelectedItem}"
                 DockPanel.Dock="Right"
                 IsEnabled="{Binding ManagerData.Items.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=0}">
-                <ui:AppIcon Opacity="0.7" IconKey="ArrowDown" Size="{DynamicResource IconSizeXS}" />
+                <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="ArrowDown" Size="{DynamicResource IconSizeXS}" />
             </Button>
 
             <ToggleButton

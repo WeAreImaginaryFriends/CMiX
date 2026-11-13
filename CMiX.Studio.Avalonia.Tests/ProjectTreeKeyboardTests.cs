@@ -156,7 +156,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             var frame = Part(screen.View, second, "CursorFrame");
             Assert.True(frame.IsVisible);
-            Assert.Equal((Thickness)Application.Current!.FindResource("CursorFrameThickness")!, frame.BorderThickness);
+            Assert.Equal((Thickness)screen.View.FindResource("TreeSelectionThickness")!, frame.BorderThickness);
             Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("CursorFrameBrush")!).Color, ((ISolidColorBrush)frame.BorderBrush!).Color);
 
             // The first row stays selected: it keeps the selected fill and has no frame.

@@ -79,7 +79,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void CursorFrame_TreeFocused_IsTheThickBrightFrame()
+        public void CursorFrame_TreeFocused_IsTheThinBrightFrame()
         {
             var screen = Show();
             var node = screen.Tree.CursorNode!;
@@ -88,7 +88,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
             Assert.True(frame.IsVisible);
             Assert.Equal(Brush("CursorFrameBrush"), ((ISolidColorBrush)frame.BorderBrush!).Color);
-            Assert.Equal(Thickness("CursorFrameThickness"), frame.BorderThickness);
+            Assert.Equal((Thickness)screen.View.FindResource("TreeSelectionThickness")!, frame.BorderThickness);
         }
 
         [AvaloniaFact]
@@ -105,7 +105,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Assert.False(screen.View.GetVisualDescendants().OfType<TreeView>().First().IsKeyboardFocusWithin);
             Assert.True(frame.IsVisible);
             Assert.Equal(Brush("CursorFrameInactiveBrush"), ((ISolidColorBrush)frame.BorderBrush!).Color);
-            Assert.Equal(Thickness("CursorFrameInactiveThickness"), frame.BorderThickness);
+            Assert.Equal((Thickness)screen.View.FindResource("TreeSelectionThickness")!, frame.BorderThickness);
         }
 
         [AvaloniaFact]

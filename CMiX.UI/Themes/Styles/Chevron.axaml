@@ -6,7 +6,7 @@
     <!-- The icon, the size and the opacity of every chevron of the application. A control that has a
          chevron uses ui:Chevron and does not draw its own. -->
     <ControlTheme x:Key="{x:Type ui:Chevron}" TargetType="ui:Chevron">
-        <Setter Property="Opacity" Value="0.5" />
+        <Setter Property="Opacity" Value="{DynamicResource OpacityIconIdle}" />
         <Setter Property="IsHitTestVisible" Value="False" />
         <Setter Property="Template">
             <ControlTemplate>

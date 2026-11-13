@@ -118,7 +118,7 @@
                 <Template>
                     <ui:AppIcon
                         Margin="2"
-                        Opacity="0.75"
+                        Opacity="{DynamicResource OpacityIconAction}"
                         IconKey="IsChecked"
                         Size="{DynamicResource IconSizeXS}" />
                 </Template>

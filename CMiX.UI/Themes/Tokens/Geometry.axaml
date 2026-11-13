@@ -127,8 +127,12 @@
     <x:Double x:Key="OpacityDragSource">0.4</x:Double>
     <!-- The copy of the item that follows the pointer during a drag. -->
     <x:Double x:Key="OpacityDragGhost">0.8</x:Double>
-    <!-- An icon only control that is not under the pointer and not on. -->
+    <!-- An icon has one of two opacities.
+         OpacityIconIdle: a quiet icon. An icon only control that is not under the pointer and not on, a chevron, the arrow of a menu
+         row, the icon before a name.
+         OpacityIconAction: the icon of a button that does an action, in a filled button or in a toolbar. -->
     <x:Double x:Key="OpacityIconIdle">0.6</x:Double>
+    <x:Double x:Key="OpacityIconAction">0.9</x:Double>
 
     <!-- A key cap (TextBlockKeyCap): the line around the key text, and the space between the line and the text. -->
     <Thickness x:Key="KeyCapBorderThickness">1</Thickness>

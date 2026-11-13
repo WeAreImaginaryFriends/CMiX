@@ -66,7 +66,7 @@
 
                                             <Button.Content>
                                                 <ui:AppIcon
-                                                    Opacity="0.5"
+                                                    Opacity="{DynamicResource OpacityIconAction}"
                                                     IconKey="Sub"
                                                     Size="{DynamicResource IconSizeXS}" />
                                             </Button.Content>
@@ -81,7 +81,7 @@
 
                                             <Button.Content>
                                                 <ui:AppIcon
-                                                    Opacity="0.5"
+                                                    Opacity="{DynamicResource OpacityIconAction}"
                                                     IconKey="Add"
                                                     Size="{DynamicResource IconSizeXS}" />
                                             </Button.Content>
@@ -213,7 +213,7 @@
 
                                         <Button.Content>
                                             <ui:AppIcon
-                                                Opacity="0.5"
+                                                Opacity="{DynamicResource OpacityIconAction}"
                                                 IconKey="Sub"
                                                 Size="{DynamicResource IconSizeXS}" />
                                         </Button.Content>
@@ -228,7 +228,7 @@
 
                                         <Button.Content>
                                             <ui:AppIcon
-                                                Opacity="0.5"
+                                                Opacity="{DynamicResource OpacityIconAction}"
                                                 IconKey="Add"
                                                 Size="{DynamicResource IconSizeXS}" />
                                         </Button.Content>

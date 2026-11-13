@@ -15,7 +15,7 @@
                 <StackPanel Orientation="Horizontal">
                     <ui:AppIcon
                         Margin="0,0,8,0"
-                        Opacity="0.7"
+                        Opacity="{DynamicResource OpacityIconIdle}"
                         IconKey="Geometry"
                         Size="{DynamicResource IconSizeXS}" />
                     <TextBlock Text="Entity" />
@@ -31,7 +31,7 @@
           <StackPanel Orientation="Horizontal">
             <ui:AppIcon
                 Margin="0,0,8,0"
-                Opacity="0.7"
+                Opacity="{DynamicResource OpacityIconIdle}"
                 IconKey="FullscreenQuad"
                 Size="{DynamicResource IconSizeXS}" />
             <TextBlock Text="FullscreenQuad" />
@@ -47,7 +47,7 @@
               <StackPanel Orientation="Horizontal">
                   <ui:AppIcon
                       Margin="0,0,8,0"
-                      Opacity="0.7"
+                      Opacity="{DynamicResource OpacityIconIdle}"
                       IconKey="TextIcon"
                       Size="{DynamicResource IconSizeXS}" />
                   <TextBlock Text="Text" />

@@ -35,6 +35,7 @@ namespace CMiX.UI.Tests
         [InlineData("OpacityDragSource", 0.4)]
         [InlineData("OpacityDragGhost", 0.8)]
         [InlineData("OpacityIconIdle", 0.6)]
+        [InlineData("OpacityIconAction", 0.9)]
         public void Opacity_Token_HasItsValue(string key, double expected)
         {
             Assert.Equal(expected, Tokens.Get<double>(key));

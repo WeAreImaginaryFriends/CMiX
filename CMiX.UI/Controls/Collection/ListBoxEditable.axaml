@@ -46,7 +46,7 @@
                     Height="{DynamicResource ControlHeightMD}"
                     Command="{Binding MoveUpCommand, ElementName=listBoxEditable}"
                     CommandParameter="{Binding SelectedItem, ElementName=listBoxEditable}">
-                    <ui:AppIcon IconKey="ArrowUp" Opacity="0.7" Size="{DynamicResource IconSizeXS}" />
+                    <ui:AppIcon IconKey="ArrowUp" Opacity="{DynamicResource OpacityIconAction}" Size="{DynamicResource IconSizeXS}" />
                 </Button>
 
                 <Button
@@ -55,7 +55,7 @@
                     Height="{DynamicResource ControlHeightMD}"
                     Command="{Binding MoveDownCommand, ElementName=listBoxEditable}"
                     CommandParameter="{Binding SelectedItem, ElementName=listBoxEditable}">
-                    <ui:AppIcon IconKey="ArrowDown" Opacity="0.7" Size="{DynamicResource IconSizeXS}" />
+                    <ui:AppIcon IconKey="ArrowDown" Opacity="{DynamicResource OpacityIconAction}" Size="{DynamicResource IconSizeXS}" />
                 </Button>
 
             </StackPanel>

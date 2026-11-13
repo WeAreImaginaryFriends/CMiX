@@ -70,7 +70,9 @@ namespace CMiX.UI.Controls.Boolean
 
         public ButtonIcon()
         {
-            var icon = new AppIcon { Opacity = 0.9 };
+            // The icon has the opacity of an action icon, from the token OpacityIconAction.
+            var icon = new AppIcon();
+            icon.Bind(OpacityProperty, icon.GetResourceObservable("OpacityIconAction"));
             icon.Bind(AppIcon.IconKeyProperty, this.GetObservable(IconKeyProperty));
             icon.Bind(AppIcon.SizeProperty, this.GetObservable(IconSizeProperty));
             Content = icon;

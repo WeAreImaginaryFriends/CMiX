@@ -88,7 +88,7 @@ namespace CMiX.UI.Tests
 
             Assert.Equal("ChevronDown", icon.IconKey);
             Assert.Equal(Token("IconSizeXS"), icon.Size);
-            Assert.Equal(0.5, chevron.Opacity);
+            Assert.Equal(Tokens.Get<double>("OpacityIconIdle"), chevron.Opacity);
         }
 
         private static ControlTheme Theme(string key) => (ControlTheme)Application.Current!.FindResource(key)!;

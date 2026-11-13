@@ -22,7 +22,7 @@
                     Margin="8"
                     VerticalAlignment="Top"
                     DockPanel.Dock="Left"
-                    Opacity="0.9"
+                    Opacity="{DynamicResource OpacityIconAction}"
                     Size="{DynamicResource IconSizeXS}" />
                 <StackPanel VerticalAlignment="Center" Spacing="4">
                     <TextBlock

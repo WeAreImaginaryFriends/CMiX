@@ -62,7 +62,7 @@
                             Margin="8,0,0,0"
                             VerticalAlignment="Center"
                             IconKey="ChevronRight"
-                            Opacity="0.7"
+                            Opacity="{DynamicResource OpacityIconIdle}"
                             Size="{DynamicResource IconSizeXS}" />
 
                         <Popup

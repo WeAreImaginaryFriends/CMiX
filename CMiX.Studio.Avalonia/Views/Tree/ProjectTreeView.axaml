@@ -75,6 +75,15 @@
                 <Setter Property="Theme" Value="{StaticResource TreeViewItemCMiX}" />
                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
             </Style>
+            <!-- The frame of the cursor row of the tree is one pixel of the screen, with the focus and without it (TreeSelectionThickness,
+                 see TreeRowMetrics): half a unit on a screen of 200%. The color tells the two states apart. A list keeps the frame of
+                 CursorRow.axaml. The style of the focused tree is named too, so it comes after the one of CursorRow.axaml. -->
+            <Style Selector="TreeViewItem.cursor /template/ Border#CursorFrame">
+                <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
+            </Style>
+            <Style Selector="TreeView:focus-within TreeViewItem.cursor /template/ Border#CursorFrame">
+                <Setter Property="BorderThickness" Value="{DynamicResource TreeSelectionThickness}" />
+            </Style>
         </TreeView.Styles>
 
         <TreeView.DataTemplates>

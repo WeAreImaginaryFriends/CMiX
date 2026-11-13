@@ -17,7 +17,7 @@
             CommandParameter="{Binding $parent[Views:ComposableManager].ItemType}"
             Theme="{StaticResource ButtonRounded}">
             <Button.Content>
-                <ui:AppIcon Opacity="0.9" IconKey="Add" Size="{DynamicResource IconSizeXS}" />
+                <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="Add" Size="{DynamicResource IconSizeXS}" />
             </Button.Content>
         </Button>
 
@@ -31,7 +31,7 @@
             IsEnabled="{Binding ManagerData.Items.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=0}"
             Theme="{StaticResource ButtonRounded}">
             <Button.Content>
-                <ui:AppIcon Opacity="0.9" IconKey="Duplicate" Size="{DynamicResource IconSizeXS}" />
+                <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="Duplicate" Size="{DynamicResource IconSizeXS}" />
             </Button.Content>
         </Button>
 
@@ -45,7 +45,7 @@
                     CommandParameter="{Binding SelectedItem}"
                     Theme="{StaticResource ButtonRounded}">
                     <Button.Content>
-                        <ui:AppIcon Opacity="0.9" IconKey="ArrowUp" Size="{DynamicResource IconSizeXS}" />
+                        <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="ArrowUp" Size="{DynamicResource IconSizeXS}" />
                     </Button.Content>
                 </Button>
 
@@ -57,7 +57,7 @@
                     CommandParameter="{Binding SelectedItem}"
                     Theme="{StaticResource ButtonRounded}">
                     <Button.Content>
-                        <ui:AppIcon Opacity="0.9" IconKey="ArrowDown" Size="{DynamicResource IconSizeXS}" />
+                        <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="ArrowDown" Size="{DynamicResource IconSizeXS}" />
                     </Button.Content>
                 </Button>
             </StackPanel>
@@ -74,7 +74,7 @@
             IsEnabled="{Binding ManagerData.Items.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=0}"
             Theme="{StaticResource ButtonRounded}">
             <Button.Content>
-                <ui:AppIcon Opacity="0.9" IconKey="Remove" Size="{DynamicResource IconSizeXS}" />
+                <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="Remove" Size="{DynamicResource IconSizeXS}" />
             </Button.Content>
         </Button>
 

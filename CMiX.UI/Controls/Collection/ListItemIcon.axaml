@@ -9,7 +9,7 @@
 
         <ui:AppIcon
             Margin="4,0"
-            Opacity="0.7"
+            Opacity="{DynamicResource OpacityIconIdle}"
             IconKey="{Binding Icon, ElementName=listItemIcon}"
             Size="{DynamicResource IconSizeXS}" />
 

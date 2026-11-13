@@ -272,7 +272,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="border" Padding="8" Background="Transparent">
-                    <ui:AppIcon Name="image" Opacity="0.75" IconKey="{TemplateBinding Content}" Size="{DynamicResource IconSizeXS}" />
+                    <ui:AppIcon Name="image" Opacity="{DynamicResource OpacityIconIdle}" IconKey="{TemplateBinding Content}" Size="{DynamicResource IconSizeXS}" />
                 </Border>
             </ControlTemplate>
         </Setter>
