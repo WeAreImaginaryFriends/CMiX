@@ -8,7 +8,7 @@
     <DockPanel>
 
         <ui:AppIcon
-            Margin="4,0"
+            Margin="0,0,4,0"
             Opacity="{DynamicResource OpacityIconIdle}"
             IconKey="{Binding Icon, ElementName=listItemIcon}"
             Size="{DynamicResource IconSizeXS}" />

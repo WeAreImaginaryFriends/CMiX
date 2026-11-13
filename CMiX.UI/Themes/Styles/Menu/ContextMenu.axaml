@@ -15,6 +15,7 @@
                 <Border
                     Name="root"
                     Padding="8,4"
+                    CornerRadius="{DynamicResource CornerRadiusAll}"
                     HorizontalAlignment="Stretch"
                     Background="{TemplateBinding Background}">
                     <Grid VerticalAlignment="Center">

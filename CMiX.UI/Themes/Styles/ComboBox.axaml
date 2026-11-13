@@ -125,7 +125,7 @@
                         Content="{TemplateBinding Content}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"
                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        Margin="4,0"
+                        Margin="8,0"
                         VerticalAlignment="Center" />
                 </Border>
             </ControlTemplate>

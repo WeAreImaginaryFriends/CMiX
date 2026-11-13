@@ -197,7 +197,7 @@
                         Name="Bd"
                         Background="Transparent"
                         CornerRadius="{DynamicResource CornerRadiusAll}"
-                        Padding="2,0,0,0"
+                        Padding="8,0,0,0"
                         TextElement.Foreground="{DynamicResource ForegroundBrush}">
                         <ContentPresenter
                             Name="PART_ContentPresenter"

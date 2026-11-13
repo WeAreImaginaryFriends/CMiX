@@ -197,7 +197,7 @@ namespace CMiX.UI.Controls.Collection
             Grid.SetColumn(text, 1);
             grid.Children.Add(text);
 
-            var row = new Border { Padding = new Thickness(6, 0), Child = grid };
+            var row = new Border { Padding = new Thickness(8, 0), Child = grid };
             row.Classes.Add("row");
             row.Classes.Add("header");
             if (!group.HasEnabledItems)
