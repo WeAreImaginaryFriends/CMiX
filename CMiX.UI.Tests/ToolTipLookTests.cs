@@ -29,7 +29,7 @@ namespace CMiX.UI.Tests
         {
             var tip = Show("Tip");
 
-            var card = tip.GetVisualDescendants().OfType<Border>().First(part => part.Name == "PART_Card");
+            var card = tip.GetVisualDescendants().OfType<Border>().First(part => part.Name == "PART_Surface");
 
             var fill = ((ISolidColorBrush)Application.Current!.FindResource("PopupBackgroundBrush")!).Color;
             Assert.Equal(fill, ((ISolidColorBrush)card.Background!).Color);

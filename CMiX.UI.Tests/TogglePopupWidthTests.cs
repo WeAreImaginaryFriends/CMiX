@@ -85,7 +85,7 @@ namespace CMiX.UI.Tests
 
         // The panel that the user sees, without the room of the shadow around it.
         private static double PanelWidth(Popup popup) =>
-            popup.Child!.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PART_Panel").Bounds.Width;
+            popup.Child!.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PART_Surface").Bounds.Width;
 
         [AvaloniaFact]
         public void ThePopupButton_IsAsWideAsItsToggle()

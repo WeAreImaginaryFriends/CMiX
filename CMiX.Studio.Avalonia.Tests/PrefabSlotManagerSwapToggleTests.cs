@@ -65,7 +65,7 @@ namespace CMiX.Studio.Avalonia.Tests
             Dispatcher.UIThread.RunJobs();
 
             var popup = view.GetLogicalDescendants().OfType<Popup>().Single();
-            var panel = popup.Child!.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PART_Panel");
+            var panel = popup.Child!.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PART_Surface");
             Assert.Equal(toggle.PointToScreen(new Point(0, 0)).X, panel.PointToScreen(new Point(0, 0)).X);
             Assert.Equal(toggle.PointToScreen(new Point(0, toggle.Bounds.Height)).Y - 1, panel.PointToScreen(new Point(0, 0)).Y);
         }

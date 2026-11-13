@@ -326,7 +326,7 @@ namespace CMiX.Studio.Avalonia.Tests
             // The box of the card of the panel, in the window.
             public Rect CardBox()
             {
-                var box = Panel.Card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Card");
+                var box = Panel.Card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Surface");
                 return new Rect(box.TranslatePoint(default, Window)!.Value, box.Bounds.Size);
             }
 

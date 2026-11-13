@@ -28,7 +28,7 @@ namespace CMiX.UI.Tests
             card.ApplyTemplate();
             Dispatcher.UIThread.RunJobs();
 
-            var box = card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Card");
+            var box = card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Surface");
             var tip = card.GetVisualDescendants().OfType<PopupTip>().First();
             return (card, box, tip);
         }

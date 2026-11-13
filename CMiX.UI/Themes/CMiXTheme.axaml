@@ -30,6 +30,7 @@
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/TextBox.axaml" />
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/ListBox.axaml" />
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/ComboBox.axaml" />
+                <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/Menu/PopupSurface.axaml" />
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/Menu/PopupFrame.axaml" />
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/Menu/PopupCard.axaml" />
                 <ResourceInclude Source="avares://CMiX.UI/Themes/Styles/Menu/DropdownFrame.axaml" />

@@ -43,7 +43,7 @@ namespace CMiX.UI.Tests
         private static (ToolTipCard Card, Rect Box) Read(Window window)
         {
             var card = window.GetVisualDescendants().OfType<ToolTipCard>().First();
-            var box = card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Card");
+            var box = card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Surface");
             return (card, new Rect(box.TranslatePoint(default, window)!.Value, box.Bounds.Size));
         }
 

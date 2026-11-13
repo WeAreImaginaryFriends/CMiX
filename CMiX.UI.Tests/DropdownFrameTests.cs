@@ -35,7 +35,7 @@ namespace CMiX.UI.Tests
         }
 
         private static Border PanelOf(Popup popup) =>
-            popup.Child!.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PART_Panel");
+            popup.Child!.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PART_Surface");
 
         [AvaloniaFact]
         public void ThePopupOfAPopupButton_HoldsADropdownFrame()

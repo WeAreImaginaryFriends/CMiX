@@ -40,7 +40,7 @@ namespace CMiX.UI.Tests
             ToolTip.SetIsOpen(button, true);
             Dispatcher.UIThread.RunJobs();
             var tip = window.GetVisualDescendants().OfType<ToolTip>().First();
-            var border = tip.GetVisualDescendants().OfType<Border>().First(part => part.Name == "PART_Card");
+            var border = tip.GetVisualDescendants().OfType<Border>().First(part => part.Name == "PART_Surface");
             var at = border.TranslatePoint(default, window)!.Value;
             return (new Rect(at, border.Bounds.Size), border);
         }

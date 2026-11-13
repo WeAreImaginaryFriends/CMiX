@@ -6,28 +6,13 @@
     <ControlTheme x:Key="{x:Type ui:PopupFrame}" TargetType="ui:PopupFrame">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border
-                    Background="Transparent"
-                    Effect="{DynamicResource DropShadowWindow}"
-                    Padding="{x:Static ui:PopupFrame.ShadowMargin}">
-
-                    <Panel MinWidth="{TemplateBinding PanelMinWidth}">
-                        <Border
-                            Background="{DynamicResource PopupBackgroundBrush}"
-                            CornerRadius="{DynamicResource CornerRadiusAll}"
-                            Padding="0" />
-
-                        <Border Padding="8">
-                            <ContentPresenter
-                                Name="PART_ContentPresenter"
-                                Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                ui:EditCycle.IsLoop="True" />
-                        </Border>
-
-                    </Panel>
-
-                </Border>
+                <ui:PopupSurface Padding="8" SurfaceMinWidth="{TemplateBinding PanelMinWidth}">
+                    <ContentPresenter
+                        Name="PART_ContentPresenter"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        ui:EditCycle.IsLoop="True" />
+                </ui:PopupSurface>
             </ControlTemplate>
         </Setter>
     </ControlTheme>

@@ -8,23 +8,15 @@
         <Setter Property="Padding" Value="8" />
         <Setter Property="Template">
             <ControlTemplate>
-                <Border
-                    Background="Transparent"
-                    Effect="{DynamicResource DropShadowWindow}"
-                    Padding="{TemplateBinding Padding}">
-
-                    <Border
-                        Name="PART_Panel"
-                        Background="{DynamicResource PopupBackgroundBrush}"
-                        CornerRadius="{DynamicResource CornerRadiusBottom}"
-                        Padding="2,4,2,2">
-                        <ContentPresenter
-                            Name="PART_ContentPresenter"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}" />
-                    </Border>
-
-                </Border>
+                <ui:PopupSurface
+                    Padding="2,4,2,2"
+                    CornerRadius="{DynamicResource CornerRadiusBottom}"
+                    ShadowMargin="{TemplateBinding Padding}">
+                    <ContentPresenter
+                        Name="PART_ContentPresenter"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </ui:PopupSurface>
             </ControlTemplate>
         </Setter>
     </ControlTheme>

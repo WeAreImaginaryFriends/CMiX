@@ -29,8 +29,8 @@ namespace CMiX.UI.Tests
             Host(frame);
             frame.ApplyTemplate();
 
-            var root = Assert.IsType<Border>(frame.GetVisualChildren().Single());
-            Assert.NotNull(root.Effect);
+            var surface = Assert.IsType<PopupSurface>(frame.GetVisualChildren().Single());
+            Assert.NotNull(Assert.IsType<Border>(surface.GetVisualChildren().Single()).Effect);
             var presenter = frame.GetVisualDescendants().OfType<ContentPresenter>()
                 .Single(p => p.Name == "PART_ContentPresenter" && p.TemplatedParent == frame);
             Assert.Same(text, presenter.Content);

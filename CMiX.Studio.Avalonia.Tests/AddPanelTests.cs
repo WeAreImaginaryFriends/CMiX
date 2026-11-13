@@ -64,7 +64,7 @@ namespace CMiX.Studio.Avalonia.Tests
 
         private static Rect BoxOf(Setup setup)
         {
-            var box = setup.Panel.Card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Card");
+            var box = setup.Panel.Card.GetVisualDescendants().OfType<Border>().First(border => border.Name == "PART_Surface");
             return new Rect(box.TranslatePoint(default, setup.Window)!.Value, box.Bounds.Size);
         }
 
