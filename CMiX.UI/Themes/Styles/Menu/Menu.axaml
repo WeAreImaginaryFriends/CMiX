@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI"
     xmlns:sys="using:System">
 
     <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem">
@@ -104,6 +105,8 @@
     <ControlTheme x:Key="MenuItemTop" TargetType="MenuItem">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="4" />
+        <!-- The drop down of the main menu has the look of a context menu: the rows of MenuItemContext in a PopupFrame. -->
+        <Setter Property="ItemContainerTheme" Value="{DynamicResource MenuItemContext}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Border
@@ -136,26 +139,22 @@
                         </ContentPresenter>
                         <Popup
                             Name="PART_Popup"
-                            HorizontalOffset="-4"
+                            HorizontalOffset="-8"
                             IsLightDismissEnabled="True"
                             IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
                             OverlayInputPassThroughElement="{Binding $parent[Menu]}"
                             Placement="BottomEdgeAlignedLeft"
-                            VerticalOffset="4">
-                            <Border
-                                Name="SubMenuBorder"
-                                Margin="0,0,8,8"
-                                Padding="2"
-                                Background="{DynamicResource PopupBackgroundBrush}"
-                                CornerRadius="{DynamicResource CornerRadiusAll}"
-                                BoxShadow="0 0 8 0 #FF000000">
+                            VerticalOffset="-4">
+                            <!-- The frame has 8 of room for its shadow on every side. The offsets take it back: the panel starts at the left
+                                 edge of the row of the bar, 4 under it. -->
+                            <ui:PopupFrame PanelMinWidth="{DynamicResource PopupMinWidth}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                     <ItemsPresenter
                                         Name="PART_ItemsPresenter"
                                         Grid.IsSharedSizeScope="True"
                                         ItemsPanel="{TemplateBinding ItemsPanel}" />
                                 </ScrollViewer>
-                            </Border>
+                            </ui:PopupFrame>
                         </Popup>
                     </Grid>
                 </Border>

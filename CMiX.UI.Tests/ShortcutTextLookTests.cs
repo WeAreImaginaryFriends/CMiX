@@ -77,9 +77,10 @@ namespace CMiX.UI.Tests
             Color BackgroundOf(MenuItem item)
             {
                 var popup = item.GetVisualDescendants().OfType<Popup>().Single(part => part.Name == "PART_Popup");
-                var border = Assert.IsType<Border>(popup.Child);
-                Assert.Equal("SubMenuBorder", border.Name);
-                return ((ISolidColorBrush)border.Background!).Color;
+                // The panel is the one Border of the frame that has a fill.
+                var frame = Assert.IsType<CMiX.UI.Controls.Parts.PopupFrame>(popup.Child);
+                var panel = frame.GetVisualDescendants().OfType<Border>().First(part => part.Background is ISolidColorBrush fill && fill.Color.A == 255);
+                return ((ISolidColorBrush)panel.Background!).Color;
             }
 
             var card = Tokens.Get<Color>("PopupCardBackground");
@@ -103,7 +104,8 @@ namespace CMiX.UI.Tests
             Dispatcher.UIThread.RunJobs();
 
             var popup = file.GetVisualDescendants().OfType<Popup>().Single(part => part.Name == "PART_Popup");
-            var background = ((ISolidColorBrush)((Border)popup.Child!).Background!).Color;
+            var panel = popup.Child!.GetVisualDescendants().OfType<Border>().First(part => part.Background is ISolidColorBrush fill && fill.Color.A == 255);
+            var background = ((ISolidColorBrush)panel.Background!).Color;
 
             Assert.True(ContrastRatio(Tokens.Get<Color>("ShortcutText"), background) >= 4.5);
         }
