@@ -41,7 +41,7 @@ namespace CMiX.UI.Tests
         {
             var (_, toggle) = Show("Antialiasing");
 
-            var text = toggle.GetVisualDescendants().OfType<TextBlock>().Single();
+            var text = toggle.GetVisualDescendants().OfType<TextBlock>().Single(block => block.Text == toggle.Caption);
 
             Assert.Equal("Antialiasing", text.Text);
             Assert.True(text.TranslatePoint(new Point(0, 0), toggle)!.Value.X > Box(toggle).TranslatePoint(new Point(0, 0), toggle)!.Value.X);
@@ -71,7 +71,7 @@ namespace CMiX.UI.Tests
         public void ClickOnTheCaption_TogglesIt()
         {
             var (window, toggle) = Show();
-            var text = toggle.GetVisualDescendants().OfType<TextBlock>().Single();
+            var text = toggle.GetVisualDescendants().OfType<TextBlock>().Single(block => block.Text == toggle.Caption);
 
             PointerInput.Click(window, text, MouseButton.Left);
 

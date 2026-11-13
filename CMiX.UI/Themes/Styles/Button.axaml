@@ -50,27 +50,11 @@
         </Style>
     </ControlTheme>
 
-    <ControlTheme x:Key="ButtonStraight"
-        BasedOn="{StaticResource {x:Type Button}}"
-        TargetType="Button">
-        <Setter Property="(ui:PositionedControl.Position)" Value="None" />
-    </ControlTheme>
-
-    <ControlTheme x:Key="ButtonRounded"
-        BasedOn="{StaticResource {x:Type Button}}"
-        TargetType="Button">
-        <Setter Property="(ui:PositionedControl.Position)" Value="All" />
-    </ControlTheme>
-
-    <ControlTheme x:Key="ButtonRoundedRight"
+    <!-- A button at the right end of a control that shows no hover and no press: the modulator button of a value. -->
+    <ControlTheme x:Key="ButtonRoundedRightNoHover"
         BasedOn="{StaticResource {x:Type Button}}"
         TargetType="Button">
         <Setter Property="(ui:PositionedControl.Position)" Value="Right" />
-    </ControlTheme>
-
-    <ControlTheme x:Key="ButtonRoundedRightNoHover"
-        BasedOn="{StaticResource ButtonRoundedRight}"
-        TargetType="Button">
         <Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="Background" Value="Transparent" />
         </Style>
@@ -79,38 +63,58 @@
         </Style>
     </ControlTheme>
 
-    <ControlTheme x:Key="ButtonInlineCaption"
-        BasedOn="{StaticResource {x:Type Button}}"
-        TargetType="Button">
-        <Style Selector="^:pointerover /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
-        </Style>
-        <Style Selector="^:pressed /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-        </Style>
-    </ControlTheme>
-
-    <ControlTheme x:Key="ButtonInlineRight"
-        BasedOn="{StaticResource ButtonRoundedRight}"
-        TargetType="Button">
-        <Style Selector="^:pressed /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-        </Style>
-    </ControlTheme>
-
-    <!-- The toolbar look: a transparent square with a rounded corner and one icon. -->
+    <!-- The one icon button: a square with one icon. With no class it has no fill: a toolbar button.
+         The corners follow PositionedControl.Position, as for every button. -->
     <ControlTheme x:Key="{x:Type ui:ButtonIcon}"
-        BasedOn="{StaticResource ButtonRounded}"
+        BasedOn="{StaticResource {x:Type Button}}"
         TargetType="ui:ButtonIcon">
         <Setter Property="Width" Value="{DynamicResource ControlHeightMD}" />
         <Setter Property="Height" Value="{DynamicResource ControlHeightMD}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="IconSize" Value="{DynamicResource IconSizeXS}" />
+        <Setter Property="IconOpacity" Value="{DynamicResource OpacityIconAction}" />
 
         <!-- The class filled gives the fill of a button: an icon button that is a part of a group of controls, such as the
              buttons under a list. Without the class, the button has no fill: a toolbar button. -->
         <Style Selector="^.filled">
             <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
+        </Style>
+
+        <!-- The class quiet: no fill at all, also under the pointer. The icon is dim at rest and lit under the pointer.
+             The close button of a panel and the clear button of a search field have it. -->
+        <Style Selector="^.quiet">
+            <Setter Property="IconOpacity" Value="{DynamicResource OpacityIconIdle}" />
+        </Style>
+        <Style Selector="^.quiet:pointerover">
+            <Setter Property="IconOpacity" Value="1" />
+        </Style>
+        <Style Selector="^.quiet:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="^.quiet:pressed /template/ Border#border">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <!-- The class handle: the handle that drags a row or a panel. It has no fill and the hand cursor. -->
+        <Style Selector="^.handle">
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="^.handle:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="^.handle:pressed /template/ Border#border">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <!-- The class window: a button of the title bar of the window. It is larger and square, and its icon is dim at rest. -->
+        <Style Selector="^.window">
+            <Setter Property="Width" Value="{DynamicResource ControlHeightXL}" />
+            <Setter Property="Height" Value="{DynamicResource ControlHeightXL}" />
+            <Setter Property="(ui:PositionedControl.Position)" Value="None" />
+            <Setter Property="IconOpacity" Value="{DynamicResource OpacityIconIdle}" />
+        </Style>
+        <Style Selector="^.window:pointerover">
+            <Setter Property="IconOpacity" Value="1" />
         </Style>
     </ControlTheme>
 
@@ -218,88 +222,16 @@
         </Style>
     </ControlTheme>
 
-    <ControlTheme x:Key="ButtonValidation" TargetType="Button">
-        <Setter Property="IsEnabled" Value="True" />
-        <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border
-                    Name="border"
-                    Margin="0"
-                    Background="{DynamicResource AccentInactiveBrush}"
-                    BorderBrush="{DynamicResource Shadow}"
-                    BorderThickness="0,0,0,2"
-                    CornerRadius="{DynamicResource CornerRadiusAll}">
-
-                    <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
-                        <TextBlock
-                            Name="textBlock"
-                            HorizontalAlignment="Center"
-                            Foreground="{DynamicResource ForegroundBrush}"
-                            Text="{TemplateBinding Content}" />
-                    </Viewbox>
-                </Border>
-            </ControlTemplate>
-        </Setter>
-
-        <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        </Style>
+    <!-- A button whose Caption is its label. Under the pointer and while pressed it has the accent. -->
+    <ControlTheme x:Key="{x:Type ui:ButtonCaptioned}"
+        BasedOn="{StaticResource {x:Type Button}}"
+        TargetType="ui:ButtonCaptioned">
         <Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
         </Style>
-
         <Style Selector="^:pressed /template/ Border#border">
             <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
         </Style>
-
-        <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
-        </Style>
     </ControlTheme>
-
-    <ControlTheme x:Key="ButtonWindowControl"
-        BasedOn="{StaticResource {x:Type Button}}"
-        TargetType="Button">
-        <Setter Property="Height" Value="{DynamicResource ControlHeightXL}" />
-        <Setter Property="Width" Value="{DynamicResource ControlHeightXL}" />
-        <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-    </ControlTheme>
-
-    <ControlTheme x:Key="ButtonWindowIcon"
-        BasedOn="{StaticResource ButtonWindowControl}"
-        TargetType="Button">
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border Name="border" Padding="8" Background="Transparent">
-                    <ui:AppIcon Name="image" Opacity="{DynamicResource OpacityIconIdle}" IconKey="{TemplateBinding Content}" Size="{DynamicResource IconSizeXS}" />
-                </Border>
-            </ControlTemplate>
-        </Setter>
-
-        <Style Selector="^:pointerover /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource StateHoverBrush}" />
-        </Style>
-        <Style Selector="^:pointerover /template/ ui|AppIcon#image">
-            <Setter Property="Opacity" Value="1.0" />
-        </Style>
-
-        <Style Selector="^:pressed /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource StatePressedBrush}" />
-        </Style>
-        <Style Selector="^:pressed /template/ ui|AppIcon#image">
-            <Setter Property="Opacity" Value="1.0" />
-        </Style>
-    </ControlTheme>
-
-    <ControlTheme x:Key="{x:Type ui:ButtonCaptioned}"
-        BasedOn="{StaticResource ButtonInlineCaption}"
-        TargetType="ui:ButtonCaptioned" />
 
 </ResourceDictionary>

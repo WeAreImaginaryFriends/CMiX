@@ -157,7 +157,7 @@
                     <ToggleButton
                         Name="toggle"
                         IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
-                        Theme="{DynamicResource ToggleButtonRoundedLeft}"
+                        ui:PositionedControl.Position="Left"
                         Width="22">
                         <ToggleButton.Content>
                             <ui:Chevron

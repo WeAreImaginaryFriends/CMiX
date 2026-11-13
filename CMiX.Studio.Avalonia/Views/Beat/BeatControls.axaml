@@ -6,16 +6,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     d:DesignWidth="400">
 
-    <Grid ColumnDefinitions="40*,60*" Height="{DynamicResource ControlHeightMD}">
+    <ui:ContentCaptioned Caption="Beat">
 
-        <TextBlock
-            Grid.Column="0"
-            Margin="8,0"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center"
-            Text="Beat" />
-
-        <ui:DockPanelPositioned Grid.Column="1">
+        <ui:DockPanelPositioned>
 
             <ui:ButtonIcon
                 Command="{Binding MultiplyCommand}"
@@ -58,6 +51,6 @@
 
         </ui:DockPanelPositioned>
 
-    </Grid>
+    </ui:ContentCaptioned>
 
 </UserControl>

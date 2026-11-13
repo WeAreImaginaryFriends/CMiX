@@ -23,20 +23,20 @@
                     Grid.Column="0"
                     Content="X"
                     IsChecked="{Binding XIsChecked, ElementName=axisSelector3D, Mode=TwoWay}"
-                    Theme="{StaticResource ToggleButtonInlineLeft}" />
+                    ui:PositionedControl.Position="Left" />
 
                 <ToggleButton
                     Grid.Column="1"
                     Margin="1,0"
                     Content="Y"
                     IsChecked="{Binding YIsChecked, ElementName=axisSelector3D, Mode=TwoWay}"
-                    Theme="{StaticResource ToggleButtonInlineCenter}" />
+                    ui:PositionedControl.Position="None" />
 
                 <ToggleButton
                     Grid.Column="2"
                     Content="Z"
                     IsChecked="{Binding ZIsChecked, ElementName=axisSelector3D, Mode=TwoWay}"
-                    Theme="{StaticResource ToggleButtonInlineRight}" />
+                    ui:PositionedControl.Position="Right" />
 
             </Grid>
 

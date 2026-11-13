@@ -68,16 +68,13 @@
                 <DataTemplate>
                     <DockPanel>
 
-                        <Button
-                            Width="{DynamicResource ControlHeightMD}"
-                            Height="{DynamicResource ControlHeightMD}"
+                        <ui:ButtonIcon
+                            Classes="handle"
                             DockPanel.Dock="Right"
                             IsVisible="{Binding $parent[ui:ListBoxEditable].ReorderService, Converter={x:Static ObjectConverters.IsNotNull}}"
                             ui:DragHandle.IsEnabled="True"
                             ui:DragHandle.IsPressed="{Binding $parent[ui:ListBoxEditable].ReorderService.DragHandleIsPressed, Mode=TwoWay}"
-                            Theme="{StaticResource ButtonDragHandle}">
-                            <ui:AppIcon IconKey="DragHandle" Size="{DynamicResource IconSizeXS}" />
-                        </Button>
+                            IconKey="DragHandle" />
 
                         <ContentControl
                             Content="{Binding}"

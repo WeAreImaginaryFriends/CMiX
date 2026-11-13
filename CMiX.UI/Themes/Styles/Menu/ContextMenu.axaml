@@ -137,6 +137,9 @@
         </Style>
     </ControlTheme>
 
+    <!-- A menu item with no theme of its own has the look of a row of a context menu. -->
+    <ControlTheme x:Key="{x:Type MenuItem}" BasedOn="{StaticResource MenuItemContext}" TargetType="MenuItem" />
+
     <!-- The look of every menu popup. A context menu and a menu flyout derive from it. -->
     <ControlTheme x:Key="MenuPanel" TargetType="MenuBase">
         <Setter Property="Grid.IsSharedSizeScope" Value="True" />

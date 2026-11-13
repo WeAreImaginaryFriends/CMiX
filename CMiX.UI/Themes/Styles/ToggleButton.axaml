@@ -26,106 +26,6 @@
         </Style>
     </ControlTheme>
 
-    <ControlTheme
-        x:Key="ToggleButtonRounded"
-        BasedOn="{StaticResource {x:Type ToggleButton}}"
-        TargetType="ToggleButton">
-        <Setter Property="(ui:PositionedControl.Position)" Value="All" />
-    </ControlTheme>
-
-    <ControlTheme
-        x:Key="ToggleButtonRoundedLeft"
-        BasedOn="{StaticResource {x:Type ToggleButton}}"
-        TargetType="ToggleButton">
-        <Setter Property="(ui:PositionedControl.Position)" Value="Left" />
-    </ControlTheme>
-
-    <ControlTheme x:Key="ToggleButtonCheckBox" TargetType="ToggleButton">
-        <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="(ui:PositionedControl.Position)" Value="All" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Template">
-            <ControlTemplate>
-
-                <Border
-                    Name="border"
-                    Padding="4"
-                    HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                    VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                    Background="{TemplateBinding Background}"
-                    CornerRadius="{DynamicResource CornerRadiusAll}">
-
-                    <ui:AppIcon 
-                        Name="icon" 
-                        IconKey="IsChecked" 
-                        Size="{DynamicResource IconSizeXS}" />
-
-                </Border>
-
-            </ControlTemplate>
-        </Setter>
-
-        <Style Selector="^:pressed /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource StatePressedBrush}" />
-        </Style>
-
-        <Style Selector="^:disabled /template/ Border#border">
-            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
-        </Style>
-
-        <Style Selector="^:checked:not(:pointerover) /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
-        </Style>
-        <Style Selector="^:checked:not(:pointerover) /template/ ui|AppIcon#icon">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
-
-        <Style Selector="^:checked:pointerover /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
-        </Style>
-
-        <Style Selector="^:checked:pointerover /template/ ui|AppIcon#icon">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
-
-        <Style Selector="^:unchecked:pointerover /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource StateHoverBrush}" />
-        </Style>
-        <Style Selector="^:unchecked:pointerover /template/ ui|AppIcon#icon">
-            <Setter Property="Opacity" Value="0" />
-        </Style>
-
-        <Style Selector="^:unchecked:not(:pointerover) /template/ Border#border">
-            <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
-        </Style>
-        <Style Selector="^:unchecked:not(:pointerover) /template/ ui|AppIcon#icon">
-            <Setter Property="Opacity" Value="0" />
-        </Style>
-    </ControlTheme>
-
-    <ControlTheme
-        x:Key="ToggleButtonCheck"
-        BasedOn="{StaticResource {x:Type ToggleButton}}"
-        TargetType="ToggleButton">
-        <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusAll}" />
-        <Setter Property="Content" Value="" />
-        <Style Selector="^:checked">
-            <Setter Property="Content">
-                <Template>
-                    <ui:AppIcon
-                        Margin="2"
-                        Opacity="{DynamicResource OpacityIconAction}"
-                        IconKey="IsChecked"
-                        Size="{DynamicResource IconSizeXS}" />
-                </Template>
-            </Setter>
-        </Style>
-    </ControlTheme>
-
     <!-- A toggle that is only an icon. The icon is dim at rest and lit under the pointer. A theme based on
          this one sets the icon with IconKey in a style, and a second icon for the on state with the same style
          under :checked. The opacities are styles, not local values. A local value would block the states. -->
@@ -245,28 +145,8 @@
         </Style>
     </ControlTheme>
 
-    <ControlTheme x:Key="ToggleButtonInlineLeft"
-        BasedOn="{StaticResource {x:Type ToggleButton}}"
-        TargetType="ToggleButton">
-        <Setter Property="(ui:PositionedControl.Position)" Value="Left" />
-    </ControlTheme>
-
-    <ControlTheme x:Key="ToggleButtonInlineCenter"
-        BasedOn="{StaticResource {x:Type ToggleButton}}"
-        TargetType="ToggleButton">
-        <Setter Property="(ui:PositionedControl.Position)" Value="None" />
-    </ControlTheme>
-
-    <ControlTheme x:Key="ToggleButtonInlineRight"
-        BasedOn="{StaticResource {x:Type ToggleButton}}"
-        TargetType="ToggleButton">
-        <Setter Property="(ui:PositionedControl.Position)" Value="Right" />
-    </ControlTheme>
-
-    <!-- The box of ToggleButtonCaptioned without the caption, for a toggle inside another control. -->
-    <ControlTheme x:Key="ToggleButtonBox" TargetType="ToggleButton">
-        <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="VerticalAlignment" Value="Center" />
+    <!-- The one check box of CMiX: a box with a check mark. It reacts to its own hover. It does not take a click: its owner does. -->
+    <ControlTheme x:Key="{x:Type ui:CheckMark}" TargetType="ui:CheckMark">
         <Setter Property="Template">
             <ControlTemplate>
                 <Border
@@ -284,96 +164,58 @@
             </ControlTemplate>
         </Setter>
 
-        <Style Selector="^:pressed /template/ Border#box">
-            <Setter Property="Background" Value="{DynamicResource StatePressedBrush}" />
+        <Style Selector="^ /template/ ui|AppIcon#icon">
+            <Setter Property="Opacity" Value="0" />
         </Style>
-
-        <Style Selector="^:disabled /template/ Border#box">
-            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
+        <Style Selector="^:pointerover /template/ Border#box">
+            <Setter Property="Background" Value="{DynamicResource StateHoverBrush}" />
         </Style>
-
-        <Style Selector="^:checked /template/ Border#box:not(:pointerover)">
+        <Style Selector="^:checked /template/ Border#box">
             <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
         </Style>
-        <Style Selector="^:checked /template/ Border#box:pointerover">
+        <Style Selector="^:checked:pointerover /template/ Border#box">
             <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
         </Style>
         <Style Selector="^:checked /template/ ui|AppIcon#icon">
             <Setter Property="Opacity" Value="1" />
         </Style>
-
-        <Style Selector="^:unchecked /template/ Border#box:pointerover">
-            <Setter Property="Background" Value="{DynamicResource StateHoverBrush}" />
-        </Style>
-        <Style Selector="^:unchecked /template/ Border#box:not(:pointerover)">
-            <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
-        </Style>
-        <Style Selector="^:unchecked /template/ ui|AppIcon#icon">
-            <Setter Property="Opacity" Value="0" />
+        <Style Selector="^:disabled /template/ Border#box">
+            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
     </ControlTheme>
 
-    <!-- The box in the value column and the Caption beside it. The box reacts to its own hover. -->
+    <!-- A toggle that is only the check box, for a toggle inside another control. -->
+    <ControlTheme x:Key="ToggleButtonBox" TargetType="ToggleButton">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ui:CheckMark IsChecked="{TemplateBinding IsChecked}" />
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- The check box in the value column, with the Caption beside it. A click on the box or on the Caption changes it. -->
     <ControlTheme x:Key="{x:Type ui:ToggleButtonCaptioned}" TargetType="ui:ToggleButtonCaptioned">
         <Setter Property="Height" Value="{DynamicResource ControlHeightMD}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="Template">
             <ControlTemplate>
-                <Grid ColumnDefinitions="40*,60*">
-                    <DockPanel
-                        Grid.Column="1"
-                        Background="Transparent">
-                        <Border
-                            Name="box"
-                            Width="{DynamicResource ControlHeightXS}"
-                            Height="{DynamicResource ControlHeightXS}"
-                            Padding="4"
+                <ui:ContentCaptioned>
+                    <DockPanel Background="Transparent">
+                        <ui:CheckMark
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Background="{DynamicResource StateIdleBrush}"
-                            CornerRadius="{DynamicResource CornerRadiusAll}">
-                            <ui:AppIcon
-                                Name="icon"
-                                IconKey="IsChecked"
-                                Size="{DynamicResource IconSizeXS}" />
-                        </Border>
+                            IsChecked="{TemplateBinding IsChecked}" />
                         <TextBlock
                             Padding="4,0"
                             HorizontalAlignment="Left"
                             Foreground="{TemplateBinding Foreground}"
                             Text="{TemplateBinding Caption}" />
                     </DockPanel>
-                </Grid>
+                </ui:ContentCaptioned>
             </ControlTemplate>
         </Setter>
-
-        <Style Selector="^:pressed /template/ Border#box">
-            <Setter Property="Background" Value="{DynamicResource StatePressedBrush}" />
-        </Style>
-
-        <Style Selector="^:disabled /template/ Border#box">
-            <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
-        </Style>
-
-        <Style Selector="^:checked /template/ Border#box:not(:pointerover)">
-            <Setter Property="Background" Value="{DynamicResource AccentInactiveBrush}" />
-        </Style>
-        <Style Selector="^:checked /template/ Border#box:pointerover">
-            <Setter Property="Background" Value="{DynamicResource StateOnHoverBrush}" />
-        </Style>
-        <Style Selector="^:checked /template/ ui|AppIcon#icon">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
-
-        <Style Selector="^:unchecked /template/ Border#box:pointerover">
-            <Setter Property="Background" Value="{DynamicResource StateHoverBrush}" />
-        </Style>
-        <Style Selector="^:unchecked /template/ Border#box:not(:pointerover)">
-            <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
-        </Style>
-        <Style Selector="^:unchecked /template/ ui|AppIcon#icon">
-            <Setter Property="Opacity" Value="0" />
-        </Style>
     </ControlTheme>
 
 </ResourceDictionary>

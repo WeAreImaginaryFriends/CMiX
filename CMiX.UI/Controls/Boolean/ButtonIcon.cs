@@ -68,11 +68,20 @@ namespace CMiX.UI.Controls.Boolean
             set => SetValue(IconSizeProperty, value);
         }
 
+        // The opacity of the icon. The theme sets it: OpacityIconAction, or another value for a class and a state.
+        public static readonly StyledProperty<double> IconOpacityProperty =
+            AvaloniaProperty.Register<ButtonIcon, double>(nameof(IconOpacity), 1);
+
+        public double IconOpacity
+        {
+            get => GetValue(IconOpacityProperty);
+            set => SetValue(IconOpacityProperty, value);
+        }
+
         public ButtonIcon()
         {
-            // The icon has the opacity of an action icon, from the token OpacityIconAction.
             var icon = new AppIcon();
-            icon.Bind(OpacityProperty, icon.GetResourceObservable("OpacityIconAction"));
+            icon.Bind(OpacityProperty, this.GetObservable(IconOpacityProperty));
             icon.Bind(AppIcon.IconKeyProperty, this.GetObservable(IconKeyProperty));
             icon.Bind(AppIcon.SizeProperty, this.GetObservable(IconSizeProperty));
             Content = icon;

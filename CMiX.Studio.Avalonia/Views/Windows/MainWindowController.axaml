@@ -1,31 +1,31 @@
 ﻿<UserControl
     x:Class="CMiX.Studio.Avalonia.Views.Windows.MainWindowController"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="https://github.com/cloneproduction/CMiX.UI">
 
     <DockPanel>
 
-        <Button
+        <ui:ButtonIcon
+            Classes="window"
             Command="{Binding CloseWindowCommand}"
             CommandParameter="{Binding $parent[Window]}"
-            Content="Close"
             DockPanel.Dock="Right"
-            Theme="{StaticResource ButtonWindowIcon}" />
+            IconKey="Close" />
 
-        <Button
+        <ui:ButtonIcon
+            Classes="window"
             Command="{Binding MaximizeWindowCommand}"
             CommandParameter="{Binding $parent[Window]}"
-            Content="Maximize"
             DockPanel.Dock="Right"
-            Theme="{StaticResource ButtonWindowIcon}" />
+            IconKey="Maximize" />
 
-        <Button
+        <ui:ButtonIcon
+            Classes="window"
             Command="{Binding MinimizeWindowCommand}"
             CommandParameter="{Binding $parent[Window]}"
-            Content="Minimize"
             DockPanel.Dock="Right"
-            Theme="{StaticResource ButtonWindowIcon}"
-            VerticalContentAlignment="Bottom" />
+            IconKey="Minimize" />
 
     </DockPanel>
 </UserControl>

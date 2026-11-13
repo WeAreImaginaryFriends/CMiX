@@ -66,7 +66,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void AButtonThatChoosesItsOwnTheme_AsTheSelectionPanel_IsSquareToo()
         {
-            var theme = (ControlTheme)Application.Current!.FindResource("ButtonRoundedRight")!;
+            var theme = (ControlTheme)Application.Current!.FindResource("ButtonRoundedRightNoHover")!;
             var slot = new PrefabSlotManager { DataContext = Manager(), SelectionPanel = new Button { Content = "New Color", Theme = theme } };
             Show(slot);
 

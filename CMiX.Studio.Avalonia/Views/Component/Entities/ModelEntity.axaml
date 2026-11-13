@@ -49,7 +49,7 @@
                     Height="{DynamicResource ControlHeightXS}"
                     IsChecked="{Binding Texture.MaskTexture.IsEnabled.Value, Mode=TwoWay}"
                     ResetCommand="{Binding Texture.MaskTexture.IsEnabled.ResetCommand}"
-                    Theme="{StaticResource ToggleButtonCheck}" />
+                    Theme="{StaticResource ToggleButtonBox}" />
                 <TextBlock Margin="8,0" Text="Mask" />
               </DockPanel>
             </ui:ExpanderIndented.Header>

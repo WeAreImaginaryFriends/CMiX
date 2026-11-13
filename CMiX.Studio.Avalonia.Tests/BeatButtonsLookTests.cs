@@ -17,8 +17,9 @@ namespace CMiX.Studio.Avalonia.Tests
             new Window { Content = view, Width = 400, Height = 100 }.Show();
             Dispatcher.UIThread.RunJobs();
             // The buttons + and - are icon buttons: + has the icon Add, - has the icon Sub. The other buttons have a text.
+            // The step buttons of a DragValue have a name. The buttons of the view have none.
             var button = content is "+" or "-"
-                ? view.GetVisualDescendants().OfType<CMiX.UI.Controls.Boolean.ButtonIcon>().First(candidate => candidate.IconKey == (content == "+" ? "Add" : "Sub"))
+                ? view.GetVisualDescendants().OfType<CMiX.UI.Controls.Boolean.ButtonIcon>().First(candidate => candidate.Name is null && candidate.IconKey == (content == "+" ? "Add" : "Sub"))
                 : view.GetVisualDescendants().OfType<ContentControl>().First(candidate => candidate.Content as string == content);
             return PositionedControl.GetPosition(button);
         }

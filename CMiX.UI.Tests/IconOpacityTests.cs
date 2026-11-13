@@ -19,7 +19,7 @@ namespace CMiX.UI.Tests
 
         private static T Show<T>(T control) where T : Control
         {
-            new Window { Content = control, Width = 300, Height = 200 }.Show();
+            new Window { Content = new StackPanel { HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left, Children = { control } }, Width = 300, Height = 200 }.Show();
             Dispatcher.UIThread.RunJobs();
             return control;
         }
@@ -31,6 +31,25 @@ namespace CMiX.UI.Tests
         {
             var button = Show(new ButtonIcon { IconKey = "Add" });
 
+            Assert.Equal(Token("OpacityIconAction"), IconOf(button).Opacity);
+        }
+
+        [AvaloniaFact]
+        public void Show_AWindowButtonIcon_HasTheIdleOpacityAndTheLargeSize()
+        {
+            var button = Show(new ButtonIcon { IconKey = "Close", Classes = { "window" } });
+
+            Assert.Equal(Token("OpacityIconIdle"), IconOf(button).Opacity);
+            Assert.Equal(Token("ControlHeightXL"), button.Bounds.Width);
+            Assert.Equal(Token("ControlHeightXL"), button.Bounds.Height);
+        }
+
+        [AvaloniaFact]
+        public void Show_AHandleButtonIcon_HasTheHandCursor()
+        {
+            var button = Show(new ButtonIcon { IconKey = "DragHandle", Classes = { "handle" } });
+
+            Assert.NotNull(button.Cursor);
             Assert.Equal(Token("OpacityIconAction"), IconOf(button).Opacity);
         }
 

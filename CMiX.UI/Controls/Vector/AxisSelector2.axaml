@@ -17,13 +17,13 @@
                 Grid.Column="0"
                 Content="X"
                 IsChecked="{Binding XIsChecked, ElementName=axisSelector2D, Mode=TwoWay}"
-                Theme="{StaticResource ToggleButtonInlineLeft}" />
+                ui:PositionedControl.Position="Left" />
             <ToggleButton
                 Grid.Column="1"
                 Margin="1,0"
                 Content="Y"
                 IsChecked="{Binding YIsChecked, ElementName=axisSelector2D, Mode=TwoWay}"
-                Theme="{StaticResource ToggleButtonInlineCenter}" />
+                ui:PositionedControl.Position="None" />
 
         </Grid>
 

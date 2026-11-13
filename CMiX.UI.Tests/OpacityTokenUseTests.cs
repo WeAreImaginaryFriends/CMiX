@@ -64,12 +64,11 @@ namespace CMiX.UI.Tests
         }
 
         [AvaloniaFact]
-        public void ButtonIconClose_AtRest_HasTheIdleIconOpacity()
+        public void QuietButtonIcon_AtRest_HasTheIdleIconOpacity()
         {
-            var theme = (ControlTheme)Application.Current!.FindResource("ButtonIconClose")!;
-            var button = Show(new Button { Theme = theme, Content = "Close" });
+            var button = Show(new CMiX.UI.Controls.Boolean.ButtonIcon { IconKey = "Close", Classes = { "quiet" } });
 
-            Assert.Equal(0.6, Part<CMiX.UI.Controls.AppIcon>(button, "image").Opacity);
+            Assert.Equal(0.6, button.GetVisualDescendants().OfType<CMiX.UI.Controls.AppIcon>().Single().Opacity);
         }
 
         [AvaloniaFact]

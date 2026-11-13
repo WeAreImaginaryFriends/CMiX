@@ -35,20 +35,18 @@
                                     IsChecked="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                     Theme="{DynamicResource ToggleButtonVisibility}" />
 
-                                <Button
+                                <ui:ButtonIcon
+                                    Classes="quiet"
                                     Command="{TemplateBinding CloseCommand}"
                                     CommandParameter="{TemplateBinding CloseCommandParameter}"
-                                    Theme="{DynamicResource ButtonIconClose}" />
+                                    IconKey="Close" />
 
-                                <Button
+                                <ui:ButtonIcon
+                                    Classes="handle"
                                     Margin="8,0,2,0"
                                     ui:DragHandle.IsEnabled="True"
                                     ui:DragHandle.IsPressed="{Binding DragHandleIsPressed, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                    Theme="{StaticResource ButtonDragHandle}">
-                                    <ui:AppIcon
-                                        IconKey="DragHandle"
-                                        Size="{DynamicResource IconSizeXS}" />
-                                </Button>
+                                    IconKey="DragHandle" />
 
                             </StackPanel>
 

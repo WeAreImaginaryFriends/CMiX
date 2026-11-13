@@ -57,36 +57,22 @@
                                         IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource TemplatedParent}}"
                                         LastChildFill="False">
 
-                                        <Button
+                                        <ui:ButtonIcon
                                             Name="SubButton"
                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource TemplatedParent}}"
                                             HorizontalAlignment="Left"
                                             DockPanel.Dock="Left"
-                                            Theme="{StaticResource ButtonStraight}">
-
-                                            <Button.Content>
-                                                <ui:AppIcon
-                                                    Opacity="{DynamicResource OpacityIconAction}"
-                                                    IconKey="Sub"
-                                                    Size="{DynamicResource IconSizeXS}" />
-                                            </Button.Content>
-
-                                        </Button>
-                                        <Button
+                                            ui:PositionedControl.Position="None"
+                                            Classes="filled"
+                                            IconKey="Sub" />
+                                        <ui:ButtonIcon
                                             Name="AddButton"
                                             Width="{Binding Bounds.Height, RelativeSource={RelativeSource TemplatedParent}}"
                                             HorizontalAlignment="Right"
                                             DockPanel.Dock="Right"
-                                            Theme="{StaticResource ButtonStraight}">
-
-                                            <Button.Content>
-                                                <ui:AppIcon
-                                                    Opacity="{DynamicResource OpacityIconAction}"
-                                                    IconKey="Add"
-                                                    Size="{DynamicResource IconSizeXS}" />
-                                            </Button.Content>
-
-                                        </Button>
+                                            ui:PositionedControl.Position="None"
+                                            Classes="filled"
+                                            IconKey="Add" />
                                     </DockPanel>
                                 </Panel>
 
@@ -112,23 +98,23 @@
 
         <!-- The two buttons show under the pointer, and stay while the value is pressed: the cursor of a drag goes where it
              wants, and the buttons must not blink. While the value is pressed they are as dark as the rest. -->
-        <Style Selector="^ /template/ Button#SubButton">
+        <Style Selector="^ /template/ ui|ButtonIcon#SubButton">
             <Setter Property="IsVisible" Value="False" />
         </Style>
-        <Style Selector="^ /template/ Button#AddButton">
+        <Style Selector="^ /template/ ui|ButtonIcon#AddButton">
             <Setter Property="IsVisible" Value="False" />
         </Style>
-        <Style Selector="^ /template/ Border#mainBorder:pointerover Button#SubButton">
+        <Style Selector="^ /template/ Border#mainBorder:pointerover ui|ButtonIcon#SubButton">
             <Setter Property="IsVisible" Value="True" />
         </Style>
-        <Style Selector="^ /template/ Border#mainBorder:pointerover Button#AddButton">
+        <Style Selector="^ /template/ Border#mainBorder:pointerover ui|ButtonIcon#AddButton">
             <Setter Property="IsVisible" Value="True" />
         </Style>
-        <Style Selector="^:pressed /template/ Button#SubButton">
+        <Style Selector="^:pressed /template/ ui|ButtonIcon#SubButton">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="Background" Value="{DynamicResource StatePressedBrush}" />
         </Style>
-        <Style Selector="^:pressed /template/ Button#AddButton">
+        <Style Selector="^:pressed /template/ ui|ButtonIcon#AddButton">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="Background" Value="{DynamicResource StatePressedBrush}" />
         </Style>
@@ -204,36 +190,22 @@
                                     IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource TemplatedParent}}"
                                     LastChildFill="False">
 
-                                    <Button
+                                    <ui:ButtonIcon
                                         Name="SubButton"
                                         Width="{Binding Bounds.Height, RelativeSource={RelativeSource TemplatedParent}}"
                                         HorizontalAlignment="Left"
                                         DockPanel.Dock="Left"
-                                        Theme="{StaticResource ButtonStraight}">
-
-                                        <Button.Content>
-                                            <ui:AppIcon
-                                                Opacity="{DynamicResource OpacityIconAction}"
-                                                IconKey="Sub"
-                                                Size="{DynamicResource IconSizeXS}" />
-                                        </Button.Content>
-
-                                    </Button>
-                                    <Button
+                                        ui:PositionedControl.Position="None"
+                                        Classes="filled"
+                                        IconKey="Sub" />
+                                    <ui:ButtonIcon
                                         Name="AddButton"
                                         Width="{Binding Bounds.Height, RelativeSource={RelativeSource TemplatedParent}}"
                                         HorizontalAlignment="Right"
                                         DockPanel.Dock="Right"
-                                        Theme="{StaticResource ButtonStraight}">
-
-                                        <Button.Content>
-                                            <ui:AppIcon
-                                                Opacity="{DynamicResource OpacityIconAction}"
-                                                IconKey="Add"
-                                                Size="{DynamicResource IconSizeXS}" />
-                                        </Button.Content>
-
-                                    </Button>
+                                        ui:PositionedControl.Position="None"
+                                        Classes="filled"
+                                        IconKey="Add" />
                                 </DockPanel>
                             </Panel>
 

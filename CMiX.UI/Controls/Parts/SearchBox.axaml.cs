@@ -66,22 +66,18 @@ namespace CMiX.UI.Controls.Parts
             }
         }
 
-        // The button has no background (the theme ButtonIconClose), takes no focus, and is disabled while the field is read only.
-        // Its padding makes it as high as the field: (ControlHeightMD - IconSizeXS) / 2. A higher button would make the field higher
-        // when the text comes, and move what is under the field.
-        private static readonly Thickness ClearPadding = new(4);
-
+        // The button is a quiet icon button: it has no fill. It takes no focus, and is disabled while the field is read only.
         private Button CreateClear()
         {
-            var button = new Button
+            var button = new Boolean.ButtonIcon
             {
+                IconKey = "Close",
                 Name = ClearPartName,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Center,
                 Focusable = false,
-                Padding = ClearPadding,
             };
-            button.Bind(ThemeProperty, button.GetResourceObservable("ButtonIconClose"));
+            button.Classes.Add("quiet");
             ToolTip.SetTip(button, "Clear");
             button.Click += OnClearClick;
             PART_Panel.Children.Add(button);

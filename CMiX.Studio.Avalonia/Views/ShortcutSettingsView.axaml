@@ -14,8 +14,7 @@
             Padding="8,0"
             HorizontalAlignment="Right"
             Command="{Binding ResetAllCommand}"
-            Content="Reset All"
-            Theme="{StaticResource ButtonRounded}" />
+            Content="Reset All" />
 
         <ItemsControl x:Name="ScopeList" ItemsSource="{Binding Scopes}">
             <ItemsControl.ItemTemplate>

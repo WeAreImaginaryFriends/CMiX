@@ -54,8 +54,7 @@
             <Button
                 Grid.Column="1"
                 x:Name="SyncButton"
-                IsEnabled="{Binding !IsInSync}"
-                Theme="{StaticResource ButtonRounded}">
+                IsEnabled="{Binding !IsInSync}">
                 <StackPanel Orientation="Horizontal">
                     <Ellipse
                         Width="{DynamicResource IndicatorSize}"
@@ -100,7 +99,6 @@
                                     Command="{Binding PushCommand}"
                                     Content="Push"
                                     IsEnabled="{Binding IsConnected}"
-                                    Theme="{StaticResource ButtonRounded}"
                                     ToolTip.Tip="Push: send the loaded project to Redis and all engines" />
                                 <Button
                                     Grid.Column="1"
@@ -109,14 +107,12 @@
                                     Command="{Binding PullCommand}"
                                     Content="Pull"
                                     IsEnabled="{Binding !IsJoined}"
-                                    Theme="{StaticResource ButtonRounded}"
                                     ToolTip.Tip="Pull: replace the loaded project with the Redis state. Available while not in sync." />
                                 <Button
                                     Grid.Column="2"
                                     Margin="4,0,0,0"
                                     Click="CancelSync_Click"
-                                    Content="Cancel"
-                                    Theme="{StaticResource ButtonRounded}" />
+                                    Content="Cancel" />
                             </Grid>
                         </StackPanel>
                     </Flyout>
@@ -135,8 +131,7 @@
         <Button
             x:Name="EditConnectionButton"
             Height="{DynamicResource ControlHeightMD}"
-            Content="Connection"
-            Theme="{StaticResource ButtonRounded}">
+            Content="Connection">
             <Button.Flyout>
                 <Flyout
                     Placement="Pointer"
@@ -197,13 +192,11 @@
                                 x:Name="ConnectButton"
                                 Margin="0,0,4,0"
                                 Click="Connect_Click"
-                                Content="Connect"
-                                Theme="{StaticResource ButtonRounded}" />
+                                Content="Connect" />
                             <Button
                                 Margin="4,0,0,0"
                                 Click="CancelEditConnection_Click"
-                                Content="Cancel"
-                                Theme="{StaticResource ButtonRounded}" />
+                                Content="Cancel" />
                         </UniformGrid>
                     </StackPanel>
                 </Flyout>

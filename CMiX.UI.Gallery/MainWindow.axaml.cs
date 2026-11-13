@@ -136,7 +136,7 @@ namespace CMiX.UI.Gallery
             yield return new("Eye", () => new ToggleButton { Theme = Theme("ToggleButtonVisibility") }, true);
             yield return new("Power", () => new ToggleButton { Theme = Theme("ToggleButtonPower") }, true);
             yield return new("Update", () => new ToggleButton { Theme = Theme("ToggleButtonUpdate") }, true);
-            yield return new("Close", () => new Button { Theme = Theme("ButtonIconClose") }, false);
+            yield return new("Close", () => new CMiX.UI.Controls.Boolean.ButtonIcon { IconKey = "Close", Classes = { "quiet" } }, false);
         }
 
         // ------------------------------------------------------------------ layout
