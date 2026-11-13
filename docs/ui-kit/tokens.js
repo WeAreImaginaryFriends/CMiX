@@ -252,6 +252,13 @@ window.CMIX_TOKENS = {
                                           "note":  "The text of a row of a menu that takes something away, such as Delete."
                                       },
                                       {
+                                          "name":  "StatusSuccess",
+                                          "type":  "Color",
+                                          "raw":  "#FF6FC082",
+                                          "css":  "#6FC082",
+                                          "note":  "A good status, such as a connection that is up. With PopupCardDanger (a bad status) and PopupCardWarning (a status that needs attention), it is one of the three status colors. It has a contrast of 3:1 or more on every panel."
+                                      },
+                                      {
                                           "name":  "Text",
                                           "type":  "Color",
                                           "raw":  "#FFE0E0E0",

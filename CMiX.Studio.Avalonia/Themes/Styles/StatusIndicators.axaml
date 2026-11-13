@@ -2,12 +2,13 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- The colors of the sync dots. Change a color here, in one place. -->
-    <SolidColorBrush x:Key="StatusDisconnectedBrush" Color="Red" />
-    <SolidColorBrush x:Key="StatusConnectedBrush" Color="Green" />
-    <SolidColorBrush x:Key="StatusUnsyncedBrush" Color="Orange" />
-    <SolidColorBrush x:Key="StatusPendingBrush" Color="Gray" />
-    <SolidColorBrush x:Key="StatusSyncedBrush" Color="DodgerBlue" />
+    <!-- The colors of the sync dots. Change a color here, in one place. They are colors of the theme (Colors.axaml), so a dot has the
+         red and the orange of every danger and warning of the application, and can be seen on every panel. -->
+    <SolidColorBrush x:Key="StatusDisconnectedBrush" Color="{DynamicResource PopupCardDanger}" />
+    <SolidColorBrush x:Key="StatusConnectedBrush" Color="{DynamicResource StatusSuccess}" />
+    <SolidColorBrush x:Key="StatusUnsyncedBrush" Color="{DynamicResource PopupCardWarning}" />
+    <SolidColorBrush x:Key="StatusPendingBrush" Color="{DynamicResource Grey800}" />
+    <SolidColorBrush x:Key="StatusSyncedBrush" Color="{DynamicResource AccentPrimary}" />
 
     <!-- Four states: disconnected (default, red) means the peer has no store connection. Connected
          (.connected, green) means it is connected to Redis and in sync. Connected and not in sync

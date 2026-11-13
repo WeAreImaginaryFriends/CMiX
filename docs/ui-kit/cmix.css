@@ -1425,16 +1425,17 @@
     }
 
     /* ---------------------------------------------------------------- Themes/Styles/StatusIndicators.axaml, Views/Messenger/SyncStatusIndicator.axaml */
-    /* EllipseSyncConnection: red, green when connected, orange when connected and not in sync, grey while it connects.
+    /* The colors of the dots are colors of the theme: PopupCardDanger, StatusSuccess, PopupCardWarning, Grey800 and AccentPrimary.
+       EllipseSyncConnection: red, green when connected, orange when connected and not in sync, grey while it connects.
        EllipseSyncState: grey, blue when in sync. */
     .EllipseSyncConnection, .EllipseSyncState { display: block; flex: none; width: var(--IndicatorSize); height: var(--IndicatorSize); border-radius: 50%; }
     .EllipseSyncConnection {
-        background: red;
-        &.connected { background: green; }
-        &.connected.unsynced { background: orange; }
-        &.connecting { background: gray; }
+        background: var(--PopupCardDanger);
+        &.connected { background: var(--StatusSuccess); }
+        &.connected.unsynced { background: var(--PopupCardWarning); }
+        &.connecting { background: var(--Grey800); }
     }
-    .EllipseSyncState { background: gray; &.insync { background: dodgerblue; } }
+    .EllipseSyncState { background: var(--Grey800); &.insync { background: var(--AccentPrimary); } }
     .SyncStatusIndicator { display: flex; align-items: center; gap: var(--SpacingSM); white-space: nowrap; }
 
     /* ---------------------------------------------------------------- Views/Beat/BeatControls.axaml, MasterBeatControl.axaml */

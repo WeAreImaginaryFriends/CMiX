@@ -35,7 +35,7 @@
              visible right away, and stays visible until the peer clears ErrorMessage. -->
         <TextBlock
 
-            Foreground="Crimson"
+            Foreground="{DynamicResource PopupCardDangerBrush}"
             TextWrapping="Wrap"
             Text="{Binding ErrorMessage}"
             IsVisible="{Binding ErrorMessage, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" />
@@ -188,7 +188,7 @@
                                 
                                 x:Name="ErrorText"
                                 Margin="0,4"
-                                Foreground="Crimson"
+                                Foreground="{DynamicResource PopupCardDangerBrush}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
 

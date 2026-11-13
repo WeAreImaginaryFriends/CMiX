@@ -26,6 +26,9 @@ namespace CMiX.Studio.Avalonia.Tests
             return dot;
         }
 
+        // A color of the theme (Colors.axaml).
+        private static Color Token(string key) => (Color)Application.Current!.FindResource(key)!;
+
         private static Color ColorOf(Ellipse dot)
         {
             Dispatcher.UIThread.RunJobs();
@@ -35,7 +38,7 @@ namespace CMiX.Studio.Avalonia.Tests
         [AvaloniaFact]
         public void ConnectionDot_IsRedWithoutAConnection()
         {
-            Assert.Equal(Colors.Red, ColorOf(Dot("EllipseSyncConnection")));
+            Assert.Equal(Token("PopupCardDanger"), ColorOf(Dot("EllipseSyncConnection")));
         }
 
         [AvaloniaFact]
@@ -44,7 +47,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var dot = Dot("EllipseSyncConnection");
             dot.Classes.Add("connected");
 
-            Assert.Equal(Colors.Green, ColorOf(dot));
+            Assert.Equal(Token("StatusSuccess"), ColorOf(dot));
         }
 
         [AvaloniaFact]
@@ -54,7 +57,7 @@ namespace CMiX.Studio.Avalonia.Tests
             dot.Classes.Add("connected");
             dot.Classes.Add("connecting");
 
-            Assert.Equal(Colors.Gray, ColorOf(dot));
+            Assert.Equal(Token("Grey800"), ColorOf(dot));
         }
 
         [AvaloniaFact]
@@ -64,7 +67,7 @@ namespace CMiX.Studio.Avalonia.Tests
             dot.Classes.Add("connected");
             dot.Classes.Add("unsynced");
 
-            Assert.Equal(Colors.Orange, ColorOf(dot));
+            Assert.Equal(Token("PopupCardWarning"), ColorOf(dot));
         }
 
         [AvaloniaFact]
@@ -73,7 +76,7 @@ namespace CMiX.Studio.Avalonia.Tests
             var dot = Dot("EllipseSyncConnection");
             dot.Classes.Add("unsynced");
 
-            Assert.Equal(Colors.Red, ColorOf(dot));
+            Assert.Equal(Token("PopupCardDanger"), ColorOf(dot));
         }
 
         [AvaloniaFact]
@@ -84,18 +87,33 @@ namespace CMiX.Studio.Avalonia.Tests
             dot.Classes.Add("unsynced");
             dot.Classes.Add("connecting");
 
-            Assert.Equal(Colors.Gray, ColorOf(dot));
+            Assert.Equal(Token("Grey800"), ColorOf(dot));
+        }
+
+        // A dot is a small shape with no text: it needs a contrast of 3:1 or more on the window and on the panels.
+        [AvaloniaTheory]
+        [InlineData("StatusDisconnectedBrush")]
+        [InlineData("StatusConnectedBrush")]
+        [InlineData("StatusUnsyncedBrush")]
+        [InlineData("StatusPendingBrush")]
+        [InlineData("StatusSyncedBrush")]
+        public void ADot_OnTheWindowAndOnAPanel_CanBeSeen(string brush)
+        {
+            var dot = ((ISolidColorBrush)Application.Current!.FindResource(brush)!).Color;
+
+            foreach (var surface in new[] { "Grey100", "Grey200", "Grey300", "Grey400" })
+                Assert.True(CMiX.UI.Mathematics.ColorMix.Contrast(dot, Token(surface)) >= 3, $"{brush} on {surface}: {CMiX.UI.Mathematics.ColorMix.Contrast(dot, Token(surface)):0.00}");
         }
 
         [AvaloniaFact]
         public void StateDot_IsGrayUntilInSync_ThenBlue()
         {
             var dot = Dot("EllipseSyncState");
-            Assert.Equal(Colors.Gray, ColorOf(dot));
+            Assert.Equal(Token("Grey800"), ColorOf(dot));
 
             dot.Classes.Add("insync");
 
-            Assert.Equal(Colors.DodgerBlue, ColorOf(dot));
+            Assert.Equal(Token("AccentPrimary"), ColorOf(dot));
         }
     }
 }

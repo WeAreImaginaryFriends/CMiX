@@ -62,7 +62,7 @@
 
         <TextBlock
             x:Name="SaveErrorText"
-            Foreground="Crimson"
+            Foreground="{DynamicResource PopupCardDangerBrush}"
             TextWrapping="Wrap"
             Text="{Binding SaveError}"
             IsVisible="{Binding SaveError, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" />

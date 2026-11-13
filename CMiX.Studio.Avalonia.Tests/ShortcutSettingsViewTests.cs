@@ -114,7 +114,7 @@ namespace CMiX.Studio.Avalonia.Tests
         }
 
         [AvaloniaFact]
-        public void SaveError_AfterAFailedSave_ShowsTheTextInCrimson()
+        public void SaveError_AfterAFailedSave_ShowsTheTextInTheDangerColor()
         {
             var (_, settings, view) = Show();
             var text = view.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Name == "SaveErrorText");
@@ -130,7 +130,7 @@ namespace CMiX.Studio.Avalonia.Tests
                 Assert.NotNull(settings.SaveError);
                 Assert.True(text.IsVisible);
                 Assert.Equal(settings.SaveError, text.Text);
-                Assert.Equal(Colors.Crimson, ((ISolidColorBrush)text.Foreground!).Color);
+                Assert.Equal(((ISolidColorBrush)Application.Current!.FindResource("PopupCardDangerBrush")!).Color, ((ISolidColorBrush)text.Foreground!).Color);
             }
             finally
             {
