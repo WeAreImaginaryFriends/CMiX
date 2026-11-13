@@ -32,14 +32,13 @@
                 <!-- NullToVisibility returns a bool in this project; the Collapsed converter parameter is gone. -->
                 <ui:DockPanelPositioned IsVisible="{Binding SelectedItem, Converter={StaticResource NullToVisibility}}">
 
-                    <Button
+                    <ui:ButtonIcon
                         x:Name="deleteItemButton"
-                        Width="22"
-                        Height="{DynamicResource ControlHeightMD}"
                         Command="{Binding ClearSelectionCommand}"
                         CommandParameter="{Binding SelectedItem}"
-                        Content="-"
-                        DockPanel.Dock="Right" />
+                        DockPanel.Dock="Right"
+                        Classes="filled"
+                        IconKey="Remove" />
 
                     <Border
                         BorderBrush="{DynamicResource Grey300Brush}"

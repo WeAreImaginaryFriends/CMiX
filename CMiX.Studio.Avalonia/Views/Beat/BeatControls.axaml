@@ -17,20 +17,18 @@
 
         <ui:DockPanelPositioned Grid.Column="1">
 
-            <Button
-                Width="{Binding $self.Bounds.Height}"
-                Background="{StaticResource Grey600Brush}"
+            <ui:ButtonIcon
                 Command="{Binding MultiplyCommand}"
-                Content="+"
-                DockPanel.Dock="Right" />
+                DockPanel.Dock="Right"
+                Classes="filled"
+                IconKey="Add" />
 
-            <Button
-                Width="{Binding $self.Bounds.Height}"
+            <ui:ButtonIcon
                 Margin="1,0,1,0"
-                Background="{StaticResource Grey600Brush}"
                 Command="{Binding DivideCommand}"
-                Content="-"
-                DockPanel.Dock="Right" />
+                DockPanel.Dock="Right"
+                Classes="filled"
+                IconKey="Sub" />
 
             <Border
                 x:Name="MainBorder"

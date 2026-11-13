@@ -47,7 +47,6 @@ namespace CMiX.Studio.Avalonia.Tests
             ("CMiX.UI/Themes/Styles/ComboBox.axaml", "Width=\"266\"", "the drop down of the combo box, to put on the scale"),
             ("CMiX.UI/Themes/Styles/Menu/Menu.axaml", "Width=\"32\"", "the icon column of a menu item, to put on the scale"),
             ("CMiX.UI/Themes/Styles/Menu/PopupFlyout.axaml", "Property=\"Width\" Value=\"300\"", "the width of a popup flyout, to put on the scale"),
-            ("CMiX.Studio.Avalonia/Views/Controls/Outliner.axaml", "Width=\"22\"", "the remove button of the outliner, to put on the scale"),
             ("CMiX.Studio.Avalonia/Views/Dialogs/MessageDialog.axaml", "MaxWidth=\"420\"", "the line length of a message, to put on the scale"),
             ("CMiX.Studio.Avalonia/Views/MainWindow.axaml", "MinWidth=\"240\"", "the least width of the tree and of the tabs, to put on the scale"),
         };

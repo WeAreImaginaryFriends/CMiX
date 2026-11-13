@@ -16,7 +16,10 @@ namespace CMiX.Studio.Avalonia.Tests
         {
             new Window { Content = view, Width = 400, Height = 100 }.Show();
             Dispatcher.UIThread.RunJobs();
-            var button = view.GetVisualDescendants().OfType<ContentControl>().First(candidate => candidate.Content as string == content);
+            // The buttons + and - are icon buttons: + has the icon Add, - has the icon Sub. The other buttons have a text.
+            var button = content is "+" or "-"
+                ? view.GetVisualDescendants().OfType<CMiX.UI.Controls.Boolean.ButtonIcon>().First(candidate => candidate.IconKey == (content == "+" ? "Add" : "Sub"))
+                : view.GetVisualDescendants().OfType<ContentControl>().First(candidate => candidate.Content as string == content);
             return PositionedControl.GetPosition(button);
         }
 

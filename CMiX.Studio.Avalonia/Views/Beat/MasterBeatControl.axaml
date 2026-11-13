@@ -23,17 +23,12 @@
 
             <DockPanel Grid.Column="1" VerticalAlignment="Center">
 
-                <Button
-                    Width="{Binding $self.Bounds.Height}"
+                <ui:ButtonIcon
                     Margin="4,0,0,0"
-                    Background="{StaticResource Grey600Brush}"
                     Command="{Binding Resync.ClickCommand}"
                     DockPanel.Dock="Right"
-                    Theme="{StaticResource ButtonRounded}">
-                    <Button.Content>
-                        <ui:AppIcon IconKey="Reset" Size="{DynamicResource IconSizeXS}" />
-                    </Button.Content>
-                </Button>
+                    Classes="filled"
+                    IconKey="Reset" />
 
                 <ui:DockPanelPositioned>
 
@@ -45,20 +40,18 @@
                         DockPanel.Dock="Left"
                         IsChecked="{Binding Pause.Value}" />
 
-                    <Button
-                        Width="{Binding $self.Bounds.Height}"
-                        Background="{StaticResource Grey600Brush}"
+                    <ui:ButtonIcon
                         Command="{Binding MultiplyCommand}"
-                        Content="+"
-                        DockPanel.Dock="Right" />
+                        DockPanel.Dock="Right"
+                        Classes="filled"
+                        IconKey="Add" />
 
-                    <Button
-                        Width="{Binding $self.Bounds.Height}"
+                    <ui:ButtonIcon
                         Margin="1,0"
-                        Background="{StaticResource Grey600Brush}"
                         Command="{Binding DivideCommand}"
-                        Content="-"
-                        DockPanel.Dock="Right" />
+                        DockPanel.Dock="Right"
+                        Classes="filled"
+                        IconKey="Sub" />
 
                     <Panel>
                         <Border

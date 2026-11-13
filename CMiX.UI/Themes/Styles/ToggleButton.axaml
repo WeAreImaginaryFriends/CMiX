@@ -229,7 +229,7 @@
                     Background="{DynamicResource StateIdleBrush}"
                     CornerRadius="{DynamicResource CornerRadiusLeft}">
                     <Grid>
-                        <TextBlock DockPanel.Dock="Left" Padding="8,4,4,4" Text="+" />
+                        <ui:AppIcon Margin="8,0,0,0" HorizontalAlignment="Left" IconKey="Add" Opacity="{DynamicResource OpacityIconAction}" Size="{DynamicResource IconSizeXS}" />
                         <TextBlock HorizontalAlignment="Center" Padding="8,4,4,4" Text="{TemplateBinding Content}" />
                     </Grid>
                 </Border>

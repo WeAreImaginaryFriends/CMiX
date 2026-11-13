@@ -106,6 +106,12 @@
         <Setter Property="Height" Value="{DynamicResource ControlHeightMD}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="IconSize" Value="{DynamicResource IconSizeXS}" />
+
+        <!-- The class filled gives the fill of a button: an icon button that is a part of a group of controls, such as the
+             buttons under a list. Without the class, the button has no fill: a toolbar button. -->
+        <Style Selector="^.filled">
+            <Setter Property="Background" Value="{DynamicResource StateIdleBrush}" />
+        </Style>
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type ui:ButtonMomentary}"

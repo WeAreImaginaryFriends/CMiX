@@ -48,8 +48,9 @@ namespace CMiX.UI.Tests
             Dispatcher.UIThread.RunJobs();
         }
 
+        // The add button has the icon Add ("+"), the remove button has the icon Remove ("-").
         private static Button ButtonWith(ListBoxEditable list, string? content) =>
-            list.GetVisualDescendants().OfType<Button>().First(b => Equals(b.Content, content));
+            list.GetVisualDescendants().OfType<CMiX.UI.Controls.Boolean.ButtonIcon>().First(b => b.IconKey == (content == "+" ? "Add" : "Remove"));
 
         private static IEnumerable<Button> ArrowButtons(ListBoxEditable list) =>
             list.GetVisualDescendants().OfType<Button>()

@@ -16,15 +16,13 @@
 
         <ui:DockPanelPositioned Margin="8,0,8,8">
 
-            <Button
+            <ui:ButtonIcon
                 x:Name="RemoveButton"
-                Width="{DynamicResource ControlHeightMD}"
-                Height="{DynamicResource ControlHeightMD}"
                 Command="{Binding DeleteCommand, ElementName=listBoxRepository}"
                 CommandParameter="{Binding SelectedItem, ElementName=listBoxRepository}"
-                DockPanel.Dock="Right">
-                <ui:AppIcon Opacity="{DynamicResource OpacityIconAction}" IconKey="Remove" Size="{DynamicResource IconSizeXS}" />
-            </Button>
+                DockPanel.Dock="Right"
+                Classes="filled"
+                IconKey="Remove" />
 
             <ContentControl Content="{Binding AddContent, ElementName=listBoxRepository}" />
 
