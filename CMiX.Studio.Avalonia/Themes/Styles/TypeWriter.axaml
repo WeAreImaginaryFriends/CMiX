@@ -88,7 +88,7 @@
             <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
         <Style Selector="^:focus /template/ Border#border">
-            <Setter Property="BorderBrush" Value="{DynamicResource Grey600Brush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
         </Style>
         <Style Selector="^:focus">
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />

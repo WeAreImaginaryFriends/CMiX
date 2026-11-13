@@ -97,8 +97,9 @@
         <Style Selector="^:pointerover /template/ Border#border">
             <Setter Property="BorderBrush" Value="{DynamicResource Grey400Brush}" />
         </Style>
+        <!-- The focus has the accent, as the focus line of a panel. The style is after the hover style, so the focus wins under the pointer. -->
         <Style Selector="^:focus /template/ Border#border">
-            <Setter Property="BorderBrush" Value="{DynamicResource Grey600Brush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
         </Style>
     </ControlTheme>
 
@@ -190,7 +191,7 @@
             <Setter Property="Opacity" Value="{DynamicResource OpacityDisabled}" />
         </Style>
         <Style Selector="^:focus /template/ Border#border">
-            <Setter Property="BorderBrush" Value="{DynamicResource Grey600Brush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
         </Style>
         <Style Selector="^:focus">
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
